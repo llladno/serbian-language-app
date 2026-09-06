@@ -1,0 +1,51 @@
+# Шаблон файла упражнений урока. Скопируй в NN.yaml (NN = номер урока)
+# и добавь урок в course.yaml с полем file:.
+# Этот файл (_TEMPLATE.yaml) загрузчик игнорирует.
+
+lesson: "NN"
+blocks:
+  - id: "A"
+    title: "Заголовок блока"
+    instruction: "Необязательная подсказка для всего блока."
+    exercises:
+
+      # перевод фразы (ru -> sr). accept — список принимаемых вариантов.
+      - id: "NN-A-1"
+        type: translate
+        prompt: "Русская фраза."
+        accept:
+          - "Srpska fraza."
+          - "Alternativna fraza."
+        explain: "Необязательный разбор, показывается после ответа."
+
+      # вставить пропущенное слово/форму. В ответе — только вставка.
+      - id: "NN-A-2"
+        type: fill_blank
+        prompt: "Ja ___ iz Rusije."
+        accept: ["sam"]
+
+      # исправить ошибку. accept — правильное предложение целиком.
+      - id: "NN-A-3"
+        type: fix_error
+        prompt: "Sam iz Rusije."
+        accept: ["Ja sam iz Rusije.", "Iz Rusije sam."]
+
+      # спряжение: 6 форм, accept — список из 6 списков (по форме).
+      - id: "NN-A-4"
+        type: conjugate
+        prompt: "raditi — работать"
+        forms: ["ja", "ti", "on/ona/ono", "mi", "vi", "oni/one/ona"]
+        accept:
+          - ["radim"]
+          - ["radiš"]
+          - ["radi"]
+          - ["radimo"]
+          - ["radite"]
+          - ["rade"]
+        meta: "тип I"
+
+      # свободный ответ: без автопроверки, показывается sample + самооценка.
+      - id: "NN-A-5"
+        type: free
+        prompt: "Опиши ситуацию своими словами."
+        sample: "Примерный ответ для сверки."

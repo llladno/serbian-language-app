@@ -89,7 +89,7 @@ func (h handlers) getCourse(w http.ResponseWriter, r *http.Request) {
 		fail(w, 500, err.Error())
 		return
 	}
-	out := courseDTO{Title: c.Title}
+	out := courseDTO{Title: c.Title, Phases: []phaseDTO{}, Lessons: []lessonRefDTO{}}
 	for _, p := range c.Phases {
 		out.Phases = append(out.Phases, phaseDTO{ID: p.ID, Title: p.Title, Lessons: p.Lessons})
 		for _, id := range p.Lessons {
@@ -136,7 +136,7 @@ func (h handlers) getExercises(w http.ResponseWriter, r *http.Request) {
 		fail(w, 404, "unknown lesson")
 		return
 	}
-	var out []exerciseBlockDTO
+	out := []exerciseBlockDTO{}
 	for _, b := range h.Course().Exercises[id] {
 		bd := exerciseBlockDTO{ID: b.ID, Title: b.Title, Instruction: b.Instruction}
 		for _, e := range b.Exercises {
@@ -242,7 +242,7 @@ func (h handlers) completeLesson(w http.ResponseWriter, r *http.Request) {
 func (h handlers) getVocab(w http.ResponseWriter, r *http.Request) {
 	q := r.URL.Query()
 	lesson, tag, term := q.Get("lesson"), q.Get("tag"), q.Get("q")
-	var out []vocabDTO
+	out := []vocabDTO{}
 	for _, v := range h.Course().Vocab {
 		if lesson != "" && v.Lesson != lesson {
 			continue
@@ -264,7 +264,7 @@ func (h handlers) getVocab(w http.ResponseWriter, r *http.Request) {
 func (h handlers) getFalseFriends(w http.ResponseWriter, r *http.Request) {
 	q := r.URL.Query()
 	group, term := q.Get("group"), q.Get("q")
-	var out []falseFriendDTO
+	out := []falseFriendDTO{}
 	for _, f := range h.Course().FalseFriends {
 		if group != "" && group != "all" && f.Group != group {
 			continue
@@ -376,13 +376,18 @@ func (h handlers) reviewGrade(w http.ResponseWriter, r *http.Request) {
 func (h handlers) getProgress(w http.ResponseWriter, r *http.Request) {
 	c := h.Course()
 	now := h.Now()
+	_ = h.Store.EnsureCards(h.cardSeeds()) // so "new" counts are accurate before first review
 	statuses, err := h.Store.LessonStatuses()
 	if err != nil {
 		fail(w, 500, err.Error())
 		return
 	}
 
-	out := progressDTO{}
+	out := progressDTO{
+		Phases:        []phaseProgressDTO{},
+		WeakExercises: []weakExerciseDTO{},
+		RecentLessons: []recentLessonDTO{},
+	}
 	for _, p := range c.Phases {
 		pp := phaseProgressDTO{ID: p.ID, Title: p.Title, Total: len(p.Lessons)}
 		for _, id := range p.Lessons {
@@ -425,7 +430,7 @@ func (h handlers) getProgress(w http.ResponseWriter, r *http.Request) {
 		})
 	}
 
-	var recent []recentLessonDTO
+	recent := []recentLessonDTO{}
 	for id, st := range statuses {
 		if st == "in_progress" || st == "done" {
 			title := ""

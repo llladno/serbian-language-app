@@ -23,7 +23,7 @@ const continueLesson = computed(() => {
   const inProgress = p.recent_lessons.find((l) => l.status === 'in_progress')
   if (inProgress) return { id: inProgress.lesson, title: inProgress.title, label: 'Продолжить' }
   const done = new Set(p.recent_lessons.filter((l) => l.status === 'done').map((l) => l.lesson))
-  const next = course.course?.lessons.find((l) => !l.planned && !done.has(l.id))
+  const next = course.course?.lessons?.find((l) => !l.planned && !done.has(l.id))
   return next ? { id: next.id, title: next.title, label: 'Начать' } : null
 })
 

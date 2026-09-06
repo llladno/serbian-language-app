@@ -40,4 +40,18 @@ make build
 Правки в `content/` подхватываются на лету (сервер следит за файлами).
 Изменяемое состояние (SRS, попытки, прогресс) — в SQLite `data/app.db`.
 
+### Добавить урок
+
+1. В `content/course.yaml` у нужного номера добавь `file: lessons/NN-slug.md`.
+2. Положи теорию в `content/lessons/NN-slug.md` (обычный markdown,
+   без раздела упражнений).
+3. Скопируй `content/exercises/_TEMPLATE.yaml` в `content/exercises/NN.yaml`
+   и заполни блоки (типы: `translate`, `fill_blank`, `fix_error`,
+   `conjugate`, `free`).
+4. Новые слова — в `content/vocab.yaml` (карточки SRS заводятся
+   автоматически).
+
+Тесты: `make test`.
+
 Дизайн: `docs/superpowers/specs/2026-09-06-serbian-app-design.md`.
+План: `docs/superpowers/plans/2026-09-06-serbian-app.md`.
