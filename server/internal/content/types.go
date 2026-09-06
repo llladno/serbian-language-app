@@ -65,6 +65,7 @@ type Vocab struct {
 	Tags     []string
 	Emoji    string // optional
 	Image    string // optional filename under content/images/
+	Audio    string // optional filename under content/audio/ (set when the file exists)
 }
 
 // FalseFriend is one RU↔SR false-friend entry.

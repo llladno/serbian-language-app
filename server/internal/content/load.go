@@ -165,10 +165,14 @@ func Load(dir string) (*Course, error) {
 			return nil, fmt.Errorf("vocab.yaml: duplicate id %q", v.ID)
 		}
 		seenV[v.ID] = true
+		audio := ""
+		if _, err := os.Stat(filepath.Join(dir, "audio", v.ID+".mp3")); err == nil {
+			audio = v.ID + ".mp3"
+		}
 		c.Vocab = append(c.Vocab, Vocab{
 			ID: v.ID, Latin: v.Latin, Cyrillic: v.Cyrillic, RU: v.RU, Note: v.Note,
 			Lesson: v.Lesson, POS: v.POS, Gender: v.Gender, Aspect: v.Aspect, Tags: v.Tags,
-			Emoji: v.Emoji, Image: v.Image,
+			Emoji: v.Emoji, Image: v.Image, Audio: audio,
 		})
 	}
 

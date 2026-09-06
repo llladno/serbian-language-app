@@ -92,6 +92,7 @@ export interface Vocab {
   tags?: string[]
   emoji?: string
   image?: string
+  audio?: string
 }
 
 export interface FalseFriend {
@@ -115,6 +116,7 @@ export interface ReviewCard {
   state: string
   emoji?: string
   image?: string
+  audio?: string
   preview: Record<'again' | 'hard' | 'good' | 'easy', number>
 }
 

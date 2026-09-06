@@ -80,6 +80,7 @@ type vocabDTO struct {
 	Tags     []string `json:"tags,omitempty"`
 	Emoji    string   `json:"emoji,omitempty"`
 	Image    string   `json:"image,omitempty"`
+	Audio    string   `json:"audio,omitempty"`
 }
 
 type falseFriendDTO struct {
@@ -105,6 +106,7 @@ type reviewCardDTO struct {
 	State    string         `json:"state"`
 	Emoji    string         `json:"emoji,omitempty"`
 	Image    string         `json:"image,omitempty"`
+	Audio    string         `json:"audio,omitempty"`
 	Preview  map[string]int `json:"preview"` // grade name -> next interval in days
 }
 

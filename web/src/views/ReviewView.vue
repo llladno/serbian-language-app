@@ -3,6 +3,7 @@ import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useReviewStore } from '../stores/review'
 import WordMedia from '../components/WordMedia.vue'
+import SpeakButton from '../components/SpeakButton.vue'
 
 const store = useReviewStore()
 const { current, remaining, total, sessionCount, tally, loading, error } = storeToRefs(store)
@@ -90,7 +91,10 @@ onUnmounted(() => window.removeEventListener('keydown', onKey))
       @click="revealed = true"
     >
       <p v-if="current.kind === 'ff'" class="mb-2 text-[10px] uppercase tracking-widest text-[var(--accent)]">ложный друг</p>
-      <p class="serbian text-4xl font-semibold">{{ current.front }}</p>
+      <div class="flex items-center gap-2">
+        <p class="serbian text-4xl font-semibold">{{ current.front }}</p>
+        <SpeakButton :src="current.audio" :size="36" />
+      </div>
       <p v-if="current.cyrillic" class="mt-1 text-sm text-[var(--muted)]">{{ current.cyrillic }}</p>
 
       <Transition name="fade">

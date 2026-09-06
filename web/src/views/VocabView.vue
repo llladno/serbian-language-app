@@ -3,6 +3,7 @@ import { computed, onMounted, ref, watch } from 'vue'
 import { api } from '../api'
 import type { Vocab } from '../types'
 import WordMedia from '../components/WordMedia.vue'
+import SpeakButton from '../components/SpeakButton.vue'
 
 const all = ref<Vocab[]>([])
 const q = ref('')
@@ -90,9 +91,12 @@ function nextCard() {
     @click="drillShown = true"
   >
     <p class="text-xs text-[var(--muted)]">{{ drillIdx + 1 }} / {{ rows.length }}</p>
-    <p class="serbian mt-2 text-3xl font-semibold">
-      {{ scriptMode === 'latin' ? rows[drillIdx].latin : rows[drillIdx].cyrillic }}
-    </p>
+    <div class="mt-2 flex items-center justify-center gap-2">
+      <p class="serbian text-3xl font-semibold">
+        {{ scriptMode === 'latin' ? rows[drillIdx].latin : rows[drillIdx].cyrillic }}
+      </p>
+      <SpeakButton :src="rows[drillIdx].audio" :size="34" @click.stop />
+    </div>
     <template v-if="drillShown">
       <div class="mt-3 flex justify-center">
         <WordMedia :image="rows[drillIdx].image" :emoji="rows[drillIdx].emoji" :size="112" />
@@ -121,7 +125,10 @@ function nextCard() {
             <WordMedia :image="v.image" :emoji="v.emoji" :size="34" />
           </td>
           <td class="serbian px-2 py-2 font-semibold">
-            {{ scriptMode === 'latin' ? v.latin : v.cyrillic }}
+            <div class="flex items-center gap-1.5">
+              <span>{{ scriptMode === 'latin' ? v.latin : v.cyrillic }}</span>
+              <SpeakButton :src="v.audio" :size="26" />
+            </div>
           </td>
           <td class="px-3 py-2">{{ v.ru }}</td>
           <td class="px-3 py-2 text-[var(--muted)]">{{ v.note }}</td>

@@ -383,7 +383,7 @@ func (h handlers) getVocab(w http.ResponseWriter, r *http.Request) {
 		out = append(out, vocabDTO{
 			ID: v.ID, Latin: v.Latin, Cyrillic: v.Cyrillic, RU: v.RU, Note: v.Note,
 			Lesson: v.Lesson, POS: v.POS, Gender: v.Gender, Aspect: v.Aspect, Tags: v.Tags,
-			Emoji: v.Emoji, Image: v.Image,
+			Emoji: v.Emoji, Image: v.Image, Audio: v.Audio,
 		})
 	}
 	writeJSON(w, 200, out)
@@ -464,7 +464,7 @@ func (h handlers) reviewQueue(w http.ResponseWriter, r *http.Request) {
 				continue
 			}
 			d.Front, d.Cyrillic, d.Back, d.Note = v.Latin, v.Cyrillic, v.RU, v.Note
-			d.Emoji, d.Image = v.Emoji, v.Image
+			d.Emoji, d.Image, d.Audio = v.Emoji, v.Image, v.Audio
 		case "ff":
 			f, ok := ff[row.RefID]
 			if !ok {

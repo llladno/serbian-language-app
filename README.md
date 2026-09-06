@@ -46,6 +46,11 @@ docker run --rm -p 8080:8080 -v srpski-data:/app/data srpski
   `content/exercises/_TEMPLATE.yaml`).
 - `content/vocab.yaml` — словарь.
 - `content/false-friends.yaml` — ложные друзья.
+- `content/images/<id>.jpg` — фото к слову (опц.), раздаётся на `/img/`.
+- `content/audio/<id>.mp3` — озвучка слова (опц.), раздаётся на `/audio/`.
+  Генерится скриптом `scripts/tts.py` (edge-tts, сербский нейроголос,
+  без ключа): `pip install edge-tts pyyaml && python3 scripts/tts.py`.
+  Поле `audio` в API проставляется само, если файл есть.
 
 Правки в `content/` подхватываются на лету (сервер следит за файлами).
 Изменяемое состояние (SRS, попытки, прогресс) — в SQLite `data/app.db`.
@@ -68,6 +73,8 @@ docker run --rm -p 8080:8080 -v srpski-data:/app/data srpski
    `conjugate`, `free`).
 4. Новые слова — в `content/vocab.yaml` (карточки SRS заводятся
    автоматически).
+5. Озвучка новых слов — `python3 scripts/tts.py` (дописывает только
+   недостающие `content/audio/*.mp3`).
 
 Тесты: `make test`.
 

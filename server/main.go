@@ -45,6 +45,8 @@ func main() {
 	}))
 	imgDir := filepath.Join(*contentDir, "images")
 	mux.Handle("/img/", cacheControl(http.StripPrefix("/img/", http.FileServer(http.Dir(imgDir)))))
+	audioDir := filepath.Join(*contentDir, "audio")
+	mux.Handle("/audio/", cacheControl(http.StripPrefix("/audio/", http.FileServer(http.Dir(audioDir)))))
 	mux.Handle("/", spaHandler(web.FS()))
 
 	log.Printf("listening on %s", *addr)

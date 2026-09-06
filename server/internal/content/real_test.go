@@ -11,6 +11,18 @@ func TestRealContentLoads(t *testing.T) {
 	if len(c.Vocab) < 60 {
 		t.Errorf("vocab = %d, want >= 60", len(c.Vocab))
 	}
+	withAudio := 0
+	for _, v := range c.Vocab {
+		if v.Audio != "" {
+			withAudio++
+			if v.Audio != v.ID+".mp3" {
+				t.Errorf("vocab %q: audio = %q, want %q", v.ID, v.Audio, v.ID+".mp3")
+			}
+		}
+	}
+	if withAudio < 60 {
+		t.Errorf("vocab with audio = %d, want >= 60 (run scripts/tts.py)", withAudio)
+	}
 	if len(c.FalseFriends) < 50 {
 		t.Errorf("false friends = %d, want >= 50", len(c.FalseFriends))
 	}
