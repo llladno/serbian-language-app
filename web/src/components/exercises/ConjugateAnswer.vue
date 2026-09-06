@@ -2,6 +2,7 @@
 import { ref } from 'vue'
 import { api } from '../../api'
 import type { CheckResult, LessonAttempt } from '../../types'
+import SerbianKeys from '../SerbianKeys.vue'
 
 const props = defineProps<{
   lesson: string
@@ -74,6 +75,8 @@ function retry() {
         />
         <span v-if="result?.forms?.[i]" class="w-4">{{ result.forms[i].ok ? '✓' : '✗' }}</span>
       </label>
+
+      <SerbianKeys v-if="!result" class="col-span-full" />
 
       <button
         v-if="!result"

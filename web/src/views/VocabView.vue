@@ -4,6 +4,7 @@ import { api } from '../api'
 import type { Vocab } from '../types'
 import WordMedia from '../components/WordMedia.vue'
 import SpeakButton from '../components/SpeakButton.vue'
+import SerbianKeys from '../components/SerbianKeys.vue'
 
 const all = ref<Vocab[]>([])
 const q = ref('')
@@ -66,7 +67,7 @@ function nextCard() {
 
   <p v-if="error" class="card mb-3 p-3 text-[var(--bad)]">{{ error }}</p>
 
-  <div class="mb-3 flex flex-wrap gap-2">
+  <div class="mb-1.5 flex flex-wrap gap-2">
     <input v-model="q" placeholder="поиск…" class="field flex-1" />
     <select v-model="lesson" class="field">
       <option value="">урок: все</option>
@@ -77,6 +78,7 @@ function nextCard() {
       <option v-for="tg in tags" :key="tg" :value="tg">{{ tg }}</option>
     </select>
   </div>
+  <SerbianKeys class="mb-3" />
 
   <div class="mb-3 flex items-center gap-3 text-sm text-[var(--muted)]">
     <span>{{ rows.length }} слов</span>

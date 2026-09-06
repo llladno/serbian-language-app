@@ -2,6 +2,7 @@
 import { ref } from 'vue'
 import { api } from '../../api'
 import type { LessonAttempt } from '../../types'
+import SerbianKeys from '../SerbianKeys.vue'
 
 const props = defineProps<{
   lesson: string
@@ -57,6 +58,7 @@ function retry() {
         class="field w-full serbian"
         placeholder="твой вариант…"
       />
+      <SerbianKeys v-if="!done" class="mt-1.5" />
 
       <div v-if="sample === null" class="mt-2">
         <button class="btn btn-primary" @click="reveal">Показать образец</button>

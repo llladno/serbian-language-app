@@ -2,6 +2,7 @@
 import { ref } from 'vue'
 import { api } from '../../api'
 import type { CheckResult, LessonAttempt } from '../../types'
+import SerbianKeys from '../SerbianKeys.vue'
 
 const props = defineProps<{
   lesson: string
@@ -51,18 +52,21 @@ function retry() {
       <button class="mt-1.5 font-medium text-[var(--accent)]" @click="retry">Переделать</button>
     </div>
 
-    <form v-else-if="!result" class="flex gap-2" @submit.prevent="submit">
-      <input
-        v-model="answer"
-        type="text"
-        autocomplete="off"
-        autocapitalize="off"
-        autocorrect="off"
-        spellcheck="false"
-        class="field flex-1"
-        placeholder="ответ…"
-      />
-      <button type="submit" :disabled="pending" class="btn btn-primary disabled:opacity-50">Проверить</button>
+    <form v-else-if="!result" @submit.prevent="submit">
+      <div class="flex gap-2">
+        <input
+          v-model="answer"
+          type="text"
+          autocomplete="off"
+          autocapitalize="off"
+          autocorrect="off"
+          spellcheck="false"
+          class="field flex-1"
+          placeholder="ответ…"
+        />
+        <button type="submit" :disabled="pending" class="btn btn-primary disabled:opacity-50">Проверить</button>
+      </div>
+      <SerbianKeys class="mt-1.5" />
     </form>
 
     <div v-else class="pop">
