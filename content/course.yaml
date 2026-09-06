@@ -1,0 +1,106 @@
+title: "Српски језик"
+
+phases:
+  - id: A
+    title: "Фаза A — Выживание"
+    lessons: ["01", "02", "03", "04", "05", "06", "07", "08", "09"]
+  - id: B
+    title: "Фаза B — Грамматика в деле"
+    lessons: ["10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20"]
+  - id: C
+    title: "Фаза C — Жизнь и работа"
+    lessons: ["21", "22", "23", "24", "25", "26", "27", "28", "29", "30"]
+
+lessons:
+  "01":
+    title: "Pozdravi i upoznavanje"
+    subtitle: "приветствия, вежливость, «как дела», представление, глагол jesam/sam, ты/вы"
+    file: "lessons/01-pozdravi-i-upoznavanje.md"
+  "02":
+    title: "Zamenice i prezent"
+    subtitle: "личные местоимения, настоящее время (типы -am / -im / -em), порядок клитик"
+    file: "lessons/02-zamenice-i-prezent.md"
+  "03":
+    title: "Pitanja"
+    subtitle: "вопросы: ko, šta, gde, kad, kako, zašto, koliko, čiji; да/нет-вопросы, li"
+  "04":
+    title: "Brojevi i novac"
+    subtitle: "числа 0–1000, динары и паре, «koliko košta», «koliko imam godina», телефон"
+  "05":
+    title: "U prodavnici"
+    subtitle: "магазин, продукты, «Izvolite», «Dajte mi…», количество, kesa, račun, sitno"
+  "06":
+    title: "U kafiću / restoranu"
+    subtitle: "заказ, «da popijem», «molim vas», счёт, чаевые, «ponesi/za sobom»"
+  "07":
+    title: "Snalaženje u gradu"
+    subtitle: "направления (levo, desno, pravo), «Kako da dođem do…», транспорт, GSP Нови-Сад"
+  "08":
+    title: "Vreme i termini"
+    subtitle: "часы, дни, «u koliko sati», «zakazati», «sutra / prekosutra / juče»"
+  "09":
+    title: "Ponavljanje A + mini-test"
+    subtitle: "повторение, ролёвки: магазин / кафе / улица"
+  "10":
+    title: "Rod i množina"
+    subtitle: "род существительных, множественное число, беглое «a»"
+  "11":
+    title: "Akuzativ"
+    subtitle: "прямое дополнение, «gledam film», куда (u/na + akuzativ), одушевлённость"
+  "12":
+    title: "Genitiv"
+    subtitle: "«nema», количество, «od / do / iz / kod / bez», даты, притяжание"
+  "13":
+    title: "Lokativ"
+    subtitle: "где (u/na + lokativ), «o» (о чём), «po»"
+  "14":
+    title: "Dativ"
+    subtitle: "кому, «prema», безличное «hladno mi je», «treba mi»"
+  "15":
+    title: "Instrumental"
+    subtitle: "чем, с кем (s/sa), транспорт («idem autobusom»)"
+  "16":
+    title: "Vokativ"
+    subtitle: "обращение (Marko → Marko, gospođa → gospođo)"
+  "17":
+    title: "Perfekat"
+    subtitle: "прошедшее: -o/-la/-lo + sam; порядок слов, отрицание"
+  "18":
+    title: "Futur"
+    subtitle: "ću/ćeš + инфинитив, futur II, «čim / kad» + будущее"
+  "19":
+    title: "Modalni + da-konstrukcija"
+    subtitle: "moći, hteti, morati, smeti, trebati; «da» вместо инфинитива"
+  "20":
+    title: "Vid + prefiksi"
+    subtitle: "совершенный/несовершенный, приставки (na-, po-, pro-, za-, u-, iz-)"
+  "21":
+    title: "Telefon i mejlovi"
+    subtitle: "звонок, «javiću se», голосовые, деловая переписка, формулы вежливости"
+  "22":
+    title: "Na poslu"
+    subtitle: "рабочее место, задачи, «rok», «sastanak», «dogovor», «kolega»"
+  "23":
+    title: "Sastanak"
+    subtitle: "обсуждение, согласие/несогласие, предложения, «slažem se», «da rezimiramo»"
+  "24":
+    title: "Kod lekara i u apoteci"
+    subtitle: "тело, симптомы, «boli me», рецепт, «uput», дом здравља"
+  "25":
+    title: "Banka i papirologija"
+    subtitle: "счёт, карта, «boravak», МУП, «prijava adrese», ЈМБГ/ЛБО"
+  "26":
+    title: "Stan i računi"
+    subtitle: "аренда, «infostan», «EPS», «komunalije», мастер, «kvar»"
+  "27":
+    title: "Small talk"
+    subtitle: "погода, спорт, «kako ide», выходные, приглашения, «da se nađemo»"
+  "28":
+    title: "Novosadski i lokalno"
+    subtitle: "войводинские словечки, «ba», «salaš», кофейная культура, Штранд"
+  "29":
+    title: "Pisana komunikacija"
+    subtitle: "сообщения, объявления, договор аренды, заявление (molba)"
+  "30":
+    title: "Veliko ponavljanje"
+    subtitle: "итоговые ролёвки, разбор слабых мест, план дальше"

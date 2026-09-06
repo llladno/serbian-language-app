@@ -1,0 +1,32 @@
+package content
+
+import "testing"
+
+// TestRealContentLoads guards the migrated content/ tree at the repo root.
+func TestRealContentLoads(t *testing.T) {
+	c, err := Load("../../../content")
+	if err != nil {
+		t.Fatalf("real content: %v", err)
+	}
+	if len(c.Vocab) < 60 {
+		t.Errorf("vocab = %d, want >= 60", len(c.Vocab))
+	}
+	if len(c.FalseFriends) < 50 {
+		t.Errorf("false friends = %d, want >= 50", len(c.FalseFriends))
+	}
+	if len(c.Exercises["01"]) < 4 {
+		t.Errorf("lesson 01 blocks = %d, want >= 4", len(c.Exercises["01"]))
+	}
+	if len(c.Exercises["02"]) < 5 {
+		t.Errorf("lesson 02 blocks = %d, want >= 5", len(c.Exercises["02"]))
+	}
+	if !c.Lessons["03"].Planned {
+		t.Error("lesson 03 should be planned")
+	}
+	if c.Lessons["01"].Planned {
+		t.Error("lesson 01 should have content")
+	}
+	if len(c.Phases) != 3 {
+		t.Errorf("phases = %d, want 3", len(c.Phases))
+	}
+}

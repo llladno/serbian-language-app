@@ -1,0 +1,207 @@
+lesson: "02"
+blocks:
+  - id: "A"
+    title: "Построй настоящее время (все 6 форм)"
+    instruction: "Заполни формы: ja / ti / on-ona-ono / mi / vi / oni-one-ona."
+    exercises:
+      - id: "02-A-1"
+        type: conjugate
+        prompt: "govoriti — говорить"
+        forms: ["ja", "ti", "on/ona/ono", "mi", "vi", "oni/one/ona"]
+        accept:
+          - ["govorim"]
+          - ["govoriš"]
+          - ["govori"]
+          - ["govorimo"]
+          - ["govorite"]
+          - ["govore"]
+        meta: "тип I"
+      - id: "02-A-2"
+        type: conjugate
+        prompt: "ići — идти / ехать"
+        forms: ["ja", "ti", "on/ona/ono", "mi", "vi", "oni/one/ona"]
+        accept:
+          - ["idem"]
+          - ["ideš"]
+          - ["ide"]
+          - ["idemo"]
+          - ["idete"]
+          - ["idu"]
+        meta: "тип E"
+      - id: "02-A-3"
+        type: conjugate
+        prompt: "imati — иметь"
+        forms: ["ja", "ti", "on/ona/ono", "mi", "vi", "oni/one/ona"]
+        accept:
+          - ["imam"]
+          - ["imaš"]
+          - ["ima"]
+          - ["imamo"]
+          - ["imate"]
+          - ["imaju"]
+        meta: "тип A"
+      - id: "02-A-4"
+        type: conjugate
+        prompt: "razumeti — понимать"
+        forms: ["ja", "ti", "on/ona/ono", "mi", "vi", "oni/one/ona"]
+        accept:
+          - ["razumem"]
+          - ["razumeš"]
+          - ["razume"]
+          - ["razumemo"]
+          - ["razumete"]
+          - ["razumeju"]
+        meta: "тип E"
+
+  - id: "B"
+    title: "Переведи на сербский"
+    instruction: "Латиницей. Регистр и финальная пунктуация не важны."
+    exercises:
+      - id: "02-B-1"
+        type: translate
+        prompt: "Я живу в Нови-Саде и работаю здесь."
+        accept:
+          - "Živim u Novom Sadu i radim ovde."
+          - "Ja živim u Novom Sadu i radim ovde."
+      - id: "02-B-2"
+        type: translate
+        prompt: "Ты говоришь по-русски? (через «da li»)"
+        accept:
+          - "Da li govoriš ruski?"
+          - "Da li govoriš ruski."
+      - id: "02-B-3"
+        type: translate
+        prompt: "Она не понимает по-сербски."
+        accept:
+          - "Ona ne razume srpski."
+          - "Ne razume srpski."
+      - id: "02-B-4"
+        type: translate
+        prompt: "Мы учим сербский."
+        accept:
+          - "Učimo srpski."
+          - "Mi učimo srpski."
+      - id: "02-B-5"
+        type: translate
+        prompt: "Я не хочу кофе, спасибо."
+        accept:
+          - "Neću kafu, hvala."
+          - "Ja neću kafu, hvala."
+        explain: "«ne + hoću» сливается в «neću»."
+      - id: "02-B-6"
+        type: translate
+        prompt: "У меня нет времени."
+        accept:
+          - "Nemam vremena."
+        explain: "После отрицания «vreme» уходит в родительный: «vremena»."
+      - id: "02-B-7"
+        type: translate
+        prompt: "Что ты делаешь завтра?"
+        accept:
+          - "Šta radiš sutra?"
+          - "Sta radiš sutra?"
+      - id: "02-B-8"
+        type: translate
+        prompt: "Где вы живёте? (вежл.)"
+        accept:
+          - "Gde živite?"
+      - id: "02-B-9"
+        type: translate
+        prompt: "Почему ты не идёшь домой?"
+        accept:
+          - "Zašto ne ideš kući?"
+          - "Zasto ne ideš kući?"
+      - id: "02-B-10"
+        type: translate
+        prompt: "Сколько это стоит?"
+        accept:
+          - "Koliko ovo košta?"
+          - "Koliko košta ovo?"
+
+  - id: "C"
+    title: "Поставь глагол в нужную форму"
+    instruction: "В ответе — только форма глагола."
+    exercises:
+      - id: "02-C-1"
+        type: fill_blank
+        prompt: "Milan (raditi) ___ u Beogradu."
+        accept: ["radi"]
+      - id: "02-C-2"
+        type: fill_blank
+        prompt: "Mi (učiti) ___ srpski."
+        accept: ["učimo", "ucimo"]
+      - id: "02-C-3"
+        type: fill_blank
+        prompt: "Da li vi (govoriti) ___ engleski?"
+        accept: ["govorite"]
+      - id: "02-C-4"
+        type: fill_blank
+        prompt: "Ja (ne + hteti) ___ ništa."
+        accept: ["neću", "necu"]
+      - id: "02-C-5"
+        type: fill_blank
+        prompt: "Oni (ići) ___ kući."
+        accept: ["idu"]
+      - id: "02-C-6"
+        type: fill_blank
+        prompt: "Ja (ne + imati) ___ sitno."
+        accept: ["nemam"]
+      - id: "02-C-7a"
+        type: fill_blank
+        prompt: "Ona (razumeti) ___ ruski…"
+        accept: ["razume"]
+      - id: "02-C-7b"
+        type: fill_blank
+        prompt: "…ali (ne + govoriti) ___. (она)"
+        accept: ["ne govori"]
+      - id: "02-C-8"
+        type: fill_blank
+        prompt: "Koliko (koštati) ___ ovo?"
+        accept: ["košta", "kosta"]
+
+  - id: "D"
+    title: "Сделай из утверждения вопрос — двумя способами"
+    instruction: "Через «Da li …» и через «… li …». Потом сверься с образцом."
+    exercises:
+      - id: "02-D-1"
+        type: free
+        prompt: "Ti radiš sutra."
+        sample: "Da li radiš sutra?  /  Radiš li sutra?"
+      - id: "02-D-2"
+        type: free
+        prompt: "Vi imate kesu."
+        sample: "Da li imate kesu?  /  Imate li kesu?"
+      - id: "02-D-3"
+        type: free
+        prompt: "On govori engleski."
+        sample: "Da li on govori engleski?  /  Govori li on engleski?"
+
+  - id: "E"
+    title: "Исправь ошибки"
+    instruction: "Запиши правильный вариант целиком."
+    exercises:
+      - id: "02-E-1"
+        type: fix_error
+        prompt: "On zove se Marko."
+        accept: ["On se zove Marko."]
+        explain: "«se» — на второе место: «On se zove…»."
+      - id: "02-E-2"
+        type: fix_error
+        prompt: "Ja ne hoću kafu."
+        accept: ["Ja neću kafu.", "Neću kafu."]
+        explain: "«ne + hoću» → слитно «neću»."
+      - id: "02-E-3"
+        type: fix_error
+        prompt: "Odakle ti si?"
+        accept: ["Odakle si?", "Odakle si ti?"]
+        explain: "Безударное «si» — сразу после вопросительного слова."
+      - id: "02-E-4"
+        type: fix_error
+        prompt: "Mi radimo ne danas."
+        accept: ["Mi ne radimo danas.", "Ne radimo danas."]
+        explain: "«ne» стоит перед глаголом."
+      - id: "02-E-5"
+        type: fix_error
+        prompt: "Milan živiš u Novom Sadu."
+        accept: ["Milan živi u Novom Sadu."]
+        explain: "Milan = on → форма на «-i»: «živi»."
