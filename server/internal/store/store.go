@@ -1,14 +1,21 @@
 // Package store persists mutable app state (SRS schedule, exercise
-// attempts, lesson progress) in SQLite, scoped per account name.
+// attempts, lesson progress), scoped per account name.
+//
+// Two backends are supported behind one code path: PostgreSQL (production,
+// selected by a "postgres://" / "postgresql://" DSN) and SQLite (local dev
+// and tests, any other DSN incl. ":memory:"). Query strings are written with
+// "?" placeholders and rebound to "$N" for Postgres; see rebind.
 package store
 
 import (
 	"database/sql"
 	"fmt"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 
+	_ "github.com/jackc/pgx/v5/stdlib" // "pgx" driver
 	_ "modernc.org/sqlite"
 
 	"github.com/grisha/serbian-app/server/internal/srs"
@@ -20,15 +27,104 @@ const (
 	legacyOwner = "Гриша" // v1 rows (no account) are migrated to this account
 )
 
-// Store owns the SQLite connection and the account list.
+// Store owns the database connection and the account list.
 type Store struct {
-	db *sql.DB
+	db *database
 }
 
 // UserStore is a per-account view over the state tables.
 type UserStore struct {
-	db   *sql.DB
+	db   *database
 	user string
+}
+
+// IsPostgresDSN reports whether dsn selects the Postgres backend.
+func IsPostgresDSN(dsn string) bool {
+	return strings.HasPrefix(dsn, "postgres://") || strings.HasPrefix(dsn, "postgresql://")
+}
+
+// database wraps *sql.DB, rebinding "?" placeholders to "$N" on Postgres so
+// the rest of the package can use one placeholder style.
+type database struct {
+	sqlDB *sql.DB
+	pg    bool
+}
+
+func (d *database) Exec(q string, a ...any) (sql.Result, error) {
+	return d.sqlDB.Exec(rebind(q, d.pg), a...)
+}
+func (d *database) Query(q string, a ...any) (*sql.Rows, error) {
+	return d.sqlDB.Query(rebind(q, d.pg), a...)
+}
+func (d *database) QueryRow(q string, a ...any) *sql.Row {
+	return d.sqlDB.QueryRow(rebind(q, d.pg), a...)
+}
+func (d *database) Begin() (*dbtx, error) {
+	tx, err := d.sqlDB.Begin()
+	if err != nil {
+		return nil, err
+	}
+	return &dbtx{tx: tx, pg: d.pg}, nil
+}
+func (d *database) Close() error { return d.sqlDB.Close() }
+
+// dbtx is the transaction-scoped counterpart of database.
+type dbtx struct {
+	tx *sql.Tx
+	pg bool
+}
+
+func (t *dbtx) Exec(q string, a ...any) (sql.Result, error) {
+	return t.tx.Exec(rebind(q, t.pg), a...)
+}
+func (t *dbtx) Query(q string, a ...any) (*sql.Rows, error) {
+	return t.tx.Query(rebind(q, t.pg), a...)
+}
+func (t *dbtx) QueryRow(q string, a ...any) *sql.Row {
+	return t.tx.QueryRow(rebind(q, t.pg), a...)
+}
+func (t *dbtx) Prepare(q string) (*sql.Stmt, error) { return t.tx.Prepare(rebind(q, t.pg)) }
+func (t *dbtx) Commit() error                       { return t.tx.Commit() }
+func (t *dbtx) Rollback() error                     { return t.tx.Rollback() }
+
+// rebind converts "?" placeholders to "$1, $2, …" for Postgres. It skips
+// question marks inside single-quoted string literals. No-op for SQLite.
+func rebind(q string, pg bool) string {
+	if !pg || !strings.ContainsRune(q, '?') {
+		return q
+	}
+	var b strings.Builder
+	b.Grow(len(q) + 8)
+	n, inQuote := 0, false
+	for i := 0; i < len(q); i++ {
+		c := q[i]
+		switch {
+		case c == '\'':
+			inQuote = !inQuote
+			b.WriteByte(c)
+		case c == '?' && !inQuote:
+			n++
+			b.WriteByte('$')
+			b.WriteString(strconv.Itoa(n))
+		default:
+			b.WriteByte(c)
+		}
+	}
+	return b.String()
+}
+
+// execScript runs a multi-statement SQL string one statement at a time
+// (the Postgres wire protocol rejects multiple commands per Exec).
+func (d *database) execScript(script string) error {
+	for _, stmt := range strings.Split(script, ";") {
+		if strings.TrimSpace(stmt) == "" {
+			continue
+		}
+		if _, err := d.sqlDB.Exec(stmt); err != nil {
+			return fmt.Errorf("%s: %w", firstLine(stmt), err)
+		}
+	}
+	return nil
 }
 
 // CardSeed identifies a card that should exist for a given content item.
@@ -69,18 +165,29 @@ type DayActivity struct {
 	Count int
 }
 
-// Open opens (creating if needed) the database at path and applies the schema.
-// path may be ":memory:".
-func Open(path string) (*Store, error) {
-	db, err := sql.Open("sqlite", path)
+// Open connects to the database named by dsn and applies the schema.
+// A "postgres://" / "postgresql://" dsn uses PostgreSQL; anything else is
+// treated as a SQLite path (":memory:" included).
+func Open(dsn string) (*Store, error) {
+	pg := IsPostgresDSN(dsn)
+	driver := "sqlite"
+	if pg {
+		driver = "pgx"
+	}
+	sqlDB, err := sql.Open(driver, dsn)
 	if err != nil {
 		return nil, err
 	}
-	db.SetMaxOpenConns(1) // modernc sqlite + WAL: keep it simple, single writer
-	if _, err := db.Exec(`PRAGMA journal_mode=WAL; PRAGMA busy_timeout=5000;`); err != nil {
-		return nil, err
+	if pg {
+		sqlDB.SetMaxOpenConns(10)
+		sqlDB.SetConnMaxIdleTime(5 * time.Minute)
+	} else {
+		sqlDB.SetMaxOpenConns(1) // modernc sqlite + WAL: single writer
+		if _, err := sqlDB.Exec(`PRAGMA journal_mode=WAL; PRAGMA busy_timeout=5000;`); err != nil {
+			return nil, err
+		}
 	}
-	s := &Store{db: db}
+	s := &Store{db: &database{sqlDB: sqlDB, pg: pg}}
 	if err := s.applySchema(); err != nil {
 		return nil, err
 	}
@@ -89,7 +196,14 @@ func Open(path string) (*Store, error) {
 
 func (s *Store) Close() error { return s.db.Close() }
 
-const schemaSQL = `
+// schemaSQL returns the CREATE statements for the given backend. The only
+// dialect difference is the autoincrement id column.
+func schemaSQL(pg bool) string {
+	id := "INTEGER PRIMARY KEY AUTOINCREMENT"
+	if pg {
+		id = "BIGINT GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY"
+	}
+	return `
 CREATE TABLE IF NOT EXISTS users (
 	name       TEXT PRIMARY KEY,
 	created_at TEXT NOT NULL
@@ -109,14 +223,14 @@ CREATE TABLE IF NOT EXISTS srs_cards (
 	PRIMARY KEY (user_name, card_id)
 );
 CREATE TABLE IF NOT EXISTS reviews (
-	id          INTEGER PRIMARY KEY AUTOINCREMENT,
+	id          ` + id + `,
 	user_name   TEXT NOT NULL,
 	card_id     TEXT NOT NULL,
 	grade       INTEGER NOT NULL,
 	reviewed_at TEXT NOT NULL
 );
 CREATE TABLE IF NOT EXISTS attempts (
-	id           INTEGER PRIMARY KEY AUTOINCREMENT,
+	id           ` + id + `,
 	user_name    TEXT NOT NULL,
 	exercise_id  TEXT NOT NULL,
 	lesson       TEXT NOT NULL,
@@ -136,17 +250,23 @@ CREATE TABLE IF NOT EXISTS lesson_progress (
 CREATE INDEX IF NOT EXISTS reviews_user ON reviews(user_name);
 CREATE INDEX IF NOT EXISTS attempts_user ON attempts(user_name);
 `
+}
 
 func (s *Store) applySchema() error {
+	if s.db.pg {
+		// Fresh or existing Postgres: the CREATE ... IF NOT EXISTS script is
+		// idempotent. No v1 legacy path — that only ever existed on SQLite.
+		return s.db.execScript(schemaSQL(true))
+	}
+
 	var ver int
 	_ = s.db.QueryRow(`PRAGMA user_version`).Scan(&ver)
-
 	if ver == 1 {
 		if err := s.migrateV1toV2(); err != nil {
 			return fmt.Errorf("migrate v1->v2: %w", err)
 		}
 	}
-	if _, err := s.db.Exec(schemaSQL); err != nil {
+	if _, err := s.db.Exec(schemaSQL(false)); err != nil {
 		return err
 	}
 	if _, err := s.db.Exec(fmt.Sprintf(`PRAGMA user_version = %d`, schemaVer)); err != nil {
@@ -168,7 +288,7 @@ func (s *Store) migrateV1toV2() error {
 		`ALTER TABLE reviews RENAME TO reviews_v1`,
 		`ALTER TABLE attempts RENAME TO attempts_v1`,
 		`ALTER TABLE lesson_progress RENAME TO lesson_progress_v1`,
-		schemaSQL,
+		schemaSQL(false),
 		`INSERT INTO users (name, created_at) VALUES ('` + legacyOwner + `', '` +
 			time.Now().UTC().Format(time.RFC3339) + `')`,
 		`INSERT INTO srs_cards (user_name, card_id, kind, ref_id, ease, interval_days, reps, lapses, state, due, updated_at)
@@ -217,7 +337,8 @@ func (s *Store) EnsureUser(name string) (string, error) {
 	if len([]rune(n)) > 40 {
 		return "", fmt.Errorf("name too long")
 	}
-	_, err := s.db.Exec(`INSERT OR IGNORE INTO users (name, created_at) VALUES (?, ?)`,
+	_, err := s.db.Exec(
+		`INSERT INTO users (name, created_at) VALUES (?, ?) ON CONFLICT (name) DO NOTHING`,
 		n, time.Now().UTC().Format(time.RFC3339))
 	return n, err
 }
@@ -327,7 +448,7 @@ func (s *Store) AllUsersProgress(today time.Time) ([]UserProgress, error) {
 	return out, nil
 }
 
-func scanCount(db *sql.DB, q string, into map[string]int) {
+func scanCount(db *database, q string, into map[string]int) {
 	rows, err := db.Query(q)
 	if err != nil {
 		return
@@ -351,7 +472,8 @@ func (u *UserStore) EnsureCards(seeds []CardSeed) error {
 		return err
 	}
 	defer tx.Rollback()
-	stmt, err := tx.Prepare(`INSERT OR IGNORE INTO srs_cards (user_name, card_id, kind, ref_id, updated_at) VALUES (?, ?, ?, ?, ?)`)
+	stmt, err := tx.Prepare(`INSERT INTO srs_cards (user_name, card_id, kind, ref_id, updated_at)
+		VALUES (?, ?, ?, ?, ?) ON CONFLICT (user_name, card_id) DO NOTHING`)
 	if err != nil {
 		return err
 	}
@@ -503,8 +625,8 @@ func (u *UserStore) WeakExercises(limit int) ([]WeakExercise, error) {
 SELECT exercise_id, lesson, SUM(1 - correct) AS wrong, COUNT(*) AS total
 FROM attempts
 WHERE user_name = ?
-GROUP BY exercise_id
-HAVING total >= 2 AND wrong * 2 >= total
+GROUP BY exercise_id, lesson
+HAVING COUNT(*) >= 2 AND SUM(1 - correct) * 2 >= COUNT(*)
 ORDER BY wrong DESC, total DESC
 LIMIT ?`, u.user, limit)
 	if err != nil {

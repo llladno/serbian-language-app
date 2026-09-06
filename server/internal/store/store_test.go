@@ -1,6 +1,7 @@
 package store
 
 import (
+	"os"
 	"testing"
 	"time"
 
@@ -9,13 +10,38 @@ import (
 
 var day0 = time.Date(2026, 9, 6, 10, 0, 0, 0, time.UTC)
 
-func newUser(t *testing.T) (*Store, *UserStore) {
+// testDSN picks the backend under test. Set TEST_DATABASE_URL to a
+// "postgres://" URL to run the suite against a real Postgres (the schema
+// is truncated between tests); otherwise an in-memory SQLite db is used.
+func testDSN() string {
+	if dsn := os.Getenv("TEST_DATABASE_URL"); IsPostgresDSN(dsn) {
+		return dsn
+	}
+	return ":memory:"
+}
+
+func newStore(t *testing.T) *Store {
 	t.Helper()
-	s, err := Open(":memory:")
+	dsn := testDSN()
+	s, err := Open(dsn)
 	if err != nil {
 		t.Fatalf("open: %v", err)
 	}
-	t.Cleanup(func() { s.Close() })
+	if IsPostgresDSN(dsn) {
+		truncate := func() {
+			s.db.Exec(`TRUNCATE users, srs_cards, reviews, attempts, lesson_progress`)
+		}
+		truncate()
+		t.Cleanup(func() { truncate(); s.Close() })
+	} else {
+		t.Cleanup(func() { s.Close() })
+	}
+	return s
+}
+
+func newUser(t *testing.T) (*Store, *UserStore) {
+	t.Helper()
+	s := newStore(t)
 	if _, err := s.EnsureUser("Гриша"); err != nil {
 		t.Fatal(err)
 	}
@@ -225,6 +251,9 @@ func TestStreakDays(t *testing.T) {
 }
 
 func TestMigrationV1toV2(t *testing.T) {
+	if IsPostgresDSN(testDSN()) {
+		t.Skip("v1->v2 migration is a SQLite-only legacy path")
+	}
 	dir := t.TempDir() + "/v1.db"
 	db, err := openRawV1(dir)
 	if err != nil {
@@ -259,5 +288,53 @@ func TestMigrationV1toV2(t *testing.T) {
 	}
 	if n, _ := u.ReviewedToday(time.Date(2026, 9, 6, 0, 0, 0, 0, time.UTC)); n != 1 {
 		t.Errorf("migrated reviews = %d, want 1", n)
+	}
+}
+
+func TestImportSQLite(t *testing.T) {
+	if !IsPostgresDSN(testDSN()) {
+		t.Skip("import target is Postgres; set TEST_DATABASE_URL")
+	}
+	// build a small SQLite source
+	srcPath := t.TempDir() + "/src.db"
+	src, err := Open(srcPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	src.EnsureUser("Гриша")
+	src.EnsureUser("Оля")
+	u := src.User("Гриша")
+	u.EnsureCards([]CardSeed{{"vocab:x", "vocab", "x"}, {"vocab:y", "vocab", "y"}})
+	u.GradeCard("vocab:x", srs.Good, day0)
+	u.AddAttempt(Attempt{"01-A-1", "01", "A", "z", true}, day0)
+	u.SetLessonStatus("01", "done", day0)
+	src.Close()
+
+	dst := newStore(t) // truncated Postgres
+	n, err := ImportSQLite(dst, srcPath)
+	if err != nil {
+		t.Fatalf("import: %v", err)
+	}
+	if n < 6 {
+		t.Errorf("imported %d rows, want >= 6", n)
+	}
+	names, _ := dst.ListUsers()
+	if len(names) != 2 {
+		t.Fatalf("users after import = %v", names)
+	}
+	du := dst.User("Гриша")
+	total, _, _ := du.CardStats()
+	if total != 2 {
+		t.Errorf("cards = %d, want 2", total)
+	}
+	if m, _ := du.LessonStatuses(); m["01"] != "done" {
+		t.Errorf("lesson status = %v", m)
+	}
+	if got, err := du.ReviewedToday(day0); err != nil || got != 1 {
+		t.Errorf("reviewed today = %d (%v), want 1", got, err)
+	}
+	// second run is a no-op
+	if n2, err := ImportSQLite(dst, srcPath); err != nil || n2 != 0 {
+		t.Errorf("second import = %d (%v), want 0", n2, err)
 	}
 }

@@ -1,124 +1,108 @@
-# Деплой на Dokploy — один контейнер
+# Деплой на Dokploy
 
-Приложение собирается в **один Docker-образ**: Go-бинарь + вшитый фронт (`go:embed`),
-слушает порт `8080`, отдаёт и API, и SPA. Отдельная БД не нужна — состояние в
-SQLite-файле на персистентном volume.
+Приложение — **один Docker-образ**: Go-бинарь + вшитый фронт (`go:embed`),
+слушает `8080`, отдаёт и API, и SPA. Состояние (аккаунты, SRS, попытки,
+прогресс) — в **отдельной базе PostgreSQL** (сервис в том же проекте Dokploy),
+поэтому редеплой приложения данные не трогает.
 
-- Образ: multi-stage `Dockerfile` в корне репозитория (~48 МБ).
-- Данные: `/app/data/app.db` — держать на volume `srpski-data`.
+- Образ: multi-stage `Dockerfile` в корне.
+- БД: PostgreSQL, подключается через переменную `DATABASE_URL`.
 - Порт: `8080` (HTTP). TLS вешает Traefik/Dokploy.
-- Реплик: **строго 1** (SQLite — один писатель).
+- Реплик приложения: можно >1 (писатель теперь Postgres).
+
+> SQLite всё ещё поддерживается для локальной разработки и как фолбэк: если
+> `DATABASE_URL` не задан, используется файл из `-db` (по умолчанию
+> `/app/data/app.db`). Для прода — только Postgres.
 
 ---
 
-## 0. Запушить репозиторий
+## 1. Приложение в Dokploy
 
-Сейчас репо локальное, без remote. Dokploy тянет код из Git — залей на
-GitHub / GitLab / Gitea:
+1. **Projects → Create Project** → `srpski`.
+2. **Create Service → Application**.
+3. **Provider:** GitHub (или Git по SSH-URL + deploy key). Repo:
+   `llladno/serbian-language-app`, branch `main`.
+4. **Build Type: `Dockerfile`**, path `Dockerfile`, context `.`.
 
-```bash
-cd /Users/grisha/plans/serbian-app
-git remote add origin git@github.com:<user>/serbian-app.git
-git push -u origin build-app        # или master, если ветка уже влита
-```
+## 2. База — сервис PostgreSQL
 
-(Либо в Dokploy выбрать провайдер **Git**, вставить SSH-URL и добавить
-показанный deploy key в настройки репозитория.)
-
----
-
-## 1. Создать приложение в Dokploy
-
-1. **Projects → Create Project** → имя `srpski`.
-2. Внутри проекта → **Create Service → Application**.
-3. **Provider:**
-   - GitHub (подключить аккаунт) или **Git** (SSH-URL + deploy key).
-   - Repository: `serbian-app`. Branch: `build-app` (или `master`).
-4. **Build Type: `Dockerfile`**. Dockerfile Path: `Dockerfile`. Build Context: `.`
-
-## 2. Volume под базу
-
-**Advanced → Volumes → Add Mount:**
+В том же проекте: **Create Service → Database → PostgreSQL**.
 
 | поле | значение |
 |---|---|
-| Mount Type | **Volume Mount** |
-| Volume Name | `srpski-data` |
-| Mount Path (в контейнере) | `/app/data` |
+| Name | `srpski-db` |
+| Postgres user / db | `srpski` / `srpski` (или как удобно) |
+| Version | 16+ |
 
-Без этого SQLite-файл пропадёт при каждом редеплое.
+Dokploy сам заводит volume под данные Postgres и держит их отдельно от
+приложения. Скопируй **внутренний** connection string (вида
+`postgres://srpski:<pass>@srpski-db:5432/srpski`).
 
-## 3. Домен
+## 3. Переменные окружения приложения
 
-**Domains → Add Domain:**
-
-| поле | значение |
-|---|---|
-| Host | `srpski.твойдомен.рф` (или сгенерённый `*.traefik.me`) |
-| Container Port | `8080` |
-| HTTPS | on (Let's Encrypt) |
-| Redirect HTTP → HTTPS | on |
-
-## 4. (опционально) Health check
-
-В образе уже есть `HEALTHCHECK` на `/api/health`. Дополнительно в Dokploy
-**Advanced → Health Check**: Path `/api/health`, Port `8080`.
-
-## 5. Переменные окружения
-
-Не требуются. `TZ=Europe/Belgrade` уже зашит в образ (для корректных «сегодня»
-в SRS/серии). Флаги можно переопределить в **Advanced → Command**:
+**Application → Environment:**
 
 ```
--addr :8080 -content /app/content -db /app/data/app.db
+DATABASE_URL=postgres://srpski:<pass>@srpski-db:5432/srpski?sslmode=disable
 ```
 
-## 6. Deploy
+`sslmode=disable` — трафик внутри Docker-сети Dokploy. `TZ=Europe/Belgrade`
+уже зашит в образ. Больше ничего не нужно.
 
-Нажать **Deploy**. Первая сборка ~2–3 мин (npm ci + go build). Смотреть
-**Deployments → Logs**. Успех — в логах `listening on :8080`, health зелёный.
+> Схема создаётся сама при старте (`CREATE TABLE IF NOT EXISTS`). Миграций
+> руками нет.
 
-Открыть домен → экран «Кто занимается?» → ввести имя. Готово.
+## 4. Домен
+
+**Domains → Add Domain:** Host `serbianapp.pockets-money.ru`,
+Container Port `8080`, HTTPS on, Redirect HTTP→HTTPS on.
+
+## 5. Deploy
+
+**Deploy**. Первая сборка ~2–3 мин. Успех — в логах `listening on :8080`,
+health (`/api/health`) зелёный. Открыть домен → «Кто занимается?» → имя.
 
 ---
 
 ## Обновления
 
-- **Auto Deploy:** в настройках приложения включить webhook — тогда
-  `git push` в ветку сам триггерит редеплой.
-- Новые уроки/слова едут внутри образа (лежат в `content/` репозитория) —
-  просто коммит + push.
-- Volume `srpski-data` при редеплое сохраняется, прогресс не теряется.
+- **Auto Deploy** включён: `git push` в `main` триггерит редеплой.
+- Новые уроки / слова / озвучка едут внутри образа (`content/`) — просто
+  коммит + push.
+- База — отдельный сервис, редеплой приложения её не касается.
+
+## Перенос данных со старой SQLite
+
+Если раньше крутилась SQLite-версия и нужно перенести прогресс:
+
+1. Достань файл со старого контейнера:
+   ```bash
+   docker cp "$(docker ps -qf name=srpski-app):/app/data/app.db" ./app.db
+   ```
+2. Положи его в новый контейнер приложения (`docker cp ./app.db <app>:/tmp/app.db`).
+3. Разово переопредели команду запуска (**Advanced → Command**), добавив
+   `-import-sqlite /tmp/app.db`, и сделай Redeploy. В логах будет
+   `imported N rows from /tmp/app.db`. Импорт срабатывает только если в
+   Postgres ещё нет аккаунтов — повторный запуск безвреден.
+4. Убери `-import-sqlite` из команды.
 
 ## Бэкапы БД
 
-- **Dokploy → приложение → Backups (Volume Backups):** расписание + S3-совместимое
-  хранилище.
-- Вручную на сервере:
-  ```bash
-  docker run --rm -v srpski-data:/d -v "$PWD":/out alpine \
-    cp /d/app.db /out/app-$(date +%F).db
-  ```
-
-## Миграция схемы
-
-При первом запуске на непустой старой базе (без аккаунтов) схема
-автоматически мигрирует v1→v2: все прежние карточки/попытки/прогресс
-переезжают под аккаунт **«Гриша»**. Ничего делать не нужно.
-
-## Почему не Postgres
-
-Приложение однопользовательское по нагрузке (несколько имён-аккаунтов, один
-писатель). SQLite на volume проще, быстрее и без отдельного сервиса.
-Postgres понадобится только при нескольких репликах бэкенда — это отдельная
-переделка `server/internal/store` (замена `modernc.org/sqlite` на `pgx`,
-переписывание SQLite-специфики: `INSERT OR IGNORE`, `substr`, `RANDOM()`,
-`PRAGMA`).
+**Dokploy → сервис `srpski-db` → Backups:** расписание + S3-совместимое
+хранилище. Ручной дамп:
+```bash
+docker exec "$(docker ps -qf name=srpski-db)" pg_dump -U srpski srpski > srpski-$(date +%F).sql
+```
 
 ## Локальная проверка образа
 
 ```bash
 docker build -t srpski .
-docker run --rm -p 8080:8080 -v srpski-data:/app/data srpski
+docker run --rm --network host -e DATABASE_URL='postgres://localhost/srpski?sslmode=disable' srpski
 # открыть http://localhost:8080
+```
+
+Или без Postgres — на SQLite:
+```bash
+docker run --rm -p 8080:8080 -v srpski-data:/app/data srpski
 ```
