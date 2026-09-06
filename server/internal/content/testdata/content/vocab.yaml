@@ -1,0 +1,14 @@
+- id: "zdravo"
+  latin: "zdravo"
+  cyrillic: "здраво"
+  ru: "привет / здравствуйте"
+  note: "нейтрально"
+  lesson: "01"
+  tags: ["greetings"]
+- id: "svet"
+  latin: "svet"
+  cyrillic: "свет"
+  ru: "мир / свет"
+  lesson: "01"
+  gender: "m"
+  tags: ["nouns"]

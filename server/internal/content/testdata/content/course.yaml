@@ -1,0 +1,13 @@
+title: "Српски језик"
+phases:
+  - id: A
+    title: "Фаза A — тест"
+    lessons: ["01", "02"]
+lessons:
+  "01":
+    title: "Pozdravi i upoznavanje"
+    subtitle: "приветствия"
+    file: "lessons/01.md"
+  "02":
+    title: "Zamenice i prezent"
+    subtitle: "местоимения и настоящее время"

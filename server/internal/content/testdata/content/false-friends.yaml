@@ -1,0 +1,6 @@
+- id: "pravo"
+  sr: "pravo"
+  means: "прямо / право (юр.)"
+  not: "направо"
+  correct: "desno"
+  group: "top"

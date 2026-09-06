@@ -1,0 +1,27 @@
+lesson: "01"
+blocks:
+  - id: "A"
+    title: "Переведи на сербский"
+    instruction: "Пиши латиницей."
+    exercises:
+      - id: "01-A-1"
+        type: translate
+        prompt: "Привет! Как дела?"
+        accept: ["Zdravo! Kako si?", "Ćao! Kako si?"]
+        explain: "«Ćao» — неформально, тоже ок."
+      - id: "01-A-2"
+        type: free
+        prompt: "Поздоровайся и попрощайся."
+        sample: "Dobro jutro! … Hvala, prijatno!"
+      - id: "01-A-3"
+        type: conjugate
+        prompt: "govoriti"
+        forms: ["ja", "ti", "on/ona/ono", "mi", "vi", "oni/one/ona"]
+        accept:
+          - ["govorim"]
+          - ["govoriš"]
+          - ["govori"]
+          - ["govorimo"]
+          - ["govorite"]
+          - ["govore"]
+        meta: "тип I"
