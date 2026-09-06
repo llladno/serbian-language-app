@@ -1,6 +1,7 @@
 data/
 web/dist/
 server/web/dist/
+!server/web/dist/.gitkeep
 node_modules/
 /serbian-app
 *.db
