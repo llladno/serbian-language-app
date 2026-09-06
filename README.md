@@ -26,6 +26,16 @@ make build
 Собранный фронт вшивается в бинарь через `go:embed` — один файл,
 никаких зависимостей.
 
+### Docker / деплой
+
+```bash
+docker build -t srpski .
+docker run --rm -p 8080:8080 -v srpski-data:/app/data srpski
+```
+
+Один контейнер: API + SPA на порту `8080`, SQLite на volume `/app/data`.
+Деплой на Dokploy — см. [docs/DEPLOY.md](docs/DEPLOY.md).
+
 ## Контент
 
 Источник правды — каталог `content/`:

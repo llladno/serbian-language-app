@@ -1,0 +1,10 @@
+.git
+.claude
+data/
+serbian-app
+node_modules
+web/node_modules
+web/dist
+server/web/dist
+docs/
+README.md
