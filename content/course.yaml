@@ -23,12 +23,15 @@ lessons:
   "03":
     title: "Pitanja"
     subtitle: "вопросы: ko, šta, gde, kad, kako, zašto, koliko, čiji; да/нет-вопросы, li"
+    file: "lessons/03-pitanja.md"
   "04":
     title: "Brojevi i novac"
     subtitle: "числа 0–1000, динары и паре, «koliko košta», «koliko imam godina», телефон"
+    file: "lessons/04-brojevi-i-novac.md"
   "05":
     title: "U prodavnici"
     subtitle: "магазин, продукты, «Izvolite», «Dajte mi…», количество, kesa, račun, sitno"
+    file: "lessons/05-u-prodavnici.md"
   "06":
     title: "U kafiću / restoranu"
     subtitle: "заказ, «da popijem», «molim vas», счёт, чаевые, «ponesi/za sobom»"

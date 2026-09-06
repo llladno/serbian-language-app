@@ -1,0 +1,186 @@
+lesson: "03"
+blocks:
+  - id: "A"
+    title: "Вставь вопросительное слово"
+    instruction: "ko / šta / gde / kuda / odakle / kada / kako / koliko / zašto / čiji / koji. В ответе — только слово."
+    exercises:
+      - id: "03-A-1"
+        type: fill_blank
+        prompt: "___ je to? — Ovo je Milan."
+        accept: ["ko"]
+      - id: "03-A-2"
+        type: fill_blank
+        prompt: "___ radiš? — Programiram."
+        accept: ["šta", "sta"]
+      - id: "03-A-3"
+        type: fill_blank
+        prompt: "___ živiš? — U Novom Sadu."
+        accept: ["gde"]
+      - id: "03-A-4"
+        type: fill_blank
+        prompt: "___ si? — Iz Rusije."
+        accept: ["odakle"]
+      - id: "03-A-5"
+        type: fill_blank
+        prompt: "___ košta kafa? — Sto dinara."
+        accept: ["koliko"]
+      - id: "03-A-6"
+        type: fill_blank
+        prompt: "___ ne radiš danas? — Zato što je praznik."
+        accept: ["zašto", "zasto"]
+      - id: "03-A-7"
+        type: fill_blank
+        prompt: "___ autobus ide u centar? — Četvorka."
+        accept: ["koji"]
+      - id: "03-A-8"
+        type: fill_blank
+        prompt: "___ je ovo torba? — Moja."
+        accept: ["čija", "cija"]
+
+  - id: "B"
+    title: "Переведи на сербский"
+    instruction: "Латиницей. Регистр и финальная пунктуация не важны."
+    exercises:
+      - id: "03-B-1"
+        type: translate
+        prompt: "Ты говоришь по-русски? (через «da li»)"
+        accept:
+          - "Da li govoriš ruski?"
+          - "Da li govoriš ruski."
+      - id: "03-B-2"
+        type: translate
+        prompt: "Ты говоришь по-русски? (через «… li …»)"
+        accept:
+          - "Govoriš li ruski?"
+          - "Govoris li ruski?"
+      - id: "03-B-3"
+        type: translate
+        prompt: "Кто это?"
+        accept:
+          - "Ko je to?"
+          - "Ko je ovo?"
+      - id: "03-B-4"
+        type: translate
+        prompt: "Что это значит?"
+        accept:
+          - "Šta ovo znači?"
+          - "Šta to znači?"
+          - "Sta to znaci?"
+      - id: "03-B-5"
+        type: translate
+        prompt: "Как это будет по-сербски?"
+        accept:
+          - "Kako se to kaže na srpskom?"
+          - "Kako se kaže na srpskom?"
+          - "Kako se to kaze na srpskom?"
+      - id: "03-B-6"
+        type: translate
+        prompt: "Простите, можете повторить?"
+        accept:
+          - "Izvinite, možete li da ponovite?"
+          - "Izvinite, možete li ponoviti?"
+          - "Izvinite, mozete li da ponovite?"
+      - id: "03-B-7"
+        type: translate
+        prompt: "Я не понял. (муж. род)"
+        accept:
+          - "Nisam razumeo."
+          - "Ja nisam razumeo."
+      - id: "03-B-8"
+        type: translate
+        prompt: "Почему не работает лифт?"
+        accept:
+          - "Zašto ne radi lift?"
+          - "Zasto ne radi lift?"
+      - id: "03-B-9"
+        type: translate
+        prompt: "Потому что сегодня праздник."
+        accept:
+          - "Zato što je danas praznik."
+          - "Zato što je praznik danas."
+          - "Jer je danas praznik."
+      - id: "03-B-10"
+        type: translate
+        prompt: "Можно помедленнее, пожалуйста?"
+        accept:
+          - "Možete li sporije, molim vas?"
+          - "Sporije, molim vas."
+          - "Mozete li sporije, molim vas?"
+
+  - id: "C"
+    title: "Вставь связку: da li / li / zato što / jer / zbog / zato"
+    instruction: "В ответе — только вставка."
+    exercises:
+      - id: "03-C-1"
+        type: fill_blank
+        prompt: "___ imate mleka? (да/нет-вопрос, в начале)"
+        accept: ["da li"]
+      - id: "03-C-2"
+        type: fill_blank
+        prompt: "Ima ___ mesta?"
+        accept: ["li"]
+      - id: "03-C-3"
+        type: fill_blank
+        prompt: "Ne idem napolje ___ pada kiša."
+        accept: ["zato što", "jer", "zato sto"]
+      - id: "03-C-4"
+        type: fill_blank
+        prompt: "Kasnim ___ saobraćaja."
+        accept: ["zbog"]
+        explain: "«zbog» + существительное = «из-за»."
+      - id: "03-C-5"
+        type: fill_blank
+        prompt: "Danas je praznik, ___ ne radim."
+        accept: ["zato"]
+        explain: "«zato» (без «što») = «поэтому», следствие."
+      - id: "03-C-6"
+        type: fill_blank
+        prompt: "Jesi ___ ti odavde? (да/нет-вопрос с «jesi»)"
+        accept: ["li"]
+
+  - id: "D"
+    title: "Что ты скажешь?"
+    instruction: "Ответь одной репликой по-сербски, потом сверься с образцом."
+    exercises:
+      - id: "03-D-1"
+        type: free
+        prompt: "Продавец быстро назвал цену, ты не расслышал."
+        sample: "Molim? / Izvinite, možete li sporije?"
+      - id: "03-D-2"
+        type: free
+        prompt: "Ты не знаешь, как по-сербски «сдача». Спроси."
+        sample: "Kako se kaže „сдача“ na srpskom?"
+      - id: "03-D-3"
+        type: free
+        prompt: "Тебя спросили, почему ты учишь сербский. Ответь «потому что живу здесь»."
+        sample: "Zato što živim ovde. / Jer živim u Srbiji."
+
+  - id: "E"
+    title: "Исправь ошибку"
+    instruction: "Запиши правильный вариант целиком."
+    exercises:
+      - id: "03-E-1"
+        type: fix_error
+        prompt: "Kako zoveš se?"
+        accept: ["Kako se zoveš?", "Kako se zoves?"]
+        explain: "«se» — на второе место, сразу после «kako»."
+      - id: "03-E-2"
+        type: fix_error
+        prompt: "Odakle ti si?"
+        accept: ["Odakle si?", "Odakle si ti?"]
+        explain: "Безударное «si» — сразу после вопросительного слова."
+      - id: "03-E-3"
+        type: fix_error
+        prompt: "Gde ti radiš?"
+        accept: ["Gde radiš?", "Gde radis?"]
+        explain: "Лишнее «ti» — местоимение обычно опускается."
+      - id: "03-E-4"
+        type: fix_error
+        prompt: "Zašto što ne radiš?"
+        accept: ["Zašto ne radiš?", "Zasto ne radis?"]
+        explain: "В вопросе — «zašto». «zato što» — это ответ."
+      - id: "03-E-5"
+        type: fix_error
+        prompt: "Kasnim zato saobraćaja."
+        accept: ["Kasnim zbog saobraćaja.", "Kasnim zbog saobracaja."]
+        explain: "Перед существительным «из-за» = «zbog»."

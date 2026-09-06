@@ -20,8 +20,16 @@ func TestRealContentLoads(t *testing.T) {
 	if len(c.Exercises["02"]) < 5 {
 		t.Errorf("lesson 02 blocks = %d, want >= 5", len(c.Exercises["02"]))
 	}
-	if !c.Lessons["03"].Planned {
-		t.Error("lesson 03 should be planned")
+	for _, id := range []string{"03", "04", "05"} {
+		if c.Lessons[id].Planned {
+			t.Errorf("lesson %s should have content", id)
+		}
+		if len(c.Exercises[id]) < 5 {
+			t.Errorf("lesson %s blocks = %d, want >= 5", id, len(c.Exercises[id]))
+		}
+	}
+	if !c.Lessons["06"].Planned {
+		t.Error("lesson 06 should be planned")
 	}
 	if c.Lessons["01"].Planned {
 		t.Error("lesson 01 should have content")
