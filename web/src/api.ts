@@ -1,3 +1,4 @@
+import { getAccount, clearAccount } from './account'
 import type {
   Course,
   Lesson,
@@ -21,10 +22,13 @@ export class ApiError extends Error {
 }
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const res = await fetch('/api' + path, {
-    headers: init?.body ? { 'Content-Type': 'application/json' } : undefined,
-    ...init,
-  })
+  const headers: Record<string, string> = {}
+  if (init?.body) headers['Content-Type'] = 'application/json'
+  const account = getAccount()
+  // HTTP header values must be latin1 — percent-encode so Cyrillic names work.
+  if (account) headers['X-User'] = encodeURIComponent(account)
+
+  const res = await fetch('/api' + path, { ...init, headers })
   if (!res.ok) {
     let msg = res.statusText
     try {
@@ -32,6 +36,9 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
       if (body?.error) msg = body.error
     } catch {
       /* keep statusText */
+    }
+    if (res.status === 401 && account && !path.startsWith('/users')) {
+      clearAccount() // stale/removed account — back to login
     }
     throw new ApiError(res.status, msg)
   }
@@ -51,6 +58,9 @@ function qs(params?: Record<string, string | undefined>): string {
 }
 
 export const api = {
+  listAccounts: () => request<{ users: string[] }>('/users').then((r) => r.users),
+  createAccount: (name: string) =>
+    request<{ name: string }>('/users', { method: 'POST', body: JSON.stringify({ name }) }),
   course: () => request<Course>('/course'),
   lesson: (id: string) => request<Lesson>(`/lessons/${id}`),
   exercises: (id: string) => request<ExerciseBlock[]>(`/lessons/${id}/exercises`),

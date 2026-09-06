@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { RouterLink, useRoute } from 'vue-router'
 import { computed } from 'vue'
+import { clearAccount } from '../account'
+
+defineProps<{ account: string }>()
 
 const route = useRoute()
 
@@ -20,7 +23,7 @@ function isActive(to: string) {
 
 <template>
   <nav class="sticky top-0 z-20 border-b border-[var(--border)] bg-[var(--bg)]/85 backdrop-blur">
-    <div class="mx-auto flex max-w-3xl gap-1 overflow-x-auto px-3 py-2">
+    <div class="mx-auto flex max-w-3xl items-center gap-1 overflow-x-auto px-3 py-2">
       <RouterLink
         v-for="l in links"
         :key="l.to"
@@ -34,6 +37,15 @@ function isActive(to: string) {
       >
         <span class="text-xs opacity-70">{{ l.icon }}</span>{{ l.label }}
       </RouterLink>
+
+      <button
+        class="ml-auto flex shrink-0 items-center gap-1 rounded-lg px-2.5 py-1.5 text-sm text-[var(--muted)] transition hover:text-[var(--fg)]"
+        title="Сменить пользователя"
+        @click="clearAccount()"
+      >
+        <span class="font-semibold text-[var(--fg)]">{{ account }}</span>
+        <span class="text-xs opacity-60">⇄</span>
+      </button>
     </div>
   </nav>
 </template>

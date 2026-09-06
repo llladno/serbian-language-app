@@ -6,6 +6,7 @@ import (
 	"errors"
 	"io"
 	"net/http"
+	"net/url"
 	"sort"
 	"strings"
 	"time"
@@ -37,6 +38,8 @@ func Handler(deps Deps) http.Handler {
 	h := handlers{deps}
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /api/health", h.health)
+	mux.HandleFunc("GET /api/users", h.listUsers)
+	mux.HandleFunc("POST /api/users", h.createUser)
 	mux.HandleFunc("GET /api/course", h.getCourse)
 	mux.HandleFunc("GET /api/lessons/{id}", h.getLesson)
 	mux.HandleFunc("GET /api/lessons/{id}/exercises", h.getExercises)
@@ -76,15 +79,71 @@ func contains(hay, needle string) bool {
 	return strings.Contains(strings.ToLower(hay), strings.ToLower(needle))
 }
 
+// user resolves the account from the X-User header. On failure it writes a
+// 401/500 response and returns ok=false.
+func (h handlers) user(w http.ResponseWriter, r *http.Request) (*store.UserStore, bool) {
+	raw := r.Header.Get("X-User")
+	if dec, err := url.PathUnescape(raw); err == nil {
+		raw = dec
+	}
+	name := store.NormalizeName(raw)
+	if name == "" {
+		fail(w, http.StatusUnauthorized, "no account")
+		return nil, false
+	}
+	exists, err := h.Store.UserExists(name)
+	if err != nil {
+		fail(w, 500, err.Error())
+		return nil, false
+	}
+	if !exists {
+		fail(w, http.StatusUnauthorized, "unknown account")
+		return nil, false
+	}
+	return h.Store.User(name), true
+}
+
 // ---- handlers ----
 
 func (h handlers) health(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, map[string]any{"status": "ok", "content_stale": h.Stale()})
 }
 
+func (h handlers) listUsers(w http.ResponseWriter, r *http.Request) {
+	names, err := h.Store.ListUsers()
+	if err != nil {
+		fail(w, 500, err.Error())
+		return
+	}
+	if names == nil {
+		names = []string{}
+	}
+	writeJSON(w, 200, map[string]any{"users": names})
+}
+
+func (h handlers) createUser(w http.ResponseWriter, r *http.Request) {
+	var req struct {
+		Name string `json:"name"`
+	}
+	if err := decode(r, &req); err != nil {
+		fail(w, 400, "bad request body")
+		return
+	}
+	name, err := h.Store.EnsureUser(req.Name)
+	if err != nil {
+		fail(w, 400, err.Error())
+		return
+	}
+	writeJSON(w, 200, map[string]string{"name": name})
+}
+
 func (h handlers) getCourse(w http.ResponseWriter, r *http.Request) {
+	us, ok := h.user(w, r)
+	if !ok {
+		return
+	}
 	c := h.Course()
-	statuses, err := h.Store.LessonStatuses()
+	statuses, err := us.LessonStatuses()
 	if err != nil {
 		fail(w, 500, err.Error())
 		return
@@ -110,13 +169,17 @@ func (h handlers) getCourse(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h handlers) getLesson(w http.ResponseWriter, r *http.Request) {
+	us, ok := h.user(w, r)
+	if !ok {
+		return
+	}
 	id := r.PathValue("id")
 	l := h.Course().Lessons[id]
 	if l == nil {
 		fail(w, 404, "unknown lesson")
 		return
 	}
-	st, err := h.Store.LessonStatus(id)
+	st, err := us.LessonStatus(id)
 	if err != nil {
 		fail(w, 500, err.Error())
 		return
@@ -167,10 +230,14 @@ func (h handlers) findExercise(lesson, exID string) (content.Exercise, string, b
 }
 
 func (h handlers) checkExercise(w http.ResponseWriter, r *http.Request) {
+	us, ok := h.user(w, r)
+	if !ok {
+		return
+	}
 	lesson := r.PathValue("id")
 	exID := r.PathValue("exId")
-	ex, block, ok := h.findExercise(lesson, exID)
-	if !ok {
+	ex, block, found := h.findExercise(lesson, exID)
+	if !found {
 		fail(w, 404, "unknown exercise")
 		return
 	}
@@ -217,23 +284,27 @@ func (h handlers) checkExercise(w http.ResponseWriter, r *http.Request) {
 		correct = res.OK
 	}
 
-	_ = h.Store.AddAttempt(store.Attempt{
+	_ = us.AddAttempt(store.Attempt{
 		ExerciseID: exID, Lesson: lesson, Block: block, Answer: recordAnswer, Correct: correct,
 	}, now)
-	if st, _ := h.Store.LessonStatus(lesson); st != "done" {
-		_ = h.Store.SetLessonStatus(lesson, "in_progress", now)
+	if st, _ := us.LessonStatus(lesson); st != "done" {
+		_ = us.SetLessonStatus(lesson, "in_progress", now)
 	}
 
 	writeJSON(w, 200, resp)
 }
 
 func (h handlers) completeLesson(w http.ResponseWriter, r *http.Request) {
+	us, ok := h.user(w, r)
+	if !ok {
+		return
+	}
 	id := r.PathValue("id")
 	if h.Course().Lessons[id] == nil {
 		fail(w, 404, "unknown lesson")
 		return
 	}
-	if err := h.Store.SetLessonStatus(id, "done", h.Now()); err != nil {
+	if err := us.SetLessonStatus(id, "done", h.Now()); err != nil {
 		fail(w, 500, err.Error())
 		return
 	}
@@ -298,11 +369,15 @@ func (h handlers) cardSeeds() []store.CardSeed {
 }
 
 func (h handlers) reviewQueue(w http.ResponseWriter, r *http.Request) {
-	if err := h.Store.EnsureCards(h.cardSeeds()); err != nil {
+	us, ok := h.user(w, r)
+	if !ok {
+		return
+	}
+	if err := us.EnsureCards(h.cardSeeds()); err != nil {
 		fail(w, 500, err.Error())
 		return
 	}
-	rows, err := h.Store.DueQueue(h.Now(), newPerDay)
+	rows, err := us.DueQueue(h.Now(), newPerDay)
 	if err != nil {
 		fail(w, 500, err.Error())
 		return
@@ -361,6 +436,10 @@ type gradeRequest struct {
 }
 
 func (h handlers) reviewGrade(w http.ResponseWriter, r *http.Request) {
+	us, ok := h.user(w, r)
+	if !ok {
+		return
+	}
 	var req gradeRequest
 	if err := decode(r, &req); err != nil {
 		fail(w, 400, "bad request body")
@@ -370,7 +449,7 @@ func (h handlers) reviewGrade(w http.ResponseWriter, r *http.Request) {
 		fail(w, 400, "grade must be 0..3")
 		return
 	}
-	card, err := h.Store.GradeCard(req.CardID, srs.Grade(req.Grade), h.Now())
+	card, err := us.GradeCard(req.CardID, srs.Grade(req.Grade), h.Now())
 	if err != nil {
 		fail(w, 404, "unknown card")
 		return
@@ -383,10 +462,14 @@ func (h handlers) reviewGrade(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h handlers) getProgress(w http.ResponseWriter, r *http.Request) {
+	us, ok := h.user(w, r)
+	if !ok {
+		return
+	}
 	c := h.Course()
 	now := h.Now()
-	_ = h.Store.EnsureCards(h.cardSeeds()) // so "new" counts are accurate before first review
-	statuses, err := h.Store.LessonStatuses()
+	_ = us.EnsureCards(h.cardSeeds()) // so "new" counts are accurate before first review
+	statuses, err := us.LessonStatuses()
 	if err != nil {
 		fail(w, 500, err.Error())
 		return
@@ -407,10 +490,10 @@ func (h handlers) getProgress(w http.ResponseWriter, r *http.Request) {
 		out.Phases = append(out.Phases, pp)
 	}
 
-	dueToday, _ := h.Store.DueCount(now)
-	newCount, _ := h.Store.NewCount()
-	reviewed, _ := h.Store.ReviewedToday(now)
-	total, known, _ := h.Store.CardStats()
+	dueToday, _ := us.DueCount(now)
+	newCount, _ := us.NewCount()
+	reviewed, _ := us.ReviewedToday(now)
+	total, known, _ := us.CardStats()
 	newAvail := newCount
 	if newAvail > newPerDay {
 		newAvail = newPerDay
@@ -420,10 +503,10 @@ func (h handlers) getProgress(w http.ResponseWriter, r *http.Request) {
 		TotalCards: total, Known: known,
 	}
 
-	streak, _ := h.Store.StreakDays(now)
+	streak, _ := us.StreakDays(now)
 	out.StreakDays = streak
 
-	weak, _ := h.Store.WeakExercises(10)
+	weak, _ := us.WeakExercises(10)
 	promptByID := map[string]string{}
 	for _, blocks := range c.Exercises {
 		for _, b := range blocks {
@@ -454,7 +537,7 @@ func (h handlers) getProgress(w http.ResponseWriter, r *http.Request) {
 
 	out.DailyGoal = dailyGoal
 	out.Activity = []dayActivityDTO{}
-	if acts, err := h.Store.ActivityByDay(now.AddDate(0, 0, -97)); err == nil {
+	if acts, err := us.ActivityByDay(now.AddDate(0, 0, -97)); err == nil {
 		for _, a := range acts {
 			out.Activity = append(out.Activity, dayActivityDTO{Date: a.Date, Count: a.Count})
 		}

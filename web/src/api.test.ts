@@ -3,6 +3,11 @@ import { api, ApiError } from './api'
 
 afterEach(() => {
   vi.unstubAllGlobals()
+  try {
+    localStorage.clear()
+  } catch {
+    /* ignore */
+  }
 })
 
 describe('api', () => {
@@ -36,5 +41,14 @@ describe('api', () => {
   it('returns undefined for 204', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(null, { status: 204 })))
     await expect(api.completeLesson('01')).resolves.toBeUndefined()
+  })
+
+  it('attaches the X-User header from the stored account', async () => {
+    localStorage.setItem('srpski.account', 'Гриша')
+    const fetchMock = vi.fn().mockResolvedValue(new Response('{"phases":[]}', { status: 200 }))
+    vi.stubGlobal('fetch', fetchMock)
+    await api.progress()
+    const sent = fetchMock.mock.calls[0][1].headers['X-User']
+    expect(decodeURIComponent(sent)).toBe('Гриша')
   })
 })

@@ -26,6 +26,9 @@ func newTestAPI(t *testing.T) (http.Handler, *store.Store) {
 		t.Fatal(err)
 	}
 	t.Cleanup(func() { st.Close() })
+	if _, err := st.EnsureUser("tester"); err != nil {
+		t.Fatal(err)
+	}
 	h := Handler(Deps{
 		Course: func() *content.Course { return c },
 		Store:  st,
@@ -35,12 +38,20 @@ func newTestAPI(t *testing.T) (http.Handler, *store.Store) {
 	return h, st
 }
 
+// do issues a request as account "tester".
 func do(h http.Handler, method, path, body string) *httptest.ResponseRecorder {
+	return doAs(h, "tester", method, path, body)
+}
+
+func doAs(h http.Handler, user, method, path, body string) *httptest.ResponseRecorder {
 	var r *http.Request
 	if body != "" {
 		r = httptest.NewRequest(method, path, strings.NewReader(body))
 	} else {
 		r = httptest.NewRequest(method, path, nil)
+	}
+	if user != "" {
+		r.Header.Set("X-User", user)
 	}
 	rr := httptest.NewRecorder()
 	h.ServeHTTP(rr, r)
@@ -101,8 +112,50 @@ func TestCheckRecordsAttemptAndReturnsResult(t *testing.T) {
 	if !res.OK {
 		t.Errorf("expected ok, got %+v", res)
 	}
-	if st, _ := st.LessonStatus("01"); st != "in_progress" {
-		t.Errorf("lesson status = %q, want in_progress", st)
+	if s, _ := st.User("tester").LessonStatus("01"); s != "in_progress" {
+		t.Errorf("lesson status = %q, want in_progress", s)
+	}
+}
+
+func TestStateEndpointsRequireAccount(t *testing.T) {
+	h, _ := newTestAPI(t)
+	for _, p := range []string{"/api/course", "/api/progress", "/api/review/queue", "/api/lessons/01"} {
+		if rr := doAs(h, "", "GET", p, ""); rr.Code != 401 {
+			t.Errorf("%s without account = %d, want 401", p, rr.Code)
+		}
+	}
+	if rr := doAs(h, "ghost", "GET", "/api/course", ""); rr.Code != 401 {
+		t.Errorf("unknown account = %d, want 401", rr.Code)
+	}
+}
+
+func TestUsersEndpoints(t *testing.T) {
+	h, _ := newTestAPI(t)
+	if rr := doAs(h, "", "POST", "/api/users", `{"name":"  Оля  "}`); rr.Code != 200 {
+		t.Fatalf("create: %d %s", rr.Code, rr.Body)
+	}
+	rr := doAs(h, "", "GET", "/api/users", "")
+	got := decodeBody[struct {
+		Users []string `json:"users"`
+	}](t, rr)
+	if len(got.Users) != 2 || got.Users[1] != "Оля" {
+		t.Errorf("users = %v", got.Users)
+	}
+	// the new account works and starts empty
+	if rr := doAs(h, "Оля", "GET", "/api/progress", ""); rr.Code != 200 {
+		t.Errorf("new account progress = %d", rr.Code)
+	}
+}
+
+func TestAccountsAreIsolatedOverAPI(t *testing.T) {
+	h, st := newTestAPI(t)
+	st.EnsureUser("Оля")
+	doAs(h, "tester", "POST", "/api/lessons/01/complete", "")
+
+	a := decodeBody[progressDTO](t, doAs(h, "tester", "GET", "/api/progress", ""))
+	b := decodeBody[progressDTO](t, doAs(h, "Оля", "GET", "/api/progress", ""))
+	if a.Phases[0].Done != 1 || b.Phases[0].Done != 0 {
+		t.Errorf("progress leaked: tester=%d оля=%d", a.Phases[0].Done, b.Phases[0].Done)
 	}
 }
 
