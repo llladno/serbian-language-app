@@ -44,12 +44,16 @@ func Handler(deps Deps) http.Handler {
 	mux.HandleFunc("GET /api/lessons/{id}", h.getLesson)
 	mux.HandleFunc("GET /api/lessons/{id}/exercises", h.getExercises)
 	mux.HandleFunc("POST /api/lessons/{id}/exercises/{exId}/check", h.checkExercise)
+	mux.HandleFunc("GET /api/lessons/{id}/attempts", h.lessonAttempts)
 	mux.HandleFunc("POST /api/lessons/{id}/complete", h.completeLesson)
+	mux.HandleFunc("POST /api/lessons/{id}/reset", h.resetLesson)
+	mux.HandleFunc("POST /api/reset-exercises", h.resetExercises)
 	mux.HandleFunc("GET /api/vocab", h.getVocab)
 	mux.HandleFunc("GET /api/false-friends", h.getFalseFriends)
 	mux.HandleFunc("GET /api/review/queue", h.reviewQueue)
 	mux.HandleFunc("POST /api/review/grade", h.reviewGrade)
 	mux.HandleFunc("GET /api/progress", h.getProgress)
+	mux.HandleFunc("GET /api/leaderboard", h.getLeaderboard)
 	return mux
 }
 
@@ -292,6 +296,57 @@ func (h handlers) checkExercise(w http.ResponseWriter, r *http.Request) {
 	}
 
 	writeJSON(w, 200, resp)
+}
+
+func (h handlers) lessonAttempts(w http.ResponseWriter, r *http.Request) {
+	us, ok := h.user(w, r)
+	if !ok {
+		return
+	}
+	id := r.PathValue("id")
+	if h.Course().Lessons[id] == nil {
+		fail(w, 404, "unknown lesson")
+		return
+	}
+	m, err := us.LessonAttempts(id)
+	if err != nil {
+		fail(w, 500, err.Error())
+		return
+	}
+	out := map[string]attemptDTO{}
+	for exID, a := range m {
+		out[exID] = attemptDTO{Answer: a.Answer, Correct: a.Correct}
+	}
+	writeJSON(w, 200, out)
+}
+
+func (h handlers) resetLesson(w http.ResponseWriter, r *http.Request) {
+	us, ok := h.user(w, r)
+	if !ok {
+		return
+	}
+	id := r.PathValue("id")
+	if h.Course().Lessons[id] == nil {
+		fail(w, 404, "unknown lesson")
+		return
+	}
+	if err := us.ResetLesson(id); err != nil {
+		fail(w, 500, err.Error())
+		return
+	}
+	writeJSON(w, 200, map[string]string{"status": "reset"})
+}
+
+func (h handlers) resetExercises(w http.ResponseWriter, r *http.Request) {
+	us, ok := h.user(w, r)
+	if !ok {
+		return
+	}
+	if err := us.ResetExercises(); err != nil {
+		fail(w, 500, err.Error())
+		return
+	}
+	writeJSON(w, 200, map[string]string{"status": "reset"})
 }
 
 func (h handlers) completeLesson(w http.ResponseWriter, r *http.Request) {
@@ -543,6 +598,30 @@ func (h handlers) getProgress(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	writeJSON(w, 200, out)
+}
+
+func (h handlers) getLeaderboard(w http.ResponseWriter, r *http.Request) {
+	if _, ok := h.user(w, r); !ok {
+		return
+	}
+	rows, err := h.Store.AllUsersProgress(h.Now())
+	if err != nil {
+		fail(w, 500, err.Error())
+		return
+	}
+	totalLessons := 0
+	for _, p := range h.Course().Phases {
+		totalLessons += len(p.Lessons)
+	}
+	out := make([]leaderRowDTO, 0, len(rows))
+	for _, p := range rows {
+		out = append(out, leaderRowDTO{
+			Name: p.Name, LessonsDone: p.LessonsDone, LessonsTotal: totalLessons,
+			CardsKnown: p.CardsKnown, TotalCards: p.TotalCards, StreakDays: p.StreakDays,
+			ReviewedToday: p.ReviewedToday, LastActive: p.LastActive,
+		})
+	}
 	writeJSON(w, 200, out)
 }
 

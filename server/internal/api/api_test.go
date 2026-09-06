@@ -233,6 +233,69 @@ func TestLessonCompleteThenProgress(t *testing.T) {
 	}
 }
 
+func TestLessonAttemptsAndReset(t *testing.T) {
+	h, _ := newTestAPI(t)
+	do(h, "POST", "/api/lessons/01/exercises/01-A-1/check", `{"answer":"Zdravo! Kako si?"}`)
+	do(h, "POST", "/api/lessons/01/exercises/01-A-2/check", `{"answer":"x","self":false}`)
+
+	got := decodeBody[map[string]attemptDTO](t, do(h, "GET", "/api/lessons/01/attempts", ""))
+	if len(got) != 2 || !got["01-A-1"].Correct || got["01-A-2"].Correct {
+		t.Fatalf("attempts = %+v", got)
+	}
+	if got["01-A-1"].Answer != "Zdravo! Kako si?" {
+		t.Errorf("answer not stored: %+v", got["01-A-1"])
+	}
+
+	if rr := do(h, "POST", "/api/lessons/01/reset", ""); rr.Code != 200 {
+		t.Fatalf("reset: %d", rr.Code)
+	}
+	after := decodeBody[map[string]attemptDTO](t, do(h, "GET", "/api/lessons/01/attempts", ""))
+	if len(after) != 0 {
+		t.Errorf("attempts after reset = %+v", after)
+	}
+	p := decodeBody[progressDTO](t, do(h, "GET", "/api/progress", ""))
+	if len(p.RecentLessons) != 0 {
+		t.Errorf("lesson progress survived reset: %+v", p.RecentLessons)
+	}
+}
+
+func TestResetExercisesKeepsSRS(t *testing.T) {
+	h, _ := newTestAPI(t)
+	do(h, "POST", "/api/lessons/01/exercises/01-A-1/check", `{"answer":"Zdravo! Kako si?"}`)
+	do(h, "GET", "/api/review/queue", "") // seed cards
+	do(h, "POST", "/api/review/grade", `{"card_id":"vocab:zdravo","grade":2}`)
+
+	if rr := do(h, "POST", "/api/reset-exercises", ""); rr.Code != 200 {
+		t.Fatalf("reset-exercises: %d", rr.Code)
+	}
+	p := decodeBody[progressDTO](t, do(h, "GET", "/api/progress", ""))
+	if len(p.RecentLessons) != 0 {
+		t.Errorf("lessons not reset: %+v", p.RecentLessons)
+	}
+	// SRS review still counts
+	if p.SRS.ReviewedToday != 1 {
+		t.Errorf("SRS wiped by exercise reset: reviewed_today=%d", p.SRS.ReviewedToday)
+	}
+}
+
+func TestLeaderboard(t *testing.T) {
+	h, st := newTestAPI(t)
+	st.EnsureUser("Оля")
+	do(h, "POST", "/api/lessons/01/complete", "")            // tester: 1 lesson
+	doAs(h, "Оля", "POST", "/api/lessons/01/exercises/01-A-1/check", `{"answer":"x"}`) // Оля: activity, 0 lessons
+
+	rows := decodeBody[[]leaderRowDTO](t, do(h, "GET", "/api/leaderboard", ""))
+	if len(rows) != 2 {
+		t.Fatalf("rows = %+v", rows)
+	}
+	if rows[0].Name != "tester" || rows[0].LessonsDone != 1 {
+		t.Errorf("leader = %+v", rows[0])
+	}
+	if rows[0].LessonsTotal != 2 { // fixture course has 2 lessons
+		t.Errorf("lessons_total = %d", rows[0].LessonsTotal)
+	}
+}
+
 func TestUnknownLesson404(t *testing.T) {
 	h, _ := newTestAPI(t)
 	if do(h, "GET", "/api/lessons/zz", "").Code != 404 {

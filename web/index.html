@@ -3,8 +3,20 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#f5f3f0" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0"
+    />
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <meta name="theme-color" content="#fdf4f7" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#1b131a" media="(prefers-color-scheme: dark)" />
+    <script>
+      // apply saved theme before first paint to avoid a flash
+      try {
+        var t = localStorage.getItem('srpski.theme')
+        if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t)
+      } catch (e) {}
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link

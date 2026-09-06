@@ -11,9 +11,9 @@ onMounted(() => store.load())
 
 const GRADES = [
   { g: 0, label: 'Опять', key: 'again', cls: 'bg-[var(--bad)]' },
-  { g: 1, label: 'Трудно', key: 'hard', cls: 'bg-orange-500' },
+  { g: 1, label: 'Трудно', key: 'hard', cls: 'bg-[#e08a1e]' },
   { g: 2, label: 'Хорошо', key: 'good', cls: 'bg-[var(--good)]' },
-  { g: 3, label: 'Легко', key: 'easy', cls: 'bg-sky-600' },
+  { g: 3, label: 'Легко', key: 'easy', cls: 'bg-[#8b6ff0]' },
 ]
 
 function fmtInterval(days: number) {

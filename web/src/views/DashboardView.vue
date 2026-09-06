@@ -2,19 +2,23 @@
 import { computed, onMounted, ref } from 'vue'
 import { api } from '../api'
 import { useCourseStore } from '../stores/course'
-import type { Progress, Vocab } from '../types'
+import { getAccount } from '../account'
+import type { Progress, Vocab, LeaderRow } from '../types'
 import ProgressRing from '../components/ProgressRing.vue'
 import ActivityHeatmap from '../components/ActivityHeatmap.vue'
 
 const progress = ref<Progress | null>(null)
 const wotd = ref<Vocab | null>(null)
+const leaders = ref<LeaderRow[]>([])
 const error = ref<string | null>(null)
 const course = useCourseStore()
+const me = getAccount()
 
 onMounted(async () => {
   course.load()
   try {
     progress.value = await api.progress()
+    api.leaderboard().then((r) => (leaders.value = r)).catch(() => {})
     const vocab = await api.vocab()
     if (vocab.length) {
       const now = new Date()
@@ -25,6 +29,12 @@ onMounted(async () => {
     error.value = (e as Error).message
   }
 })
+
+async function resetExercises() {
+  if (!confirm('Сбросить весь прогресс по заданиям (ответы и отметки уроков)? Карточки слов останутся.')) return
+  await api.resetExercises()
+  location.reload()
+}
 
 const continueLesson = computed(() => {
   const p = progress.value
@@ -127,6 +137,21 @@ const dueTotal = computed(() =>
       </div>
     </div>
 
+    <!-- people (short) -->
+    <RouterLink v-if="leaders.length > 1" to="/people" class="card block p-5 transition hover:-translate-y-0.5">
+      <div class="mb-2 flex items-baseline justify-between">
+        <p class="font-bold">Люди</p>
+        <span class="text-sm text-[var(--accent)]">все →</span>
+      </div>
+      <ul class="space-y-1.5 text-sm">
+        <li v-for="(r, i) in leaders.slice(0, 3)" :key="r.name" class="flex items-baseline gap-2">
+          <span class="w-4 font-mono text-[var(--muted)]">{{ i + 1 }}</span>
+          <span class="flex-1 font-semibold" :class="r.name === me ? 'text-[var(--accent)]' : ''">{{ r.name }}</span>
+          <span class="text-[var(--muted)]">{{ r.lessons_done }}/{{ r.lessons_total }} · {{ r.cards_known }} сл. · {{ r.streak_days }}🔥</span>
+        </li>
+      </ul>
+    </RouterLink>
+
     <!-- weak spots -->
     <div v-if="progress.weak_exercises.length" class="card p-5">
       <p class="mb-2 font-bold">Стоит повторить</p>
@@ -145,6 +170,12 @@ const dueTotal = computed(() =>
       class="card p-6 text-center text-[var(--muted)]"
     >
       Начни с <RouterLink to="/lesson/01" class="font-semibold text-[var(--accent)]">урока 01</RouterLink>.
+    </div>
+
+    <div class="pt-2 text-center">
+      <button class="text-xs text-[var(--muted)] hover:text-[var(--bad)]" @click="resetExercises">
+        сбросить прогресс по заданиям
+      </button>
     </div>
   </div>
 </template>

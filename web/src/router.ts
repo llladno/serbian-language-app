@@ -9,5 +9,6 @@ export default createRouter({
     { path: '/review', name: 'review', component: () => import('./views/ReviewView.vue') },
     { path: '/vocab', name: 'vocab', component: () => import('./views/VocabView.vue') },
     { path: '/false-friends', name: 'false-friends', component: () => import('./views/FalseFriendsView.vue') },
+    { path: '/people', name: 'people', component: () => import('./views/PeopleView.vue') },
   ],
 })

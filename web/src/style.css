@@ -2,37 +2,60 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ---- soft-pink palette ---------------------------------------------------
+   :root            = light (default)
+   prefers-dark + not forced-light  -> dark
+   [data-theme=dark]                -> dark (manual)
+   [data-theme=light]               -> light (manual, wins over prefers-dark)
+------------------------------------------------------------------------- */
 :root {
-  color-scheme: light dark;
-  --bg: #f6f4f1;
-  --bg-soft: #efece7;
-  --fg: #2a2521;
-  --muted: #857c72;
-  --card: #fffefb;
-  --border: #e6e1d8;
-  --accent: #c2410c;
-  --accent-soft: #fdece0;
+  color-scheme: light;
+  --bg: #fdf4f7;
+  --bg-soft: #f9e7ee;
+  --fg: #40222f;
+  --muted: #9c7c89;
+  --card: #fffbfd;
+  --border: #f3dde6;
+  --accent: #d6457d;
+  --accent-soft: #fce7ef;
   --good: #15803d;
-  --bad: #dc2626;
-  --ring-track: #e6e1d8;
-  --shadow: 0 1px 2px rgba(42, 37, 33, 0.04), 0 4px 16px rgba(42, 37, 33, 0.06);
+  --bad: #e11d48;
+  --ring-track: #f0dbe4;
+  --shadow: 0 1px 2px rgba(64, 34, 47, 0.05), 0 6px 20px rgba(214, 69, 125, 0.08);
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #1a1714;
-    --bg-soft: #221e1a;
-    --fg: #ece7e0;
-    --muted: #9c948a;
-    --card: #24201c;
-    --border: #3a342e;
-    --accent: #fb923c;
-    --accent-soft: #3a2417;
+  :root:not([data-theme='light']) {
+    color-scheme: dark;
+    --bg: #1b131a;
+    --bg-soft: #241a22;
+    --fg: #f1e2ea;
+    --muted: #ab8b99;
+    --card: #261b23;
+    --border: #3e2b37;
+    --accent: #f472b6;
+    --accent-soft: #3a2030;
     --good: #4ade80;
-    --bad: #f87171;
-    --ring-track: #3a342e;
-    --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 6px 20px rgba(0, 0, 0, 0.35);
+    --bad: #fb7185;
+    --ring-track: #3e2b37;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.35), 0 8px 24px rgba(0, 0, 0, 0.4);
   }
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --bg: #1b131a;
+  --bg-soft: #241a22;
+  --fg: #f1e2ea;
+  --muted: #ab8b99;
+  --card: #261b23;
+  --border: #3e2b37;
+  --accent: #f472b6;
+  --accent-soft: #3a2030;
+  --good: #4ade80;
+  --bad: #fb7185;
+  --ring-track: #3e2b37;
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.35), 0 8px 24px rgba(0, 0, 0, 0.4);
 }
 
 * {
@@ -46,6 +69,7 @@ body {
   font-family: 'Manrope', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   line-height: 1.55;
   -webkit-font-smoothing: antialiased;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 @layer components {

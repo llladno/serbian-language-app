@@ -1,11 +1,15 @@
 <script setup lang="ts">
 import { reactive, computed } from 'vue'
-import type { ExerciseBlock } from '../../types'
+import type { ExerciseBlock, LessonAttempts } from '../../types'
 import ExerciseItem from './ExerciseItem.vue'
 
-const props = defineProps<{ lesson: string; block: ExerciseBlock }>()
+const props = defineProps<{ lesson: string; block: ExerciseBlock; priors?: LessonAttempts }>()
 
 const graded = reactive<Record<string, boolean>>({})
+for (const ex of props.block.exercises) {
+  const p = props.priors?.[ex.id]
+  if (p) graded[ex.id] = p.correct
+}
 function onGraded(id: string, ok: boolean) {
   graded[id] = ok
 }
@@ -32,12 +36,13 @@ const complete = computed(() => score.value.done === score.value.total)
       </span>
     </div>
     <p v-if="block.instruction" class="text-sm text-[var(--muted)]">{{ block.instruction }}</p>
-    <ExerciseItem
-      v-for="ex in block.exercises"
-      :key="ex.id"
-      :lesson="lesson"
-      :exercise="ex"
-      @graded="onGraded(ex.id, $event)"
-    />
+    <div v-for="ex in block.exercises" :key="ex.id" :data-ex="ex.id">
+      <ExerciseItem
+        :lesson="lesson"
+        :exercise="ex"
+        :prior="priors?.[ex.id]"
+        @graded="onGraded(ex.id, $event)"
+      />
+    </div>
   </section>
 </template>

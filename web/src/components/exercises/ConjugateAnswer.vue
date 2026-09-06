@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { api } from '../../api'
-import type { CheckResult } from '../../types'
+import type { CheckResult, LessonAttempt } from '../../types'
 
 const props = defineProps<{
   lesson: string
@@ -9,12 +9,15 @@ const props = defineProps<{
   prompt: string
   forms: string[]
   meta?: string
+  prior?: LessonAttempt
 }>()
 
 const emit = defineEmits<{ graded: [ok: boolean] }>()
 
-const answers = ref<string[]>(props.forms.map(() => ''))
+const priorAnswers = props.prior ? props.prior.answer.split(' | ') : []
+const answers = ref<string[]>(props.forms.map((_, i) => priorAnswers[i] ?? ''))
 const result = ref<CheckResult | null>(null)
+const fromPrior = ref(!!props.prior)
 const pending = ref(false)
 
 async function submit() {
@@ -22,6 +25,7 @@ async function submit() {
   pending.value = true
   try {
     result.value = await api.check(props.lesson, props.exerciseId, { answers: answers.value })
+    fromPrior.value = false
     emit('graded', !!result.value.ok)
   } finally {
     pending.value = false
@@ -30,6 +34,7 @@ async function submit() {
 
 function retry() {
   result.value = null
+  fromPrior.value = false
   answers.value = props.forms.map(() => '')
 }
 </script>
@@ -41,7 +46,15 @@ function retry() {
       <span v-if="meta" class="ml-2 rounded bg-[var(--bg-soft)] px-1.5 py-0.5 text-xs text-[var(--muted)]">{{ meta }}</span>
     </p>
 
-    <form class="grid grid-cols-1 gap-2 sm:grid-cols-2" @submit.prevent="submit">
+    <div v-if="fromPrior" class="text-sm">
+      <p class="mb-1 font-semibold" :class="prior!.correct ? 'text-[var(--good)]' : 'text-[var(--bad)]'">
+        {{ prior!.correct ? '✓ Отвечено верно' : '✗ Был ответ с ошибкой' }}
+      </p>
+      <p class="serbian text-[var(--muted)]">{{ answers.filter(Boolean).join(', ') }}</p>
+      <button class="mt-1.5 font-medium text-[var(--accent)]" @click="retry">Переделать</button>
+    </div>
+
+    <form v-else class="grid grid-cols-1 gap-2 sm:grid-cols-2" @submit.prevent="submit">
       <label v-for="(f, i) in forms" :key="f" class="flex items-center gap-2 text-sm">
         <span class="w-24 shrink-0 text-[var(--muted)]">{{ f }}</span>
         <input

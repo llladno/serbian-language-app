@@ -1,19 +1,21 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { api } from '../../api'
-import type { CheckResult } from '../../types'
+import type { CheckResult, LessonAttempt } from '../../types'
 
 const props = defineProps<{
   lesson: string
   exerciseId: string
   type: 'translate' | 'fill_blank' | 'fix_error'
   prompt: string
+  prior?: LessonAttempt
 }>()
 
 const emit = defineEmits<{ graded: [ok: boolean] }>()
 
-const answer = ref('')
+const answer = ref(props.prior?.answer ?? '')
 const result = ref<CheckResult | null>(null)
+const fromPrior = ref(!!props.prior)
 const pending = ref(false)
 
 async function submit() {
@@ -21,6 +23,7 @@ async function submit() {
   pending.value = true
   try {
     result.value = await api.check(props.lesson, props.exerciseId, { answer: answer.value })
+    fromPrior.value = false
     emit('graded', !!result.value.ok)
   } finally {
     pending.value = false
@@ -29,6 +32,7 @@ async function submit() {
 
 function retry() {
   result.value = null
+  fromPrior.value = false
   answer.value = ''
 }
 </script>
@@ -37,7 +41,17 @@ function retry() {
   <div class="card p-3.5">
     <p class="mb-2 whitespace-pre-wrap">{{ prompt }}</p>
 
-    <form v-if="!result" class="flex gap-2" @submit.prevent="submit">
+    <!-- previously answered -->
+    <div v-if="fromPrior" class="text-sm">
+      <p class="mb-1 flex items-center gap-1.5 font-semibold" :class="prior!.correct ? 'text-[var(--good)]' : 'text-[var(--bad)]'">
+        <span>{{ prior!.correct ? '✓' : '✗' }}</span>
+        <span>{{ prior!.correct ? 'Отвечено верно' : 'Был ответ с ошибкой' }}</span>
+      </p>
+      <p class="text-[var(--muted)]">ты писал: <span class="serbian text-[var(--fg)]">{{ prior!.answer }}</span></p>
+      <button class="mt-1.5 font-medium text-[var(--accent)]" @click="retry">Переделать</button>
+    </div>
+
+    <form v-else-if="!result" class="flex gap-2" @submit.prevent="submit">
       <input
         v-model="answer"
         type="text"

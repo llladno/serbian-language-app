@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { nextTick, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { api } from '../api'
 import { useCourseStore } from '../stores/course'
-import type { Lesson, ExerciseBlock } from '../types'
+import type { Lesson, ExerciseBlock, LessonAttempts } from '../types'
 import MarkdownView from '../components/MarkdownView.vue'
 import ExerciseBlockView from '../components/exercises/ExerciseBlock.vue'
 import Confetti from '../components/Confetti.vue'
@@ -13,26 +13,51 @@ const store = useCourseStore()
 
 const lesson = ref<Lesson | null>(null)
 const blocks = ref<ExerciseBlock[]>([])
+const priors = ref<LessonAttempts>({})
 const error = ref<string | null>(null)
 const celebrate = ref(false)
+const resuming = ref(false)
 
-watch(
-  () => route.params.id as string,
-  async (id) => {
-    lesson.value = null
-    blocks.value = []
-    error.value = null
-    celebrate.value = false
-    try {
-      lesson.value = await api.lesson(id)
-      if (!lesson.value.planned) blocks.value = await api.exercises(id)
+async function loadLesson(id: string) {
+  lesson.value = null
+  blocks.value = []
+  priors.value = {}
+  error.value = null
+  celebrate.value = false
+  resuming.value = false
+  try {
+    lesson.value = await api.lesson(id)
+    if (!lesson.value.planned) {
+      const [bl, pr] = await Promise.all([api.exercises(id), api.lessonAttempts(id)])
+      blocks.value = bl
+      priors.value = pr
+      await nextTick()
+      setTimeout(jumpToFirstUnanswered, 120)
+    } else {
       window.scrollTo(0, 0)
-    } catch (e) {
-      error.value = (e as Error).message
     }
-  },
-  { immediate: true },
-)
+  } catch (e) {
+    error.value = (e as Error).message
+  }
+}
+
+watch(() => route.params.id as string, loadLesson, { immediate: true })
+
+function jumpToFirstUnanswered() {
+  const all = blocks.value.flatMap((b) => b.exercises.map((e) => e.id))
+  const answered = new Set(Object.keys(priors.value))
+  if (answered.size === 0 || answered.size === all.length) {
+    window.scrollTo(0, 0)
+    return
+  }
+  const next = all.find((id) => !answered.has(id))
+  if (!next) return
+  const el = document.querySelector(`[data-ex="${next}"]`)
+  if (el) {
+    resuming.value = true
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+  }
+}
 
 async function markDone() {
   if (!lesson.value || lesson.value.status === 'done') return
@@ -40,6 +65,14 @@ async function markDone() {
   lesson.value.status = 'done'
   celebrate.value = true
   setTimeout(() => (celebrate.value = false), 3500)
+}
+
+async function resetLesson() {
+  if (!lesson.value) return
+  if (!confirm('Сбросить все ответы в этом уроке и пройти заново?')) return
+  await api.resetLesson(lesson.value.id)
+  store.setStatus(lesson.value.id, 'not_started')
+  await loadLesson(lesson.value.id)
 }
 </script>
 
@@ -60,8 +93,26 @@ async function markDone() {
       <MarkdownView :source="lesson.markdown" class="mt-3" />
 
       <div v-if="blocks.length" class="mt-12 space-y-12 border-t border-[var(--border)] pt-8">
-        <h2 class="text-xl font-extrabold">Упражнения</h2>
-        <ExerciseBlockView v-for="b in blocks" :key="b.id" :lesson="lesson.id" :block="b" />
+        <div class="flex items-center justify-between">
+          <h2 class="text-xl font-extrabold">Упражнения</h2>
+          <button
+            v-if="Object.keys(priors).length"
+            class="text-sm font-medium text-[var(--muted)] hover:text-[var(--accent)]"
+            @click="resetLesson"
+          >
+            Пройти заново
+          </button>
+        </div>
+        <p v-if="resuming" class="-mt-8 text-sm text-[var(--accent)]">
+          ↓ продолжаешь с того места, где остановился
+        </p>
+        <ExerciseBlockView
+          v-for="b in blocks"
+          :key="b.id"
+          :lesson="lesson.id"
+          :block="b"
+          :priors="priors"
+        />
       </div>
 
       <div class="sticky bottom-0 mt-12 -mx-4 border-t border-[var(--border)] bg-[var(--bg)]/90 px-4 py-3 backdrop-blur">

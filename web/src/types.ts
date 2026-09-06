@@ -73,6 +73,12 @@ export interface CheckPayload {
   self?: boolean
 }
 
+export interface LessonAttempt {
+  answer: string
+  correct: boolean
+}
+export type LessonAttempts = Record<string, LessonAttempt>
+
 export interface Vocab {
   id: string
   latin: string
@@ -136,6 +142,17 @@ export interface RecentLesson {
 export interface DayActivity {
   date: string
   count: number
+}
+
+export interface LeaderRow {
+  name: string
+  lessons_done: number
+  lessons_total: number
+  cards_known: number
+  total_cards: number
+  streak_days: number
+  reviewed_today: number
+  last_active: string
 }
 
 export interface Progress {

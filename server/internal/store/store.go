@@ -5,6 +5,7 @@ package store
 import (
 	"database/sql"
 	"fmt"
+	"sort"
 	"strings"
 	"time"
 
@@ -254,6 +255,93 @@ func (s *Store) User(name string) *UserStore {
 	return &UserStore{db: s.db, user: NormalizeName(name)}
 }
 
+// UserProgress is a one-line summary of one account's progress.
+type UserProgress struct {
+	Name          string
+	LessonsDone   int
+	CardsKnown    int
+	TotalCards    int
+	StreakDays    int
+	ReviewedToday int
+	LastActive    string // ISO date; "" if never active
+}
+
+// AllUsersProgress returns a progress summary per account, best first
+// (lessons done, then cards known).
+func (s *Store) AllUsersProgress(today time.Time) ([]UserProgress, error) {
+	names, err := s.ListUsers()
+	if err != nil {
+		return nil, err
+	}
+	lessons := map[string]int{}
+	scanCount(s.db, `SELECT user_name, COUNT(*) FROM lesson_progress WHERE status='done' GROUP BY user_name`, lessons)
+
+	known := map[string]int{}
+	total := map[string]int{}
+	if rows, err := s.db.Query(`SELECT user_name, COUNT(*),
+		SUM(CASE WHEN state='review' AND interval_days>=7 THEN 1 ELSE 0 END)
+		FROM srs_cards GROUP BY user_name`); err == nil {
+		for rows.Next() {
+			var n string
+			var t, k int
+			if rows.Scan(&n, &t, &k) == nil {
+				total[n] = t
+				known[n] = k
+			}
+		}
+		rows.Close()
+	}
+
+	reviewedToday := map[string]int{}
+	scanCount(s.db, `SELECT user_name, COUNT(*) FROM reviews WHERE substr(reviewed_at,1,10)='`+
+		today.Format(dateFmt)+`' GROUP BY user_name`, reviewedToday)
+
+	lastActive := map[string]string{}
+	if rows, err := s.db.Query(`SELECT user_name, MAX(d) FROM (
+		SELECT user_name, substr(reviewed_at,1,10) d FROM reviews
+		UNION ALL SELECT user_name, substr(attempted_at,1,10) FROM attempts
+	) GROUP BY user_name`); err == nil {
+		for rows.Next() {
+			var n, d string
+			if rows.Scan(&n, &d) == nil {
+				lastActive[n] = d
+			}
+		}
+		rows.Close()
+	}
+
+	out := make([]UserProgress, 0, len(names))
+	for _, n := range names {
+		streak, _ := s.User(n).StreakDays(today)
+		out = append(out, UserProgress{
+			Name: n, LessonsDone: lessons[n], CardsKnown: known[n], TotalCards: total[n],
+			StreakDays: streak, ReviewedToday: reviewedToday[n], LastActive: lastActive[n],
+		})
+	}
+	sort.Slice(out, func(i, j int) bool {
+		if out[i].LessonsDone != out[j].LessonsDone {
+			return out[i].LessonsDone > out[j].LessonsDone
+		}
+		return out[i].CardsKnown > out[j].CardsKnown
+	})
+	return out, nil
+}
+
+func scanCount(db *sql.DB, q string, into map[string]int) {
+	rows, err := db.Query(q)
+	if err != nil {
+		return
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var k string
+		var v int
+		if rows.Scan(&k, &v) == nil {
+			into[k] = v
+		}
+	}
+}
+
 // ---- per-account state ----
 
 // EnsureCards inserts any missing cards in state "new".
@@ -450,6 +538,71 @@ ON CONFLICT(user_name, lesson) DO UPDATE SET
 	completed_at = COALESCE(excluded.completed_at, lesson_progress.completed_at)`,
 		u.user, lesson, status, iso, completedCol)
 	return err
+}
+
+// AttemptSummary is the learner's most recent answer to one exercise.
+type AttemptSummary struct {
+	Answer  string
+	Correct bool
+}
+
+// LessonAttempts returns the latest attempt per exercise for a lesson.
+func (u *UserStore) LessonAttempts(lesson string) (map[string]AttemptSummary, error) {
+	rows, err := u.db.Query(`
+SELECT a.exercise_id, a.answer, a.correct
+FROM attempts a
+JOIN (SELECT exercise_id, MAX(id) AS mid FROM attempts
+      WHERE user_name = ? AND lesson = ? GROUP BY exercise_id) last
+  ON a.id = last.mid`, u.user, lesson)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	out := map[string]AttemptSummary{}
+	for rows.Next() {
+		var id string
+		var s AttemptSummary
+		var c int
+		if err := rows.Scan(&id, &s.Answer, &c); err != nil {
+			return nil, err
+		}
+		s.Correct = c != 0
+		out[id] = s
+	}
+	return out, nil
+}
+
+// ResetLesson clears all attempts and progress for one lesson.
+func (u *UserStore) ResetLesson(lesson string) error {
+	tx, err := u.db.Begin()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+	if _, err := tx.Exec(`DELETE FROM attempts WHERE user_name = ? AND lesson = ?`, u.user, lesson); err != nil {
+		return err
+	}
+	if _, err := tx.Exec(`DELETE FROM lesson_progress WHERE user_name = ? AND lesson = ?`, u.user, lesson); err != nil {
+		return err
+	}
+	return tx.Commit()
+}
+
+// ResetExercises clears every attempt and lesson-progress row for the account
+// (SRS word cards are left untouched).
+func (u *UserStore) ResetExercises() error {
+	tx, err := u.db.Begin()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+	if _, err := tx.Exec(`DELETE FROM attempts WHERE user_name = ?`, u.user); err != nil {
+		return err
+	}
+	if _, err := tx.Exec(`DELETE FROM lesson_progress WHERE user_name = ?`, u.user); err != nil {
+		return err
+	}
+	return tx.Commit()
 }
 
 // LessonStatuses returns lesson id -> status for every tracked lesson.

@@ -10,7 +10,7 @@ const account = getAccount()
   <LoginGate v-if="!account" />
   <template v-else>
     <AppNav :account="account" />
-    <main class="mx-auto max-w-3xl px-4 pb-24 pt-5">
+    <main class="mx-auto max-w-3xl px-4 pt-5 pb-[calc(5rem+env(safe-area-inset-bottom))] sm:pb-16">
       <RouterView v-slot="{ Component }">
         <Transition name="fade" mode="out-in">
           <component :is="Component" />

@@ -50,6 +50,11 @@ type exerciseDTO struct {
 	Meta   string   `json:"meta,omitempty"`
 }
 
+type attemptDTO struct {
+	Answer  string `json:"answer"`
+	Correct bool   `json:"correct"`
+}
+
 type checkResultDTO struct {
 	OK       bool             `json:"ok"`
 	Diff     []checker.Chunk  `json:"diff,omitempty"`
@@ -118,6 +123,17 @@ type progressDTO struct {
 type dayActivityDTO struct {
 	Date  string `json:"date"`
 	Count int    `json:"count"`
+}
+
+type leaderRowDTO struct {
+	Name          string `json:"name"`
+	LessonsDone   int    `json:"lessons_done"`
+	LessonsTotal  int    `json:"lessons_total"`
+	CardsKnown    int    `json:"cards_known"`
+	TotalCards    int    `json:"total_cards"`
+	StreakDays    int    `json:"streak_days"`
+	ReviewedToday int    `json:"reviewed_today"`
+	LastActive    string `json:"last_active"`
 }
 
 type phaseProgressDTO struct {

@@ -10,6 +10,8 @@ import type {
   ReviewCard,
   GradeResult,
   Progress,
+  LessonAttempts,
+  LeaderRow,
 } from './types'
 
 export class ApiError extends Error {
@@ -64,6 +66,7 @@ export const api = {
   course: () => request<Course>('/course'),
   lesson: (id: string) => request<Lesson>(`/lessons/${id}`),
   exercises: (id: string) => request<ExerciseBlock[]>(`/lessons/${id}/exercises`),
+  lessonAttempts: (id: string) => request<LessonAttempts>(`/lessons/${id}/attempts`),
   check: (lesson: string, exId: string, payload: CheckPayload) =>
     request<CheckResult>(`/lessons/${lesson}/exercises/${exId}/check`, {
       method: 'POST',
@@ -71,6 +74,8 @@ export const api = {
     }),
   completeLesson: (id: string) =>
     request<void>(`/lessons/${id}/complete`, { method: 'POST' }),
+  resetLesson: (id: string) => request<void>(`/lessons/${id}/reset`, { method: 'POST' }),
+  resetExercises: () => request<void>('/reset-exercises', { method: 'POST' }),
   vocab: (params?: { lesson?: string; tag?: string; q?: string }) =>
     request<Vocab[]>('/vocab' + qs(params)),
   falseFriends: (params?: { group?: string; q?: string }) =>
@@ -82,4 +87,5 @@ export const api = {
       body: JSON.stringify({ card_id: cardId, grade }),
     }),
   progress: () => request<Progress>('/progress'),
+  leaderboard: () => request<LeaderRow[]>('/leaderboard'),
 }
