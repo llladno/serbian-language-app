@@ -17,6 +17,9 @@ type Result struct {
 	OK       bool    `json:"ok"`
 	Expected string  `json:"expected"`
 	Diff     []Chunk `json:"diff"`
+	// NearMiss is true when a wrong answer is within a couple of characters
+	// of the closest accepted variant — likely a typo or a missing diacritic.
+	NearMiss bool `json:"near_miss,omitempty"`
 }
 
 var punct = map[rune]bool{
@@ -70,7 +73,13 @@ func Check(answer string, accept []string) Result {
 			best = a
 		}
 	}
-	return Result{OK: false, Expected: best, Diff: diffChunks(at, normTokens(best))}
+	nearMiss := false
+	if na != "" && best != "" {
+		if d := levenshteinRunes([]rune(na), []rune(Normalize(best))); d > 0 && d <= 2 {
+			nearMiss = true
+		}
+	}
+	return Result{OK: false, Expected: best, Diff: diffChunks(at, normTokens(best)), NearMiss: nearMiss}
 }
 
 // CheckForms grades a conjugation exercise field-by-field.
@@ -131,6 +140,33 @@ func lcsMatched(a, e []string) []bool {
 }
 
 func levenshtein(a, b []string) int {
+	n, m := len(a), len(b)
+	if n == 0 {
+		return m
+	}
+	if m == 0 {
+		return n
+	}
+	prev := make([]int, m+1)
+	for j := 0; j <= m; j++ {
+		prev[j] = j
+	}
+	for i := 1; i <= n; i++ {
+		cur := make([]int, m+1)
+		cur[0] = i
+		for j := 1; j <= m; j++ {
+			cost := 1
+			if a[i-1] == b[j-1] {
+				cost = 0
+			}
+			cur[j] = min3(cur[j-1]+1, prev[j]+1, prev[j-1]+cost)
+		}
+		prev = cur
+	}
+	return prev[m]
+}
+
+func levenshteinRunes(a, b []rune) int {
 	n, m := len(a), len(b)
 	if n == 0 {
 		return m

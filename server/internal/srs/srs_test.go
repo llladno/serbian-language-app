@@ -86,6 +86,17 @@ func TestDueIsIntervalDaysAhead(t *testing.T) {
 	}
 }
 
+func TestPreviewDoesNotMutate(t *testing.T) {
+	c := Card{Ease: 2.5, IntervalDays: 10, Reps: 3, State: Review}
+	p := Preview(c, now)
+	if c.IntervalDays != 10 || c.Reps != 3 {
+		t.Errorf("Preview mutated card: %+v", c)
+	}
+	if p[Good] != 25 || p[Again] != 1 || p[Easy] <= p[Good] {
+		t.Errorf("preview = %+v", p)
+	}
+}
+
 func approx(a, b float64) bool {
 	d := a - b
 	return d < 1e-9 && d > -1e-9

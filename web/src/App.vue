@@ -4,7 +4,11 @@ import AppNav from './components/AppNav.vue'
 
 <template>
   <AppNav />
-  <main class="mx-auto max-w-3xl p-4">
-    <RouterView />
+  <main class="mx-auto max-w-3xl px-4 pb-24 pt-5">
+    <RouterView v-slot="{ Component }">
+      <Transition name="fade" mode="out-in">
+        <component :is="Component" />
+      </Transition>
+    </RouterView>
   </main>
 </template>

@@ -335,6 +335,38 @@ func (s *Store) LessonStatus(lesson string) (string, error) {
 	return st, err
 }
 
+// DayActivity is the number of reviews + exercise attempts on one date.
+type DayActivity struct {
+	Date  string
+	Count int
+}
+
+// ActivityByDay returns per-day activity counts on or after `since`
+// (reviews and exercise attempts combined), oldest first.
+func (s *Store) ActivityByDay(since time.Time) ([]DayActivity, error) {
+	sinceISO := since.Format(time.RFC3339)
+	rows, err := s.db.Query(`
+SELECT d, SUM(n) FROM (
+	SELECT substr(reviewed_at,1,10) AS d, COUNT(*) AS n FROM reviews WHERE reviewed_at >= ? GROUP BY d
+	UNION ALL
+	SELECT substr(attempted_at,1,10) AS d, COUNT(*) AS n FROM attempts WHERE attempted_at >= ? GROUP BY d
+)
+GROUP BY d ORDER BY d ASC`, sinceISO, sinceISO)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var out []DayActivity
+	for rows.Next() {
+		var a DayActivity
+		if err := rows.Scan(&a.Date, &a.Count); err != nil {
+			return nil, err
+		}
+		out = append(out, a)
+	}
+	return out, nil
+}
+
 // NewCount returns how many cards are still in the "new" state.
 func (s *Store) NewCount() (int, error) {
 	var n int

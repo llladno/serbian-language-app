@@ -34,7 +34,7 @@ function retry() {
 </script>
 
 <template>
-  <div class="rounded-lg border border-stone-200 p-3 dark:border-stone-700">
+  <div class="card p-3.5">
     <p class="mb-2 whitespace-pre-wrap">{{ prompt }}</p>
 
     <form v-if="!result" class="flex gap-2" @submit.prevent="submit">
@@ -43,35 +43,31 @@ function retry() {
         type="text"
         autocomplete="off"
         autocapitalize="off"
+        autocorrect="off"
         spellcheck="false"
-        class="flex-1 rounded border border-stone-300 bg-transparent px-2 py-1 dark:border-stone-600"
+        class="field flex-1"
         placeholder="ответ…"
       />
-      <button
-        type="submit"
-        :disabled="pending"
-        class="rounded bg-amber-600 px-3 py-1 text-white disabled:opacity-50"
-      >
-        Проверить
-      </button>
+      <button type="submit" :disabled="pending" class="btn btn-primary disabled:opacity-50">Проверить</button>
     </form>
 
-    <div v-else>
-      <p class="mb-1 font-medium" :class="result.ok ? 'text-emerald-600' : 'text-red-600'">
-        {{ result.ok ? '✓ Верно' : '✗ Не совсем' }}
+    <div v-else class="pop">
+      <p
+        class="mb-1 flex items-center gap-1.5 font-semibold"
+        :class="result.ok ? 'text-[var(--good)]' : 'text-[var(--bad)]'"
+      >
+        <span>{{ result.ok ? '✓' : '✗' }}</span>
+        <span>{{ result.ok ? 'Верно' : result.near_miss ? 'Почти — опечатка?' : 'Не совсем' }}</span>
       </p>
-      <p v-if="result.diff?.length" class="mb-1">
-        <span
-          v-for="(c, i) in result.diff"
-          :key="i"
-          :class="c.ok ? '' : 'chunk-wrong'"
-        >{{ c.text }}{{ i < result.diff.length - 1 ? ' ' : '' }}</span>
+      <p v-if="result.diff?.length && !result.ok" class="mb-1">
+        <span v-for="(c, i) in result.diff" :key="i" :class="c.ok ? '' : 'chunk-wrong'">{{ c.text
+        }}{{ i < result.diff.length - 1 ? ' ' : '' }}</span>
       </p>
       <p v-if="!result.ok && result.expected" class="text-sm">
-        Правильно: <span class="font-medium">{{ result.expected }}</span>
+        Правильно: <span class="serbian font-semibold">{{ result.expected }}</span>
       </p>
-      <p v-if="result.explain" class="mt-1 text-sm text-stone-500">{{ result.explain }}</p>
-      <button class="mt-2 text-sm underline" @click="retry">Ещё раз</button>
+      <p v-if="result.explain" class="mt-1 text-sm text-[var(--muted)]">{{ result.explain }}</p>
+      <button class="mt-2 text-sm font-medium text-[var(--accent)]" @click="retry">Ещё раз</button>
     </div>
   </div>
 </template>

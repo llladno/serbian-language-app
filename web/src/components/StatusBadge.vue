@@ -5,20 +5,25 @@ import type { LessonStatus } from '../types'
 const props = defineProps<{ status: LessonStatus; planned?: boolean }>()
 
 const label = computed(() => {
-  if (props.planned) return 'запланирован'
+  if (props.planned) return 'скоро'
   return { not_started: '', in_progress: 'в процессе', done: 'пройден' }[props.status]
 })
 
-const cls = computed(() => {
-  if (props.planned) return 'bg-stone-200 text-stone-500 dark:bg-stone-700 dark:text-stone-400'
+const style = computed(() => {
+  if (props.planned) return { background: 'var(--bg-soft)', color: 'var(--muted)' }
   return {
-    not_started: '',
-    in_progress: 'bg-amber-200 text-amber-900 dark:bg-amber-900 dark:text-amber-200',
-    done: 'bg-emerald-200 text-emerald-900 dark:bg-emerald-900 dark:text-emerald-200',
+    not_started: {},
+    in_progress: { background: 'var(--accent-soft)', color: 'var(--accent)' },
+    done: { background: 'color-mix(in srgb, var(--good) 16%, transparent)', color: 'var(--good)' },
   }[props.status]
 })
 </script>
 
 <template>
-  <span v-if="label" class="rounded px-1.5 py-0.5 text-xs font-medium" :class="cls">{{ label }}</span>
+  <span
+    v-if="label"
+    class="shrink-0 rounded-full px-2 py-0.5 text-xs font-semibold"
+    :style="style"
+    >{{ label }}</span
+  >
 </template>

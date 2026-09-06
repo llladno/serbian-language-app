@@ -5,7 +5,14 @@ import { api } from '../api'
 import type { ReviewCard } from '../types'
 
 function card(id: string): ReviewCard {
-  return { card_id: id, kind: 'vocab', front: id, back: id, state: 'new' }
+  return {
+    card_id: id,
+    kind: 'vocab',
+    front: id,
+    back: id,
+    state: 'new',
+    preview: { again: 0, hard: 1, good: 1, easy: 4 },
+  }
 }
 
 beforeEach(() => setActivePinia(createPinia()))

@@ -27,31 +27,31 @@ async function selfGrade(ok: boolean) {
 </script>
 
 <template>
-  <div class="rounded-lg border border-stone-200 p-3 dark:border-stone-700">
+  <div class="card p-3.5">
     <p class="mb-2 whitespace-pre-wrap">{{ prompt }}</p>
 
     <textarea
       v-model="answer"
       rows="2"
       :disabled="done"
-      class="w-full rounded border border-stone-300 bg-transparent px-2 py-1 dark:border-stone-600"
+      class="field w-full serbian"
       placeholder="твой вариант…"
     />
 
     <div v-if="sample === null" class="mt-2">
-      <button class="rounded bg-amber-600 px-3 py-1 text-white" @click="reveal">Показать образец</button>
+      <button class="btn btn-primary" @click="reveal">Показать образец</button>
     </div>
 
-    <div v-else-if="!done" class="mt-2">
-      <p class="mb-2 rounded bg-stone-100 p-2 text-sm dark:bg-stone-800">
-        <span class="text-stone-500">образец: </span>{{ sample }}
+    <div v-else-if="!done" class="mt-2 pop">
+      <p class="mb-2 rounded-lg bg-[var(--bg-soft)] p-2.5 text-sm">
+        <span class="text-[var(--muted)]">образец: </span><span class="serbian">{{ sample }}</span>
       </p>
       <div class="flex gap-2">
-        <button class="rounded bg-emerald-600 px-3 py-1 text-white" @click="selfGrade(true)">Справился</button>
-        <button class="rounded bg-red-600 px-3 py-1 text-white" @click="selfGrade(false)">Не справился</button>
+        <button class="btn text-white" style="background: var(--good)" @click="selfGrade(true)">Справился</button>
+        <button class="btn text-white" style="background: var(--bad)" @click="selfGrade(false)">Не справился</button>
       </div>
     </div>
 
-    <p v-else class="mt-2 text-sm text-stone-500">Отмечено.</p>
+    <p v-else class="mt-2 text-sm text-[var(--muted)]">Отмечено.</p>
   </div>
 </template>

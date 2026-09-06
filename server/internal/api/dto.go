@@ -57,6 +57,7 @@ type checkResultDTO struct {
 	Explain  string           `json:"explain,omitempty"`
 	Sample   string           `json:"sample,omitempty"`
 	Forms    []checker.Result `json:"forms,omitempty"`
+	NearMiss bool             `json:"near_miss,omitempty"`
 }
 
 // ---- vocab / false friends ----
@@ -86,13 +87,14 @@ type falseFriendDTO struct {
 // ---- review ----
 
 type reviewCardDTO struct {
-	CardID   string `json:"card_id"`
-	Kind     string `json:"kind"` // vocab | ff
-	Front    string `json:"front"`
-	Cyrillic string `json:"cyrillic,omitempty"`
-	Back     string `json:"back"`
-	Note     string `json:"note,omitempty"`
-	State    string `json:"state"`
+	CardID   string         `json:"card_id"`
+	Kind     string         `json:"kind"` // vocab | ff
+	Front    string         `json:"front"`
+	Cyrillic string         `json:"cyrillic,omitempty"`
+	Back     string         `json:"back"`
+	Note     string         `json:"note,omitempty"`
+	State    string         `json:"state"`
+	Preview  map[string]int `json:"preview"` // grade name -> next interval in days
 }
 
 type gradeResultDTO struct {
@@ -104,11 +106,18 @@ type gradeResultDTO struct {
 // ---- progress ----
 
 type progressDTO struct {
-	Phases        []phaseProgressDTO  `json:"phases"`
-	SRS           srsProgressDTO      `json:"srs"`
-	WeakExercises []weakExerciseDTO   `json:"weak_exercises"`
-	StreakDays    int                 `json:"streak_days"`
-	RecentLessons []recentLessonDTO   `json:"recent_lessons"`
+	Phases        []phaseProgressDTO `json:"phases"`
+	SRS           srsProgressDTO     `json:"srs"`
+	WeakExercises []weakExerciseDTO  `json:"weak_exercises"`
+	StreakDays    int                `json:"streak_days"`
+	RecentLessons []recentLessonDTO  `json:"recent_lessons"`
+	Activity      []dayActivityDTO   `json:"activity"`
+	DailyGoal     int                `json:"daily_goal"`
+}
+
+type dayActivityDTO struct {
+	Date  string `json:"date"`
+	Count int    `json:"count"`
 }
 
 type phaseProgressDTO struct {

@@ -130,6 +130,29 @@ func TestLessonStatusRoundTrip(t *testing.T) {
 	}
 }
 
+func TestActivityByDay(t *testing.T) {
+	s := mustOpen(t)
+	s.EnsureCards([]CardSeed{{"vocab:x", "vocab", "x"}})
+	s.GradeCard("vocab:x", srs.Good, day0)
+	s.AddAttempt(Attempt{"01-A-1", "01", "A", "z", true}, day0)
+	s.AddAttempt(Attempt{"01-A-2", "01", "A", "z", false}, day0.AddDate(0, 0, -3))
+
+	acts, err := s.ActivityByDay(day0.AddDate(0, 0, -7))
+	if err != nil {
+		t.Fatal(err)
+	}
+	byDate := map[string]int{}
+	for _, a := range acts {
+		byDate[a.Date] = a.Count
+	}
+	if byDate[day0.Format("2006-01-02")] != 2 { // 1 review + 1 attempt
+		t.Errorf("today count = %d, want 2 (%+v)", byDate[day0.Format("2006-01-02")], acts)
+	}
+	if byDate[day0.AddDate(0, 0, -3).Format("2006-01-02")] != 1 {
+		t.Errorf("three days ago count wrong: %+v", acts)
+	}
+}
+
 func TestStreakDays(t *testing.T) {
 	s := mustOpen(t)
 	s.EnsureCards([]CardSeed{{"vocab:x", "vocab", "x"}})

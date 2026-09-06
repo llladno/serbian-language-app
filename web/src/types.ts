@@ -64,6 +64,7 @@ export interface CheckResult {
   explain?: string
   sample?: string
   forms?: FormResult[]
+  near_miss?: boolean
 }
 
 export interface CheckPayload {
@@ -102,6 +103,7 @@ export interface ReviewCard {
   back: string
   note?: string
   state: string
+  preview: Record<'again' | 'hard' | 'good' | 'easy', number>
 }
 
 export interface GradeResult {
@@ -131,6 +133,11 @@ export interface RecentLesson {
   status: LessonStatus
 }
 
+export interface DayActivity {
+  date: string
+  count: number
+}
+
 export interface Progress {
   phases: PhaseProgress[]
   srs: {
@@ -143,4 +150,6 @@ export interface Progress {
   weak_exercises: WeakExercise[]
   streak_days: number
   recent_lessons: RecentLesson[]
+  activity: DayActivity[]
+  daily_goal: number
 }

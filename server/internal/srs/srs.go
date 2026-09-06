@@ -95,6 +95,17 @@ func Schedule(c Card, g Grade, now time.Time) Card {
 	return c
 }
 
+// Preview returns the next interval (in days) for each grade if the learner
+// were to pick it now, without changing the card. Again on a new/learning
+// card is reported as 0 (same day).
+func Preview(c Card, now time.Time) map[Grade]int {
+	out := make(map[Grade]int, 4)
+	for _, g := range []Grade{Again, Hard, Good, Easy} {
+		out[g] = Schedule(c, g, now).IntervalDays
+	}
+	return out
+}
+
 func clampEase(e float64) float64 {
 	if e < minEase {
 		return minEase

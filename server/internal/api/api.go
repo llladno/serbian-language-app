@@ -212,6 +212,7 @@ func (h handlers) checkExercise(w http.ResponseWriter, r *http.Request) {
 		resp.OK = res.OK
 		resp.Diff = res.Diff
 		resp.Expected = res.Expected
+		resp.NearMiss = res.NearMiss
 		recordAnswer = req.Answer
 		correct = res.OK
 	}
@@ -279,7 +280,10 @@ func (h handlers) getFalseFriends(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, 200, out)
 }
 
-const newPerDay = 15
+const (
+	newPerDay = 15
+	dailyGoal = 20 // reviews + attempts that count as "a day done"
+)
 
 func (h handlers) cardSeeds() []store.CardSeed {
 	c := h.Course()
@@ -313,9 +317,14 @@ func (h handlers) reviewQueue(w http.ResponseWriter, r *http.Request) {
 		ff[f.ID] = f
 	}
 
+	now := h.Now()
+	gradeNames := map[srs.Grade]string{srs.Again: "again", srs.Hard: "hard", srs.Good: "good", srs.Easy: "easy"}
 	out := make([]reviewCardDTO, 0, len(rows))
 	for _, row := range rows {
-		d := reviewCardDTO{CardID: row.CardID, Kind: row.Kind, State: string(row.State)}
+		d := reviewCardDTO{CardID: row.CardID, Kind: row.Kind, State: string(row.State), Preview: map[string]int{}}
+		for g, days := range srs.Preview(row.Card, now) {
+			d.Preview[gradeNames[g]] = days
+		}
 		switch row.Kind {
 		case "vocab":
 			v, ok := vocab[row.RefID]
@@ -442,6 +451,14 @@ func (h handlers) getProgress(w http.ResponseWriter, r *http.Request) {
 	}
 	sort.Slice(recent, func(i, j int) bool { return recent[i].Lesson < recent[j].Lesson })
 	out.RecentLessons = recent
+
+	out.DailyGoal = dailyGoal
+	out.Activity = []dayActivityDTO{}
+	if acts, err := h.Store.ActivityByDay(now.AddDate(0, 0, -97)); err == nil {
+		for _, a := range acts {
+			out.Activity = append(out.Activity, dayActivityDTO{Date: a.Date, Count: a.Count})
+		}
+	}
 
 	writeJSON(w, 200, out)
 }

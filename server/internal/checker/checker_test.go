@@ -57,6 +57,24 @@ func TestCheckPicksClosestExpected(t *testing.T) {
 	}
 }
 
+func TestCheckNearMiss(t *testing.T) {
+	// one missing diacritic -> near miss
+	r := Check("Neću kafu, hvala", []string{"Neću kafu, hvala."})
+	_ = r
+	miss := Check("Zdravo! Kako si", []string{"Zdravo! Kako si?"})
+	if !miss.OK {
+		t.Fatalf("trailing punct should still pass")
+	}
+	typo := Check("Nemam vremana", []string{"Nemam vremena"})
+	if typo.OK || !typo.NearMiss {
+		t.Errorf("one-letter typo should be a near miss: %+v", typo)
+	}
+	wayOff := Check("ja ne znam", []string{"Nemam vremena"})
+	if wayOff.NearMiss {
+		t.Errorf("unrelated answer should not be a near miss")
+	}
+}
+
 func TestCheckForms(t *testing.T) {
 	rs := CheckForms(
 		[]string{"govorim", "govoris", "govori"},

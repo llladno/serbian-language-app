@@ -18,26 +18,26 @@ const byId = computed(() => {
 </script>
 
 <template>
-  <h1 class="mb-4 text-2xl font-bold">Курс</h1>
+  <h1 class="mb-4 text-2xl font-extrabold">Курс</h1>
 
-  <p v-if="loading" class="text-stone-500">Загрузка…</p>
-  <p v-else-if="error" class="rounded bg-red-100 p-3 text-red-800 dark:bg-red-950 dark:text-red-200">
-    {{ error }} <button class="underline" @click="store.load(true)">повторить</button>
+  <p v-if="loading" class="text-[var(--muted)]">Загрузка…</p>
+  <p v-else-if="error" class="card p-4 text-[var(--bad)]">
+    {{ error }} <button class="font-semibold text-[var(--accent)]" @click="store.load(true)">повторить</button>
   </p>
 
-  <div v-else-if="course" class="space-y-8">
+  <div v-else-if="course" class="space-y-7">
     <section v-for="phase in course.phases" :key="phase.id">
-      <h2 class="mb-2 text-lg font-semibold text-stone-600 dark:text-stone-300">{{ phase.title }}</h2>
-      <ul class="divide-y divide-stone-200 overflow-hidden rounded-lg border border-stone-200 dark:divide-stone-700 dark:border-stone-700">
+      <h2 class="mb-2 text-sm font-bold uppercase tracking-wide text-[var(--muted)]">{{ phase.title }}</h2>
+      <ul class="card divide-y divide-[var(--border)] overflow-hidden">
         <li v-for="lid in phase.lessons" :key="lid">
           <RouterLink
             :to="`/lesson/${lid}`"
-            class="flex items-baseline gap-3 px-4 py-3 hover:bg-stone-100 dark:hover:bg-stone-800"
+            class="flex items-baseline gap-3 px-4 py-3 transition hover:bg-[var(--bg-soft)]"
           >
-            <span class="w-6 shrink-0 font-mono text-sm text-stone-400">{{ lid }}</span>
+            <span class="w-6 shrink-0 font-mono text-sm text-[var(--muted)]">{{ lid }}</span>
             <span class="min-w-0 flex-1">
-              <span class="font-medium">{{ byId.get(lid)?.title || 'Урок ' + lid }}</span>
-              <span class="block truncate text-sm text-stone-500">{{ byId.get(lid)?.subtitle }}</span>
+              <span class="font-semibold">{{ byId.get(lid)?.title || 'Урок ' + lid }}</span>
+              <span class="block truncate text-sm text-[var(--muted)]">{{ byId.get(lid)?.subtitle }}</span>
             </span>
             <StatusBadge
               v-if="byId.get(lid)"
