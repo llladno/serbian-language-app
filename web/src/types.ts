@@ -90,6 +90,8 @@ export interface Vocab {
   gender?: string
   aspect?: string
   tags?: string[]
+  emoji?: string
+  image?: string
 }
 
 export interface FalseFriend {
@@ -99,6 +101,8 @@ export interface FalseFriend {
   not?: string
   correct?: string
   group: string
+  emoji?: string
+  image?: string
 }
 
 export interface ReviewCard {
@@ -109,6 +113,8 @@ export interface ReviewCard {
   back: string
   note?: string
   state: string
+  emoji?: string
+  image?: string
   preview: Record<'again' | 'hard' | 'good' | 'easy', number>
 }
 

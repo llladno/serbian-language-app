@@ -4,6 +4,7 @@
 # ---- Урок 01 — Pozdravi i upoznavanje ----
 
 - id: "zdravo"
+  emoji: "👋"
   latin: "zdravo"
   cyrillic: "здраво"
   ru: "привет / здравствуйте"
@@ -12,6 +13,7 @@
   pos: "interj"
   tags: ["greetings"]
 - id: "cao"
+  emoji: "👋"
   latin: "ćao"
   cyrillic: "ћао"
   ru: "привет / пока"
@@ -20,6 +22,7 @@
   pos: "interj"
   tags: ["greetings"]
 - id: "dobar-dan"
+  emoji: "🌞"
   latin: "dobar dan"
   cyrillic: "добар дан"
   ru: "добрый день"
@@ -27,6 +30,7 @@
   pos: "phrase"
   tags: ["greetings"]
 - id: "dobro-jutro"
+  emoji: "🌅"
   latin: "dobro jutro"
   cyrillic: "добро јутро"
   ru: "доброе утро"
@@ -34,6 +38,7 @@
   pos: "phrase"
   tags: ["greetings"]
 - id: "dobro-vece"
+  emoji: "🌆"
   latin: "dobro veče"
   cyrillic: "добро вече"
   ru: "добрый вечер"
@@ -41,6 +46,7 @@
   pos: "phrase"
   tags: ["greetings"]
 - id: "laku-noc"
+  emoji: "🌙"
   latin: "laku noć"
   cyrillic: "лаку ноћ"
   ru: "спокойной ночи"
@@ -48,6 +54,7 @@
   pos: "phrase"
   tags: ["greetings"]
 - id: "dovidjenja"
+  emoji: "👋"
   latin: "doviđenja"
   cyrillic: "довиђења"
   ru: "до свидания"
@@ -55,6 +62,7 @@
   pos: "phrase"
   tags: ["greetings"]
 - id: "prijatno"
+  emoji: "🙂"
   latin: "prijatno"
   cyrillic: "пријатно"
   ru: "всего доброго / приятного"
@@ -63,6 +71,7 @@
   pos: "interj"
   tags: ["greetings"]
 - id: "vidimo-se"
+  emoji: "👀"
   latin: "vidimo se"
   cyrillic: "видимо се"
   ru: "увидимся"
@@ -70,6 +79,7 @@
   pos: "phrase"
   tags: ["greetings"]
 - id: "cujemo-se"
+  emoji: "📞"
   latin: "čujemo se"
   cyrillic: "чујемо се"
   ru: "созвонимся / на связи"
@@ -77,6 +87,7 @@
   pos: "phrase"
   tags: ["greetings"]
 - id: "molim"
+  emoji: "🙏"
   latin: "molim"
   cyrillic: "молим"
   ru: "пожалуйста; не за что; простите? (переспрос)"
@@ -84,6 +95,7 @@
   pos: "phrase"
   tags: ["politeness"]
 - id: "molim-vas"
+  emoji: "🙏"
   latin: "molim vas"
   cyrillic: "молим вас"
   ru: "пожалуйста (просьба)"
@@ -91,6 +103,7 @@
   pos: "phrase"
   tags: ["politeness"]
 - id: "hvala"
+  emoji: "🙏"
   latin: "hvala (lepo)"
   cyrillic: "хвала (лепо)"
   ru: "спасибо (большое)"
@@ -99,6 +112,7 @@
   pos: "phrase"
   tags: ["politeness"]
 - id: "nema-na-cemu"
+  emoji: "😊"
   latin: "nema na čemu"
   cyrillic: "нема на чему"
   ru: "не за что"
@@ -106,6 +120,7 @@
   pos: "phrase"
   tags: ["politeness"]
 - id: "izvini"
+  emoji: "🙇"
   latin: "izvini / izvinite"
   cyrillic: "извини / извините"
   ru: "извини(те)"
@@ -113,6 +128,7 @@
   pos: "phrase"
   tags: ["politeness"]
 - id: "oprosti"
+  emoji: "🙇"
   latin: "oprosti / oprostite"
   cyrillic: "опрости / опростите"
   ru: "прости(те)"
@@ -120,6 +136,7 @@
   pos: "phrase"
   tags: ["politeness"]
 - id: "izvolite"
+  emoji: "🤲"
   latin: "izvolite"
   cyrillic: "изволите"
   ru: "вот, пожалуйста / чем могу помочь / прошу"
@@ -127,6 +144,7 @@
   pos: "phrase"
   tags: ["politeness"]
 - id: "nema-problema"
+  emoji: "👌"
   latin: "nema problema"
   cyrillic: "нема проблема"
   ru: "без проблем"
@@ -134,6 +152,7 @@
   pos: "phrase"
   tags: ["politeness"]
 - id: "kako-se-zoves"
+  emoji: "❓"
   latin: "kako se zoveš? / zovete?"
   cyrillic: "како се зовеш? / зовете?"
   ru: "как тебя / вас зовут?"
@@ -141,6 +160,7 @@
   pos: "phrase"
   tags: ["intro"]
 - id: "zovem-se"
+  emoji: "🪪"
   latin: "zovem se…"
   cyrillic: "зовем се…"
   ru: "меня зовут…"
@@ -148,6 +168,7 @@
   pos: "phrase"
   tags: ["intro"]
 - id: "ja-sam"
+  emoji: "🙋"
   latin: "ja sam…"
   cyrillic: "ја сам…"
   ru: "я … (имя / профессия)"
@@ -155,6 +176,7 @@
   pos: "phrase"
   tags: ["intro"]
 - id: "drago-mi-je"
+  emoji: "🤝"
   latin: "drago mi je"
   cyrillic: "драго ми је"
   ru: "приятно познакомиться"
@@ -162,6 +184,7 @@
   pos: "phrase"
   tags: ["intro"]
 - id: "takodje"
+  emoji: "🔁"
   latin: "takođe"
   cyrillic: "такође"
   ru: "тоже, взаимно"
@@ -169,6 +192,7 @@
   pos: "adv"
   tags: ["intro"]
 - id: "odakle-si"
+  emoji: "🌍"
   latin: "odakle si? / ste?"
   cyrillic: "одакле си? / сте?"
   ru: "откуда ты / вы?"
@@ -176,6 +200,7 @@
   pos: "phrase"
   tags: ["intro"]
 - id: "iz-rusije"
+  emoji: "🇷🇺"
   latin: "iz Rusije"
   cyrillic: "из Русије"
   ru: "из России"
@@ -184,6 +209,7 @@
   pos: "phrase"
   tags: ["intro"]
 - id: "zivim-u-novom-sadu"
+  emoji: "🏙️"
   latin: "živim u Novom Sadu"
   cyrillic: "живим у Новом Саду"
   ru: "живу в Нови-Саде"
@@ -191,6 +217,7 @@
   pos: "phrase"
   tags: ["intro"]
 - id: "radim-kao"
+  emoji: "💼"
   latin: "radim kao…"
   cyrillic: "радим као…"
   ru: "работаю (кем-то)"
@@ -198,6 +225,7 @@
   pos: "phrase"
   tags: ["intro"]
 - id: "kako-si"
+  emoji: "🙂"
   latin: "kako si? / ste?"
   cyrillic: "како си? / сте?"
   ru: "как дела (ты / вы)?"
@@ -205,6 +233,7 @@
   pos: "phrase"
   tags: ["intro"]
 - id: "kako-ide"
+  emoji: "🤷"
   latin: "kako ide?"
   cyrillic: "како иде?"
   ru: "как оно / как идёт?"
@@ -212,6 +241,7 @@
   pos: "phrase"
   tags: ["intro"]
 - id: "dobro-hvala"
+  emoji: "👍"
   latin: "dobro, hvala"
   cyrillic: "добро, хвала"
   ru: "хорошо, спасибо"
@@ -219,6 +249,7 @@
   pos: "phrase"
   tags: ["intro"]
 - id: "moze"
+  emoji: "👌"
   latin: "može"
   cyrillic: "може"
   ru: "нормально / пойдёт / можно"
@@ -226,6 +257,7 @@
   pos: "phrase"
   tags: ["intro"]
 - id: "ne-zalim-se"
+  emoji: "😌"
   latin: "ne žalim se"
   cyrillic: "не жалим се"
   ru: "не жалуюсь"
@@ -233,6 +265,7 @@
   pos: "phrase"
   tags: ["intro"]
 - id: "biti"
+  emoji: "🟰"
   latin: "biti (jesam / sam / nisam)"
   cyrillic: "бити"
   ru: "быть"
@@ -242,6 +275,7 @@
   aspect: "nesv"
   tags: ["verbs", "irregular"]
 - id: "umoran"
+  emoji: "😩"
   latin: "umoran"
   cyrillic: "уморан"
   ru: "усталый"
@@ -253,6 +287,7 @@
 # ---- Урок 02 — Zamenice i prezent ----
 
 - id: "raditi"
+  emoji: "🛠️"
   latin: "raditi"
   cyrillic: "радити"
   ru: "работать / делать"
@@ -262,6 +297,7 @@
   aspect: "nesv"
   tags: ["verbs"]
 - id: "ziveti"
+  emoji: "🌱"
   latin: "živeti"
   cyrillic: "живети"
   ru: "жить"
@@ -271,6 +307,7 @@
   aspect: "nesv"
   tags: ["verbs"]
 - id: "imati"
+  emoji: "🎒"
   latin: "imati"
   cyrillic: "имати"
   ru: "иметь"
@@ -280,6 +317,7 @@
   aspect: "nesv"
   tags: ["verbs"]
 - id: "znati"
+  emoji: "💡"
   latin: "znati"
   cyrillic: "знати"
   ru: "знать"
@@ -289,6 +327,7 @@
   aspect: "nesv"
   tags: ["verbs"]
 - id: "govoriti"
+  emoji: "💬"
   latin: "govoriti"
   cyrillic: "говорити"
   ru: "говорить"
@@ -298,6 +337,7 @@
   aspect: "nesv"
   tags: ["verbs"]
 - id: "razumeti"
+  emoji: "🧩"
   latin: "razumeti"
   cyrillic: "разумети"
   ru: "понимать"
@@ -307,6 +347,7 @@
   aspect: "nesv"
   tags: ["verbs"]
 - id: "uciti"
+  emoji: "📖"
   latin: "učiti"
   cyrillic: "учити"
   ru: "учить / изучать"
@@ -316,6 +357,7 @@
   aspect: "nesv"
   tags: ["verbs"]
 - id: "voleti"
+  emoji: "❤️"
   latin: "voleti"
   cyrillic: "волети"
   ru: "любить"
@@ -325,6 +367,7 @@
   aspect: "nesv"
   tags: ["verbs"]
 - id: "misliti"
+  emoji: "🤔"
   latin: "misliti"
   cyrillic: "мислити"
   ru: "думать"
@@ -334,6 +377,7 @@
   aspect: "nesv"
   tags: ["verbs"]
 - id: "gledati"
+  emoji: "👀"
   latin: "gledati"
   cyrillic: "гледати"
   ru: "смотреть"
@@ -343,6 +387,7 @@
   aspect: "nesv"
   tags: ["verbs"]
 - id: "slusati"
+  emoji: "👂"
   latin: "slušati"
   cyrillic: "слушати"
   ru: "слушать"
@@ -352,6 +397,7 @@
   aspect: "nesv"
   tags: ["verbs"]
 - id: "citati"
+  emoji: "📕"
   latin: "čitati"
   cyrillic: "читати"
   ru: "читать"
@@ -361,6 +407,7 @@
   aspect: "nesv"
   tags: ["verbs"]
 - id: "pisati"
+  emoji: "✍️"
   latin: "pisati"
   cyrillic: "писати"
   ru: "писать"
@@ -370,6 +417,7 @@
   aspect: "nesv"
   tags: ["verbs"]
 - id: "ici"
+  emoji: "🚶"
   latin: "ići"
   cyrillic: "ићи"
   ru: "идти / ехать"
@@ -379,6 +427,7 @@
   aspect: "nesv"
   tags: ["verbs"]
 - id: "hteti"
+  emoji: "🙌"
   latin: "hteti"
   cyrillic: "хтети"
   ru: "хотеть"
@@ -388,6 +437,7 @@
   aspect: "nesv"
   tags: ["verbs", "irregular"]
 - id: "moci"
+  emoji: "💪"
   latin: "moći"
   cyrillic: "моћи"
   ru: "мочь"
@@ -396,6 +446,7 @@
   pos: "verb"
   tags: ["verbs", "irregular"]
 - id: "putovati"
+  emoji: "✈️"
   latin: "putovati"
   cyrillic: "путовати"
   ru: "путешествовать / ехать"
@@ -405,6 +456,7 @@
   aspect: "nesv"
   tags: ["verbs"]
 - id: "kupovati"
+  emoji: "🛒"
   latin: "kupovati"
   cyrillic: "куповати"
   ru: "покупать"
@@ -414,6 +466,7 @@
   aspect: "nesv"
   tags: ["verbs"]
 - id: "traziti"
+  emoji: "🔎"
   latin: "tražiti"
   cyrillic: "тражити"
   ru: "искать"
@@ -423,6 +476,7 @@
   aspect: "nesv"
   tags: ["verbs"]
 - id: "cekati"
+  emoji: "⏳"
   latin: "čekati"
   cyrillic: "чекати"
   ru: "ждать"
@@ -432,6 +486,7 @@
   aspect: "nesv"
   tags: ["verbs"]
 - id: "kostati"
+  emoji: "🏷️"
   latin: "koštati"
   cyrillic: "коштати"
   ru: "стоить"
@@ -441,6 +496,7 @@
   aspect: "nesv"
   tags: ["verbs", "shop"]
 - id: "ovde"
+  emoji: "📍"
   latin: "ovde"
   cyrillic: "овде"
   ru: "здесь"
@@ -448,6 +504,7 @@
   pos: "adv"
   tags: ["adverbs"]
 - id: "tamo"
+  emoji: "👉"
   latin: "tamo"
   cyrillic: "тамо"
   ru: "там"
@@ -455,6 +512,7 @@
   pos: "adv"
   tags: ["adverbs"]
 - id: "sada"
+  emoji: "⏰"
   latin: "sada / sad"
   cyrillic: "сада / сад"
   ru: "сейчас"
@@ -462,6 +520,7 @@
   pos: "adv"
   tags: ["adverbs", "time"]
 - id: "danas"
+  emoji: "📅"
   latin: "danas"
   cyrillic: "данас"
   ru: "сегодня"
@@ -469,6 +528,7 @@
   pos: "adv"
   tags: ["time"]
 - id: "sutra"
+  emoji: "➡️"
   latin: "sutra"
   cyrillic: "сутра"
   ru: "завтра"
@@ -477,6 +537,7 @@
   pos: "adv"
   tags: ["time"]
 - id: "juce"
+  emoji: "⏮️"
   latin: "juče"
   cyrillic: "јуче"
   ru: "вчера"
@@ -484,6 +545,7 @@
   pos: "adv"
   tags: ["time"]
 - id: "kuci"
+  emoji: "🏠"
   latin: "kući"
   cyrillic: "кући"
   ru: "домой"
@@ -492,6 +554,7 @@
   pos: "adv"
   tags: ["adverbs"]
 - id: "vreme"
+  emoji: "🕰️"
   latin: "vreme"
   cyrillic: "време"
   ru: "время / погода"
@@ -501,6 +564,7 @@
   gender: "n"
   tags: ["nouns", "time"]
 - id: "nista"
+  emoji: "🚫"
   latin: "ništa"
   cyrillic: "ништа"
   ru: "ничего"
@@ -508,6 +572,7 @@
   pos: "pron"
   tags: ["pronouns"]
 - id: "nesto"
+  emoji: "❔"
   latin: "nešto"
   cyrillic: "нешто"
   ru: "что-то"
@@ -515,6 +580,7 @@
   pos: "pron"
   tags: ["pronouns"]
 - id: "dobro-lose"
+  emoji: "⚖️"
   latin: "dobro / loše"
   cyrillic: "добро / лоше"
   ru: "хорошо / плохо"
@@ -522,6 +588,7 @@
   pos: "adv"
   tags: ["adverbs"]
 - id: "malo-mnogo"
+  emoji: "📊"
   latin: "malo / mnogo"
   cyrillic: "мало / много"
   ru: "мало / много"
@@ -529,6 +596,7 @@
   pos: "adv"
   tags: ["adverbs"]
 - id: "ruski"
+  emoji: "🇷🇺"
   latin: "ruski"
   cyrillic: "руски"
   ru: "русский (язык)"
@@ -537,6 +605,7 @@
   pos: "adj"
   tags: ["languages"]
 - id: "srpski"
+  emoji: "🇷🇸"
   latin: "srpski"
   cyrillic: "српски"
   ru: "сербский (язык)"
@@ -544,6 +613,7 @@
   pos: "adj"
   tags: ["languages"]
 - id: "engleski"
+  emoji: "🇬🇧"
   latin: "engleski"
   cyrillic: "енглески"
   ru: "английский (язык)"

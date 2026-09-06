@@ -2,6 +2,7 @@
 import { computed, onMounted, ref, watch } from 'vue'
 import { api } from '../api'
 import type { FalseFriend } from '../types'
+import WordMedia from '../components/WordMedia.vue'
 
 const all = ref<FalseFriend[]>([])
 const q = ref('')
@@ -50,15 +51,18 @@ const rows = computed(() => all.value.filter((f) => group.value === 'all' || f.g
   <p class="mb-2 text-sm text-[var(--muted)]">{{ rows.length }} записей</p>
 
   <div class="space-y-2">
-    <div v-for="f in rows" :key="f.id" class="card p-3">
-      <div class="flex items-baseline justify-between gap-2">
-        <span class="serbian text-lg font-semibold">{{ f.sr }}</span>
-        <span v-if="f.not" class="shrink-0 text-sm text-[var(--bad)]">≠ {{ f.not }}</span>
+    <div v-for="f in rows" :key="f.id" class="card flex gap-3 p-3">
+      <WordMedia :image="f.image" :emoji="f.emoji" :alt="f.means" :size="48" class="mt-0.5 shrink-0" />
+      <div class="min-w-0 flex-1">
+        <div class="flex items-baseline justify-between gap-2">
+          <span class="serbian text-lg font-semibold">{{ f.sr }}</span>
+          <span v-if="f.not" class="shrink-0 text-sm text-[var(--bad)]">≠ {{ f.not }}</span>
+        </div>
+        <p class="text-sm">{{ f.means }}</p>
+        <p v-if="f.correct" class="mt-0.5 text-sm text-[var(--muted)]">
+          «то самое» → <span class="serbian">{{ f.correct }}</span>
+        </p>
       </div>
-      <p class="text-sm">{{ f.means }}</p>
-      <p v-if="f.correct" class="mt-0.5 text-sm text-[var(--muted)]">
-        «то самое» → <span class="serbian">{{ f.correct }}</span>
-      </p>
     </div>
   </div>
 </template>

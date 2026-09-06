@@ -6,6 +6,7 @@ import { getAccount } from '../account'
 import type { Progress, Vocab, LeaderRow } from '../types'
 import ProgressRing from '../components/ProgressRing.vue'
 import ActivityHeatmap from '../components/ActivityHeatmap.vue'
+import WordMedia from '../components/WordMedia.vue'
 
 const progress = ref<Progress | null>(null)
 const wotd = ref<Vocab | null>(null)
@@ -114,11 +115,14 @@ const dueTotal = computed(() =>
     </RouterLink>
 
     <!-- word of the day -->
-    <div v-if="wotd" class="card p-4">
-      <p class="mb-1 text-xs uppercase tracking-wide text-[var(--muted)]">Слово дня</p>
-      <p class="serbian text-2xl font-semibold">{{ wotd.latin }}</p>
-      <p class="text-[var(--muted)]">{{ wotd.cyrillic }} — {{ wotd.ru }}</p>
-      <p v-if="wotd.note" class="mt-0.5 text-sm text-[var(--muted)]">{{ wotd.note }}</p>
+    <div v-if="wotd" class="card flex gap-4 p-4">
+      <WordMedia :image="wotd.image" :emoji="wotd.emoji" :alt="wotd.ru" :size="72" class="shrink-0" />
+      <div class="min-w-0">
+        <p class="mb-1 text-xs uppercase tracking-wide text-[var(--muted)]">Слово дня</p>
+        <p class="serbian text-2xl font-semibold">{{ wotd.latin }}</p>
+        <p class="text-[var(--muted)]">{{ wotd.cyrillic }} — {{ wotd.ru }}</p>
+        <p v-if="wotd.note" class="mt-0.5 text-sm text-[var(--muted)]">{{ wotd.note }}</p>
+      </div>
     </div>
 
     <!-- progress rings per phase -->

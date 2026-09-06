@@ -55,6 +55,8 @@ type vocabFile []struct {
 	Gender   string   `yaml:"gender"`
 	Aspect   string   `yaml:"aspect"`
 	Tags     []string `yaml:"tags"`
+	Emoji    string   `yaml:"emoji"`
+	Image    string   `yaml:"image"`
 }
 
 type falseFriendFile []struct {
@@ -64,6 +66,8 @@ type falseFriendFile []struct {
 	Not     string `yaml:"not"`
 	Correct string `yaml:"correct"`
 	Group   string `yaml:"group"`
+	Emoji   string `yaml:"emoji"`
+	Image   string `yaml:"image"`
 }
 
 // autoTypes are exercise types whose answers are auto-checked against Accept.
@@ -164,6 +168,7 @@ func Load(dir string) (*Course, error) {
 		c.Vocab = append(c.Vocab, Vocab{
 			ID: v.ID, Latin: v.Latin, Cyrillic: v.Cyrillic, RU: v.RU, Note: v.Note,
 			Lesson: v.Lesson, POS: v.POS, Gender: v.Gender, Aspect: v.Aspect, Tags: v.Tags,
+			Emoji: v.Emoji, Image: v.Image,
 		})
 	}
 
@@ -180,6 +185,7 @@ func Load(dir string) (*Course, error) {
 		seenF[f.ID] = true
 		c.FalseFriends = append(c.FalseFriends, FalseFriend{
 			ID: f.ID, SR: f.SR, Means: f.Means, Not: f.Not, Correct: f.Correct, Group: f.Group,
+			Emoji: f.Emoji, Image: f.Image,
 		})
 	}
 

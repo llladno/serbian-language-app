@@ -383,6 +383,7 @@ func (h handlers) getVocab(w http.ResponseWriter, r *http.Request) {
 		out = append(out, vocabDTO{
 			ID: v.ID, Latin: v.Latin, Cyrillic: v.Cyrillic, RU: v.RU, Note: v.Note,
 			Lesson: v.Lesson, POS: v.POS, Gender: v.Gender, Aspect: v.Aspect, Tags: v.Tags,
+			Emoji: v.Emoji, Image: v.Image,
 		})
 	}
 	writeJSON(w, 200, out)
@@ -401,6 +402,7 @@ func (h handlers) getFalseFriends(w http.ResponseWriter, r *http.Request) {
 		}
 		out = append(out, falseFriendDTO{
 			ID: f.ID, SR: f.SR, Means: f.Means, Not: f.Not, Correct: f.Correct, Group: f.Group,
+			Emoji: f.Emoji, Image: f.Image,
 		})
 	}
 	writeJSON(w, 200, out)
@@ -462,12 +464,14 @@ func (h handlers) reviewQueue(w http.ResponseWriter, r *http.Request) {
 				continue
 			}
 			d.Front, d.Cyrillic, d.Back, d.Note = v.Latin, v.Cyrillic, v.RU, v.Note
+			d.Emoji, d.Image = v.Emoji, v.Image
 		case "ff":
 			f, ok := ff[row.RefID]
 			if !ok {
 				continue
 			}
 			d.Front, d.Back = f.SR, f.Means
+			d.Emoji, d.Image = f.Emoji, f.Image
 			note := ""
 			if f.Not != "" {
 				note = "не: " + f.Not

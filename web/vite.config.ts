@@ -4,7 +4,7 @@ import { defineConfig } from 'vitest/config'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [vue()],
-  server: { proxy: { '/api': 'http://localhost:8080' } },
+  server: { proxy: { '/api': 'http://localhost:8080', '/img': 'http://localhost:8080' } },
   build: { outDir: 'dist' },
   test: { environment: 'jsdom' },
 })

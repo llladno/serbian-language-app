@@ -43,10 +43,19 @@ func main() {
 		Now:    time.Now,
 		Stale:  stale,
 	}))
+	imgDir := filepath.Join(*contentDir, "images")
+	mux.Handle("/img/", cacheControl(http.StripPrefix("/img/", http.FileServer(http.Dir(imgDir)))))
 	mux.Handle("/", spaHandler(web.FS()))
 
 	log.Printf("listening on %s", *addr)
 	log.Fatal(http.ListenAndServe(*addr, mux))
+}
+
+func cacheControl(h http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Cache-Control", "public, max-age=604800")
+		h.ServeHTTP(w, r)
+	})
 }
 
 // spaHandler serves static files and falls back to index.html for

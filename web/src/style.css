@@ -106,18 +106,18 @@ body {
   }
 }
 
-/* route transition */
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.16s ease, transform 0.16s ease;
+/* per-view fade-in (non-blocking, no leave transition to deadlock) */
+@keyframes viewIn {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: none; }
 }
-.fade-enter-from {
-  opacity: 0;
-  transform: translateY(6px);
-}
-.fade-leave-to {
-  opacity: 0;
-}
+.view-in { animation: viewIn 0.16s ease-out; }
+
+/* reveal fade used inside components */
+.fade-enter-active { transition: opacity 0.16s ease; }
+.fade-enter-from { opacity: 0; }
+.fade-leave-active { transition: opacity 0.1s ease; }
+.fade-leave-to { opacity: 0; }
 
 /* answer feedback pop */
 @keyframes pop {

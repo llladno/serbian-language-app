@@ -11,10 +11,13 @@ const account = getAccount()
   <template v-else>
     <AppNav :account="account" />
     <main class="mx-auto max-w-3xl px-4 pt-5 pb-[calc(5rem+env(safe-area-inset-bottom))] sm:pb-16">
-      <RouterView v-slot="{ Component }">
-        <Transition name="fade" mode="out-in">
+      <RouterView v-slot="{ Component, route }">
+        <div
+          :key="route.name === 'lesson' ? route.fullPath : (route.name as string)"
+          class="view-in"
+        >
           <component :is="Component" />
-        </Transition>
+        </div>
       </RouterView>
     </main>
   </template>

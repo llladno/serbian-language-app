@@ -78,6 +78,8 @@ type vocabDTO struct {
 	Gender   string   `json:"gender,omitempty"`
 	Aspect   string   `json:"aspect,omitempty"`
 	Tags     []string `json:"tags,omitempty"`
+	Emoji    string   `json:"emoji,omitempty"`
+	Image    string   `json:"image,omitempty"`
 }
 
 type falseFriendDTO struct {
@@ -87,6 +89,8 @@ type falseFriendDTO struct {
 	Not     string `json:"not,omitempty"`
 	Correct string `json:"correct,omitempty"`
 	Group   string `json:"group"`
+	Emoji   string `json:"emoji,omitempty"`
+	Image   string `json:"image,omitempty"`
 }
 
 // ---- review ----
@@ -99,6 +103,8 @@ type reviewCardDTO struct {
 	Back     string         `json:"back"`
 	Note     string         `json:"note,omitempty"`
 	State    string         `json:"state"`
+	Emoji    string         `json:"emoji,omitempty"`
+	Image    string         `json:"image,omitempty"`
 	Preview  map[string]int `json:"preview"` // grade name -> next interval in days
 }
 

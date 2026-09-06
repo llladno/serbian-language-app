@@ -63,6 +63,8 @@ type Vocab struct {
 	Gender   string
 	Aspect   string
 	Tags     []string
+	Emoji    string // optional
+	Image    string // optional filename under content/images/
 }
 
 // FalseFriend is one RU↔SR false-friend entry.
@@ -73,4 +75,6 @@ type FalseFriend struct {
 	Not     string
 	Correct string
 	Group   string // top | shop | small
+	Emoji   string
+	Image   string
 }

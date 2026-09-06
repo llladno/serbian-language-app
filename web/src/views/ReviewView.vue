@@ -2,6 +2,7 @@
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useReviewStore } from '../stores/review'
+import WordMedia from '../components/WordMedia.vue'
 
 const store = useReviewStore()
 const { current, remaining, total, sessionCount, tally, loading, error } = storeToRefs(store)
@@ -93,8 +94,9 @@ onUnmounted(() => window.removeEventListener('keydown', onKey))
       <p v-if="current.cyrillic" class="mt-1 text-sm text-[var(--muted)]">{{ current.cyrillic }}</p>
 
       <Transition name="fade">
-        <div v-if="revealed" class="mt-4 border-t border-[var(--border)] pt-4">
-          <p class="text-xl">{{ current.back }}</p>
+        <div v-if="revealed" class="mt-4 flex flex-col items-center border-t border-[var(--border)] pt-4">
+          <WordMedia :image="current.image" :emoji="current.emoji" :alt="current.back" :size="112" />
+          <p class="mt-3 text-xl">{{ current.back }}</p>
           <p v-if="current.note" class="mt-1 text-sm text-[var(--muted)]">{{ current.note }}</p>
         </div>
       </Transition>

@@ -2,6 +2,7 @@
 import { computed, onMounted, ref, watch } from 'vue'
 import { api } from '../api'
 import type { Vocab } from '../types'
+import WordMedia from '../components/WordMedia.vue'
 
 const all = ref<Vocab[]>([])
 const q = ref('')
@@ -93,6 +94,9 @@ function nextCard() {
       {{ scriptMode === 'latin' ? rows[drillIdx].latin : rows[drillIdx].cyrillic }}
     </p>
     <template v-if="drillShown">
+      <div class="mt-3 flex justify-center">
+        <WordMedia :image="rows[drillIdx].image" :emoji="rows[drillIdx].emoji" :size="112" />
+      </div>
       <p class="mt-2 text-lg">{{ rows[drillIdx].ru }}</p>
       <p v-if="rows[drillIdx].note" class="text-sm text-[var(--muted)]">{{ rows[drillIdx].note }}</p>
       <button class="btn btn-primary mt-3" @click.stop="nextCard">Дальше</button>
@@ -104,7 +108,8 @@ function nextCard() {
     <table class="w-full border-collapse text-sm">
       <thead>
         <tr class="text-left text-[var(--muted)]">
-          <th class="px-3 py-2 font-semibold">слово</th>
+          <th class="px-2 py-2"></th>
+          <th class="px-2 py-2 font-semibold">слово</th>
           <th class="px-3 py-2 font-semibold">перевод</th>
           <th class="px-3 py-2 font-semibold">заметка</th>
           <th class="px-3 py-2 font-semibold">урок</th>
@@ -112,7 +117,10 @@ function nextCard() {
       </thead>
       <tbody>
         <tr v-for="v in rows" :key="v.id" class="border-t border-[var(--border)]">
-          <td class="serbian px-3 py-2 font-semibold">
+          <td class="py-1.5 pl-2 pr-1">
+            <WordMedia :image="v.image" :emoji="v.emoji" :size="34" />
+          </td>
+          <td class="serbian px-2 py-2 font-semibold">
             {{ scriptMode === 'latin' ? v.latin : v.cyrillic }}
           </td>
           <td class="px-3 py-2">{{ v.ru }}</td>
