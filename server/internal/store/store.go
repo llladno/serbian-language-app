@@ -176,7 +176,7 @@ func (s *Store) DueQueue(today time.Time, newLimit int) ([]CardRow, error) {
 
 	if newLimit > 0 {
 		nrows, err := s.db.Query(`SELECT `+cardCols+` FROM srs_cards
-			WHERE state = 'new' ORDER BY card_id LIMIT ?`, newLimit)
+			WHERE state = 'new' ORDER BY RANDOM() LIMIT ?`, newLimit)
 		if err != nil {
 			return nil, err
 		}
@@ -333,6 +333,22 @@ func (s *Store) LessonStatus(lesson string) (string, error) {
 		return "", nil
 	}
 	return st, err
+}
+
+// NewCount returns how many cards are still in the "new" state.
+func (s *Store) NewCount() (int, error) {
+	var n int
+	err := s.db.QueryRow(`SELECT COUNT(*) FROM srs_cards WHERE state = 'new'`).Scan(&n)
+	return n, err
+}
+
+// DueCount returns how many learning/review cards are due on or before today.
+func (s *Store) DueCount(today time.Time) (int, error) {
+	var n int
+	err := s.db.QueryRow(`SELECT COUNT(*) FROM srs_cards
+		WHERE state IN ('learning','review') AND (due IS NULL OR due <= ?)`,
+		today.Format(dateFmt)).Scan(&n)
+	return n, err
 }
 
 // CardStats returns the total number of cards and how many are "known"

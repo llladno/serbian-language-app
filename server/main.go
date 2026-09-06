@@ -5,20 +5,44 @@ import (
 	"io/fs"
 	"log"
 	"net/http"
+	"os"
+	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/grisha/serbian-app/server/internal/api"
+	"github.com/grisha/serbian-app/server/internal/content"
+	"github.com/grisha/serbian-app/server/internal/store"
 	"github.com/grisha/serbian-app/server/web"
 )
 
 func main() {
 	addr := flag.String("addr", ":8080", "listen address")
-	_ = flag.String("content", "./content", "content directory")
-	_ = flag.String("db", "./data/app.db", "sqlite path")
+	contentDir := flag.String("content", "./content", "content directory")
+	dbPath := flag.String("db", "./data/app.db", "sqlite path")
 	flag.Parse()
 
+	getCourse, stale, err := content.Watch(*contentDir)
+	if err != nil {
+		log.Fatalf("load content: %v", err)
+	}
+
+	if err := os.MkdirAll(filepath.Dir(*dbPath), 0o755); err != nil {
+		log.Fatalf("data dir: %v", err)
+	}
+	st, err := store.Open(*dbPath)
+	if err != nil {
+		log.Fatalf("open db: %v", err)
+	}
+	defer st.Close()
+
 	mux := http.NewServeMux()
-	mux.Handle("/api/", api.Handler(api.Deps{}))
+	mux.Handle("/api/", api.Handler(api.Deps{
+		Course: getCourse,
+		Store:  st,
+		Now:    time.Now,
+		Stale:  stale,
+	}))
 	mux.Handle("/", spaHandler(web.FS()))
 
 	log.Printf("listening on %s", *addr)
