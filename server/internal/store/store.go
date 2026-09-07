@@ -577,6 +577,40 @@ func (u *UserStore) GradeCard(cardID string, g srs.Grade, now time.Time) (srs.Ca
 	return updated, tx.Commit()
 }
 
+// ActivateCard makes a card immediately reviewable: it upserts the card and, if
+// it is still "new", moves it to "learning" due today so it turns up in the next
+// review session without waiting for the daily new-card draw. A card the learner
+// has already started (learning/review) is left untouched. Returns whether it
+// changed anything.
+func (u *UserStore) ActivateCard(seed CardSeed, now time.Time) (bool, error) {
+	tx, err := u.db.Begin()
+	if err != nil {
+		return false, err
+	}
+	defer tx.Rollback()
+
+	if _, err := tx.Exec(`INSERT INTO srs_cards (user_name, card_id, kind, ref_id, updated_at)
+		VALUES (?, ?, ?, ?, ?) ON CONFLICT (user_name, card_id) DO NOTHING`,
+		u.user, seed.CardID, seed.Kind, seed.RefID, now.UTC().Format(time.RFC3339)); err != nil {
+		return false, err
+	}
+
+	var state string
+	if err := tx.QueryRow(`SELECT state FROM srs_cards WHERE user_name = ? AND card_id = ?`,
+		u.user, seed.CardID).Scan(&state); err != nil {
+		return false, err
+	}
+	if state != string(srs.New) {
+		return false, tx.Commit()
+	}
+
+	if _, err := tx.Exec(`UPDATE srs_cards SET state=?, due=?, updated_at=? WHERE user_name=? AND card_id=?`,
+		string(srs.Learning), now.Format(dateFmt), now.UTC().Format(time.RFC3339), u.user, seed.CardID); err != nil {
+		return false, err
+	}
+	return true, tx.Commit()
+}
+
 // ReviewedToday counts reviews logged on today's date.
 func (u *UserStore) ReviewedToday(today time.Time) (int, error) {
 	var n int

@@ -6,9 +6,23 @@ import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import type { LookupResult } from '../types'
 import { tokenize } from '../lib/reading'
 import { lookupWord } from '../lib/lookup'
+import { addWordToReview, isAddedToReview } from '../lib/review'
 import SpeakButton from './SpeakButton.vue'
 
 const props = defineProps<{ text: string }>()
+
+const adding = ref('')
+async function addToReview(vocabId: string) {
+  if (adding.value || isAddedToReview(vocabId)) return
+  adding.value = vocabId
+  try {
+    await addWordToReview(vocabId)
+  } catch {
+    /* leave the button as-is; user can retry */
+  } finally {
+    adding.value = ''
+  }
+}
 
 const tokens = computed(() => tokenize(props.text))
 
@@ -100,13 +114,26 @@ onBeforeUnmount(() => {
             class="flex items-start gap-2 border-[var(--border)] py-1 [&:not(:first-child)]:border-t"
           >
             <SpeakButton v-if="m.audio" :src="m.audio" :size="24" class="mt-[2px]" />
-            <div>
+            <div class="min-w-0">
               <div class="font-semibold">
                 {{ m.latin }}
                 <span v-if="m.cyrillic" class="font-normal text-[var(--muted)]">· {{ m.cyrillic }}</span>
               </div>
               <div>{{ m.ru }}</div>
               <div v-if="m.note" class="text-xs text-[var(--muted)]">{{ m.note }}</div>
+              <button
+                type="button"
+                class="mt-1 text-xs font-medium"
+                :class="
+                  isAddedToReview(m.id)
+                    ? 'text-[var(--good)]'
+                    : 'text-[var(--accent)] hover:underline disabled:opacity-50'
+                "
+                :disabled="isAddedToReview(m.id) || adding === m.id"
+                @click="addToReview(m.id)"
+              >
+                {{ isAddedToReview(m.id) ? '✓ в очереди на повторение' : '＋ в повторение' }}
+              </button>
             </div>
           </div>
         </template>

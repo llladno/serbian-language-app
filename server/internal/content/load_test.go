@@ -43,7 +43,7 @@ func TestLoadValidFixture(t *testing.T) {
 	if len(c.Exercises["01"]) != 1 {
 		t.Fatalf("blocks: %d", len(c.Exercises["01"]))
 	}
-	if got := c.Exercises["01"][0].Exercises; len(got) != 3 {
+	if got := c.Exercises["01"][0].Exercises; len(got) != 4 {
 		t.Fatalf("exercises: %d", len(got))
 	}
 	conj := c.Exercises["01"][0].Exercises[2]
@@ -79,6 +79,39 @@ func TestLoadExtractsReadingBlockFromLessonMarkdown(t *testing.T) {
 	}
 	if l.Reading != "Zdravo!" || l.ReadingRU != "Привет!" {
 		t.Errorf("reading = %q / %q", l.Reading, l.ReadingRU)
+	}
+}
+
+func TestLoadListenExercise(t *testing.T) {
+	dir := t.TempDir()
+	tree := baseTree()
+	tree["exercises/01.yaml"] = "lesson: \"01\"\nblocks:\n  - id: D\n    title: Диктант\n    exercises:\n      - id: \"01-D-1\"\n        type: listen\n        say: \"Dobar dan.\"\n        accept: [\"Dobar dan.\", \"Dobar dan\"]\n"
+	tree["audio/01-D-1.mp3"] = "x"
+	writeTree(t, dir, tree)
+	c, err := Load(dir)
+	if err != nil {
+		t.Fatalf("Load: %v", err)
+	}
+	ex := c.Exercises["01"][0].Exercises[0]
+	if ex.Type != "listen" || ex.Say != "Dobar dan." {
+		t.Errorf("listen exercise = %+v", ex)
+	}
+	if len(ex.Accept) != 2 {
+		t.Errorf("accept = %v", ex.Accept)
+	}
+	if ex.Audio != "01-D-1.mp3" {
+		t.Errorf("audio = %q, want 01-D-1.mp3", ex.Audio)
+	}
+}
+
+func TestLoadRejectsListenWithoutSay(t *testing.T) {
+	dir := t.TempDir()
+	tree := baseTree()
+	tree["exercises/01.yaml"] = "lesson: \"01\"\nblocks:\n  - id: D\n    title: D\n    exercises:\n      - id: \"01-D-1\"\n        type: listen\n        accept: [\"Zdravo\"]\n"
+	writeTree(t, dir, tree)
+	_, err := Load(dir)
+	if err == nil || !strings.Contains(err.Error(), "01-D-1") {
+		t.Fatalf("want error mentioning 01-D-1, got %v", err)
 	}
 }
 

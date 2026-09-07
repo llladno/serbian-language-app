@@ -3,19 +3,22 @@ import { computed, ref } from 'vue'
 import { api } from '../../api'
 import type { CheckResult, LessonAttempt } from '../../types'
 import SerbianKeys from '../SerbianKeys.vue'
+import SpeakButton from '../SpeakButton.vue'
 import GlossedText from '../GlossedText.vue'
 
 const props = defineProps<{
   lesson: string
   exerciseId: string
-  type: 'translate' | 'fill_blank' | 'fix_error'
+  type: 'translate' | 'fill_blank' | 'fix_error' | 'listen'
   prompt: string
+  audio?: string
   prior?: LessonAttempt
 }>()
 
 // fill_blank / fix_error prompts are Serbian sentences — make their words
 // clickable. A translate prompt is Russian (and its Serbian answer must not be
-// spoiled), so it stays plain.
+// spoiled), so it stays plain. A listen prompt is just an instruction; the
+// sentence to transcribe lives only in the audio.
 const glossPrompt = computed(() => props.type === 'fill_blank' || props.type === 'fix_error')
 
 const emit = defineEmits<{ graded: [ok: boolean] }>()
@@ -46,7 +49,11 @@ function retry() {
 
 <template>
   <div class="card p-3.5">
-    <p class="mb-2 whitespace-pre-wrap">
+    <div v-if="type === 'listen'" class="mb-3 flex items-center gap-3">
+      <SpeakButton :src="audio" :size="44" />
+      <span class="text-sm text-[var(--muted)]">{{ prompt || 'Напиши, что слышишь' }}</span>
+    </div>
+    <p v-else class="mb-2 whitespace-pre-wrap">
       <GlossedText v-if="glossPrompt" :text="prompt" />
       <template v-else>{{ prompt }}</template>
     </p>

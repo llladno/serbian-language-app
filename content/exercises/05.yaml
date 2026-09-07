@@ -169,3 +169,24 @@ blocks:
         prompt: "Idem u magacin da kupim mleko."
         accept: ["Idem u prodavnicu da kupim mleko.", "Idem u market da kupim mleko."]
         explain: "«magacin» — склад. Магазин — «prodavnica»."
+
+  - id: "F"
+    title: "Диктант"
+    instruction: "Послушай и запиши, что слышишь. Латиницей, с диакритикой (č, ć, š, ž, đ)."
+    exercises:
+      - id: "05-F-1"
+        type: listen
+        say: "Ko je poslednji?"
+        accept: ["Ko je poslednji?"]
+      - id: "05-F-2"
+        type: listen
+        say: "Treba mi hleb."
+        accept: ["Treba mi hleb."]
+      - id: "05-F-3"
+        type: listen
+        say: "Dajte mi jednu kesu."
+        accept: ["Dajte mi jednu kesu."]
+      - id: "05-F-4"
+        type: listen
+        say: "To je sve, hvala."
+        accept: ["To je sve, hvala."]

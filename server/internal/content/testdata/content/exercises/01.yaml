@@ -25,3 +25,8 @@ blocks:
           - ["govorite"]
           - ["govore"]
         meta: "тип I"
+      - id: "01-A-4"
+        type: listen
+        say: "Zdravo, kako si?"
+        accept: ["Zdravo, kako si?", "Zdravo kako si"]
+        explain: "приветствие + «как дела»"

@@ -62,4 +62,26 @@ describe('TextAnswer', () => {
     expect(w.find('span.cursor-pointer').exists()).toBe(false)
     expect(w.text()).toContain('Кто это?')
   })
+
+  it('for listen: plays audio, hides the answer text, grades the typed transcription', async () => {
+    vi.spyOn(api, 'check').mockResolvedValue({ ok: true, expected: 'Zdravo, kako si?' })
+    const w = mount(TextAnswer, {
+      props: {
+        ...props,
+        type: 'listen',
+        prompt: '',
+        audio: '01-D-1.mp3',
+        exerciseId: '01-D-1',
+      },
+    })
+    // an audio control is present, and nothing gives the answer away before submitting
+    expect(w.find('button[aria-label], button[title]').exists()).toBe(true)
+    expect(w.text()).not.toContain('Zdravo, kako si?')
+    expect(w.text()).toContain('Напиши, что слышишь')
+
+    await w.find('input').setValue('Zdravo, kako si?')
+    await w.find('form').trigger('submit')
+    await flushPromises()
+    expect(w.emitted('graded')?.[0]).toEqual([true])
+  })
 })

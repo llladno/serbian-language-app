@@ -3,8 +3,9 @@ import { mount, flushPromises } from '@vue/test-utils'
 import GlossedText from './GlossedText.vue'
 import { api } from '../api'
 import { _resetLookupCache } from '../lib/lookup'
+import { _resetAddedToReview } from '../lib/review'
 
-vi.mock('../api', () => ({ api: { lookup: vi.fn() } }))
+vi.mock('../api', () => ({ api: { lookup: vi.fn(), addToReview: vi.fn() } }))
 
 const RouterLinkStub = {
   props: ['to'],
@@ -17,7 +18,10 @@ const clickWord = (w: ReturnType<typeof mountGT>, text: string) =>
 
 beforeEach(() => {
   vi.mocked(api.lookup).mockReset()
+  vi.mocked(api.addToReview).mockReset()
+  vi.mocked(api.addToReview).mockResolvedValue({ status: 'added' })
   _resetLookupCache()
+  _resetAddedToReview()
 })
 
 describe('GlossedText', () => {
@@ -78,6 +82,33 @@ describe('GlossedText', () => {
     window.dispatchEvent(new Event('scroll'))
     await flushPromises()
     expect(w.text()).toContain('икс')
+  })
+
+  it('adds a matched word to review and marks the button done', async () => {
+    vi.mocked(api.lookup).mockResolvedValue({
+      query: 'košta',
+      partial: false,
+      matches: [{ id: 'kostati', latin: 'koštati', cyrillic: 'коштати', ru: 'стоить' }],
+    })
+    const w = mountGT('Koliko košta?')
+    await clickWord(w, 'košta')
+    await flushPromises()
+
+    const btn = w.findAll('button').find((b) => b.text().includes('в повторение'))!
+    await btn.trigger('click')
+    await flushPromises()
+
+    expect(api.addToReview).toHaveBeenCalledWith('kostati')
+    expect(w.text()).toContain('в очереди')
+    expect(w.findAll('button').some((b) => b.text().includes('в повторение'))).toBe(false)
+  })
+
+  it('shows no add-to-review button when the word is unknown', async () => {
+    vi.mocked(api.lookup).mockResolvedValue({ query: 'xyz', partial: false, matches: [] })
+    const w = mountGT('xyz abc')
+    await clickWord(w, 'xyz')
+    await flushPromises()
+    expect(w.findAll('button').some((b) => b.text().includes('в повторение'))).toBe(false)
   })
 
   it('does not keep global listeners after the card is closed', async () => {

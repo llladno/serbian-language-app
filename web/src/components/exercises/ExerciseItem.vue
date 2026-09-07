@@ -7,7 +7,7 @@ import FreeAnswer from './FreeAnswer.vue'
 defineProps<{ lesson: string; exercise: Exercise; prior?: LessonAttempt }>()
 defineEmits<{ graded: [ok: boolean] }>()
 
-const textTypes = ['translate', 'fill_blank', 'fix_error']
+const textTypes = ['translate', 'fill_blank', 'fix_error', 'listen']
 </script>
 
 <template>
@@ -33,8 +33,9 @@ const textTypes = ['translate', 'fill_blank', 'fix_error']
     v-else-if="textTypes.includes(exercise.type)"
     :lesson="lesson"
     :exercise-id="exercise.id"
-    :type="exercise.type as 'translate' | 'fill_blank' | 'fix_error'"
+    :type="exercise.type as 'translate' | 'fill_blank' | 'fix_error' | 'listen'"
     :prompt="exercise.prompt"
+    :audio="exercise.audio"
     :prior="prior"
     @graded="$emit('graded', $event)"
   />

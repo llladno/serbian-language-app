@@ -50,6 +50,7 @@ type exerciseDTO struct {
 	Prompt string   `json:"prompt"`
 	Forms  []string `json:"forms,omitempty"`
 	Meta   string   `json:"meta,omitempty"`
+	Audio  string   `json:"audio,omitempty"` // listen: clip under /audio/
 }
 
 type attemptDTO struct {

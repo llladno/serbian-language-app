@@ -142,6 +142,43 @@ func TestDueQueueLimitsNewAndOrdersOverdueFirst(t *testing.T) {
 	}
 }
 
+func TestActivateCardMovesNewCardToLearningDueToday(t *testing.T) {
+	_, u := newUser(t)
+	seed := CardSeed{"vocab:zdravo", "vocab", "zdravo"}
+
+	// card need not be seeded yet
+	activated, err := u.ActivateCard(seed, day0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !activated {
+		t.Fatal("want activated=true for a fresh card")
+	}
+	q, _ := u.DueQueue(day0, 0) // no new cards, only due learning/review
+	if len(q) != 1 || q[0].CardID != "vocab:zdravo" || q[0].State != srs.Learning {
+		t.Fatalf("due queue = %+v", q)
+	}
+}
+
+func TestActivateCardLeavesStartedCardAlone(t *testing.T) {
+	_, u := newUser(t)
+	seed := CardSeed{"vocab:x", "vocab", "x"}
+	u.EnsureCards([]CardSeed{seed})
+	u.GradeCard("vocab:x", srs.Easy, day0) // -> review, interval 4
+
+	activated, err := u.ActivateCard(seed, day0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if activated {
+		t.Error("want activated=false for a card already in review")
+	}
+	q, _ := u.DueQueue(day0, 0)
+	if len(q) != 0 {
+		t.Errorf("review card pulled forward: %+v", q)
+	}
+}
+
 func TestGradeCardPersistsAndLogsReview(t *testing.T) {
 	_, u := newUser(t)
 	u.EnsureCards([]CardSeed{{"vocab:x", "vocab", "x"}})

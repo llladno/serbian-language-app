@@ -311,6 +311,90 @@ func TestGetLessonCarriesReadingText(t *testing.T) {
 	}
 }
 
+func TestListenExerciseExposesAudioNotAnswer(t *testing.T) {
+	h, _ := newTestAPI(t)
+	rr := do(h, "GET", "/api/lessons/01/exercises", "")
+	body := rr.Body.String()
+	if strings.Contains(body, "kako si") {
+		t.Errorf("listen answer/say leaked: %s", body)
+	}
+	blocks := decodeBody[[]exerciseBlockDTO](t, rr)
+	var listen *exerciseDTO
+	for i := range blocks {
+		for j := range blocks[i].Exercises {
+			if blocks[i].Exercises[j].ID == "01-A-4" {
+				listen = &blocks[i].Exercises[j]
+			}
+		}
+	}
+	if listen == nil {
+		t.Fatal("listen exercise 01-A-4 not in response")
+	}
+	if listen.Type != "listen" || listen.Audio != "01-A-4.mp3" {
+		t.Errorf("listen dto = %+v", *listen)
+	}
+}
+
+func TestCheckListenGradesTypedTranscription(t *testing.T) {
+	h, _ := newTestAPI(t)
+	ok := do(h, "POST", "/api/lessons/01/exercises/01-A-4/check", `{"answer":"Zdravo, kako si?"}`)
+	if r := decodeBody[checkResultDTO](t, ok); !r.OK {
+		t.Errorf("correct transcription rejected: %+v", r)
+	}
+	bad := do(h, "POST", "/api/lessons/01/exercises/01-A-4/check", `{"answer":"Zdravo, kako ste?"}`)
+	if r := decodeBody[checkResultDTO](t, bad); r.OK {
+		t.Errorf("wrong transcription accepted: %+v", r)
+	}
+}
+
+func TestReviewAddActivatesWordCard(t *testing.T) {
+	h, _ := newTestAPI(t)
+
+	rr := do(h, "POST", "/api/review/add", `{"vocab_id":"svet"}`)
+	if rr.Code != 200 {
+		t.Fatalf("%d %s", rr.Code, rr.Body)
+	}
+	if got := decodeBody[struct {
+		Status string `json:"status"`
+	}](t, rr); got.Status != "added" {
+		t.Errorf("status = %q, want added", got.Status)
+	}
+
+	// it now shows up in the review queue
+	q := decodeBody[[]reviewCardDTO](t, do(h, "GET", "/api/review/queue", ""))
+	found := false
+	for _, c := range q {
+		if c.CardID == "vocab:svet" {
+			found = true
+		}
+	}
+	if !found {
+		t.Errorf("activated card not in review queue: %+v", q)
+	}
+
+	// second time: already there
+	rr2 := do(h, "POST", "/api/review/add", `{"vocab_id":"svet"}`)
+	if got := decodeBody[struct {
+		Status string `json:"status"`
+	}](t, rr2); got.Status != "already" {
+		t.Errorf("status = %q, want already", got.Status)
+	}
+}
+
+func TestReviewAddUnknownWord404(t *testing.T) {
+	h, _ := newTestAPI(t)
+	if rr := do(h, "POST", "/api/review/add", `{"vocab_id":"nonesuch"}`); rr.Code != 404 {
+		t.Errorf("code = %d, want 404", rr.Code)
+	}
+}
+
+func TestReviewAddRequiresAccount(t *testing.T) {
+	h, _ := newTestAPI(t)
+	if rr := doAs(h, "", "POST", "/api/review/add", `{"vocab_id":"svet"}`); rr.Code != 401 {
+		t.Errorf("code = %d, want 401", rr.Code)
+	}
+}
+
 func TestUnknownLesson404(t *testing.T) {
 	h, _ := newTestAPI(t)
 	if do(h, "GET", "/api/lessons/zz", "").Code != 404 {

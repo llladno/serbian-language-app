@@ -88,6 +88,11 @@ export const api = {
       method: 'POST',
       body: JSON.stringify({ card_id: cardId, grade }),
     }),
+  addToReview: (vocabId: string) =>
+    request<{ status: 'added' | 'already' }>('/review/add', {
+      method: 'POST',
+      body: JSON.stringify({ vocab_id: vocabId }),
+    }),
   progress: () => request<Progress>('/progress'),
   leaderboard: () => request<LeaderRow[]>('/leaderboard'),
 }

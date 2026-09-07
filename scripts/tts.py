@@ -11,7 +11,8 @@ Usage:
     python3 scripts/tts.py --voice sr-RS-NicholasNeural
     python3 scripts/tts.py --only zdravo --only hleb
 
-Writes content/audio/<id>.mp3, one per entry in content/vocab.yaml.
+Writes content/audio/<id>.mp3 for every entry in content/vocab.yaml and for
+every `type: listen` exercise (keyed by exercise id, e.g. 01-D-1.mp3).
 Re-run any time; existing files are skipped unless --force.
 """
 import argparse
@@ -27,11 +28,31 @@ try:
 except ImportError:
     sys.exit("edge-tts not installed — run: pip install edge-tts")
 
+import glob
+
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 VOCAB = os.path.join(ROOT, "content", "vocab.yaml")
+EXERCISES_GLOB = os.path.join(ROOT, "content", "exercises", "*.yaml")
 AUDIO_DIR = os.path.join(ROOT, "content", "audio")
 DEFAULT_VOICE = "sr-RS-SophieNeural"
 CONCURRENCY = 4
+
+
+def listen_entries() -> list[dict]:
+    """Collect {id, cyrillic} rows for every `type: listen` exercise with a
+    `say:` field, so they get an audio clip keyed by exercise id (01-D-1.mp3)."""
+    out = []
+    for path in sorted(glob.glob(EXERCISES_GLOB)):
+        if os.path.basename(path) == "_TEMPLATE.yaml":
+            continue
+        with open(path, encoding="utf-8") as f:
+            doc = yaml.safe_load(f) or {}
+        for block in doc.get("blocks") or []:
+            for ex in block.get("exercises") or []:
+                if ex.get("type") == "listen" and ex.get("say"):
+                    # reuse speech_text's cleanup via the "latin" slot
+                    out.append({"id": ex["id"], "latin": ex["say"]})
+    return out
 
 
 def speech_text(entry: dict) -> str:
@@ -103,12 +124,13 @@ def main():
 
     with open(VOCAB, encoding="utf-8") as f:
         entries = [e for e in yaml.safe_load(f) if isinstance(e, dict) and e.get("id")]
+    entries += listen_entries()
     if args.only:
         want = set(args.only)
         entries = [e for e in entries if e["id"] in want]
         missing = want - {e["id"] for e in entries}
         for m in sorted(missing):
-            print(f"  ! id not in vocab: {m}")
+            print(f"  ! id not in vocab/exercises: {m}")
 
     return asyncio.run(run(entries, args.voice, args.force))
 

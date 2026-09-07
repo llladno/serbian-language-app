@@ -53,6 +53,7 @@ func Handler(deps Deps) http.Handler {
 	mux.HandleFunc("GET /api/false-friends", h.getFalseFriends)
 	mux.HandleFunc("GET /api/review/queue", h.reviewQueue)
 	mux.HandleFunc("POST /api/review/grade", h.reviewGrade)
+	mux.HandleFunc("POST /api/review/add", h.reviewAdd)
 	mux.HandleFunc("GET /api/progress", h.getProgress)
 	mux.HandleFunc("GET /api/leaderboard", h.getLeaderboard)
 	return mux
@@ -210,7 +211,7 @@ func (h handlers) getExercises(w http.ResponseWriter, r *http.Request) {
 		bd := exerciseBlockDTO{ID: b.ID, Title: b.Title, Instruction: b.Instruction}
 		for _, e := range b.Exercises {
 			bd.Exercises = append(bd.Exercises, exerciseDTO{
-				ID: e.ID, Type: e.Type, Prompt: e.Prompt, Forms: e.Forms, Meta: e.Meta,
+				ID: e.ID, Type: e.Type, Prompt: e.Prompt, Forms: e.Forms, Meta: e.Meta, Audio: e.Audio,
 			})
 		}
 		out = append(out, bd)
@@ -520,6 +521,44 @@ func (h handlers) reviewGrade(w http.ResponseWriter, r *http.Request) {
 		due = card.Due.Format("2006-01-02")
 	}
 	writeJSON(w, 200, gradeResultDTO{Due: due, IntervalDays: card.IntervalDays, State: string(card.State)})
+}
+
+// reviewAdd pulls a dictionary word into the learner's review queue — used by
+// the "＋ в повторение" button on a word card in a reading text or exercise.
+func (h handlers) reviewAdd(w http.ResponseWriter, r *http.Request) {
+	us, ok := h.user(w, r)
+	if !ok {
+		return
+	}
+	var req struct {
+		VocabID string `json:"vocab_id"`
+	}
+	if err := decode(r, &req); err != nil {
+		fail(w, 400, "bad request body")
+		return
+	}
+	var found *content.Vocab
+	for i, v := range h.Course().Vocab {
+		if v.ID == req.VocabID {
+			found = &h.Course().Vocab[i]
+			break
+		}
+	}
+	if found == nil {
+		fail(w, 404, "unknown word")
+		return
+	}
+	activated, err := us.ActivateCard(
+		store.CardSeed{CardID: "vocab:" + found.ID, Kind: "vocab", RefID: found.ID}, h.Now())
+	if err != nil {
+		fail(w, 500, err.Error())
+		return
+	}
+	status := "already"
+	if activated {
+		status = "added"
+	}
+	writeJSON(w, 200, map[string]string{"status": status})
 }
 
 func (h handlers) getProgress(w http.ResponseWriter, r *http.Request) {

@@ -38,6 +38,7 @@ type exerciseFile struct {
 			Explain string    `yaml:"explain"`
 			Sample  string    `yaml:"sample"`
 			Meta    string    `yaml:"meta"`
+			Say     string    `yaml:"say"`
 			Forms   []string  `yaml:"forms"`
 			Accept  yaml.Node `yaml:"accept"`
 		} `yaml:"exercises"`
@@ -71,7 +72,7 @@ type falseFriendFile []struct {
 }
 
 // autoTypes are exercise types whose answers are auto-checked against Accept.
-var autoTypes = map[string]bool{"translate": true, "fill_blank": true, "fix_error": true}
+var autoTypes = map[string]bool{"translate": true, "fill_blank": true, "fix_error": true, "listen": true}
 
 // Load reads and validates the entire content tree rooted at dir.
 func Load(dir string) (*Course, error) {
@@ -126,6 +127,7 @@ func Load(dir string) (*Course, error) {
 				ex := Exercise{
 					ID: e.ID, Type: e.Type, Prompt: e.Prompt,
 					Explain: e.Explain, Sample: e.Sample, Meta: e.Meta, Forms: e.Forms,
+					Say: e.Say,
 				}
 				switch {
 				case e.Type == "conjugate":
@@ -141,6 +143,14 @@ func Load(dir string) (*Course, error) {
 					}
 					if len(ex.Accept) == 0 {
 						return nil, fmt.Errorf("%s: exercise %s: %s needs a non-empty accept list", rel, e.ID, e.Type)
+					}
+					if e.Type == "listen" {
+						if e.Say == "" {
+							return nil, fmt.Errorf("%s: exercise %s: listen needs a non-empty say (text to synthesize)", rel, e.ID)
+						}
+						if _, err := os.Stat(filepath.Join(dir, "audio", e.ID+".mp3")); err == nil {
+							ex.Audio = e.ID + ".mp3"
+						}
 					}
 				case e.Type == "free":
 					// no auto-check

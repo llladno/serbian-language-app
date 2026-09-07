@@ -37,7 +37,7 @@ export interface LookupResult {
   partial: boolean
 }
 
-export type ExerciseType = 'translate' | 'fill_blank' | 'fix_error' | 'conjugate' | 'free'
+export type ExerciseType = 'translate' | 'fill_blank' | 'fix_error' | 'conjugate' | 'free' | 'listen'
 
 export interface Exercise {
   id: string
@@ -45,6 +45,7 @@ export interface Exercise {
   prompt: string
   forms?: string[]
   meta?: string
+  audio?: string
 }
 
 export interface ExerciseBlock {

@@ -51,6 +51,25 @@ func TestRealContentLoads(t *testing.T) {
 		if strings.Contains(l.Markdown, "<!-- reading") {
 			t.Errorf("lesson %s: reading markers left in markdown", id)
 		}
+
+		listen := 0
+		for _, b := range c.Exercises[id] {
+			for _, e := range b.Exercises {
+				if e.Type != "listen" {
+					continue
+				}
+				listen++
+				if e.Say == "" || len(e.Accept) == 0 {
+					t.Errorf("lesson %s: listen %s missing say/accept", id, e.ID)
+				}
+				if e.Audio != e.ID+".mp3" {
+					t.Errorf("lesson %s: listen %s has no audio (run scripts/tts.py)", id, e.ID)
+				}
+			}
+		}
+		if listen < 3 {
+			t.Errorf("lesson %s: listen exercises = %d, want >= 3", id, listen)
+		}
 	}
 	if !c.Lessons["06"].Planned {
 		t.Error("lesson 06 should be planned")

@@ -63,8 +63,9 @@ make test-pg    # go-тесты стора против TEST_DATABASE_URL
 make build      # npm ci + vite build + go build -> ./serbian-app
 ```
 
-Озвучка новых слов: `python3 scripts/tts.py` (edge-tts, `sr-RS-SophieNeural`,
-без ключа) — дописывает недостающие `content/audio/*.mp3`.
+Озвучка: `python3 scripts/tts.py` (edge-tts, `sr-RS-SophieNeural`, без ключа) —
+дописывает недостающие `content/audio/*.mp3` для слов из `vocab.yaml` **и** для
+упражнений `type: listen` (файл по id упражнения, напр. `01-E-1.mp3`).
 
 ## Деплой
 
@@ -91,7 +92,19 @@ Auto Deploy включён: push в `main` → Dokploy пересобирает 
 (токенайзер `lib/reading.ts`, общий кэш `lib/lookup.ts`, эндпоинт
 `/api/lookup?q=`). Используется в тексте для чтения и в промптах упражнений
 `fill_blank` / `fix_error` (`TextAnswer.vue`). Промпты `translate` (русские,
-и ответ спойлить нельзя) и `free` — без глоссов.
+и ответ спойлить нельзя) и `free` — без глоссов. В карточке слова — кнопка
+«＋ в повторение» (`POST /api/review/add {vocab_id}` → `store.ActivateCard`:
+переводит `new`-карточку в `learning` due-сегодня, мимо дневного лимита новых;
+`lib/review.ts` держит добавленные id в рамках сессии).
+
+### Упражнение `type: listen` (диктант)
+
+`content/exercises/NN.yaml`: `type: listen`, `say:` (текст для синтеза,
+клиенту не отдаётся), `accept:` (что печатать; `checker` нормализует регистр
+и пунктуацию), опц. `prompt` (инструкция). Аудио — `scripts/tts.py` кладёт
+`content/audio/<exerciseId>.mp3`, коммитится в репо. `exerciseDTO.audio`
+отдаётся, `say`/`accept` — нет. Фронт: `TextAnswer.vue` в режиме `listen`
+(кнопка воспроизведения + инструкция, без показа текста).
 
 ## Стиль
 
