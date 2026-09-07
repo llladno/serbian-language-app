@@ -176,3 +176,26 @@ može, ne žalim se, kako se zoveš, zovem se, ja sam, drago mi je, takođe,
 odakle si, iz Rusije, živim u, radim kao, biti (sam / si / je…), umoran`
 
 Полные формы и заметки — в разделе **Словарь**.
+
+<!-- reading -->
+Zdravo! Ja sam Ana. Ja sam iz Rusije, ali sada živim u Novom Sadu.
+Radim kao programer.
+
+— Dobar dan! Kako ste?
+— Dobro, hvala. A vi?
+— Ne žalim se. Odakle ste?
+— Iz Moskve sam. Drago mi je!
+— Takođe. Doviđenja, prijatno!
+
+---
+
+Привет! Я Аня. Я из России, но сейчас живу в Нови-Саде.
+Работаю программистом.
+
+— Добрый день! Как вы?
+— Хорошо, спасибо. А вы?
+— Не жалуюсь. Откуда вы?
+— Я из Москвы. Приятно познакомиться!
+— Взаимно. До свидания, всего доброго!
+<!-- /reading -->
+

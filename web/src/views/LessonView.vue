@@ -5,6 +5,7 @@ import { api } from '../api'
 import { useCourseStore } from '../stores/course'
 import type { Lesson, ExerciseBlock, LessonAttempts } from '../types'
 import MarkdownView from '../components/MarkdownView.vue'
+import ReadingText from '../components/ReadingText.vue'
 import ExerciseBlockView from '../components/exercises/ExerciseBlock.vue'
 import Confetti from '../components/Confetti.vue'
 
@@ -91,6 +92,16 @@ async function resetLesson() {
 
     <template v-else>
       <MarkdownView :source="lesson.markdown" class="mt-3" />
+
+      <section v-if="lesson.reading" class="card mt-10 p-5">
+        <h2 class="mb-3 flex items-center gap-2 text-lg font-extrabold">
+          <span>📖</span> Текст для чтения
+        </h2>
+        <p class="mb-3 text-sm text-[var(--muted)]">
+          Нажми на любое слово — покажу перевод из словаря.
+        </p>
+        <ReadingText :serbian="lesson.reading" :translation="lesson.reading_ru" />
+      </section>
 
       <div v-if="blocks.length" class="mt-12 space-y-12 border-t border-[var(--border)] pt-8">
         <div class="flex items-center justify-between">

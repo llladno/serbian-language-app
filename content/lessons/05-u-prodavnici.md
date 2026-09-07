@@ -162,3 +162,22 @@ pokvareno, rok trajanja, vratiti, zameniti, red, ko je poslednji, radno vreme,
 otvoreno, zatvoreno, na akciji, sniženje`
 
 Полные формы и заметки — в разделе **Словарь**.
+
+<!-- reading -->
+U pekari je red.
+— Ko je poslednji? — Ja sam.
+— Recite? — Treba mi hleb i dva komada peciva.
+— Još nešto? — To je sve. Dajte mi i kesu, molim vas.
+— Koliko dugujem? — Sto deset dinara.
+— Izvolite, kešom. — Hvala, prijatno!
+
+---
+
+В пекарне очередь.
+— Кто последний? — Я.
+— Слушаю? — Мне нужен хлеб и два кусочка выпечки.
+— Ещё что-нибудь? — Это всё. Дайте мне ещё пакет, пожалуйста.
+— Сколько с меня? — Сто десять динаров.
+— Вот, наличными. — Спасибо, всего доброго!
+<!-- /reading -->
+

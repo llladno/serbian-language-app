@@ -99,7 +99,7 @@ func Load(dir string) (*Course, error) {
 			if err != nil {
 				return nil, fmt.Errorf("%s: %w", le.File, err)
 			}
-			l.Markdown = string(md)
+			l.Markdown, l.Reading, l.ReadingRU = extractReading(string(md))
 		}
 		c.Lessons[id] = l
 	}

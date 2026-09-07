@@ -1,6 +1,9 @@
 package content
 
-import "testing"
+import (
+	"strings"
+	"testing"
+)
 
 // TestRealContentLoads guards the migrated content/ tree at the repo root.
 func TestRealContentLoads(t *testing.T) {
@@ -38,6 +41,15 @@ func TestRealContentLoads(t *testing.T) {
 		}
 		if len(c.Exercises[id]) < 5 {
 			t.Errorf("lesson %s blocks = %d, want >= 5", id, len(c.Exercises[id]))
+		}
+	}
+	for _, id := range []string{"01", "02", "03", "04", "05"} {
+		l := c.Lessons[id]
+		if l.Reading == "" || l.ReadingRU == "" {
+			t.Errorf("lesson %s: want a reading block with translation", id)
+		}
+		if strings.Contains(l.Markdown, "<!-- reading") {
+			t.Errorf("lesson %s: reading markers left in markdown", id)
 		}
 	}
 	if !c.Lessons["06"].Planned {

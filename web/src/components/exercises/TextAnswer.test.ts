@@ -48,4 +48,18 @@ describe('TextAnswer', () => {
     await flushPromises()
     expect(spy).not.toHaveBeenCalled()
   })
+
+  it('makes the Serbian prompt words clickable for fill_blank', () => {
+    const w = mount(TextAnswer, {
+      props: { ...props, type: 'fill_blank', prompt: '___ košta kafa?' },
+      global: { stubs: { RouterLink: true } },
+    })
+    expect(w.findAll('span.cursor-pointer').map((s) => s.text())).toEqual(['košta', 'kafa'])
+  })
+
+  it('leaves a Russian translate prompt as plain text', () => {
+    const w = mount(TextAnswer, { props: { ...props, type: 'translate', prompt: 'Кто это?' } })
+    expect(w.find('span.cursor-pointer').exists()).toBe(false)
+    expect(w.text()).toContain('Кто это?')
+  })
 })

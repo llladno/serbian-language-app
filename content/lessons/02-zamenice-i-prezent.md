@@ -234,3 +234,22 @@ Zašto je on ljut?           — Почему он злой?
 
 Подробно с формами — в разделе «Словарь». Глаголы урока:
 `raditi, živeti, imati, znati, govoriti, razumeti, učiti, voleti, misliti, gledati, slušati, čitati, pisati, ići, hteti, moći, putovati, kupovati, tražiti, čekati, koštati`
+
+<!-- reading -->
+Marko i Jana žive u Novom Sadu. Marko radi, a Jana uči srpski.
+Danas Jana čita knjigu i sluša muziku. Ona dobro razume, ali malo govori.
+
+— Šta radiš sutra?
+— Ne znam. Možda gledam film ili pišem pismo. A ti?
+— Ja idem na posao. Volim da putujem, ali sada nemam vremena.
+
+---
+
+Марко и Яна живут в Нови-Саде. Марко работает, а Яна учит сербский.
+Сегодня Яна читает книгу и слушает музыку. Она хорошо понимает, но мало говорит.
+
+— Что делаешь завтра?
+— Не знаю. Может, посмотрю фильм или напишу письмо. А ты?
+— Я иду на работу. Люблю путешествовать, но сейчас нет времени.
+<!-- /reading -->
+

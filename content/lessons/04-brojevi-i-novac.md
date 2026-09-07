@@ -185,3 +185,24 @@ koliko imaš godina, broj (telefona), javiti se, poruka, sprat, prizemlje,
 prvi, drugi, treći, stanica, datum`
 
 Полные формы и заметки — в разделе **Словарь**.
+
+<!-- reading -->
+— Dobar dan! Pošto je kafa?
+— Sto pedeset dinara.
+— Dajte mi dve, molim vas. Koliko dugujem?
+— Trista dinara sve zajedno. Imate sitno?
+— Nemam, evo kartica.
+— Može. Izvolite račun i kusur.
+— Hvala! Doviđenja.
+
+---
+
+— Добрый день! Почём кофе?
+— Сто пятьдесят динаров.
+— Дайте мне два, пожалуйста. Сколько с меня?
+— Триста динаров вместе. У вас есть мелочь?
+— Нет, вот карта.
+— Хорошо. Вот чек и сдача.
+— Спасибо! До свидания.
+<!-- /reading -->
+

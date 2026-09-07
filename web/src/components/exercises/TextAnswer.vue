@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { api } from '../../api'
 import type { CheckResult, LessonAttempt } from '../../types'
 import SerbianKeys from '../SerbianKeys.vue'
+import GlossedText from '../GlossedText.vue'
 
 const props = defineProps<{
   lesson: string
@@ -11,6 +12,11 @@ const props = defineProps<{
   prompt: string
   prior?: LessonAttempt
 }>()
+
+// fill_blank / fix_error prompts are Serbian sentences — make their words
+// clickable. A translate prompt is Russian (and its Serbian answer must not be
+// spoiled), so it stays plain.
+const glossPrompt = computed(() => props.type === 'fill_blank' || props.type === 'fix_error')
 
 const emit = defineEmits<{ graded: [ok: boolean] }>()
 
@@ -40,7 +46,10 @@ function retry() {
 
 <template>
   <div class="card p-3.5">
-    <p class="mb-2 whitespace-pre-wrap">{{ prompt }}</p>
+    <p class="mb-2 whitespace-pre-wrap">
+      <GlossedText v-if="glossPrompt" :text="prompt" />
+      <template v-else>{{ prompt }}</template>
+    </p>
 
     <!-- previously answered -->
     <div v-if="fromPrior" class="text-sm">

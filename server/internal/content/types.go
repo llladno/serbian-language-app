@@ -26,7 +26,13 @@ type Lesson struct {
 	Subtitle     string
 	Planned      bool   // true when no markdown file exists yet
 	MarkdownPath string // relative path, "" when planned
-	Markdown     string // "" when planned
+	Markdown     string // "" when planned; reading block stripped out
+
+	// Reading is an optional short Serbian text for reading practice, pulled
+	// from a <!-- reading --> block in the lesson markdown. ReadingRU is its
+	// Russian translation (may be empty).
+	Reading   string
+	ReadingRU string
 }
 
 // ExerciseBlock is a titled group of exercises (блок A/B/C… в уроке).

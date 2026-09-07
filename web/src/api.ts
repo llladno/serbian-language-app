@@ -6,6 +6,7 @@ import type {
   CheckResult,
   CheckPayload,
   Vocab,
+  LookupResult,
   FalseFriend,
   ReviewCard,
   GradeResult,
@@ -80,6 +81,7 @@ export const api = {
     request<Vocab[]>('/vocab' + qs(params)),
   falseFriends: (params?: { group?: string; q?: string }) =>
     request<FalseFriend[]>('/false-friends' + qs(params)),
+  lookup: (q: string) => request<LookupResult>('/lookup' + qs({ q })),
   reviewQueue: () => request<ReviewCard[]>('/review/queue'),
   grade: (cardId: string, grade: number) =>
     request<GradeResult>('/review/grade', {

@@ -167,3 +167,24 @@ kako se kaže, šta znači, kako se piše, kako se zove, pomoći (pomognem),
 žuriti (žurim), najbliži`
 
 Полные формы и заметки — в разделе **Словарь**.
+
+<!-- reading -->
+— Izvinite, kako se kaže „spasibo" na srpskom?
+— Kaže se „hvala".
+— A šta znači „žurim"?
+— To znači da nemaš vremena.
+— Molim? Možete sporije?
+— Naravno. Kuda ideš i zašto žuriš?
+— Idem kući jer je kasno. Hvala na pomoći!
+
+---
+
+— Извините, как по-сербски сказать «спасибо»?
+— Говорится «hvala».
+— А что значит «žurim»?
+— Это значит, что у тебя нет времени.
+— Что? Можете медленнее?
+— Конечно. Куда идёшь и почему торопишься?
+— Иду домой, потому что поздно. Спасибо за помощь!
+<!-- /reading -->
+

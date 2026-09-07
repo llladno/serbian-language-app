@@ -1,13 +1,15 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import { api } from '../api'
 import type { Vocab } from '../types'
 import WordMedia from '../components/WordMedia.vue'
 import SpeakButton from '../components/SpeakButton.vue'
 import SerbianKeys from '../components/SerbianKeys.vue'
 
+const route = useRoute()
 const all = ref<Vocab[]>([])
-const q = ref('')
+const q = ref(typeof route.query.q === 'string' ? route.query.q : '')
 const lesson = ref('')
 const tag = ref('')
 const scriptMode = ref<'latin' | 'cyrillic'>('latin')

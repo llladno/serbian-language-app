@@ -50,7 +50,7 @@ func TestLoadValidFixture(t *testing.T) {
 	if len(conj.AcceptForms) != 6 || conj.AcceptForms[1][0] != "govoriš" {
 		t.Errorf("conjugate accept: %+v", conj.AcceptForms)
 	}
-	if len(c.Vocab) != 2 || len(c.FalseFriends) != 1 {
+	if len(c.Vocab) != 4 || len(c.FalseFriends) != 1 {
 		t.Errorf("vocab=%d ff=%d", len(c.Vocab), len(c.FalseFriends))
 	}
 }
@@ -61,6 +61,24 @@ func baseTree() map[string]string {
 		"lessons/01.md":      "# t\n",
 		"vocab.yaml":         "[]\n",
 		"false-friends.yaml": "[]\n",
+	}
+}
+
+func TestLoadExtractsReadingBlockFromLessonMarkdown(t *testing.T) {
+	dir := t.TempDir()
+	tree := baseTree()
+	tree["lessons/01.md"] = "# t\n\nтеория\n\n<!-- reading -->\nZdravo!\n\n---\n\nПривет!\n<!-- /reading -->\n"
+	writeTree(t, dir, tree)
+	c, err := Load(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	l := c.Lessons["01"]
+	if strings.Contains(l.Markdown, "reading") || strings.Contains(l.Markdown, "Zdravo") {
+		t.Errorf("reading block not stripped from markdown: %q", l.Markdown)
+	}
+	if l.Reading != "Zdravo!" || l.ReadingRU != "Привет!" {
+		t.Errorf("reading = %q / %q", l.Reading, l.ReadingRU)
 	}
 }
 

@@ -5,8 +5,8 @@ import "github.com/grisha/serbian-app/server/internal/checker"
 // ---- course / lessons ----
 
 type courseDTO struct {
-	Title  string      `json:"title"`
-	Phases []phaseDTO  `json:"phases"`
+	Title   string         `json:"title"`
+	Phases  []phaseDTO     `json:"phases"`
 	Lessons []lessonRefDTO `json:"lessons"`
 }
 
@@ -25,12 +25,14 @@ type lessonRefDTO struct {
 }
 
 type lessonDTO struct {
-	ID       string `json:"id"`
-	Title    string `json:"title"`
-	Subtitle string `json:"subtitle"`
-	Planned  bool   `json:"planned"`
-	Markdown string `json:"markdown"`
-	Status   string `json:"status"`
+	ID        string `json:"id"`
+	Title     string `json:"title"`
+	Subtitle  string `json:"subtitle"`
+	Planned   bool   `json:"planned"`
+	Markdown  string `json:"markdown"`
+	Reading   string `json:"reading,omitempty"`
+	ReadingRU string `json:"reading_ru,omitempty"`
+	Status    string `json:"status"`
 }
 
 // ---- exercises (accept lists intentionally omitted) ----

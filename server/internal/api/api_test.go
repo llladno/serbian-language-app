@@ -281,7 +281,7 @@ func TestResetExercisesKeepsSRS(t *testing.T) {
 func TestLeaderboard(t *testing.T) {
 	h, st := newTestAPI(t)
 	st.EnsureUser("Оля")
-	do(h, "POST", "/api/lessons/01/complete", "")            // tester: 1 lesson
+	do(h, "POST", "/api/lessons/01/complete", "")                                      // tester: 1 lesson
 	doAs(h, "Оля", "POST", "/api/lessons/01/exercises/01-A-1/check", `{"answer":"x"}`) // Оля: activity, 0 lessons
 
 	rows := decodeBody[[]leaderRowDTO](t, do(h, "GET", "/api/leaderboard", ""))
@@ -293,6 +293,21 @@ func TestLeaderboard(t *testing.T) {
 	}
 	if rows[0].LessonsTotal != 2 { // fixture course has 2 lessons
 		t.Errorf("lessons_total = %d", rows[0].LessonsTotal)
+	}
+}
+
+func TestGetLessonCarriesReadingText(t *testing.T) {
+	h, _ := newTestAPI(t)
+	rr := do(h, "GET", "/api/lessons/01", "")
+	if rr.Code != 200 {
+		t.Fatal(rr.Code)
+	}
+	got := decodeBody[lessonDTO](t, rr)
+	if got.Reading != "Zdravo, ja sam Milan." || got.ReadingRU != "Привет, я Милан." {
+		t.Errorf("reading = %q / %q", got.Reading, got.ReadingRU)
+	}
+	if strings.Contains(got.Markdown, "Zdravo") {
+		t.Errorf("reading leaked into markdown: %q", got.Markdown)
 	}
 }
 

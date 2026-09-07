@@ -26,7 +26,15 @@ export interface Lesson {
   subtitle: string
   planned: boolean
   markdown: string
+  reading?: string
+  reading_ru?: string
   status: LessonStatus
+}
+
+export interface LookupResult {
+  query: string
+  matches: Vocab[]
+  partial: boolean
 }
 
 export type ExerciseType = 'translate' | 'fill_blank' | 'fix_error' | 'conjugate' | 'free'

@@ -49,6 +49,7 @@ func Handler(deps Deps) http.Handler {
 	mux.HandleFunc("POST /api/lessons/{id}/reset", h.resetLesson)
 	mux.HandleFunc("POST /api/reset-exercises", h.resetExercises)
 	mux.HandleFunc("GET /api/vocab", h.getVocab)
+	mux.HandleFunc("GET /api/lookup", h.lookup)
 	mux.HandleFunc("GET /api/false-friends", h.getFalseFriends)
 	mux.HandleFunc("GET /api/review/queue", h.reviewQueue)
 	mux.HandleFunc("POST /api/review/grade", h.reviewGrade)
@@ -194,6 +195,7 @@ func (h handlers) getLesson(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, 200, lessonDTO{
 		ID: l.ID, Title: l.Title, Subtitle: l.Subtitle,
 		Planned: l.Planned, Markdown: l.Markdown, Status: st,
+		Reading: l.Reading, ReadingRU: l.ReadingRU,
 	})
 }
 
