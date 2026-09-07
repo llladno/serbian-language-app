@@ -12,8 +12,12 @@ Usage:
     python3 scripts/tts.py --only zdravo --only hleb
 
 Writes content/audio/<id>.mp3 for every entry in content/vocab.yaml and for
-every `type: listen` exercise (keyed by exercise id, e.g. 01-D-1.mp3).
+every `type: listen` exercise (keyed by exercise id, e.g. 01-E-1.mp3).
 Re-run any time; existing files are skipped unless --force.
+
+The sr-RS voices are Cyrillic-trained and mispronounce Latin text, so
+everything is synthesized from Cyrillic — vocab via its `cyrillic` field,
+listen exercises via sr_lat_to_cyr() on the Latin `say`.
 """
 import argparse
 import asyncio
@@ -38,9 +42,42 @@ DEFAULT_VOICE = "sr-RS-SophieNeural"
 CONCURRENCY = 4
 
 
+# Serbian is a 1:1 Latin<->Cyrillic script pair. The sr-RS neural voices are
+# trained on Cyrillic and mangle Latin input (English-ish phonetics), so every
+# string handed to the engine must be Cyrillic — hence speech_text prefers the
+# `cyrillic` field for vocab, and listen exercises get transliterated here.
+_SR_DIGRAPHS = [
+    ("DŽ", "Џ"), ("Dž", "Џ"), ("dž", "џ"),
+    ("LJ", "Љ"), ("Lj", "Љ"), ("lj", "љ"),
+    ("NJ", "Њ"), ("Nj", "Њ"), ("nj", "њ"),
+]
+_SR_MAP = str.maketrans({
+    "a": "а", "b": "б", "c": "ц", "č": "ч", "ć": "ћ", "d": "д", "đ": "ђ",
+    "e": "е", "f": "ф", "g": "г", "h": "х", "i": "и", "j": "ј", "k": "к",
+    "l": "л", "m": "м", "n": "н", "o": "о", "p": "п", "r": "р", "s": "с",
+    "š": "ш", "t": "т", "u": "у", "v": "в", "z": "з", "ž": "ж",
+    "A": "А", "B": "Б", "C": "Ц", "Č": "Ч", "Ć": "Ћ", "D": "Д", "Đ": "Ђ",
+    "E": "Е", "F": "Ф", "G": "Г", "H": "Х", "I": "И", "J": "Ј", "K": "К",
+    "L": "Л", "M": "М", "N": "Н", "O": "О", "P": "П", "R": "Р", "S": "С",
+    "Š": "Ш", "T": "Т", "U": "У", "V": "В", "Z": "З", "Ž": "Ж",
+})
+
+
+def sr_lat_to_cyr(s: str) -> str:
+    """Transliterate Serbian Latin to Cyrillic. Digraphs (lj/nj/dž) first; other
+    characters (spaces, digits, punctuation) pass through unchanged. Does not
+    handle the rare non-digraph d+ž / n+j / l+j sequences — none occur in the
+    current content, add a say_cyrillic override if that ever changes."""
+    for lat, cyr in _SR_DIGRAPHS:
+        s = s.replace(lat, cyr)
+    return s.translate(_SR_MAP)
+
+
 def listen_entries() -> list[dict]:
     """Collect {id, cyrillic} rows for every `type: listen` exercise with a
-    `say:` field, so they get an audio clip keyed by exercise id (01-D-1.mp3)."""
+    `say:` field, so they get an audio clip keyed by exercise id (01-E-1.mp3).
+    `say` is authored in Latin (like the rest of the content) and transliterated
+    to Cyrillic so the Serbian voice pronounces it correctly."""
     out = []
     for path in sorted(glob.glob(EXERCISES_GLOB)):
         if os.path.basename(path) == "_TEMPLATE.yaml":
@@ -50,8 +87,7 @@ def listen_entries() -> list[dict]:
         for block in doc.get("blocks") or []:
             for ex in block.get("exercises") or []:
                 if ex.get("type") == "listen" and ex.get("say"):
-                    # reuse speech_text's cleanup via the "latin" slot
-                    out.append({"id": ex["id"], "latin": ex["say"]})
+                    out.append({"id": ex["id"], "cyrillic": sr_lat_to_cyr(ex["say"])})
     return out
 
 
