@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { nextTick, ref, watch } from 'vue'
+import { computed, reactive, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { api } from '../api'
 import { useCourseStore } from '../stores/course'
-import type { Lesson, ExerciseBlock, LessonAttempts } from '../types'
+import type { Lesson, ExerciseBlock, LessonAttempts, Step } from '../types'
 import MarkdownView from '../components/MarkdownView.vue'
 import ReadingText from '../components/ReadingText.vue'
+import StepProgress from '../components/StepProgress.vue'
 import ExerciseBlockView from '../components/exercises/ExerciseBlock.vue'
 import Confetti from '../components/Confetti.vue'
 
@@ -17,7 +18,26 @@ const blocks = ref<ExerciseBlock[]>([])
 const priors = ref<LessonAttempts>({})
 const error = ref<string | null>(null)
 const celebrate = ref(false)
-const resuming = ref(false)
+
+const idx = ref(0)
+const graded = reactive<Record<string, boolean>>({})
+
+const steps = computed<Step[]>(() => lesson.value?.steps ?? [])
+const cur = computed<Step | undefined>(() => steps.value[idx.value])
+const curBlock = computed(() => blocks.value.find((b) => b.id === cur.value?.id))
+const atLast = computed(() => idx.value >= steps.value.length - 1)
+
+const canAdvance = computed(() => {
+  const s = cur.value
+  if (!s) return false
+  if (s.kind === 'teach' || s.kind === 'reading') return true
+  return (s.exercise_ids ?? []).every((eid) => eid in graded)
+})
+
+function firstUnfinished(): number {
+  const i = steps.value.findIndex((s) => s.status !== 'done')
+  return i === -1 ? 0 : i
+}
 
 async function loadLesson(id: string) {
   lesson.value = null
@@ -25,18 +45,20 @@ async function loadLesson(id: string) {
   priors.value = {}
   error.value = null
   celebrate.value = false
-  resuming.value = false
+  for (const k of Object.keys(graded)) delete graded[k]
   try {
     lesson.value = await api.lesson(id)
     if (!lesson.value.planned) {
       const [bl, pr] = await Promise.all([api.exercises(id), api.lessonAttempts(id)])
       blocks.value = bl
       priors.value = pr
-      await nextTick()
-      setTimeout(jumpToFirstUnanswered, 120)
-    } else {
-      window.scrollTo(0, 0)
+      for (const [exId, a] of Object.entries(pr)) graded[exId] = a.correct
     }
+    const wanted = route.query.step as string | undefined
+    const at = wanted ? steps.value.findIndex((s) => s.id === wanted) : -1
+    idx.value = at >= 0 ? at : firstUnfinished()
+    markSeen()
+    window.scrollTo(0, 0)
   } catch (e) {
     error.value = (e as Error).message
   }
@@ -44,33 +66,61 @@ async function loadLesson(id: string) {
 
 watch(() => route.params.id as string, loadLesson, { immediate: true })
 
-function jumpToFirstUnanswered() {
-  const all = blocks.value.flatMap((b) => b.exercises.map((e) => e.id))
-  const answered = new Set(Object.keys(priors.value))
-  if (answered.size === 0 || answered.size === all.length) {
-    window.scrollTo(0, 0)
-    return
-  }
-  const next = all.find((id) => !answered.has(id))
-  if (!next) return
-  const el = document.querySelector(`[data-ex="${next}"]`)
-  if (el) {
-    resuming.value = true
-    el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+async function markSeen() {
+  const s = cur.value
+  if (!lesson.value || !s || s.status !== 'not_started') return
+  s.status = 'in_progress'
+  try {
+    await api.setStepStatus(lesson.value.id, s.id, 'in_progress')
+  } catch {
+    /* non-fatal */
   }
 }
 
-async function markDone() {
-  if (!lesson.value || lesson.value.status === 'done') return
-  await store.markDone(lesson.value.id)
-  lesson.value.status = 'done'
+function onGraded(exId: string, ok: boolean) {
+  graded[exId] = ok
+}
+
+async function next() {
+  const s = cur.value
+  if (!lesson.value || !s) return
+  if (s.status !== 'done') {
+    s.status = 'done'
+    try {
+      await api.setStepStatus(lesson.value.id, s.id, 'done')
+    } catch {
+      /* non-fatal — progress catches up on next action */
+    }
+  }
+  if (!atLast.value) {
+    idx.value++
+    markSeen()
+    window.scrollTo(0, 0)
+  } else {
+    await finish()
+  }
+}
+
+function back() {
+  if (idx.value > 0) {
+    idx.value--
+    window.scrollTo(0, 0)
+  }
+}
+
+async function finish() {
+  if (!lesson.value) return
+  if (lesson.value.status !== 'done') {
+    await store.markDone(lesson.value.id)
+    lesson.value.status = 'done'
+  }
   celebrate.value = true
   setTimeout(() => (celebrate.value = false), 3500)
 }
 
 async function resetLesson() {
   if (!lesson.value) return
-  if (!confirm('Сбросить все ответы в этом уроке и пройти заново?')) return
+  if (!confirm('Сбросить весь прогресс по уроку и пройти заново?')) return
   await api.resetLesson(lesson.value.id)
   store.setStatus(lesson.value.id, 'not_started')
   await loadLesson(lesson.value.id)
@@ -82,7 +132,16 @@ async function resetLesson() {
   <p v-if="error" class="card p-4 text-[var(--bad)]">{{ error }}</p>
 
   <template v-else-if="lesson">
-    <RouterLink to="/course" class="text-sm text-[var(--muted)] hover:text-[var(--fg)]">← к курсу</RouterLink>
+    <div class="flex items-center justify-between gap-3">
+      <RouterLink to="/course" class="text-sm text-[var(--muted)] hover:text-[var(--fg)]">← к курсу</RouterLink>
+      <button
+        v-if="!lesson.planned && Object.keys(priors).length"
+        class="text-sm font-medium text-[var(--muted)] hover:text-[var(--accent)]"
+        @click="resetLesson"
+      >
+        Пройти заново
+      </button>
+    </div>
 
     <div v-if="lesson.planned" class="card mt-4 border-dashed p-8 text-center">
       <h1 class="text-xl font-bold">{{ lesson.title }}</h1>
@@ -90,50 +149,37 @@ async function resetLesson() {
       <p class="mt-4 text-sm text-[var(--muted)]">Урок ещё не готов — скоро появится.</p>
     </div>
 
-    <template v-else>
-      <MarkdownView :source="lesson.markdown" class="mt-3" />
-
-      <section v-if="lesson.reading" class="card mt-10 p-5">
-        <h2 class="mb-3 flex items-center gap-2 text-lg font-extrabold">
-          <span>📖</span> Текст для чтения
-        </h2>
-        <p class="mb-3 text-sm text-[var(--muted)]">
-          Нажми на любое слово — покажу перевод из словаря.
-        </p>
-        <ReadingText :serbian="lesson.reading" :translation="lesson.reading_ru" />
-      </section>
-
-      <div v-if="blocks.length" class="mt-12 space-y-12 border-t border-[var(--border)] pt-8">
-        <div class="flex items-center justify-between">
-          <h2 class="text-xl font-extrabold">Упражнения</h2>
-          <button
-            v-if="Object.keys(priors).length"
-            class="text-sm font-medium text-[var(--muted)] hover:text-[var(--accent)]"
-            @click="resetLesson"
-          >
-            Пройти заново
-          </button>
-        </div>
-        <p v-if="resuming" class="-mt-8 text-sm text-[var(--accent)]">
-          ↓ продолжаешь с того места, где остановился
-        </p>
-        <ExerciseBlockView
-          v-for="b in blocks"
-          :key="b.id"
-          :lesson="lesson.id"
-          :block="b"
-          :priors="priors"
-        />
+    <template v-else-if="cur">
+      <div class="mt-3">
+        <h1 class="text-lg font-extrabold">{{ lesson.title }}</h1>
+        <p class="mt-0.5 text-sm text-[var(--muted)]">{{ cur.title }}</p>
+        <StepProgress class="mt-2" :current="idx + 1" :total="steps.length" />
       </div>
 
-      <div class="sticky bottom-0 mt-12 -mx-4 border-t border-[var(--border)] bg-[var(--bg)]/90 px-4 py-3 backdrop-blur">
-        <button
-          class="btn w-full sm:w-auto"
-          :class="lesson.status === 'done' ? 'btn-ghost' : 'btn-primary'"
-          :disabled="lesson.status === 'done'"
-          @click="markDone"
-        >
-          {{ lesson.status === 'done' ? '✓ Урок пройден' : 'Отметить пройденным' }}
+      <div class="mt-5">
+        <MarkdownView v-if="cur.kind === 'teach'" :source="cur.markdown ?? ''" />
+
+        <template v-else-if="cur.kind === 'reading'">
+          <MarkdownView v-if="cur.markdown && !cur.markdown_ru" :source="cur.markdown" />
+          <ReadingText v-else :serbian="cur.markdown ?? ''" :translation="cur.markdown_ru" />
+          <div v-if="curBlock" class="mt-8 space-y-8">
+            <ExerciseBlockView :lesson="lesson.id" :block="curBlock" :priors="priors" @graded="onGraded" />
+          </div>
+        </template>
+
+        <div v-else-if="curBlock" class="space-y-8">
+          <p v-if="cur.markdown" class="text-sm text-[var(--muted)]">{{ cur.markdown }}</p>
+          <ExerciseBlockView :lesson="lesson.id" :block="curBlock" :priors="priors" @graded="onGraded" />
+        </div>
+      </div>
+
+      <div
+        class="sticky bottom-0 mt-10 -mx-4 flex items-center justify-between gap-3 border-t border-[var(--border)] bg-[var(--bg)]/90 px-4 py-3 backdrop-blur"
+      >
+        <button class="btn btn-ghost" :disabled="idx === 0" @click="back">← Назад</button>
+        <span v-if="!canAdvance" class="text-xs text-[var(--muted)]">ответь на все задания шага</span>
+        <button class="btn btn-primary disabled:opacity-40" :disabled="!canAdvance" @click="next">
+          {{ atLast ? (lesson.status === 'done' ? '✓ Урок пройден' : 'Завершить урок') : 'Дальше →' }}
         </button>
       </div>
     </template>
