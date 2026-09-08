@@ -25,14 +25,27 @@ type lessonRefDTO struct {
 }
 
 type lessonDTO struct {
-	ID        string `json:"id"`
-	Title     string `json:"title"`
-	Subtitle  string `json:"subtitle"`
-	Planned   bool   `json:"planned"`
-	Markdown  string `json:"markdown"`
-	Reading   string `json:"reading,omitempty"`
-	ReadingRU string `json:"reading_ru,omitempty"`
-	Status    string `json:"status"`
+	ID        string    `json:"id"`
+	Title     string    `json:"title"`
+	Subtitle  string    `json:"subtitle"`
+	Planned   bool      `json:"planned"`
+	Markdown  string    `json:"markdown"`
+	Reading   string    `json:"reading,omitempty"`
+	ReadingRU string    `json:"reading_ru,omitempty"`
+	Status    string    `json:"status"`
+	Steps     []stepDTO `json:"steps,omitempty"`
+}
+
+// stepDTO carries a step's metadata only — its exercises are fetched from the
+// exercises endpoint, which strips answers.
+type stepDTO struct {
+	ID          string   `json:"id"`
+	Kind        string   `json:"kind"`
+	Title       string   `json:"title"`
+	Markdown    string   `json:"markdown,omitempty"`
+	MarkdownRU  string   `json:"markdown_ru,omitempty"`
+	ExerciseIDs []string `json:"exercise_ids,omitempty"`
+	Status      string   `json:"status"` // not_started | in_progress | done
 }
 
 // ---- exercises (accept lists intentionally omitted) ----
