@@ -10,6 +10,8 @@ type Course struct {
 	Exercises    map[string][]ExerciseBlock // key: lesson id
 	Vocab        []Vocab
 	FalseFriends []FalseFriend
+
+	allowWords []string // flattened content/allow-words.yaml (lexicon guard)
 }
 
 // Phase groups lessons (курс делится на фазы A/B/C).

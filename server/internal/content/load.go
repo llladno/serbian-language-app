@@ -276,6 +276,9 @@ func Load(dir string) (*Course, error) {
 	// persona.yaml — interpolate {name}/{city}/{job} into learner-facing text.
 	applyPersona(c, loadPersona(dir))
 
+	// allow-words.yaml — global lexicon-guard allow-list.
+	c.allowWords = loadAllowWords(dir)
+
 	// false-friends.yaml
 	var ff falseFriendFile
 	if err := readYAML(filepath.Join(dir, "false-friends.yaml"), &ff); err != nil {

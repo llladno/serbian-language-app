@@ -1,0 +1,66 @@
+# Токены, всегда допустимые в упражнениях независимо от урока:
+# имена собственные, числа цифрами, служебные частицы/союзы, звукоподражания.
+# Гвардия лексики (server/internal/content/lexicon_test.go) читает всё как
+# один плоский список.
+names:
+  - ana
+  - marko
+  - milan
+  - miloš
+  - milos
+  - jovana
+  - nikola
+  - petar
+  - jelena
+  - ivana
+  - srbija
+  - rusija
+  - novi
+  - sad
+  - beograd
+  - limanu
+  - štrand
+  - griša
+  - grisa
+particles:
+  - i
+  - a
+  - ali
+  - ili
+  - ne
+  - da
+  - li
+  - je
+  - se
+  - su
+  - sam
+  - si
+  - smo
+  - ste
+  - nisam
+  - nisi
+  - nije
+  - nismo
+  - niste
+  - nisu
+  - u
+  - na
+  - o
+  - za
+  - iz
+  - do
+  - od
+  - s
+  - sa
+  - po
+  - pa
+  - te
+  - to
+  - ovo
+  - ovde
+  - tamo
+  - evo
+  - eto
+  - baš
+  - bas
+digits: ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]
