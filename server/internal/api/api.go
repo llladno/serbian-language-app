@@ -45,6 +45,7 @@ func Handler(deps Deps) http.Handler {
 	mux.HandleFunc("GET /api/lessons/{id}/exercises", h.getExercises)
 	mux.HandleFunc("POST /api/lessons/{id}/exercises/{exId}/check", h.checkExercise)
 	mux.HandleFunc("GET /api/lessons/{id}/attempts", h.lessonAttempts)
+	mux.HandleFunc("POST /api/lessons/{id}/steps/{step}", h.setStepStatus)
 	mux.HandleFunc("POST /api/lessons/{id}/complete", h.completeLesson)
 	mux.HandleFunc("POST /api/lessons/{id}/reset", h.resetLesson)
 	mux.HandleFunc("POST /api/reset-exercises", h.resetExercises)
@@ -193,10 +194,26 @@ func (h handlers) getLesson(w http.ResponseWriter, r *http.Request) {
 	if st == "" {
 		st = "not_started"
 	}
+	stepSt, err := us.StepStatuses(id)
+	if err != nil {
+		fail(w, 500, err.Error())
+		return
+	}
+	steps := make([]stepDTO, 0, len(l.Steps))
+	for _, s := range l.Steps {
+		d := stepDTO{ID: s.ID, Kind: s.Kind, Title: s.Title, Markdown: s.Markdown, MarkdownRU: s.MarkdownRU}
+		for _, e := range s.Exercises {
+			d.ExerciseIDs = append(d.ExerciseIDs, e.ID)
+		}
+		if d.Status = stepSt[s.ID]; d.Status == "" {
+			d.Status = "not_started"
+		}
+		steps = append(steps, d)
+	}
 	writeJSON(w, 200, lessonDTO{
 		ID: l.ID, Title: l.Title, Subtitle: l.Subtitle,
 		Planned: l.Planned, Markdown: l.Markdown, Status: st,
-		Reading: l.Reading, ReadingRU: l.ReadingRU,
+		Reading: l.Reading, ReadingRU: l.ReadingRU, Steps: steps,
 	})
 }
 
@@ -210,9 +227,19 @@ func (h handlers) getExercises(w http.ResponseWriter, r *http.Request) {
 	for _, b := range h.Course().Exercises[id] {
 		bd := exerciseBlockDTO{ID: b.ID, Title: b.Title, Instruction: b.Instruction}
 		for _, e := range b.Exercises {
-			bd.Exercises = append(bd.Exercises, exerciseDTO{
-				ID: e.ID, Type: e.Type, Prompt: e.Prompt, Forms: e.Forms, Meta: e.Meta, Audio: e.Audio,
-			})
+			d := exerciseDTO{ID: e.ID, Type: e.Type, Prompt: e.Prompt, Forms: e.Forms, Meta: e.Meta, Audio: e.Audio}
+			switch e.Type {
+			case "choice":
+				d.Options = e.Options
+			case "word_bank":
+				d.Bank = e.Bank
+			case "match":
+				for _, p := range e.Pairs {
+					d.Left = append(d.Left, p[0])
+					d.Right = append(d.Right, p[1])
+				}
+			}
+			bd.Exercises = append(bd.Exercises, d)
 		}
 		out = append(out, bd)
 	}
@@ -220,9 +247,10 @@ func (h handlers) getExercises(w http.ResponseWriter, r *http.Request) {
 }
 
 type checkRequest struct {
-	Answer  string   `json:"answer"`
-	Answers []string `json:"answers"`
-	Self    *bool    `json:"self"`
+	Answer  string            `json:"answer"`
+	Answers []string          `json:"answers"`
+	Pairs   map[string]string `json:"pairs"` // match: left -> picked right
+	Self    *bool             `json:"self"`
 }
 
 func (h handlers) findExercise(lesson, exID string) (content.Exercise, string, bool) {
@@ -281,6 +309,19 @@ func (h handlers) checkExercise(w http.ResponseWriter, r *http.Request) {
 		resp.Sample = ex.Sample
 		recordAnswer = req.Answer
 		correct = self
+	case "choice":
+		res := checker.CheckChoice(req.Answer, ex.Answer)
+		resp.OK = res.OK
+		resp.Expected = res.Expected
+		recordAnswer = req.Answer
+		correct = res.OK
+	case "match":
+		ok, per := checker.CheckMatch(req.Pairs, ex.Pairs)
+		resp.OK = ok
+		resp.Match = per
+		b, _ := json.Marshal(req.Pairs)
+		recordAnswer = string(b)
+		correct = ok
 	default:
 		res := checker.Check(req.Answer, ex.Accept)
 		resp.OK = res.OK
@@ -350,6 +391,34 @@ func (h handlers) resetExercises(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	writeJSON(w, 200, map[string]string{"status": "reset"})
+}
+
+func (h handlers) setStepStatus(w http.ResponseWriter, r *http.Request) {
+	us, ok := h.user(w, r)
+	if !ok {
+		return
+	}
+	id, step := r.PathValue("id"), r.PathValue("step")
+	if h.Course().Lessons[id] == nil {
+		fail(w, 404, "unknown lesson")
+		return
+	}
+	var req struct {
+		Status string `json:"status"`
+	}
+	if err := decode(r, &req); err != nil || (req.Status != "in_progress" && req.Status != "done") {
+		fail(w, 400, "status must be in_progress or done")
+		return
+	}
+	now := h.Now()
+	if err := us.SetStepStatus(id, step, req.Status, now); err != nil {
+		fail(w, 500, err.Error())
+		return
+	}
+	if st, _ := us.LessonStatus(id); st != "done" {
+		_ = us.SetLessonStatus(id, "in_progress", now)
+	}
+	w.WriteHeader(204)
 }
 
 func (h handlers) completeLesson(w http.ResponseWriter, r *http.Request) {

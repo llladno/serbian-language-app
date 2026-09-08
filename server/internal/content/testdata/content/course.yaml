@@ -11,3 +11,6 @@ lessons:
   "02":
     title: "Zamenice i prezent"
     subtitle: "местоимения и настоящее время"
+  "90":
+    title: "Fixture lesson"
+    file: "lessons/90.yaml"

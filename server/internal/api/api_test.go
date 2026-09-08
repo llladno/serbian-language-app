@@ -311,6 +311,76 @@ func TestGetLessonCarriesReadingText(t *testing.T) {
 	}
 }
 
+func TestGetLessonIncludesSteps(t *testing.T) {
+	h, _ := newTestAPI(t)
+	rr := do(h, "GET", "/api/lessons/90", "")
+	if rr.Code != 200 {
+		t.Fatalf("code %d: %s", rr.Code, rr.Body)
+	}
+	got := decodeBody[lessonDTO](t, rr)
+	if len(got.Steps) != 4 || got.Steps[0].Kind != "teach" {
+		t.Fatalf("steps: %+v", got.Steps)
+	}
+	if got.Steps[0].Status != "not_started" {
+		t.Errorf("fresh step status = %q", got.Steps[0].Status)
+	}
+	if len(got.Steps[1].ExerciseIDs) == 0 || got.Steps[1].ExerciseIDs[0] != "90.2.1" {
+		t.Errorf("practice step exercise ids: %v", got.Steps[1].ExerciseIDs)
+	}
+	if body := rr.Body.String(); strings.Contains(body, `"answer"`) || strings.Contains(body, `"accept"`) {
+		t.Error("lesson payload leaked answer/accept")
+	}
+}
+
+func TestSetStepStatus(t *testing.T) {
+	h, _ := newTestAPI(t)
+	if rr := do(h, "POST", "/api/lessons/90/steps/90.1", `{"status":"done"}`); rr.Code != 204 {
+		t.Fatalf("code %d: %s", rr.Code, rr.Body)
+	}
+	rr := do(h, "GET", "/api/lessons/90", "")
+	got := decodeBody[lessonDTO](t, rr)
+	if got.Steps[0].Status != "done" {
+		t.Errorf("step status after set = %q", got.Steps[0].Status)
+	}
+	if got.Status != "in_progress" {
+		t.Errorf("lesson status = %q, want in_progress", got.Status)
+	}
+	if rr := do(h, "POST", "/api/lessons/90/steps/90.1", `{"status":"nope"}`); rr.Code != 400 {
+		t.Fatalf("bad status: code %d", rr.Code)
+	}
+	if rr := do(h, "POST", "/api/lessons/nope/steps/x", `{"status":"done"}`); rr.Code != 404 {
+		t.Fatalf("unknown lesson: code %d", rr.Code)
+	}
+}
+
+func TestExercisesEndpointHidesNewAnswers(t *testing.T) {
+	h, _ := newTestAPI(t)
+	rr := do(h, "GET", "/api/lessons/90/exercises", "")
+	body := rr.Body.String()
+	for _, leak := range []string{`"answer"`, `"accept"`, `"pairs"`, `"say"`} {
+		if strings.Contains(body, leak) {
+			t.Errorf("exercises endpoint leaked %s: %s", leak, body)
+		}
+	}
+	if !strings.Contains(body, `"options"`) {
+		t.Error("choice options not delivered")
+	}
+}
+
+func TestCheckChoiceEndpoint(t *testing.T) {
+	h, _ := newTestAPI(t)
+	rr := do(h, "POST", "/api/lessons/90/exercises/90.2.1/check", `{"answer":"Da"}`)
+	res := decodeBody[checkResultDTO](t, rr)
+	if !res.OK {
+		t.Fatalf("right choice not OK: %s", rr.Body)
+	}
+	rr = do(h, "POST", "/api/lessons/90/exercises/90.2.1/check", `{"answer":"Ne"}`)
+	res = decodeBody[checkResultDTO](t, rr)
+	if res.OK || res.Expected != "Da" {
+		t.Fatalf("wrong choice graded OK or missing expected: %+v", res)
+	}
+}
+
 func TestListenExerciseExposesAudioNotAnswer(t *testing.T) {
 	h, _ := newTestAPI(t)
 	rr := do(h, "GET", "/api/lessons/01/exercises", "")

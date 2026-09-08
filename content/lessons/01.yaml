@@ -1,0 +1,169 @@
+lesson: "01"
+title: "Поздрави и први контакт"
+subtitle: "поздороваться, ты/вы, вежливые слова"
+teaches:
+  [
+    zdravo, cao, dobar-dan, dobro-jutro, dobro-vece, laku-noc, dovidjenja,
+    prijatno, vidimo-se, cujemo-se, molim, molim-vas, hvala, nema-na-cemu,
+    izvini, oprosti, izvolite, nema-problema, kako-si, kako-ide, dobro-hvala,
+    moze, ne-zalim-se,
+  ]
+
+steps:
+  - id: "01.1"
+    kind: teach
+    title: "Здороваемся"
+    md: "01/1-pozdravi.md"
+
+  - id: "01.2"
+    kind: practice
+    title: "Узнай приветствие"
+    exercises:
+      - id: "01.2.1"
+        type: choice
+        prompt: "«Добрый день» по-сербски —"
+        options: ["Dobar dan", "Dobro veče", "Laku noć"]
+        answer: "Dobar dan"
+      - id: "01.2.2"
+        type: choice
+        prompt: "Выходишь из пекары, тебе говорят «Prijatno!». Отвечаешь —"
+        options: ["Prijatno!", "Dobro jutro!", "Molim?"]
+        answer: "Prijatno!"
+      - id: "01.2.3"
+        type: match
+        prompt: "Соедини приветствие и перевод"
+        pairs:
+          - ["Dobro jutro", "Доброе утро"]
+          - ["Laku noć", "Спокойной ночи"]
+          - ["Doviđenja", "До свидания"]
+          - ["Ćao", "Привет / пока"]
+      - id: "01.2.4"
+        type: fill_blank
+        prompt: "Утро, заходишь в пекару: «___ jutro!»"
+        accept: ["Dobro", "dobro"]
+
+  - id: "01.3"
+    kind: teach
+    title: "«Как дела» и ты/вы"
+    md: "01/3-ti-vi.md"
+
+  - id: "01.4"
+    kind: practice
+    title: "Как дела"
+    exercises:
+      - id: "01.4.1"
+        type: choice
+        prompt: "Незнакомому человеку старше тебя говоришь —"
+        options: ["Kako ste?", "Kako si?", "Kako ide?"]
+        answer: "Kako ste?"
+      - id: "01.4.2"
+        type: choice
+        prompt: "«Kako si?» — «___»"
+        options: ["Dobro, hvala.", "Zdravo!", "Doviđenja!"]
+        answer: "Dobro, hvala."
+      - id: "01.4.3"
+        type: fill_blank
+        prompt: "Другу: «Kako ___?»"
+        accept: ["si"]
+      - id: "01.4.4"
+        type: word_bank
+        prompt: "Собери ответ: «нормально, не жалуюсь»"
+        bank: ["Može", "ne", "žalim", "se"]
+        accept: ["Može, ne žalim se.", "Ne žalim se."]
+
+  - id: "01.5"
+    kind: teach
+    title: "Вежливые слова"
+    md: "01/5-vezljivost.md"
+
+  - id: "01.6"
+    kind: practice
+    title: "Спасибо, извините"
+    exercises:
+      - id: "01.6.1"
+        type: choice
+        prompt: "Тебе сказали «Hvala». Отвечаешь —"
+        options: ["Nema na čemu.", "Molim vas.", "Prijatno."]
+        answer: "Nema na čemu."
+      - id: "01.6.2"
+        type: word_bank
+        prompt: "Собери просьбу: «извините, пожалуйста»"
+        bank: ["Izvinite", "molim", "vas"]
+        accept: ["Izvinite, molim vas."]
+      - id: "01.6.3"
+        type: word_bank
+        prompt: "Собери: «без проблем»"
+        bank: ["Nema", "problema"]
+        accept: ["Nema problema."]
+
+  - id: "01.7"
+    kind: reading
+    title: "Встретил знакомого"
+    md: "01/7-citanje.md"
+    exercises:
+      - id: "01.7.1"
+        type: choice
+        prompt: "Как Марко отвечает на «Kako si?»"
+        options: ["Dobro, hvala.", "Laku noć.", "Odakle si?"]
+        answer: "Dobro, hvala."
+      - id: "01.7.2"
+        type: choice
+        prompt: "Чем заканчивается разговор?"
+        options: ["Ćao, prijatno!", "Dobro jutro!", "Molim?"]
+        answer: "Ćao, prijatno!"
+
+  - id: "01.8"
+    kind: practice
+    title: "Диктант"
+    mixed: true
+    exercises:
+      - id: "01.8.1"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Dobar dan, kako ste?"
+        accept: ["Dobar dan, kako ste?"]
+      - id: "01.8.2"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Drago mi je."
+        accept: ["Drago mi je."]
+      - id: "01.8.3"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Hvala, prijatno!"
+        accept: ["Hvala, prijatno!"]
+
+  - id: "01.9"
+    kind: checkpoint
+    title: "Проверка"
+    exercises:
+      - id: "01.9.1"
+        type: choice
+        prompt: "«Спасибо большое» —"
+        options: ["Hvala lepo!", "Laku noć!", "Kako ide?"]
+        answer: "Hvala lepo!"
+      - id: "01.9.2"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["Zdravo", "Привет"]
+          - ["Doviđenja", "До свидания"]
+          - ["Izvinite", "Извините"]
+          - ["Nema na čemu", "Не за что"]
+      - id: "01.9.3"
+        type: fill_blank
+        prompt: "Вечер: «Dobro ___!»"
+        accept: ["veče"]
+      - id: "01.9.4"
+        type: word_bank
+        prompt: "Собери приветствие: «добрый вечер»"
+        bank: ["Dobro", "veče"]
+        accept: ["Dobro veče."]
+      - id: "01.9.5"
+        type: translate
+        prompt: "Спасибо, всего доброго!"
+        accept: ["Hvala, prijatno!"]
+      - id: "01.9.6"
+        type: free
+        prompt: "Ты встретил знакомого утром. Поздоровайся, спроси как дела, попрощайся (3 фразы)."
+        sample: "Dobro jutro! Kako si? … Vidimo se, ćao!"

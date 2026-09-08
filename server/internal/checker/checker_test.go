@@ -91,3 +91,34 @@ func TestCheckFormsMissingAnswer(t *testing.T) {
 		t.Errorf("results = %+v", rs)
 	}
 }
+
+func TestCheckChoice(t *testing.T) {
+	if r := CheckChoice("Hvala", "hvala"); !r.OK {
+		t.Errorf("case-insensitive choice should pass: %+v", r)
+	}
+	if r := CheckChoice("Molim", "Hvala"); r.OK || r.Expected != "Hvala" {
+		t.Errorf("wrong choice: %+v", r)
+	}
+}
+
+func TestCheckMatch(t *testing.T) {
+	pairs := [][2]string{{"Dobro jutro", "Доброе утро"}, {"Laku noć", "Спокойной ночи"}}
+
+	ok, per := CheckMatch(map[string]string{
+		"Dobro jutro": "Доброе утро", "Laku noć": "Спокойной ночи",
+	}, pairs)
+	if !ok || !per["Dobro jutro"] || !per["Laku noć"] {
+		t.Errorf("all-correct match failed: ok=%v per=%v", ok, per)
+	}
+
+	ok, per = CheckMatch(map[string]string{
+		"Dobro jutro": "Спокойной ночи", "Laku noć": "Доброе утро",
+	}, pairs)
+	if ok || per["Dobro jutro"] {
+		t.Errorf("swapped match should fail: ok=%v per=%v", ok, per)
+	}
+
+	if ok, _ := CheckMatch(map[string]string{"Dobro jutro": "Доброе утро"}, pairs); ok {
+		t.Error("incomplete match should not be ok")
+	}
+}

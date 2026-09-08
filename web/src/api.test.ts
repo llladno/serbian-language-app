@@ -43,6 +43,17 @@ describe('api', () => {
     await expect(api.completeLesson('01')).resolves.toBeUndefined()
   })
 
+  it('posts step status', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(new Response(null, { status: 204 }))
+    vi.stubGlobal('fetch', fetchMock)
+    await expect(api.setStepStatus('01', '01.2', 'done')).resolves.toBeUndefined()
+    expect(fetchMock.mock.calls[0][0]).toBe('/api/lessons/01/steps/01.2')
+    expect(fetchMock.mock.calls[0][1]).toMatchObject({
+      method: 'POST',
+      body: JSON.stringify({ status: 'done' }),
+    })
+  })
+
   it('attaches the X-User header from the stored account', async () => {
     localStorage.setItem('srpski.account', 'Гриша')
     const fetchMock = vi.fn().mockResolvedValue(new Response('{"phases":[]}', { status: 200 }))

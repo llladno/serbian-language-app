@@ -1,109 +1,122 @@
 title: "Српски језик"
 
 phases:
-  - id: A
-    title: "Фаза A — Выживание"
-    lessons: ["01", "02", "03", "04", "05", "06", "07", "08", "09"]
-  - id: B
-    title: "Фаза B — Грамматика в деле"
-    lessons: ["10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20"]
-  - id: C
-    title: "Фаза C — Жизнь и работа"
-    lessons: ["21", "22", "23", "24", "25", "26", "27", "28", "29", "30"]
+  - id: "1"
+    title: "Уровень 1 — Первый контакт (A1.1)"
+    lessons: ["01", "02", "03", "04", "05", "06"]
+  - id: "2"
+    title: "Уровень 2 — Быт (A1.2)"
+    lessons: ["07", "08", "09", "10", "11", "12"]
+  - id: "3"
+    title: "Уровень 3 — Связная речь (A2.1)"
+    lessons: ["13", "14", "15", "16", "17", "18"]
+  - id: "4"
+    title: "Уровень 4 — Мнения и жизнь (A2.2)"
+    lessons: ["19", "20", "21", "22", "23", "24"]
+  - id: "5"
+    title: "Уровень 5 — Уверенно (B1.1)"
+    lessons: ["25", "26", "27", "28", "29", "30"]
 
 lessons:
   "01":
-    title: "Pozdravi i upoznavanje"
-    subtitle: "приветствия, вежливость, «как дела», представление, глагол jesam/sam, ты/вы"
-    file: "lessons/01-pozdravi-i-upoznavanje.md"
+    title: "Поздрави и први контакт"
+    subtitle: "поздороваться, ты/вы, вежливые слова"
+    file: "lessons/01.yaml"
   "02":
-    title: "Zamenice i prezent"
-    subtitle: "личные местоимения, настоящее время (типы -am / -im / -em), порядок клитик"
-    file: "lessons/02-zamenice-i-prezent.md"
+    title: "Ко си ти"
+    subtitle: "jesam, откуда я, языки, профессии"
+    file: "lessons/02.yaml"
   "03":
-    title: "Pitanja"
-    subtitle: "вопросы: ko, šta, gde, kad, kako, zašto, koliko, čiji; да/нет-вопросы, li"
-    file: "lessons/03-pitanja.md"
+    title: "Људи око мене"
+    subtitle: "семья, imam / nemam, мой / твой"
+    file: "lessons/03.yaml"
   "04":
-    title: "Brojevi i novac"
-    subtitle: "числа 0–1000, динары и паре, «koliko košta», «koliko imam godina», телефон"
-    file: "lessons/04-brojevi-i-novac.md"
+    title: "Бројеви, цена, сати"
+    subtitle: "числа 0–1000, цена, возраст, часы, телефон"
+    file: "lessons/04.yaml"
   "05":
-    title: "U prodavnici"
-    subtitle: "магазин, продукты, «Izvolite», «Dajte mi…», количество, kesa, račun, sitno"
-    file: "lessons/05-u-prodavnici.md"
+    title: "Куповина"
+    subtitle: "магазин, количество, оплата, возврат"
+    file: "lessons/05.yaml"
   "06":
-    title: "U kafiću / restoranu"
-    subtitle: "заказ, «da popijem», «molim vas», счёт, чаевые, «ponesi/za sobom»"
+    title: "Провера 1"
+    subtitle: "повторение уровня 1 + ролёвки"
+    file: "lessons/06.yaml"
   "07":
-    title: "Snalaženje u gradu"
-    subtitle: "направления (levo, desno, pravo), «Kako da dođem do…», транспорт, GSP Нови-Сад"
+    title: "Дан по дан"
+    subtitle: "рутина, настоящее время целиком, volim da"
+    file: "lessons/07.yaml"
   "08":
-    title: "Vreme i termini"
-    subtitle: "часы, дни, «u koliko sati», «zakazati», «sutra / prekosutra / juče»"
+    title: "Кући"
+    subtitle: "дом, комнаты, вещи, u/na"
+    file: "lessons/08.yaml"
   "09":
-    title: "Ponavljanje A + mini-test"
-    subtitle: "повторение, ролёвки: магазин / кафе / улица"
+    title: "Храна и пиће"
+    subtitle: "продукты, в кафе, заказ"
+    file: "lessons/09.yaml"
   "10":
-    title: "Rod i množina"
-    subtitle: "род существительных, множественное число, беглое «a»"
+    title: "Град око мене"
+    subtitle: "где что, ima/nema, локатив базово, вопросы 2"
+    file: "lessons/10.yaml"
   "11":
-    title: "Akuzativ"
-    subtitle: "прямое дополнение, «gledam film», куда (u/na + akuzativ), одушевлённость"
+    title: "Време и природа"
+    subtitle: "погода, времена года, sviđa mi se"
+    file: "lessons/11.yaml"
   "12":
-    title: "Genitiv"
-    subtitle: "«nema», количество, «od / do / iz / kod / bez», даты, притяжание"
+    title: "Провера 2"
+    subtitle: "повторение уровня 2"
+    file: "lessons/12.yaml"
   "13":
-    title: "Lokativ"
-    subtitle: "где (u/na + lokativ), «o» (о чём), «po»"
+    title: "Прошлост"
+    subtitle: "перфект, juče sam…"
   "14":
-    title: "Dativ"
-    subtitle: "кому, «prema», безличное «hladno mi je», «treba mi»"
+    title: "Планови"
+    subtitle: "футур, sutra ću…"
   "15":
-    title: "Instrumental"
-    subtitle: "чем, с кем (s/sa), транспорт («idem autobusom»)"
+    title: "Кретање"
+    subtitle: "транспорт, направления, kako da dođem"
   "16":
-    title: "Vokativ"
-    subtitle: "обращение (Marko → Marko, gospođa → gospođo)"
+    title: "Договори и термини"
+    subtitle: "записаться, позвать, отменить"
   "17":
-    title: "Perfekat"
-    subtitle: "прошедшее: -o/-la/-lo + sam; порядок слов, отрицание"
+    title: "Тело и здравље"
+    subtitle: "у врача, в аптеке, boli me"
   "18":
-    title: "Futur"
-    subtitle: "ću/ćeš + инфинитив, futur II, «čim / kad» + будущее"
+    title: "Провера 3"
+    subtitle: "повторение уровня 3"
   "19":
-    title: "Modalni + da-konstrukcija"
-    subtitle: "moći, hteti, morati, smeti, trebati; «da» вместо инфинитива"
+    title: "Осећања и мишљења"
+    subtitle: "mislim da, slažem se, нравится/раздражает"
   "20":
-    title: "Vid + prefiksi"
-    subtitle: "совершенный/несовершенный, приставки (na-, po-, pro-, za-, u-, iz-)"
+    title: "Прича о себи"
+    subtitle: "биография, этапы жизни"
   "21":
-    title: "Telefon i mejlovi"
-    subtitle: "звонок, «javiću se», голосовые, деловая переписка, формулы вежливости"
+    title: "Телефон и поруке"
+    subtitle: "звонки, переписка, голосовые"
   "22":
-    title: "Na poslu"
-    subtitle: "рабочее место, задачи, «rok», «sastanak», «dogovor», «kolega»"
+    title: "Проблеми и решења"
+    subtitle: "жалоба, мастер, pokvarilo se"
   "23":
-    title: "Sastanak"
-    subtitle: "обсуждение, согласие/несогласие, предложения, «slažem se», «da rezimiramo»"
+    title: "Слободно време"
+    subtitle: "хобби, спорт, приглашения, hajde da"
   "24":
-    title: "Kod lekara i u apoteci"
-    subtitle: "тело, симптомы, «boli me», рецепт, «uput», дом здравља"
+    title: "Провера 4"
+    subtitle: "повторение уровня 4"
   "25":
-    title: "Banka i papirologija"
-    subtitle: "счёт, карта, «boravak», МУП, «prijava adrese», ЈМБГ/ЛБО"
+    title: "Посао"
+    subtitle: "рабочее место, задачи, собеседование базово"
   "26":
-    title: "Stan i računi"
-    subtitle: "аренда, «infostan», «EPS», «komunalije», мастер, «kvar»"
+    title: "Папирологија"
+    subtitle: "банк, boravak, МУП (личный слой)"
   "27":
-    title: "Small talk"
-    subtitle: "погода, спорт, «kako ide», выходные, приглашения, «da se nađemo»"
+    title: "Standard vs. novosadski"
+    subtitle: "войводинские словечки, беглость"
   "28":
-    title: "Novosadski i lokalno"
-    subtitle: "войводинские словечки, «ba», «salaš», кофейная культура, Штранд"
+    title: "Дуги разговор"
+    subtitle: "рассказать историю, поддержать беседу"
   "29":
-    title: "Pisana komunikacija"
-    subtitle: "сообщения, объявления, договор аренды, заявление (molba)"
+    title: "Читање и слух"
+    subtitle: "новости, вывески, сериалы"
   "30":
-    title: "Veliko ponavljanje"
-    subtitle: "итоговые ролёвки, разбор слабых мест, план дальше"
+    title: "Велика провера"
+    subtitle: "итоговые ролёвки, план дальше"

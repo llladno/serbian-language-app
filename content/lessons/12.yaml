@@ -1,0 +1,253 @@
+lesson: "12"
+title: "Провера 2"
+subtitle: "повторение уровня 2"
+teaches: []
+
+steps:
+  - id: "12.1"
+    kind: reading
+    title: "Один день"
+    md: "12/1-citanje.md"
+    also_ok: ["radnim", "danom", "kancelariji", "pauzi", "izlazim", "ako", "peške", "kolima"]
+    exercises:
+      - id: "12.1.1"
+        type: choice
+        prompt: "Как автор добирается на работу?"
+        options: ["Autobusom.", "Peške.", "Kolima."]
+        answer: "Autobusom."
+      - id: "12.1.2"
+        type: choice
+        prompt: "Что автор покупает после работы?"
+        options: ["Hleb, mleko i sir.", "Meso i vino.", "Ništa."]
+        answer: "Hleb, mleko i sir."
+
+  - id: "12.2"
+    kind: practice
+    title: "Мой день"
+    mixed: true
+    also_ok: ["ustajem", "doručkujem"]
+    exercises:
+      - id: "12.2.1"
+        type: choice
+        prompt: "«я работаю каждый день» —"
+        options: ["Radim svaki dan.", "Radim svaki dana.", "Radi svaki dan."]
+        answer: "Radim svaki dan."
+      - id: "12.2.2"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["ponedeljak", "понедельник"]
+          - ["obično", "обычно"]
+          - ["uvek", "всегда"]
+          - ["vikend", "выходные"]
+      - id: "12.2.3"
+        type: fill_blank
+        prompt: "«я люблю читать» → Volim ___ čitam."
+        accept: ["da"]
+      - id: "12.2.4"
+        type: word_bank
+        prompt: "Собери: «я встаю рано»"
+        bank: ["Ustajem", "rano"]
+        accept: ["Ustajem rano."]
+      - id: "12.2.5"
+        type: translate
+        prompt: "Мне надо идти на работу."
+        accept: ["Moram da idem na posao."]
+
+  - id: "12.3"
+    kind: practice
+    title: "Дом"
+    mixed: true
+    also_ok: ["sobe", "sobi"]
+    exercises:
+      - id: "12.3.1"
+        type: choice
+        prompt: "«я живу в квартире» —"
+        options: ["Živim u stanu.", "Živim u stan.", "Živim na stanu."]
+        answer: "Živim u stanu."
+      - id: "12.3.2"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["kuhinja", "кухня"]
+          - ["krevet", "кровать"]
+          - ["prozor", "окно"]
+          - ["ključ", "ключ"]
+      - id: "12.3.3"
+        type: fill_blank
+        prompt: "«лампа на столе» → Lampa je ___ stolu."
+        accept: ["na"]
+      - id: "12.3.4"
+        type: word_bank
+        prompt: "Собери: «в квартире две комнаты»"
+        bank: ["Stan", "ima", "dve", "sobe"]
+        accept: ["Stan ima dve sobe."]
+      - id: "12.3.5"
+        type: translate
+        prompt: "Где ванная?"
+        accept: ["Gde je kupatilo?"]
+
+  - id: "12.4"
+    kind: practice
+    title: "Еда и кафе"
+    mixed: true
+    also_ok: ["kafu", "jedem"]
+    exercises:
+      - id: "12.4.1"
+        type: choice
+        prompt: "«я голоден» —"
+        options: ["Gladan sam.", "Gladan je.", "Gladna je."]
+        answer: "Gladan sam."
+      - id: "12.4.2"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["kafić", "кафе"]
+          - ["jelovnik", "меню"]
+          - ["račun", "счёт"]
+          - ["povrće", "овощи"]
+      - id: "12.4.3"
+        type: fill_blank
+        prompt: "«счёт, пожалуйста» → ___, molim."
+        accept: ["Račun", "račun"]
+      - id: "12.4.4"
+        type: word_bank
+        prompt: "Собери: «один кофе, пожалуйста»"
+        bank: ["Molim", "vas", "jednu", "kafu"]
+        accept: ["Molim vas jednu kafu."]
+      - id: "12.4.5"
+        type: translate
+        prompt: "Можно рассчитаться картой?"
+        accept: ["Možemo li da platimo karticom?", "Karticom, može?"]
+
+  - id: "12.5"
+    kind: practice
+    title: "Город и вопросы"
+    mixed: true
+    also_ok: ["stanice", "banke"]
+    exercises:
+      - id: "12.5.1"
+        type: choice
+        prompt: "«У вас есть вода?» (разговорно) —"
+        options: ["Jel' imate vodu?", "Li imate vodu?", "Vodu da imate?"]
+        answer: "Jel' imate vodu?"
+      - id: "12.5.2"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["gde", "где"]
+          - ["zašto", "почему"]
+          - ["stanica", "остановка"]
+          - ["levo", "налево"]
+      - id: "12.5.3"
+        type: fill_blank
+        prompt: "«Поверните направо» → Skrenite ___."
+        accept: ["desno"]
+      - id: "12.5.4"
+        type: word_bank
+        prompt: "Собери: «как пройти к почте?»"
+        bank: ["Kako", "da", "dođem", "do", "pošte"]
+        accept: ["Kako da dođem do pošte?"]
+      - id: "12.5.5"
+        type: translate
+        prompt: "Извините, где банк?"
+        accept: ["Izvinite, gde je banka?"]
+
+  - id: "12.6"
+    kind: practice
+    title: "Погода"
+    mixed: true
+    also_ok: ["zimu", "leti"]
+    exercises:
+      - id: "12.6.1"
+        type: choice
+        prompt: "«идёт дождь» —"
+        options: ["pada kiša", "pada sneg", "ima kiša"]
+        answer: "pada kiša"
+      - id: "12.6.2"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["sunčano", "солнечно"]
+          - ["hladno", "холодно"]
+          - ["zima", "зима"]
+          - ["more", "море"]
+      - id: "12.6.3"
+        type: fill_blank
+        prompt: "«больше люблю лето, чем зиму» → Više volim leto ___ zimu."
+        accept: ["nego"]
+      - id: "12.6.4"
+        type: word_bank
+        prompt: "Собери: «мне нравится осень»"
+        bank: ["Sviđa", "mi", "se", "jesen"]
+        accept: ["Sviđa mi se jesen."]
+      - id: "12.6.5"
+        type: translate
+        prompt: "Сегодня холодно."
+        accept: ["Danas je hladno."]
+
+  - id: "12.7"
+    kind: checkpoint
+    title: "Большая проверка"
+    also_ok: ["ustajem", "kafu", "sobi"]
+    exercises:
+      - id: "12.7.1"
+        type: choice
+        prompt: "«мне надо идти» —"
+        options: ["Moram da idem.", "Moram idem.", "Moram ići da."]
+        answer: "Moram da idem."
+      - id: "12.7.2"
+        type: choice
+        prompt: "«кровать в спальне» —"
+        options: ["Krevet je u spavaćoj sobi.", "Krevet je na spavaćoj sobi.", "Krevet spavaćoj sobi je."]
+        answer: "Krevet je u spavaćoj sobi."
+      - id: "12.7.3"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["doručak", "завтрак"]
+          - ["frižider", "холодильник"]
+          - ["autobus", "автобус"]
+          - ["kiša", "дождь"]
+      - id: "12.7.4"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["ko", "кто"]
+          - ["kako", "как"]
+          - ["koliko", "сколько"]
+          - ["zašto", "почему"]
+      - id: "12.7.5"
+        type: fill_blank
+        prompt: "«я хочу есть» → Hoću da ___."
+        accept: ["jedem"]
+      - id: "12.7.6"
+        type: word_bank
+        prompt: "Собери: «где остановка?»"
+        bank: ["Gde", "je", "stanica"]
+        accept: ["Gde je stanica?"]
+      - id: "12.7.7"
+        type: translate
+        prompt: "Я встаю в семь и иду на работу."
+        accept: ["Ustajem u sedam i idem na posao."]
+      - id: "12.7.8"
+        type: translate
+        prompt: "Мне нравится осень."
+        accept: ["Sviđa mi se jesen."]
+
+  - id: "12.8"
+    kind: checkpoint
+    title: "Ролёвки"
+    exercises:
+      - id: "12.8.1"
+        type: free
+        prompt: "Расскажи свой будний день: 4–5 фраз (утро, дорога, работа, вечер, выходные)."
+        sample: "Ustajem u sedam, doručkujem i idem na posao autobusom. Radim kao {job} do pet. Uveče gledam seriju. Vikendom idem u prirodu."
+      - id: "12.8.2"
+        type: free
+        prompt: "Закажи обед в кафе и попроси счёт: 4 фразы."
+        sample: "Dobar dan! Za mene supu i jednu kafu. Ukusno je! Možemo li da platimo karticom?"
+      - id: "12.8.3"
+        type: free
+        prompt: "Спроси у прохожего дорогу до банка и уточни, далеко ли: 3–4 фразы."
+        sample: "Izvinite, kako da dođem do banke? Da li je daleko? Hvala vam puno!"

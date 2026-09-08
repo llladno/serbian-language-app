@@ -1,0 +1,218 @@
+lesson: "06"
+title: "Провера 1"
+subtitle: "повторение уровня 1 + ролёвки"
+teaches: []
+
+steps:
+  - id: "06.1"
+    kind: reading
+    title: "Один день"
+    md: "06/1-citanje.md"
+    also_ok: ["kafe", "kafu"]
+    exercises:
+      - id: "06.1.1"
+        type: choice
+        prompt: "Что покупает человек?"
+        options: ["Hleb i dve kafe.", "Mleko i sir.", "Samo kafu."]
+        answer: "Hleb i dve kafe."
+      - id: "06.1.2"
+        type: choice
+        prompt: "Чем он платит?"
+        options: ["Karticom.", "Kešom.", "Ništa."]
+        answer: "Karticom."
+
+  - id: "06.2"
+    kind: practice
+    title: "Привет и знакомство"
+    mixed: true
+    also_ok: ["ana"]
+    exercises:
+      - id: "06.2.1"
+        type: choice
+        prompt: "Незнакомому человеку старше тебя —"
+        options: ["Kako ste?", "Kako si?", "Kako ide?"]
+        answer: "Kako ste?"
+      - id: "06.2.2"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["Zdravo", "Привет"]
+          - ["Doviđenja", "До свидания"]
+          - ["Hvala", "Спасибо"]
+          - ["Izvinite", "Извините"]
+      - id: "06.2.3"
+        type: fill_blank
+        prompt: "«Я из России» → Ja ___ iz Rusije."
+        accept: ["sam"]
+      - id: "06.2.4"
+        type: word_bank
+        prompt: "Собери: «меня зовут Ана»"
+        bank: ["Zovem", "se", "Ana"]
+        accept: ["Zovem se Ana."]
+      - id: "06.2.5"
+        type: translate
+        prompt: "Откуда ты?"
+        accept: ["Odakle si?"]
+
+  - id: "06.3"
+    kind: practice
+    title: "Семья"
+    mixed: true
+    also_ok: ["brata", "sestru"]
+    exercises:
+      - id: "06.3.1"
+        type: choice
+        prompt: "«У меня есть брат» —"
+        options: ["Imam brata.", "Imam brat.", "Nemam brat."]
+        answer: "Imam brata."
+      - id: "06.3.2"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["mama", "мама"]
+          - ["tata", "папа"]
+          - ["sestra", "сестра"]
+          - ["deda", "дедушка"]
+      - id: "06.3.3"
+        type: fill_blank
+        prompt: "«Моя мама» → ___ mama."
+        accept: ["moja"]
+      - id: "06.3.4"
+        type: word_bank
+        prompt: "Собери: «это мой папа»"
+        bank: ["Ovo", "je", "moj", "tata"]
+        accept: ["Ovo je moj tata."]
+      - id: "06.3.5"
+        type: translate
+        prompt: "У меня нет сестры."
+        accept: ["Nemam sestru."]
+
+  - id: "06.4"
+    kind: practice
+    title: "Числа, цена, время"
+    mixed: true
+    exercises:
+      - id: "06.4.1"
+        type: choice
+        prompt: "«15» —"
+        options: ["petnaest", "pedeset", "pet"]
+        answer: "petnaest"
+      - id: "06.4.2"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["deset", "десять"]
+          - ["dvadeset", "двадцать"]
+          - ["sto", "сто"]
+          - ["pet", "пять"]
+      - id: "06.4.3"
+        type: fill_blank
+        prompt: "«Мне 30 лет» → Imam trideset ___."
+        accept: ["godina"]
+      - id: "06.4.4"
+        type: word_bank
+        prompt: "Собери: «сколько стоит?»"
+        bank: ["Koliko", "košta"]
+        accept: ["Koliko košta?"]
+      - id: "06.4.5"
+        type: translate
+        prompt: "Который час?"
+        accept: ["Koliko je sati?"]
+
+  - id: "06.5"
+    kind: practice
+    title: "В магазине"
+    mixed: true
+    exercises:
+      - id: "06.5.1"
+        type: choice
+        prompt: "«Мне нужен хлеб» —"
+        options: ["Treba mi hleb.", "Mi hleb treba.", "Treba hleb."]
+        answer: "Treba mi hleb."
+      - id: "06.5.2"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["pekara", "пекарня"]
+          - ["kesa", "пакет"]
+          - ["račun", "чек"]
+          - ["kusur", "сдача"]
+      - id: "06.5.3"
+        type: fill_blank
+        prompt: "«Это всё» → To je ___."
+        accept: ["sve"]
+      - id: "06.5.4"
+        type: word_bank
+        prompt: "Собери: «сколько с меня?»"
+        bank: ["Koliko", "dugujem"]
+        accept: ["Koliko dugujem?"]
+      - id: "06.5.5"
+        type: translate
+        prompt: "Картой можно?"
+        accept: ["Može karticom?", "Karticom, može?"]
+
+  - id: "06.6"
+    kind: checkpoint
+    title: "Большая проверка"
+    also_ok: ["brata"]
+    exercises:
+      - id: "06.6.1"
+        type: choice
+        prompt: "Выходишь из кафе, тебе говорят «Prijatno!». Отвечаешь —"
+        options: ["Prijatno!", "Dobro jutro!", "Molim?"]
+        answer: "Prijatno!"
+      - id: "06.6.2"
+        type: choice
+        prompt: "«У меня нет брата» —"
+        options: ["Nemam brata.", "Nemam brat.", "Imam brata."]
+        answer: "Nemam brata."
+      - id: "06.6.3"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["sedam", "семь"]
+          - ["trideset", "тридцать"]
+          - ["sto", "сто"]
+          - ["dvanaest", "двенадцать"]
+      - id: "06.6.4"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["pekara", "пекарня"]
+          - ["apoteka", "аптека"]
+          - ["pijaca", "рынок"]
+          - ["prodavnica", "магазин"]
+      - id: "06.6.5"
+        type: fill_blank
+        prompt: "«Работаю программистом» → Radim ___ programer."
+        accept: ["kao"]
+      - id: "06.6.6"
+        type: word_bank
+        prompt: "Собери: «сколько стоит кофе?»"
+        bank: ["Koliko", "košta", "kafa"]
+        accept: ["Koliko košta kafa?"]
+      - id: "06.6.7"
+        type: translate
+        prompt: "Спасибо, до свидания!"
+        accept: ["Hvala, doviđenja!"]
+      - id: "06.6.8"
+        type: translate
+        prompt: "Сколько с меня?"
+        accept: ["Koliko dugujem?"]
+
+  - id: "06.7"
+    kind: checkpoint
+    title: "Ролёвки"
+    exercises:
+      - id: "06.7.1"
+        type: free
+        prompt: "Познакомься на улице: скажи имя, откуда ты, кем работаешь — 3 фразы."
+        sample: "Zdravo! Ja sam {name_latin}. Iz Rusije sam, živim u Novom Sadu. Radim kao {job}."
+      - id: "06.7.2"
+        type: free
+        prompt: "Купи в пекаре два кофе, спроси цену, заплати картой — 3 фразы."
+        sample: "Dobar dan! Dve kafe, molim. Koliko košta? Karticom, može?"
+      - id: "06.7.3"
+        type: free
+        prompt: "В магазине: попроси полкило сыра и хлеб, спроси, сколько с тебя — 3 фразы."
+        sample: "Treba mi pola kile sira i hleb. To je sve. Koliko dugujem?"

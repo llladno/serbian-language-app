@@ -1,0 +1,34 @@
+lesson: "90"
+title: "Fixture lesson"
+subtitle: "manifest smoke test"
+teaches: []
+steps:
+  - id: "90.1"
+    kind: teach
+    title: "Intro"
+    md: "90/1-intro.md"
+  - id: "90.2"
+    kind: practice
+    title: "Practice"
+    exercises:
+      - id: "90.2.1"
+        type: choice
+        prompt: "«Да» —"
+        options: ["Da", "Ne"]
+        answer: "Da"
+      - id: "90.2.2"
+        type: fill_blank
+        prompt: "Ja ___ ovde."
+        accept: ["sam"]
+  - id: "90.3"
+    kind: reading
+    title: "Reading"
+    md: "90/3-citanje.md"
+  - id: "90.4"
+    kind: checkpoint
+    title: "Checkpoint"
+    exercises:
+      - id: "90.4.1"
+        type: translate
+        prompt: "Да."
+        accept: ["Da."]

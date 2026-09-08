@@ -1,7 +1,9 @@
 package content
 
 import (
+	"io/fs"
 	"log"
+	"os"
 	"path/filepath"
 	"sync/atomic"
 	"time"
@@ -25,10 +27,13 @@ func Watch(dir string) (get func() *Course, stale func() bool, err error) {
 	if err != nil {
 		return nil, nil, err
 	}
-	_ = w.Add(dir)
-	for _, sub := range []string{"lessons", "exercises"} {
-		_ = w.Add(filepath.Join(dir, sub))
-	}
+	// Watch dir and every subdirectory (lessons/NN/ fragments live nested).
+	_ = filepath.WalkDir(dir, func(p string, d fs.DirEntry, err error) error {
+		if err == nil && d.IsDir() {
+			_ = w.Add(p)
+		}
+		return nil
+	})
 
 	go func() {
 		var timer *time.Timer
@@ -45,9 +50,15 @@ func Watch(dir string) (get func() *Course, stale func() bool, err error) {
 		}
 		for {
 			select {
-			case _, ok := <-w.Events:
+			case ev, ok := <-w.Events:
 				if !ok {
 					return
+				}
+				// A new subdirectory (e.g. lessons/NN/) must be watched too.
+				if ev.Op&fsnotify.Create != 0 {
+					if fi, err := os.Stat(ev.Name); err == nil && fi.IsDir() {
+						_ = w.Add(ev.Name)
+					}
 				}
 				if timer != nil {
 					timer.Stop()

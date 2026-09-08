@@ -82,6 +82,27 @@ func Check(answer string, accept []string) Result {
 	return Result{OK: false, Expected: best, Diff: diffChunks(at, normTokens(best)), NearMiss: nearMiss}
 }
 
+// CheckChoice grades a single-choice answer against the one correct option.
+func CheckChoice(answer, correct string) Result {
+	return Result{OK: Normalize(answer) == Normalize(correct), Expected: correct}
+}
+
+// CheckMatch grades a pair-matching answer. got maps each left item to the
+// right item the learner picked. ok is true only when every pair is right and
+// every pair was answered; per reports each left item individually.
+func CheckMatch(got map[string]string, pairs [][2]string) (bool, map[string]bool) {
+	per := make(map[string]bool, len(pairs))
+	all := len(got) == len(pairs)
+	for _, p := range pairs {
+		ok := Normalize(got[p[0]]) == Normalize(p[1])
+		per[p[0]] = ok
+		if !ok {
+			all = false
+		}
+	}
+	return all, per
+}
+
 // CheckForms grades a conjugation exercise field-by-field.
 func CheckForms(answers []string, acceptForms [][]string) []Result {
 	out := make([]Result, len(acceptForms))

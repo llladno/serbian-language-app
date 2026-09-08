@@ -10,6 +10,8 @@ type Course struct {
 	Exercises    map[string][]ExerciseBlock // key: lesson id
 	Vocab        []Vocab
 	FalseFriends []FalseFriend
+
+	allowWords []string // flattened content/allow-words.yaml (lexicon guard)
 }
 
 // Phase groups lessons (курс делится на фазы A/B/C).
@@ -33,6 +35,32 @@ type Lesson struct {
 	// Russian translation (may be empty).
 	Reading   string
 	ReadingRU string
+
+	// Manifest is true when the lesson was loaded from a lessons/NN.yaml
+	// manifest (the step model) rather than a single .md file.
+	Manifest bool
+	// Steps is the ordered lesson flow. It is always populated for a lesson
+	// with content: parsed from the manifest, or synthesized for a legacy
+	// .md lesson (a teach card, then one practice step per exercise block,
+	// then a reading step).
+	Steps []Step
+	// Teaches lists the vocab ids this lesson introduces (manifest only).
+	Teaches []string
+}
+
+// Step is one screen of a lesson: a short teach card, a practice block, a
+// reading text, or a mixed checkpoint.
+type Step struct {
+	ID    string
+	Kind  string // teach | practice | reading | checkpoint
+	Title string
+
+	Markdown   string // teach/practice reminder, or reading (Serbian side)
+	MarkdownRU string // reading: Russian translation
+
+	AlsoOK    []string // extra tokens the lexicon guard allows in this step
+	Mixed     bool     // practice: opt out of the difficulty-order check
+	Exercises []Exercise
 }
 
 // ExerciseBlock is a titled group of exercises (блок A/B/C… в уроке).
@@ -57,6 +85,11 @@ type Exercise struct {
 	Accept      []string   // auto types except conjugate: принимаемые ответы
 	Forms       []string   // conjugate: подписи форм (ja/ti/on…)
 	AcceptForms [][]string // conjugate: принимаемые ответы по форме
+
+	Options []string    // choice: shown options (Answer stays hidden from clients)
+	Answer  string      // choice: the correct option
+	Bank    []string    // word_bank: chips to assemble (Accept holds full answers)
+	Pairs   [][2]string // match: [Serbian, Russian] pairs (mapping hidden from clients)
 }
 
 // Vocab is one dictionary entry.

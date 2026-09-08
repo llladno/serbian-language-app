@@ -1,0 +1,295 @@
+lesson: "05"
+title: "Куповина"
+subtitle: "магазин, количество, оплата, возврат"
+teaches: [mleko, sir, jaja, voda, litar, deka, samo-gledam]
+
+steps:
+  - id: "05.1"
+    kind: teach
+    title: "Куда идёшь"
+    md: "05/1-gde-kupujem.md"
+
+  - id: "05.2"
+    kind: practice
+    title: "Какой магазин"
+    exercises:
+      - id: "05.2.1"
+        type: choice
+        prompt: "Где купить хлеб?"
+        options: ["pekara", "apoteka", "trafika"]
+        answer: "pekara"
+      - id: "05.2.2"
+        type: choice
+        prompt: "Где купить лекарство?"
+        options: ["apoteka", "pijaca", "mesara"]
+        answer: "apoteka"
+      - id: "05.2.3"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["pekara", "пекарня"]
+          - ["pijaca", "рынок"]
+          - ["apoteka", "аптека"]
+          - ["mesara", "мясная лавка"]
+      - id: "05.2.4"
+        type: fill_blank
+        prompt: "Магазин самообслуживания — ___"
+        accept: ["samoposluga"]
+
+  - id: "05.3"
+    kind: teach
+    title: "Заходишь"
+    md: "05/3-ulazim.md"
+
+  - id: "05.4"
+    kind: practice
+    title: "Первые слова"
+    exercises:
+      - id: "05.4.1"
+        type: choice
+        prompt: "«Мне нужен хлеб» —"
+        options: ["Treba mi hleb.", "Treba hleb mi.", "Mi treba hleb."]
+        answer: "Treba mi hleb."
+      - id: "05.4.2"
+        type: choice
+        prompt: "Продавец: «Recite?» Ты отвечаешь —"
+        options: ["Treba mi hleb.", "Hvala, doviđenja.", "Laku noć."]
+        answer: "Treba mi hleb."
+      - id: "05.4.3"
+        type: fill_blank
+        prompt: "«У вас есть молоко?» → Da li ___ mleko?"
+        accept: ["imate"]
+      - id: "05.4.4"
+        type: word_bank
+        prompt: "Собери: «мне нужно молоко»"
+        bank: ["Treba", "mi", "mleko"]
+        accept: ["Treba mi mleko."]
+
+  - id: "05.5"
+    kind: teach
+    title: "Сколько"
+    md: "05/5-koliko.md"
+
+  - id: "05.6"
+    kind: practice
+    title: "Мера"
+    exercises:
+      - id: "05.6.1"
+        type: choice
+        prompt: "«полкило сыра» —"
+        options: ["pola kile sira", "pola kilo sir", "pola kile sir"]
+        answer: "pola kile sira"
+      - id: "05.6.2"
+        type: choice
+        prompt: "«два куска» —"
+        options: ["dva komada", "dve komada", "dva komad"]
+        answer: "dva komada"
+      - id: "05.6.3"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["kilo", "килограмм"]
+          - ["pola kile", "полкило"]
+          - ["komad", "штука"]
+          - ["pakovanje", "упаковка"]
+      - id: "05.6.4"
+        type: fill_blank
+        prompt: "«литр молока» → litar ___."
+        accept: ["mleka"]
+      - id: "05.6.5"
+        type: word_bank
+        prompt: "Собери: «дайте мне кило»"
+        bank: ["Dajte", "mi", "kilo"]
+        accept: ["Dajte mi kilo."]
+
+  - id: "05.7"
+    kind: teach
+    title: "Ещё что-нибудь"
+    md: "05/7-jos-nesto.md"
+
+  - id: "05.8"
+    kind: practice
+    title: "Заканчиваем"
+    exercises:
+      - id: "05.8.1"
+        type: choice
+        prompt: "Продавец: «Još nešto?» Тебе больше ничего не нужно —"
+        options: ["To je sve, hvala.", "Još ovo.", "Koliko košta?"]
+        answer: "To je sve, hvala."
+      - id: "05.8.2"
+        type: choice
+        prompt: "«Больше ничего» —"
+        options: ["Ništa, hvala.", "Još nešto.", "Da li imate?"]
+        answer: "Ništa, hvala."
+      - id: "05.8.3"
+        type: fill_blank
+        prompt: "«Это всё» → To je ___."
+        accept: ["sve"]
+      - id: "05.8.4"
+        type: word_bank
+        prompt: "Собери: «это всё, спасибо»"
+        bank: ["To", "je", "sve", "hvala"]
+        accept: ["To je sve, hvala."]
+
+  - id: "05.9"
+    kind: teach
+    title: "Оплата"
+    md: "05/9-placanje.md"
+
+  - id: "05.10"
+    kind: practice
+    title: "Плачу"
+    exercises:
+      - id: "05.10.1"
+        type: choice
+        prompt: "Продавец: «Kešom ili karticom?» Ты платишь картой —"
+        options: ["Karticom.", "Kešom.", "Kusur."]
+        answer: "Karticom."
+      - id: "05.10.2"
+        type: choice
+        prompt: "«У вас есть мелочь?» —"
+        options: ["Imate li sitno?", "Koliko sitno?", "Sitno je."]
+        answer: "Imate li sitno?"
+      - id: "05.10.3"
+        type: fill_blank
+        prompt: "«Сколько с меня?» → Koliko ___?"
+        accept: ["dugujem"]
+      - id: "05.10.4"
+        type: word_bank
+        prompt: "Собери: «чек, пожалуйста»"
+        bank: ["Račun", "molim"]
+        accept: ["Račun, molim."]
+
+  - id: "05.11"
+    kind: teach
+    title: "Что-то не так"
+    md: "05/11-reklamacija.md"
+
+  - id: "05.12"
+    kind: practice
+    title: "Возврат"
+    also_ok: ["mogu"]
+    exercises:
+      - id: "05.12.1"
+        type: choice
+        prompt: "«Это испорчено» —"
+        options: ["Ovo je pokvareno.", "Ovo je sveže.", "Ovo je otvoreno."]
+        answer: "Ovo je pokvareno."
+      - id: "05.12.2"
+        type: choice
+        prompt: "«Могу вернуть?» —"
+        options: ["Mogu li da vratim?", "Mogu li da zamenim?", "Mogu li da tražim?"]
+        answer: "Mogu li da vratim?"
+      - id: "05.12.3"
+        type: fill_blank
+        prompt: "«Где написан срок годности?» → Gde piše rok ___?"
+        accept: ["trajanja"]
+      - id: "05.12.4"
+        type: word_bank
+        prompt: "Собери: «могу поменять?»"
+        bank: ["Mogu", "li", "da", "zamenim"]
+        accept: ["Mogu li da zamenim?"]
+
+  - id: "05.13"
+    kind: teach
+    title: "Очередь и часы"
+    md: "05/13-red.md"
+
+  - id: "05.14"
+    kind: practice
+    title: "В очереди"
+    exercises:
+      - id: "05.14.1"
+        type: choice
+        prompt: "Входя в очередь, спрашиваешь —"
+        options: ["Ko je poslednji?", "Dobar dan!", "Prijatno."]
+        answer: "Ko je poslednji?"
+      - id: "05.14.2"
+        type: choice
+        prompt: "«Открыто или закрыто?» —"
+        options: ["Otvoreno ili zatvoreno?", "Radno vreme?", "Koliko košta?"]
+        answer: "Otvoreno ili zatvoreno?"
+      - id: "05.14.3"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["red", "очередь"]
+          - ["otvoreno", "открыто"]
+          - ["zatvoreno", "закрыто"]
+          - ["radno vreme", "часы работы"]
+      - id: "05.14.4"
+        type: fill_blank
+        prompt: "«Я за вами» → Ja sam ___ vama."
+        accept: ["za"]
+
+  - id: "05.15"
+    kind: reading
+    title: "В пекарне очередь"
+    md: "05/15-citanje.md"
+    exercises:
+      - id: "05.15.1"
+        type: choice
+        prompt: "Чем платит покупатель?"
+        options: ["Kešom.", "Karticom.", "Sitno."]
+        answer: "Kešom."
+      - id: "05.15.2"
+        type: choice
+        prompt: "Сколько всего?"
+        options: ["Sto deset dinara.", "Sto dinara.", "Deset dinara."]
+        answer: "Sto deset dinara."
+
+  - id: "05.16"
+    kind: practice
+    title: "Диктант"
+    mixed: true
+    exercises:
+      - id: "05.16.1"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Treba mi hleb."
+        accept: ["Treba mi hleb."]
+      - id: "05.16.2"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Koliko dugujem?"
+        accept: ["Koliko dugujem?"]
+      - id: "05.16.3"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "To je sve, hvala."
+        accept: ["To je sve, hvala."]
+
+  - id: "05.17"
+    kind: checkpoint
+    title: "Проверка"
+    exercises:
+      - id: "05.17.1"
+        type: choice
+        prompt: "Где купить хлеб?"
+        options: ["pekara", "apoteka", "pijaca"]
+        answer: "pekara"
+      - id: "05.17.2"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["prodavnica", "магазин"]
+          - ["kesa", "пакет"]
+          - ["kusur", "сдача"]
+          - ["račun", "чек"]
+      - id: "05.17.3"
+        type: fill_blank
+        prompt: "«У вас есть молоко?» → Da li ___ mleko?"
+        accept: ["imate"]
+      - id: "05.17.4"
+        type: word_bank
+        prompt: "Собери: «дайте мне полкило сыра»"
+        bank: ["Dajte", "mi", "pola", "kile", "sira"]
+        accept: ["Dajte mi pola kile sira."]
+      - id: "05.17.5"
+        type: translate
+        prompt: "Дайте мне полкило сыра."
+        accept: ["Dajte mi pola kile sira."]
+      - id: "05.17.6"
+        type: free
+        prompt: "Зайди в магазин: поздоровайся, попроси хлеб и молоко, расплатись — 3–4 фразы."
+        sample: "Dobar dan! Treba mi hleb i mleko. Koliko dugujem? Karticom, može?"

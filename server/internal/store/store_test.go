@@ -29,7 +29,7 @@ func newStore(t *testing.T) *Store {
 	}
 	if IsPostgresDSN(dsn) {
 		truncate := func() {
-			s.db.Exec(`TRUNCATE users, srs_cards, reviews, attempts, lesson_progress`)
+			s.db.Exec(`TRUNCATE users, srs_cards, reviews, attempts, lesson_progress, lesson_step_progress`)
 		}
 		truncate()
 		t.Cleanup(func() { truncate(); s.Close() })
@@ -242,6 +242,33 @@ func TestLessonStatusRoundTrip(t *testing.T) {
 	}
 	if miss, _ := u.LessonStatus("99"); miss != "" {
 		t.Errorf("unknown lesson status = %q, want empty", miss)
+	}
+}
+
+func TestStepProgress(t *testing.T) {
+	_, u := newUser(t)
+
+	if err := u.SetStepStatus("01", "01.1", "in_progress", day0); err != nil {
+		t.Fatal(err)
+	}
+	if err := u.SetStepStatus("01", "01.1", "done", day0.Add(time.Hour)); err != nil {
+		t.Fatal(err)
+	}
+	if err := u.SetStepStatus("01", "01.2", "in_progress", day0); err != nil {
+		t.Fatal(err)
+	}
+	m, err := u.StepStatuses("01")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if m["01.1"] != "done" || m["01.2"] != "in_progress" {
+		t.Fatalf("statuses = %v", m)
+	}
+	if err := u.ResetLesson("01"); err != nil {
+		t.Fatal(err)
+	}
+	if m, _ = u.StepStatuses("01"); len(m) != 0 {
+		t.Fatalf("after reset: %v", m)
 	}
 }
 

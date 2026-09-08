@@ -4,6 +4,7 @@ import type { ExerciseBlock, LessonAttempts } from '../../types'
 import ExerciseItem from './ExerciseItem.vue'
 
 const props = defineProps<{ lesson: string; block: ExerciseBlock; priors?: LessonAttempts }>()
+const emit = defineEmits<{ graded: [id: string, ok: boolean] }>()
 
 const graded = reactive<Record<string, boolean>>({})
 for (const ex of props.block.exercises) {
@@ -12,6 +13,7 @@ for (const ex of props.block.exercises) {
 }
 function onGraded(id: string, ok: boolean) {
   graded[id] = ok
+  emit('graded', id, ok)
 }
 
 const score = computed(() => {

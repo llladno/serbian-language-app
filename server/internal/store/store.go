@@ -247,6 +247,14 @@ CREATE TABLE IF NOT EXISTS lesson_progress (
 	completed_at TEXT,
 	PRIMARY KEY (user_name, lesson)
 );
+CREATE TABLE IF NOT EXISTS lesson_step_progress (
+	user_name    TEXT NOT NULL,
+	lesson       TEXT NOT NULL,
+	step         TEXT NOT NULL,
+	status       TEXT NOT NULL,
+	completed_at TEXT,
+	PRIMARY KEY (user_name, lesson, step)
+);
 CREATE INDEX IF NOT EXISTS reviews_user ON reviews(user_name);
 CREATE INDEX IF NOT EXISTS attempts_user ON attempts(user_name);
 `
@@ -696,6 +704,41 @@ ON CONFLICT(user_name, lesson) DO UPDATE SET
 	return err
 }
 
+// SetStepStatus upserts one lesson step's status ("in_progress" | "done").
+// completed_at is stamped once, on the first transition to "done".
+func (u *UserStore) SetStepStatus(lesson, step, status string, now time.Time) error {
+	var completedCol any
+	if status == "done" {
+		completedCol = now.UTC().Format(time.RFC3339)
+	}
+	_, err := u.db.Exec(`
+INSERT INTO lesson_step_progress (user_name, lesson, step, status, completed_at)
+VALUES (?, ?, ?, ?, ?)
+ON CONFLICT(user_name, lesson, step) DO UPDATE SET
+	status = excluded.status,
+	completed_at = COALESCE(lesson_step_progress.completed_at, excluded.completed_at)`,
+		u.user, lesson, step, status, completedCol)
+	return err
+}
+
+// StepStatuses returns step id -> status for one lesson.
+func (u *UserStore) StepStatuses(lesson string) (map[string]string, error) {
+	rows, err := u.db.Query(`SELECT step, status FROM lesson_step_progress WHERE user_name = ? AND lesson = ?`, u.user, lesson)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	out := map[string]string{}
+	for rows.Next() {
+		var step, status string
+		if err := rows.Scan(&step, &status); err != nil {
+			return nil, err
+		}
+		out[step] = status
+	}
+	return out, rows.Err()
+}
+
 // AttemptSummary is the learner's most recent answer to one exercise.
 type AttemptSummary struct {
 	Answer  string
@@ -741,6 +784,9 @@ func (u *UserStore) ResetLesson(lesson string) error {
 	if _, err := tx.Exec(`DELETE FROM lesson_progress WHERE user_name = ? AND lesson = ?`, u.user, lesson); err != nil {
 		return err
 	}
+	if _, err := tx.Exec(`DELETE FROM lesson_step_progress WHERE user_name = ? AND lesson = ?`, u.user, lesson); err != nil {
+		return err
+	}
 	return tx.Commit()
 }
 
@@ -756,6 +802,9 @@ func (u *UserStore) ResetExercises() error {
 		return err
 	}
 	if _, err := tx.Exec(`DELETE FROM lesson_progress WHERE user_name = ?`, u.user); err != nil {
+		return err
+	}
+	if _, err := tx.Exec(`DELETE FROM lesson_step_progress WHERE user_name = ?`, u.user); err != nil {
 		return err
 	}
 	return tx.Commit()

@@ -1,0 +1,280 @@
+lesson: "09"
+title: "Храна и пиће"
+subtitle: "продукты, в кафе, заказ"
+teaches:
+  [
+    meso, piletina, riba, povrce, voce, jabuka, paradajz, krompir, pirinac,
+    testenina, supa, corba, salata, jogurt, puter, so-salt, secer, kolac,
+    sladoled, palacinke, caj, sok, pivo, vino, rakija, mineralna, gazirano,
+    kafic, restoran, jelovnik, poruciti, za-mene, gladan, zedan, jesti,
+    piti, ukusno, ljuto, slano, baksis, platiti,
+  ]
+
+steps:
+  - id: "09.1"
+    kind: teach
+    title: "Еда дома"
+    md: "09/1-hrana.md"
+
+  - id: "09.2"
+    kind: practice
+    title: "Что это"
+    exercises:
+      - id: "09.2.1"
+        type: choice
+        prompt: "«мясо» —"
+        options: ["meso", "mleko", "jaja"]
+        answer: "meso"
+      - id: "09.2.2"
+        type: choice
+        prompt: "«овощи» —"
+        options: ["povrće", "voće", "piletina"]
+        answer: "povrće"
+      - id: "09.2.3"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["riba", "рыба"]
+          - ["salata", "салат"]
+          - ["supa", "суп"]
+          - ["jabuka", "яблоко"]
+      - id: "09.2.4"
+        type: fill_blank
+        prompt: "«картофель» по-сербски — ___"
+        accept: ["krompir"]
+
+  - id: "09.3"
+    kind: teach
+    title: "Напитки"
+    md: "09/3-pice.md"
+
+  - id: "09.4"
+    kind: practice
+    title: "Что попить"
+    also_ok: ["kafu"]
+    exercises:
+      - id: "09.4.1"
+        type: choice
+        prompt: "«чай» —"
+        options: ["čaj", "sok", "sir"]
+        answer: "čaj"
+      - id: "09.4.2"
+        type: choice
+        prompt: "«один кофе, пожалуйста» —"
+        options: ["Jednu kafu, molim.", "Jedan kafa, molim.", "Jedno kafu, molim."]
+        answer: "Jednu kafu, molim."
+      - id: "09.4.3"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["voda", "вода"]
+          - ["pivo", "пиво"]
+          - ["vino", "вино"]
+          - ["sok", "сок"]
+      - id: "09.4.4"
+        type: fill_blank
+        prompt: "«мне сок» → Za mene ___."
+        accept: ["sok"]
+      - id: "09.4.5"
+        type: word_bank
+        prompt: "Собери: «ещё одно пиво»"
+        bank: ["Još", "jedno", "pivo"]
+        accept: ["Još jedno pivo."]
+
+  - id: "09.5"
+    kind: teach
+    title: "Голоден / хочу пить"
+    md: "09/5-gladan-zedan.md"
+
+  - id: "09.6"
+    kind: practice
+    title: "Есть и пить"
+    also_ok: ["jedem", "pijem", "jedeš", "piješ"]
+    exercises:
+      - id: "09.6.1"
+        type: choice
+        prompt: "«я голоден» —"
+        options: ["Gladan sam.", "Gladan je.", "Gladna je."]
+        answer: "Gladan sam."
+      - id: "09.6.2"
+        type: choice
+        prompt: "«я не ем мясо» —"
+        options: ["Ne jedem meso.", "Ne jesti meso.", "Meso ne jedem ne."]
+        answer: "Ne jedem meso."
+      - id: "09.6.3"
+        type: fill_blank
+        prompt: "«что ты пьёшь?» → Šta ___?"
+        accept: ["piješ"]
+      - id: "09.6.4"
+        type: word_bank
+        prompt: "Собери: «я хочу есть»"
+        bank: ["Hoću", "da", "jedem"]
+        accept: ["Hoću da jedem."]
+
+  - id: "09.7"
+    kind: teach
+    title: "В кафе"
+    md: "09/7-u-kaficu.md"
+
+  - id: "09.8"
+    kind: practice
+    title: "Заказ"
+    also_ok: ["kafu"]
+    exercises:
+      - id: "09.8.1"
+        type: choice
+        prompt: "Официант: «Izvolite?» Ты заказываешь —"
+        options: ["Molim vas jednu kafu.", "Hvala, doviđenja.", "Koliko je sati?"]
+        answer: "Molim vas jednu kafu."
+      - id: "09.8.2"
+        type: choice
+        prompt: "«меню» по-сербски —"
+        options: ["jelovnik", "konobar", "račun"]
+        answer: "jelovnik"
+      - id: "09.8.3"
+        type: fill_blank
+        prompt: "«мне пиво» → Za mene ___."
+        accept: ["pivo"]
+      - id: "09.8.4"
+        type: word_bank
+        prompt: "Собери: «ещё одну, пожалуйста»"
+        bank: ["Još", "jednu", "molim"]
+        accept: ["Još jednu, molim."]
+
+  - id: "09.9"
+    kind: teach
+    title: "Счёт"
+    md: "09/9-racun.md"
+
+  - id: "09.10"
+    kind: practice
+    title: "Платим"
+    also_ok: ["platimo"]
+    exercises:
+      - id: "09.10.1"
+        type: choice
+        prompt: "«можно рассчитаться?» —"
+        options: ["Možemo li da platimo?", "Možemo platimo?", "Platimo možemo li da?"]
+        answer: "Možemo li da platimo?"
+      - id: "09.10.2"
+        type: choice
+        prompt: "«счёт, пожалуйста» —"
+        options: ["Račun, molim.", "Jelovnik, molim.", "Konobar, molim."]
+        answer: "Račun, molim."
+      - id: "09.10.3"
+        type: fill_blank
+        prompt: "«картой можно?» → Karticom, ___?"
+        accept: ["može"]
+      - id: "09.10.4"
+        type: word_bank
+        prompt: "Собери: «это всё, спасибо»"
+        bank: ["To", "je", "sve", "hvala"]
+        accept: ["To je sve, hvala."]
+
+  - id: "09.11"
+    kind: teach
+    title: "Как тебе"
+    md: "09/11-kakav-je.md"
+
+  - id: "09.12"
+    kind: practice
+    title: "Вкусно?"
+    also_ok: ["kakva"]
+    exercises:
+      - id: "09.12.1"
+        type: choice
+        prompt: "«вкусно!» —"
+        options: ["Ukusno je!", "Ljuto je!", "Slano je!"]
+        answer: "Ukusno je!"
+      - id: "09.12.2"
+        type: choice
+        prompt: "«солоновато» —"
+        options: ["Malo je slano.", "Malo je ukusno.", "Malo je sveže."]
+        answer: "Malo je slano."
+      - id: "09.12.3"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["ukusno", "вкусно"]
+          - ["ljuto", "остро"]
+          - ["slano", "солёно"]
+          - ["sveže", "свежо"]
+      - id: "09.12.4"
+        type: fill_blank
+        prompt: "«островато» → Malo je ___."
+        accept: ["ljuto"]
+
+  - id: "09.13"
+    kind: reading
+    title: "В кафе"
+    md: "09/13-citanje.md"
+    also_ok: ["kafu", "gaziranu", "negaziranu", "cokoladom", "dzemom", "posle"]
+    exercises:
+      - id: "09.13.1"
+        type: choice
+        prompt: "Что заказал человек попить?"
+        options: ["Kafu i vodu.", "Pivo i sok.", "Čaj i vino."]
+        answer: "Kafu i vodu."
+      - id: "09.13.2"
+        type: choice
+        prompt: "Как он хочет заплатить?"
+        options: ["Karticom.", "Kešom.", "Ništa."]
+        answer: "Karticom."
+
+  - id: "09.14"
+    kind: practice
+    title: "Диктант"
+    mixed: true
+    also_ok: ["kafu"]
+    exercises:
+      - id: "09.14.1"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Molim vas jednu kafu."
+        accept: ["Molim vas jednu kafu."]
+      - id: "09.14.2"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Gladan sam."
+        accept: ["Gladan sam."]
+      - id: "09.14.3"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Račun, molim."
+        accept: ["Račun, molim."]
+
+  - id: "09.15"
+    kind: checkpoint
+    title: "Проверка"
+    also_ok: ["kafu", "caj"]
+    exercises:
+      - id: "09.15.1"
+        type: choice
+        prompt: "«овощи» —"
+        options: ["povrće", "voće", "meso"]
+        answer: "povrće"
+      - id: "09.15.2"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["kafić", "кафе"]
+          - ["jelovnik", "меню"]
+          - ["račun", "счёт"]
+          - ["bakšiš", "чаевые"]
+      - id: "09.15.3"
+        type: fill_blank
+        prompt: "«я хочу пить» → Žedan ___."
+        accept: ["sam"]
+      - id: "09.15.4"
+        type: word_bank
+        prompt: "Собери: «один кофе, пожалуйста»"
+        bank: ["Molim", "vas", "jednu", "kafu"]
+        accept: ["Molim vas jednu kafu."]
+      - id: "09.15.5"
+        type: translate
+        prompt: "Мне, пожалуйста, один чай."
+        accept: ["Za mene jedan čaj.", "Molim vas jedan čaj."]
+      - id: "09.15.6"
+        type: free
+        prompt: "Закажи завтрак в кафе и попроси счёт: 4 фразы (поздоровайся, закажи кофе и что-то поесть, спроси счёт, скажи как платишь)."
+        sample: "Dobar dan! Jednu kafu i palačinke, molim. Možemo li da platimo? Karticom, može?"

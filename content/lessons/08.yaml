@@ -1,0 +1,248 @@
+lesson: "08"
+title: "Кући"
+subtitle: "дом, комнаты, вещи, u/na"
+teaches:
+  [
+    gde, kuca, stan, zgrada, ulaz, lift, soba, kuhinja, kupatilo,
+    spavaca-soba, dnevni-boravak, hodnik, terasa, balkon, sto-meb, stolica,
+    krevet, orman, frizider, sporet, sudopera, lampa, polica, tepih,
+    ogledalo, slika, vrata, prozor, kljuc, zid, pod, stanovati, mali,
+    veliki, nov, star,
+  ]
+
+steps:
+  - id: "08.1"
+    kind: teach
+    title: "Дом и квартира"
+    md: "08/1-kuca-stan.md"
+
+  - id: "08.2"
+    kind: practice
+    title: "Где живёшь"
+    exercises:
+      - id: "08.2.1"
+        type: choice
+        prompt: "«я живу в квартире» —"
+        options: ["Živim u stanu.", "Živim u stan.", "Živim stanu."]
+        answer: "Živim u stanu."
+      - id: "08.2.2"
+        type: choice
+        prompt: "«дом» (частный) —"
+        options: ["kuća", "stan", "zgrada"]
+        answer: "kuća"
+      - id: "08.2.3"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["kuća", "дом"]
+          - ["stan", "квартира"]
+          - ["zgrada", "здание"]
+          - ["lift", "лифт"]
+      - id: "08.2.4"
+        type: fill_blank
+        prompt: "«подъезд» по-сербски — ___"
+        accept: ["ulaz"]
+
+  - id: "08.3"
+    kind: teach
+    title: "Комнаты"
+    md: "08/3-sobe.md"
+
+  - id: "08.4"
+    kind: practice
+    title: "Комната за комнатой"
+    also_ok: ["sobi", "sobe"]
+    exercises:
+      - id: "08.4.1"
+        type: choice
+        prompt: "Где готовят еду —"
+        options: ["kuhinja", "kupatilo", "hodnik"]
+        answer: "kuhinja"
+      - id: "08.4.2"
+        type: choice
+        prompt: "Где спят —"
+        options: ["spavaća soba", "kuhinja", "terasa"]
+        answer: "spavaća soba"
+      - id: "08.4.3"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["kuhinja", "кухня"]
+          - ["kupatilo", "ванная"]
+          - ["hodnik", "коридор"]
+          - ["terasa", "терраса"]
+      - id: "08.4.4"
+        type: fill_blank
+        prompt: "«в комнате» → u ___."
+        accept: ["sobi"]
+      - id: "08.4.5"
+        type: word_bank
+        prompt: "Собери: «это моя комната»"
+        bank: ["Ovo", "je", "moja", "soba"]
+        accept: ["Ovo je moja soba."]
+
+  - id: "08.5"
+    kind: teach
+    title: "Вещи"
+    md: "08/5-stvari.md"
+
+  - id: "08.6"
+    kind: practice
+    title: "Что в комнате"
+    exercises:
+      - id: "08.6.1"
+        type: choice
+        prompt: "На чём спят —"
+        options: ["krevet", "sto", "orman"]
+        answer: "krevet"
+      - id: "08.6.2"
+        type: choice
+        prompt: "Где хранят еду —"
+        options: ["frižider", "lampa", "ogledalo"]
+        answer: "frižider"
+      - id: "08.6.3"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["sto", "стол"]
+          - ["stolica", "стул"]
+          - ["krevet", "кровать"]
+          - ["orman", "шкаф"]
+      - id: "08.6.4"
+        type: fill_blank
+        prompt: "«холодильник» по-сербски — ___"
+        accept: ["frižider"]
+
+  - id: "08.7"
+    kind: teach
+    title: "Где это — u / na"
+    md: "08/7-gde-je.md"
+
+  - id: "08.8"
+    kind: practice
+    title: "u или na"
+    also_ok: ["sobi", "stolu"]
+    exercises:
+      - id: "08.8.1"
+        type: choice
+        prompt: "«кровать в спальне» —"
+        options: ["Krevet je u spavaćoj sobi.", "Krevet je na spavaćoj sobi.", "Krevet je spavaćoj sobi."]
+        answer: "Krevet je u spavaćoj sobi."
+      - id: "08.8.2"
+        type: choice
+        prompt: "«лампа на столе» —"
+        options: ["Lampa je na stolu.", "Lampa je u stolu.", "Lampa je stolu."]
+        answer: "Lampa je na stolu."
+      - id: "08.8.3"
+        type: fill_blank
+        prompt: "«Стул на террасе» → Stolica je ___ terasi."
+        accept: ["na"]
+      - id: "08.8.4"
+        type: word_bank
+        prompt: "Собери: «холодильник на кухне»"
+        bank: ["Frižider", "je", "u", "kuhinji"]
+        accept: ["Frižider je u kuhinji."]
+
+  - id: "08.9"
+    kind: teach
+    title: "ima / nema дома"
+    md: "08/9-ima-nema.md"
+
+  - id: "08.10"
+    kind: practice
+    title: "Есть или нет"
+    also_ok: ["lifta", "zgradi"]
+    exercises:
+      - id: "08.10.1"
+        type: choice
+        prompt: "«В кухне есть плита» —"
+        options: ["U kuhinji ima šporet.", "U kuhinji šporet ima je.", "Ima kuhinji šporet u."]
+        answer: "U kuhinji ima šporet."
+      - id: "08.10.2"
+        type: choice
+        prompt: "«В доме нет лифта» —"
+        options: ["U zgradi nema lifta.", "U zgradi ne lift.", "U zgradi nema lift ne."]
+        answer: "U zgradi nema lifta."
+      - id: "08.10.3"
+        type: fill_blank
+        prompt: "«У меня нет балкона» → Nemam ___."
+        accept: ["balkon"]
+      - id: "08.10.4"
+        type: word_bank
+        prompt: "Собери: «в квартире есть терраса»"
+        bank: ["U", "stanu", "ima", "terasa"]
+        accept: ["U stanu ima terasa."]
+
+  - id: "08.11"
+    kind: reading
+    title: "Мой стан"
+    md: "08/11-citanje.md"
+    also_ok: ["kuhinju", "sudoperu", "knjige", "malom", "drugom"]
+    exercises:
+      - id: "08.11.1"
+        type: choice
+        prompt: "Сколько комнат в квартире?"
+        options: ["Dve.", "Jedna.", "Tri."]
+        answer: "Dve."
+      - id: "08.11.2"
+        type: choice
+        prompt: "Что есть на кухне?"
+        options: ["Šporet, frižider i sudopera.", "Krevet i sto.", "Ništa."]
+        answer: "Šporet, frižider i sudopera."
+
+  - id: "08.12"
+    kind: practice
+    title: "Диктант"
+    mixed: true
+    exercises:
+      - id: "08.12.1"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Gde je kupatilo?"
+        accept: ["Gde je kupatilo?"]
+      - id: "08.12.2"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "U kuhinji ima šporet."
+        accept: ["U kuhinji ima šporet."]
+      - id: "08.12.3"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Zgrada nema lift."
+        accept: ["Zgrada nema lift."]
+
+  - id: "08.13"
+    kind: checkpoint
+    title: "Проверка"
+    also_ok: ["sobe", "sobi"]
+    exercises:
+      - id: "08.13.1"
+        type: choice
+        prompt: "«я живу в квартире» —"
+        options: ["Živim u stanu.", "Živim u stan.", "Živim na stan."]
+        answer: "Živim u stanu."
+      - id: "08.13.2"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["kuhinja", "кухня"]
+          - ["krevet", "кровать"]
+          - ["prozor", "окно"]
+          - ["ključ", "ключ"]
+      - id: "08.13.3"
+        type: fill_blank
+        prompt: "«лампа на столе» → Lampa je ___ stolu."
+        accept: ["na"]
+      - id: "08.13.4"
+        type: word_bank
+        prompt: "Собери: «в квартире две комнаты»"
+        bank: ["Stan", "ima", "dve", "sobe"]
+        accept: ["Stan ima dve sobe."]
+      - id: "08.13.5"
+        type: translate
+        prompt: "Где ванная?"
+        accept: ["Gde je kupatilo?"]
+      - id: "08.13.6"
+        type: free
+        prompt: "Опиши свою квартиру: 4 фразы (сколько комнат, что на кухне, где спишь, есть ли балкон)."
+        sample: "Živim u malom stanu. Kuhinja ima šporet i frižider. Spavam u sobi. Nemam balkon, ali imam terasu."

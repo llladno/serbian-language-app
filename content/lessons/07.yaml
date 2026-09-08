@@ -1,0 +1,281 @@
+lesson: "07"
+title: "Дан по дан"
+subtitle: "рутина, настоящее время целиком, volim da"
+teaches:
+  [
+    ustajati, spavati, tusirati-se, oblaciti-se, doruckovati, spremati-se,
+    odmarati, morati, pocinjati, zavrsavati, dorucak, rucak, vecera, posao,
+    ponedeljak, utorak, sreda, cetvrtak, petak, subota, nedelja, vikend,
+    radni-dan, obicno, uvek, ponekad, nikad, cesto, retko, rano, kasno,
+    svaki-dan, volim-da, moram-da,
+  ]
+
+steps:
+  - id: "07.1"
+    kind: teach
+    title: "Настоящее время: три типа"
+    md: "07/1-prezent.md"
+
+  - id: "07.2"
+    kind: practice
+    title: "Какое окончание"
+    also_ok: ["čitaš", "čita", "čitamo", "gledaš", "gleda"]
+    exercises:
+      - id: "07.2.1"
+        type: choice
+        prompt: "«я читаю» (ja) —"
+        options: ["čitam", "čitaš", "čita"]
+        answer: "čitam"
+      - id: "07.2.2"
+        type: choice
+        prompt: "«ты смотришь» (ti) —"
+        options: ["gledaš", "gleda", "gledam"]
+        answer: "gledaš"
+      - id: "07.2.3"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["čitam", "я читаю"]
+          - ["čitaš", "ты читаешь"]
+          - ["čita", "он читает"]
+          - ["čitamo", "мы читаем"]
+      - id: "07.2.4"
+        type: fill_blank
+        prompt: "«мы работаем» → Mi ___."
+        accept: ["radimo"]
+
+  - id: "07.3"
+    kind: teach
+    title: "Мой день"
+    md: "07/3-moj-dan.md"
+
+  - id: "07.4"
+    kind: practice
+    title: "По порядку"
+    also_ok: ["ustajem", "doručkujem", "tuširam"]
+    exercises:
+      - id: "07.4.1"
+        type: choice
+        prompt: "«я встаю в семь» —"
+        options: ["Ustajem u sedam.", "Ustajem sedam.", "Ustajem na sedam."]
+        answer: "Ustajem u sedam."
+      - id: "07.4.2"
+        type: choice
+        prompt: "«я завтракаю» —"
+        options: ["Doručkujem.", "Doručak.", "Doručkovati."]
+        answer: "Doručkujem."
+      - id: "07.4.3"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["ustajem", "встаю"]
+          - ["spavam", "сплю"]
+          - ["doručkujem", "завтракаю"]
+          - ["tuširam se", "принимаю душ"]
+      - id: "07.4.4"
+        type: fill_blank
+        prompt: "«я иду на работу» → Idem na ___."
+        accept: ["posao"]
+      - id: "07.4.5"
+        type: word_bank
+        prompt: "Собери: «я встаю в семь»"
+        bank: ["Ustajem", "u", "sedam"]
+        accept: ["Ustajem u sedam."]
+
+  - id: "07.5"
+    kind: teach
+    title: "Дни недели"
+    md: "07/5-dani.md"
+
+  - id: "07.6"
+    kind: practice
+    title: "Какой день"
+    also_ok: ["sredu"]
+    exercises:
+      - id: "07.6.1"
+        type: choice
+        prompt: "Первый день недели —"
+        options: ["ponedeljak", "nedelja", "subota"]
+        answer: "ponedeljak"
+      - id: "07.6.2"
+        type: choice
+        prompt: "«в среду» —"
+        options: ["u sredu", "u sreda", "na sreda"]
+        answer: "u sredu"
+      - id: "07.6.3"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["ponedeljak", "понедельник"]
+          - ["sreda", "среда"]
+          - ["petak", "пятница"]
+          - ["nedelja", "воскресенье"]
+      - id: "07.6.4"
+        type: fill_blank
+        prompt: "«выходные» по-сербски — ___"
+        accept: ["vikend"]
+
+  - id: "07.7"
+    kind: teach
+    title: "Как часто"
+    md: "07/7-koliko-cesto.md"
+
+  - id: "07.8"
+    kind: practice
+    title: "Частота"
+    exercises:
+      - id: "07.8.1"
+        type: choice
+        prompt: "«Как часто ты работаешь?» — «___»"
+        options: ["Svaki dan.", "Ujutru.", "U sedam."]
+        answer: "Svaki dan."
+      - id: "07.8.2"
+        type: choice
+        prompt: "«я никогда не сплю днём» —"
+        options: ["Nikad ne spavam popodne.", "Nikad spavam popodne.", "Ne spavam popodne nikad ne."]
+        answer: "Nikad ne spavam popodne."
+      - id: "07.8.3"
+        type: fill_blank
+        prompt: "«обычно» по-сербски — ___"
+        accept: ["obično"]
+      - id: "07.8.4"
+        type: word_bank
+        prompt: "Собери: «я часто читаю»"
+        bank: ["Često", "čitam"]
+        accept: ["Često čitam."]
+
+  - id: "07.9"
+    kind: teach
+    title: "volim da / moram da"
+    md: "07/9-volim-da.md"
+
+  - id: "07.10"
+    kind: practice
+    title: "Хочу и должен"
+    exercises:
+      - id: "07.10.1"
+        type: choice
+        prompt: "«я люблю читать» —"
+        options: ["Volim da čitam.", "Volim čitam.", "Volim čitati da."]
+        answer: "Volim da čitam."
+      - id: "07.10.2"
+        type: choice
+        prompt: "«мне надо идти» —"
+        options: ["Moram da idem.", "Moram idem.", "Moram ići da."]
+        answer: "Moram da idem."
+      - id: "07.10.3"
+        type: fill_blank
+        prompt: "«я хочу спать» → Hoću ___ spavam."
+        accept: ["da"]
+      - id: "07.10.4"
+        type: word_bank
+        prompt: "Собери: «я должен работать»"
+        bank: ["Moram", "da", "radim"]
+        accept: ["Moram da radim."]
+
+  - id: "07.11"
+    kind: reading
+    title: "Обычный вторник"
+    md: "07/11-citanje.md"
+    also_ok: ["ručam", "odmara"]
+    exercises:
+      - id: "07.11.1"
+        type: choice
+        prompt: "Во сколько автор встаёт по будням?"
+        options: ["U sedam.", "U devet.", "U osam."]
+        answer: "U sedam."
+      - id: "07.11.2"
+        type: choice
+        prompt: "Что автор делает по воскресеньям?"
+        options: ["Odmara.", "Radi.", "Ide na posao."]
+        answer: "Odmara."
+
+  - id: "07.12"
+    kind: practice
+    title: "Диктант"
+    mixed: true
+    exercises:
+      - id: "07.12.1"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Ustajem u sedam."
+        accept: ["Ustajem u sedam."]
+      - id: "07.12.2"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Radim svaki dan."
+        accept: ["Radim svaki dan."]
+      - id: "07.12.3"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Volim da čitam."
+        accept: ["Volim da čitam."]
+
+  - id: "07.13"
+    kind: practice
+    title: "Спряжение"
+    mixed: true
+    exercises:
+      - id: "07.13.1"
+        type: conjugate
+        prompt: "čitati — читать"
+        forms: ["ja", "ti", "on/ona/ono", "mi", "vi", "oni/one/ona"]
+        accept:
+          - ["čitam"]
+          - ["čitaš"]
+          - ["čita"]
+          - ["čitamo"]
+          - ["čitate"]
+          - ["čitaju"]
+        meta: "тип -am"
+      - id: "07.13.2"
+        type: conjugate
+        prompt: "gledati — смотреть"
+        forms: ["ja", "ti", "on/ona/ono", "mi", "vi", "oni/one/ona"]
+        accept:
+          - ["gledam"]
+          - ["gledaš"]
+          - ["gleda"]
+          - ["gledamo"]
+          - ["gledate"]
+          - ["gledaju"]
+        meta: "тип -am"
+      - id: "07.13.3"
+        type: translate
+        prompt: "Я читаю каждый день."
+        accept: ["Čitam svaki dan."]
+
+  - id: "07.14"
+    kind: checkpoint
+    title: "Проверка"
+    exercises:
+      - id: "07.14.1"
+        type: choice
+        prompt: "«я работаю каждый день» —"
+        options: ["Radim svaki dan.", "Radim svaki dana.", "Radim svaka dan."]
+        answer: "Radim svaki dan."
+      - id: "07.14.2"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["ponedeljak", "понедельник"]
+          - ["obično", "обычно"]
+          - ["nikad", "никогда"]
+          - ["vikend", "выходные"]
+      - id: "07.14.3"
+        type: fill_blank
+        prompt: "«я люблю читать» → Volim ___ čitam."
+        accept: ["da"]
+      - id: "07.14.4"
+        type: word_bank
+        prompt: "Собери: «я встаю рано»"
+        bank: ["Ustajem", "rano"]
+        accept: ["Ustajem rano."]
+      - id: "07.14.5"
+        type: translate
+        prompt: "Я встаю в семь."
+        accept: ["Ustajem u sedam."]
+      - id: "07.14.6"
+        type: free
+        prompt: "Расскажи свой будний день: 4 фразы (когда встаёшь, что делаешь утром, где работаешь, что вечером)."
+        sample: "Ustajem u sedam. Doručkujem i idem na posao. Radim kao {job}. Uveče volim da čitam."

@@ -1,0 +1,181 @@
+lesson: "03"
+title: "Људи око мене"
+subtitle: "семья, imam / nemam, мой / твой"
+teaches:
+  [
+    porodica, mama, tata, brat, sestra, muz, zena, sin, cerka, dete,
+    roditelji, baba, deda, imam, moj, tvoj, njegov,
+  ]
+
+steps:
+  - id: "03.1"
+    kind: teach
+    title: "Семья"
+    md: "03/1-porodica.md"
+
+  - id: "03.2"
+    kind: practice
+    title: "Кто есть кто"
+    also_ok: ["deca"]
+    exercises:
+      - id: "03.2.1"
+        type: choice
+        prompt: "«Бабушка» —"
+        options: ["baba", "deda", "dete"]
+        answer: "baba"
+      - id: "03.2.2"
+        type: choice
+        prompt: "«Родители» —"
+        options: ["roditelji", "deca", "porodica"]
+        answer: "roditelji"
+      - id: "03.2.3"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["mama", "мама"]
+          - ["tata", "папа"]
+          - ["brat", "брат"]
+          - ["sestra", "сестра"]
+      - id: "03.2.4"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["muž", "муж"]
+          - ["žena", "жена"]
+          - ["sin", "сын"]
+          - ["ćerka", "дочь"]
+
+  - id: "03.3"
+    kind: teach
+    title: "У меня есть / нет"
+    md: "03/3-imam.md"
+
+  - id: "03.4"
+    kind: practice
+    title: "imam / nemam"
+    also_ok: ["brata", "sestru", "sina", "ženu"]
+    exercises:
+      - id: "03.4.1"
+        type: choice
+        prompt: "«У меня есть брат» —"
+        options: ["Imam brata.", "Imam brat.", "Nemam brata."]
+        answer: "Imam brata."
+      - id: "03.4.2"
+        type: choice
+        prompt: "«У меня нет сестры» —"
+        options: ["Nemam sestru.", "Nemam sestra.", "Imam sestru."]
+        answer: "Nemam sestru."
+      - id: "03.4.3"
+        type: fill_blank
+        prompt: "У меня есть сын: «Imam ___.»"
+        accept: ["sina"]
+      - id: "03.4.4"
+        type: word_bank
+        prompt: "Собери: «у меня есть жена»"
+        bank: ["Imam", "ženu"]
+        accept: ["Imam ženu."]
+
+  - id: "03.5"
+    kind: teach
+    title: "Мой, твой, его"
+    md: "03/5-moj-tvoj.md"
+
+  - id: "03.6"
+    kind: practice
+    title: "Мой / твой"
+    also_ok: ["njena"]
+    exercises:
+      - id: "03.6.1"
+        type: choice
+        prompt: "«Моя сестра» —"
+        options: ["moja sestra", "moj sestra", "moje sestra"]
+        answer: "moja sestra"
+      - id: "03.6.2"
+        type: choice
+        prompt: "«Твой брат» —"
+        options: ["tvoj brat", "tvoja brat", "tvoje brat"]
+        answer: "tvoj brat"
+      - id: "03.6.3"
+        type: fill_blank
+        prompt: "«Моё дитя» → ___ dete"
+        accept: ["moje"]
+      - id: "03.6.4"
+        type: word_bank
+        prompt: "Собери: «это мой папа»"
+        bank: ["Ovo", "je", "moj", "tata"]
+        accept: ["Ovo je moj tata."]
+
+  - id: "03.7"
+    kind: reading
+    title: "Моя семья"
+    md: "03/7-citanje.md"
+    also_ok: ["radi", "brata", "sestru"]
+    exercises:
+      - id: "03.7.1"
+        type: choice
+        prompt: "Есть ли у автора брат?"
+        options: ["Nema brata.", "Ima brata.", "Ima sestru."]
+        answer: "Nema brata."
+      - id: "03.7.2"
+        type: choice
+        prompt: "Кем работает папа?"
+        options: ["Radi kao lekar.", "Radi kao konobar.", "Radi kao programer."]
+        answer: "Radi kao lekar."
+
+  - id: "03.8"
+    kind: practice
+    title: "Диктант"
+    mixed: true
+    also_ok: ["mamu", "tatu", "sestru"]
+    exercises:
+      - id: "03.8.1"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Imam mamu i tatu."
+        accept: ["Imam mamu i tatu."]
+      - id: "03.8.2"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Ovo je moj brat."
+        accept: ["Ovo je moj brat."]
+      - id: "03.8.3"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Nemam sestru."
+        accept: ["Nemam sestru."]
+
+  - id: "03.9"
+    kind: checkpoint
+    title: "Проверка"
+    also_ok: ["sestru", "brata"]
+    exercises:
+      - id: "03.9.1"
+        type: choice
+        prompt: "«Моя мама» —"
+        options: ["moja mama", "moj mama", "moje mama"]
+        answer: "moja mama"
+      - id: "03.9.2"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["brat", "брат"]
+          - ["ćerka", "дочь"]
+          - ["roditelji", "родители"]
+          - ["deda", "дедушка"]
+      - id: "03.9.3"
+        type: fill_blank
+        prompt: "У меня есть сестра: «Imam ___.»"
+        accept: ["sestru"]
+      - id: "03.9.4"
+        type: word_bank
+        prompt: "Собери: «у меня нет брата»"
+        bank: ["Nemam", "brata"]
+        accept: ["Nemam brata."]
+      - id: "03.9.5"
+        type: translate
+        prompt: "Это мой папа."
+        accept: ["Ovo je moj tata."]
+      - id: "03.9.6"
+        type: free
+        prompt: "Расскажи про свою семью: 3 фразы (кто есть, кого нет, кем кто-то работает)."
+        sample: "Imam mamu, tatu i sestru. Nemam brata. Moja sestra radi kao lekar."

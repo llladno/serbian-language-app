@@ -1,0 +1,243 @@
+lesson: "11"
+title: "Време и природа"
+subtitle: "погода, времена года, sviđa mi se"
+teaches:
+  [
+    suncano, oblacno, kisa, pada-kisa, sneg, pada-sneg, vetar, vetrovito,
+    magla, led, toplo, hladno, vruce, stepen, napolju, prolece, leto,
+    jesen, zima, svidja-mi-se, ne-svidja-mi-se, vise-volim, priroda, more,
+    planina, jezero, suma, nebo,
+  ]
+
+steps:
+  - id: "11.1"
+    kind: teach
+    title: "Погода сегодня"
+    md: "11/1-vreme-danas.md"
+
+  - id: "11.2"
+    kind: practice
+    title: "Что за окном"
+    exercises:
+      - id: "11.2.1"
+        type: choice
+        prompt: "«солнечно» —"
+        options: ["sunčano", "oblačno", "vetrovito"]
+        answer: "sunčano"
+      - id: "11.2.2"
+        type: choice
+        prompt: "«идёт дождь» —"
+        options: ["pada kiša", "pada sneg", "ima kiša"]
+        answer: "pada kiša"
+      - id: "11.2.3"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["sunčano", "солнечно"]
+          - ["oblačno", "пасмурно"]
+          - ["magla", "туман"]
+          - ["vetrovito", "ветрено"]
+      - id: "11.2.4"
+        type: fill_blank
+        prompt: "«идёт снег» → pada ___."
+        accept: ["sneg"]
+
+  - id: "11.3"
+    kind: teach
+    title: "Тепло / холодно"
+    md: "11/3-toplo-hladno.md"
+
+  - id: "11.4"
+    kind: practice
+    title: "Сколько градусов"
+    also_ok: ["stepeni"]
+    exercises:
+      - id: "11.4.1"
+        type: choice
+        prompt: "«на улице холодно» —"
+        options: ["Napolju je hladno.", "Napolju hladno je.", "Hladno napolju je."]
+        answer: "Napolju je hladno."
+      - id: "11.4.2"
+        type: choice
+        prompt: "«мне жарко» —"
+        options: ["Vruće mi je.", "Vruće sam.", "Ja vruće je."]
+        answer: "Vruće mi je."
+      - id: "11.4.3"
+        type: fill_blank
+        prompt: "«30 градусов» → trideset ___."
+        accept: ["stepeni"]
+      - id: "11.4.4"
+        type: word_bank
+        prompt: "Собери: «сегодня жарко»"
+        bank: ["Danas", "je", "vruće"]
+        accept: ["Danas je vruće."]
+
+  - id: "11.5"
+    kind: teach
+    title: "Времена года"
+    md: "11/5-godisnja-doba.md"
+
+  - id: "11.6"
+    kind: practice
+    title: "Какое время года"
+    also_ok: ["leti", "zimi", "zimu"]
+    exercises:
+      - id: "11.6.1"
+        type: choice
+        prompt: "«зима» —"
+        options: ["zima", "leto", "jesen"]
+        answer: "zima"
+      - id: "11.6.2"
+        type: choice
+        prompt: "«зимой идёт снег» —"
+        options: ["Zimi pada sneg.", "Zima pada sneg.", "U zima pada sneg."]
+        answer: "Zimi pada sneg."
+      - id: "11.6.3"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["proleće", "весна"]
+          - ["leto", "лето"]
+          - ["jesen", "осень"]
+          - ["zima", "зима"]
+      - id: "11.6.4"
+        type: fill_blank
+        prompt: "«летом жарко» → ___ je vruće."
+        accept: ["Leti", "leti"]
+
+  - id: "11.7"
+    kind: teach
+    title: "Нравится / не нравится"
+    md: "11/7-svidja-mi-se.md"
+
+  - id: "11.8"
+    kind: practice
+    title: "Что нравится"
+    also_ok: ["zimu", "planine"]
+    exercises:
+      - id: "11.8.1"
+        type: choice
+        prompt: "«мне нравится лето» —"
+        options: ["Sviđa mi se leto.", "Sviđa me leto.", "Sviđa mi leto se."]
+        answer: "Sviđa mi se leto."
+      - id: "11.8.2"
+        type: choice
+        prompt: "«мне не нравится холодная погода» —"
+        options: ["Ne sviđa mi se hladno vreme.", "Ne sviđa mi hladno vreme.", "Sviđa mi se ne hladno vreme."]
+        answer: "Ne sviđa mi se hladno vreme."
+      - id: "11.8.3"
+        type: fill_blank
+        prompt: "«больше люблю лето, чем зиму» → Više volim leto ___ zimu."
+        accept: ["nego"]
+      - id: "11.8.4"
+        type: word_bank
+        prompt: "Собери: «мне нравится этот город»"
+        bank: ["Sviđa", "mi", "se", "ovaj", "grad"]
+        accept: ["Sviđa mi se ovaj grad."]
+
+  - id: "11.9"
+    kind: teach
+    title: "Природа"
+    md: "11/9-priroda.md"
+
+  - id: "11.10"
+    kind: practice
+    title: "На природе"
+    also_ok: ["prirodu", "more"]
+    exercises:
+      - id: "11.10.1"
+        type: choice
+        prompt: "«море» —"
+        options: ["more", "reka", "jezero"]
+        answer: "more"
+      - id: "11.10.2"
+        type: choice
+        prompt: "«на выходных еду на природу» —"
+        options: ["Vikendom idem u prirodu.", "Vikendom idem prirodu.", "Vikendom u prirodu idem se."]
+        answer: "Vikendom idem u prirodu."
+      - id: "11.10.3"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["planina", "гора"]
+          - ["jezero", "озеро"]
+          - ["šuma", "лес"]
+          - ["nebo", "небо"]
+      - id: "11.10.4"
+        type: fill_blank
+        prompt: "«летом едем на море» → Leti idemo na ___."
+        accept: ["more"]
+
+  - id: "11.11"
+    kind: reading
+    title: "Любимое время года"
+    md: "11/11-citanje.md"
+    also_ok: ["najviše", "lišće", "žuto", "crveno", "vedro", "previše", "mrak", "kroz", "omiljeno", "godišnje", "doba", "teško"]
+    exercises:
+      - id: "11.11.1"
+        type: choice
+        prompt: "Какое время года любит автор?"
+        options: ["Jesen.", "Leto.", "Zima."]
+        answer: "Jesen."
+      - id: "11.11.2"
+        type: choice
+        prompt: "Что автор делает зимой на выходных?"
+        options: ["Gleda kroz prozor i pije čaj.", "Ide na more.", "Radi."]
+        answer: "Gleda kroz prozor i pije čaj."
+
+  - id: "11.12"
+    kind: practice
+    title: "Диктант"
+    mixed: true
+    exercises:
+      - id: "11.12.1"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Napolju je hladno."
+        accept: ["Napolju je hladno."]
+      - id: "11.12.2"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Pada kiša."
+        accept: ["Pada kiša."]
+      - id: "11.12.3"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Sviđa mi se leto."
+        accept: ["Sviđa mi se leto."]
+
+  - id: "11.13"
+    kind: checkpoint
+    title: "Проверка"
+    also_ok: ["leti", "zimu"]
+    exercises:
+      - id: "11.13.1"
+        type: choice
+        prompt: "«пасмурно» —"
+        options: ["oblačno", "sunčano", "toplo"]
+        answer: "oblačno"
+      - id: "11.13.2"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["kiša", "дождь"]
+          - ["sneg", "снег"]
+          - ["leto", "лето"]
+          - ["planina", "гора"]
+      - id: "11.13.3"
+        type: fill_blank
+        prompt: "«мне холодно» → Hladno ___ je."
+        accept: ["mi"]
+      - id: "11.13.4"
+        type: word_bank
+        prompt: "Собери: «мне нравится осень»"
+        bank: ["Sviđa", "mi", "se", "jesen"]
+        accept: ["Sviđa mi se jesen."]
+      - id: "11.13.5"
+        type: translate
+        prompt: "Сегодня солнечно и тепло."
+        accept: ["Danas je sunčano i toplo."]
+      - id: "11.13.6"
+        type: free
+        prompt: "Опиши сегодняшнюю погоду и любимое время года: 4 фразы."
+        sample: "Danas je oblačno i hladno. Napolju je pet stepeni. Više volim jesen nego zimu. Sviđa mi se kad pada sneg za vikend."

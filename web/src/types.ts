@@ -20,6 +20,18 @@ export interface Course {
   lessons: LessonRef[]
 }
 
+export type StepKind = 'teach' | 'practice' | 'reading' | 'checkpoint'
+
+export interface Step {
+  id: string
+  kind: StepKind
+  title: string
+  markdown?: string
+  markdown_ru?: string
+  exercise_ids?: string[]
+  status: LessonStatus
+}
+
 export interface Lesson {
   id: string
   title: string
@@ -29,6 +41,7 @@ export interface Lesson {
   reading?: string
   reading_ru?: string
   status: LessonStatus
+  steps?: Step[]
 }
 
 export interface LookupResult {
@@ -37,7 +50,16 @@ export interface LookupResult {
   partial: boolean
 }
 
-export type ExerciseType = 'translate' | 'fill_blank' | 'fix_error' | 'conjugate' | 'free' | 'listen'
+export type ExerciseType =
+  | 'translate'
+  | 'fill_blank'
+  | 'fix_error'
+  | 'conjugate'
+  | 'free'
+  | 'listen'
+  | 'choice'
+  | 'word_bank'
+  | 'match'
 
 export interface Exercise {
   id: string
@@ -46,6 +68,10 @@ export interface Exercise {
   forms?: string[]
   meta?: string
   audio?: string
+  options?: string[]
+  bank?: string[]
+  left?: string[]
+  right?: string[]
 }
 
 export interface ExerciseBlock {
@@ -73,12 +99,14 @@ export interface CheckResult {
   explain?: string
   sample?: string
   forms?: FormResult[]
+  match?: Record<string, boolean>
   near_miss?: boolean
 }
 
 export interface CheckPayload {
   answer?: string
   answers?: string[]
+  pairs?: Record<string, string>
   self?: boolean
 }
 
