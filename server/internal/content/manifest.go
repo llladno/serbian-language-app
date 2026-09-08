@@ -106,3 +106,35 @@ func parseManifest(dir, rel string) (*Lesson, error) {
 	}
 	return l, nil
 }
+
+// collectExercises rebuilds Course.Exercises for a manifest lesson: one block
+// per practice/checkpoint step, block id == step id.
+func collectExercises(l *Lesson) []ExerciseBlock {
+	var out []ExerciseBlock
+	for _, s := range l.Steps {
+		if len(s.Exercises) > 0 {
+			out = append(out, ExerciseBlock{ID: s.ID, Title: s.Title, Exercises: s.Exercises})
+		}
+	}
+	return out
+}
+
+// synthesizeSteps turns a legacy .md lesson into a step flow: a teach card
+// holding the whole theory, one practice step per exercise block, then a
+// reading step. Step ids reuse block ids so api.findExercise stays consistent.
+func synthesizeSteps(l *Lesson, blocks []ExerciseBlock) []Step {
+	var steps []Step
+	if l.Markdown != "" {
+		steps = append(steps, Step{ID: "teach", Kind: "teach", Title: "Теория", Markdown: l.Markdown})
+	}
+	for _, b := range blocks {
+		steps = append(steps, Step{ID: b.ID, Kind: "practice", Title: b.Title, Exercises: b.Exercises})
+	}
+	if l.Reading != "" {
+		steps = append(steps, Step{
+			ID: "reading", Kind: "reading", Title: "Текст для чтения",
+			Markdown: l.Reading, MarkdownRU: l.ReadingRU,
+		})
+	}
+	return steps
+}

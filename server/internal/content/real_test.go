@@ -5,6 +5,38 @@ import (
 	"testing"
 )
 
+// TestLegacyLessonSynthesizesSteps checks that a legacy .md lesson is turned
+// into a playable step flow (teach card -> practice blocks -> reading).
+func TestLegacyLessonSynthesizesSteps(t *testing.T) {
+	c, err := Load("../../../content")
+	if err != nil {
+		t.Fatalf("load: %v", err)
+	}
+	l := c.Lessons["04"]
+	if l.Manifest {
+		t.Fatal("lesson 04 should be legacy in this build")
+	}
+	if len(l.Steps) < 3 {
+		t.Fatalf("lesson 04: %d synthetic steps, want >= 3", len(l.Steps))
+	}
+	if l.Steps[0].Kind != "teach" || l.Steps[0].Markdown == "" {
+		t.Errorf("step 0 not a teach card: %+v", l.Steps[0])
+	}
+	last := l.Steps[len(l.Steps)-1]
+	if last.Kind != "reading" || last.MarkdownRU == "" {
+		t.Errorf("last step not a reading step: %+v", last)
+	}
+	hasPractice := false
+	for _, s := range l.Steps {
+		if s.Kind == "practice" && len(s.Exercises) > 0 {
+			hasPractice = true
+		}
+	}
+	if !hasPractice {
+		t.Error("no practice step carries exercises")
+	}
+}
+
 // TestRealContentLoads guards the migrated content/ tree at the repo root.
 func TestRealContentLoads(t *testing.T) {
 	c, err := Load("../../../content")
@@ -50,6 +82,12 @@ func TestRealContentLoads(t *testing.T) {
 		}
 		if strings.Contains(l.Markdown, "<!-- reading") {
 			t.Errorf("lesson %s: reading markers left in markdown", id)
+		}
+		if len(l.Steps) < 3 {
+			t.Errorf("lesson %s: %d steps, want >= 3", id, len(l.Steps))
+		}
+		if len(l.Steps) > 0 && l.Steps[0].Kind != "teach" {
+			t.Errorf("lesson %s: first step kind = %q, want teach", id, l.Steps[0].Kind)
 		}
 
 		listen := 0

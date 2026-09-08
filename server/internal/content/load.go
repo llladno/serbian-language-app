@@ -259,6 +259,17 @@ func Load(dir string) (*Course, error) {
 		})
 	}
 
+	// Wire up the step model: manifest lessons expose their exercises through
+	// Course.Exercises; legacy lessons get a synthesized step flow.
+	for _, l := range c.Lessons {
+		switch {
+		case l.Manifest:
+			c.Exercises[l.ID] = collectExercises(l)
+		case !l.Planned:
+			l.Steps = synthesizeSteps(l, c.Exercises[l.ID])
+		}
+	}
+
 	// false-friends.yaml
 	var ff falseFriendFile
 	if err := readYAML(filepath.Join(dir, "false-friends.yaml"), &ff); err != nil {

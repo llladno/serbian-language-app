@@ -40,6 +40,35 @@ func TestManifestLessonLoadsSteps(t *testing.T) {
 	}
 }
 
+func TestManifestExercisesCollected(t *testing.T) {
+	c, err := Load("testdata/content")
+	if err != nil {
+		t.Fatal(err)
+	}
+	blocks := c.Exercises["90"]
+	if len(blocks) != 2 { // practice 90.2 + checkpoint 90.4
+		t.Fatalf("lesson 90: %d exercise blocks, want 2", len(blocks))
+	}
+	if blocks[0].ID != "90.2" || blocks[1].ID != "90.4" {
+		t.Errorf("block ids = %q, %q; want 90.2, 90.4", blocks[0].ID, blocks[1].ID)
+	}
+	if _, _, ok := findExerciseIn(c, "90", "90.2.1"); !ok {
+		t.Error("findExerciseIn cannot locate manifest exercise 90.2.1")
+	}
+}
+
+// findExerciseIn mirrors api.findExercise for test purposes.
+func findExerciseIn(c *Course, lesson, exID string) (Exercise, string, bool) {
+	for _, b := range c.Exercises[lesson] {
+		for _, e := range b.Exercises {
+			if e.ID == exID {
+				return e, b.ID, true
+			}
+		}
+	}
+	return Exercise{}, "", false
+}
+
 func TestManifestRejectsBadSteps(t *testing.T) {
 	cases := map[string]string{
 		"teach with exercises": `lesson: "90"
