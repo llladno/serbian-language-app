@@ -37,6 +37,7 @@ import glob
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 VOCAB = os.path.join(ROOT, "content", "vocab.yaml")
 EXERCISES_GLOB = os.path.join(ROOT, "content", "exercises", "*.yaml")
+LESSONS_GLOB = os.path.join(ROOT, "content", "lessons", "*.yaml")
 AUDIO_DIR = os.path.join(ROOT, "content", "audio")
 DEFAULT_VOICE = "sr-RS-SophieNeural"
 CONCURRENCY = 4
@@ -75,19 +76,33 @@ def sr_lat_to_cyr(s: str) -> str:
 
 def listen_entries() -> list[dict]:
     """Collect {id, cyrillic} rows for every `type: listen` exercise with a
-    `say:` field, so they get an audio clip keyed by exercise id (01-E-1.mp3).
-    `say` is authored in Latin (like the rest of the content) and transliterated
-    to Cyrillic so the Serbian voice pronounces it correctly."""
-    out = []
-    for path in sorted(glob.glob(EXERCISES_GLOB)):
+    `say:` field, so they get an audio clip keyed by exercise id (01-E-1.mp3
+    for the legacy model, 01.8.1.mp3 for the manifest model). `say` is authored
+    in Latin (like the rest of the content) and transliterated to Cyrillic so
+    the Serbian voice pronounces it correctly."""
+    out, seen = [], set()
+
+    def add(ex):
+        if ex.get("type") == "listen" and ex.get("say") and ex.get("id") not in seen:
+            seen.add(ex["id"])
+            out.append({"id": ex["id"], "cyrillic": sr_lat_to_cyr(ex["say"])})
+
+    for path in sorted(glob.glob(EXERCISES_GLOB)):        # legacy: exercises/NN.yaml
         if os.path.basename(path) == "_TEMPLATE.yaml":
             continue
-        with open(path, encoding="utf-8") as f:
-            doc = yaml.safe_load(f) or {}
+        doc = yaml.safe_load(open(path, encoding="utf-8")) or {}
         for block in doc.get("blocks") or []:
             for ex in block.get("exercises") or []:
-                if ex.get("type") == "listen" and ex.get("say"):
-                    out.append({"id": ex["id"], "cyrillic": sr_lat_to_cyr(ex["say"])})
+                add(ex)
+
+    for path in sorted(glob.glob(LESSONS_GLOB)):          # manifest: lessons/NN.yaml
+        if os.path.basename(path) == "_TEMPLATE.yaml":
+            continue
+        doc = yaml.safe_load(open(path, encoding="utf-8")) or {}
+        for step in doc.get("steps") or []:
+            for ex in step.get("exercises") or []:
+                add(ex)
+
     return out
 
 

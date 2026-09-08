@@ -21,7 +21,7 @@ lessons:
   "01":
     title: "Поздрави и први контакт"
     subtitle: "поздороваться, ты/вы, вежливые слова"
-    file: "lessons/01-pozdravi-i-upoznavanje.md"
+    file: "lessons/01.yaml"
   "02":
     title: "Ко си ти"
     subtitle: "jesam, откуда я, языки, профессии"

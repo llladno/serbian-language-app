@@ -61,8 +61,21 @@ func TestRealContentLoads(t *testing.T) {
 	if len(c.FalseFriends) < 50 {
 		t.Errorf("false friends = %d, want >= 50", len(c.FalseFriends))
 	}
-	if len(c.Exercises["01"]) < 4 {
-		t.Errorf("lesson 01 blocks = %d, want >= 4", len(c.Exercises["01"]))
+	{
+		l := c.Lessons["01"]
+		if !l.Manifest {
+			t.Fatal("lesson 01 should be a manifest")
+		}
+		if len(l.Steps) < 6 {
+			t.Errorf("lesson 01: %d steps, want >= 6", len(l.Steps))
+		}
+		kinds := map[string]int{}
+		for _, s := range l.Steps {
+			kinds[s.Kind]++
+		}
+		if kinds["teach"] < 2 || kinds["practice"] < 2 || kinds["checkpoint"] < 1 {
+			t.Errorf("lesson 01 step kinds: %v", kinds)
+		}
 	}
 	if len(c.Exercises["02"]) < 5 {
 		t.Errorf("lesson 02 blocks = %d, want >= 5", len(c.Exercises["02"]))
