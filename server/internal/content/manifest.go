@@ -91,6 +91,9 @@ func parseManifest(dir, rel string) (*Lesson, error) {
 				return nil, fmt.Errorf("%s: step %s: reading needs md", rel, s.ID)
 			}
 		}
+		if err := checkDifficultyOrder(rel, step); err != nil {
+			return nil, err
+		}
 		l.Steps = append(l.Steps, step)
 	}
 	if len(l.Steps) == 0 {

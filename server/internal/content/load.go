@@ -150,6 +150,9 @@ func decodeExercise(dir, rel string, e exerciseYAML) (Exercise, error) {
 			if len(ex.Bank) < 2 {
 				return Exercise{}, fmt.Errorf("%s: exercise %s: word_bank needs a bank of >=2 chips", rel, e.ID)
 			}
+			if err := validateWordBank(ex.Bank, ex.Accept); err != nil {
+				return Exercise{}, fmt.Errorf("%s: exercise %s: %w", rel, e.ID, err)
+			}
 		case "listen":
 			if e.Say == "" {
 				return Exercise{}, fmt.Errorf("%s: exercise %s: listen needs a non-empty say (text to synthesize)", rel, e.ID)
