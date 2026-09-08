@@ -6,18 +6,19 @@ import (
 )
 
 // TestLegacyLessonSynthesizesSteps checks that a legacy .md lesson is turned
-// into a playable step flow (teach card -> practice blocks -> reading).
+// into a playable step flow (teach card -> practice blocks -> reading). The
+// real content/ tree has no legacy lessons left, so this uses the fixture.
 func TestLegacyLessonSynthesizesSteps(t *testing.T) {
-	c, err := Load("../../../content")
+	c, err := Load("testdata/content")
 	if err != nil {
 		t.Fatalf("load: %v", err)
 	}
-	l := c.Lessons["04"]
+	l := c.Lessons["01"]
 	if l.Manifest {
-		t.Fatal("lesson 04 should be legacy in this build")
+		t.Fatal("fixture lesson 01 should be legacy")
 	}
 	if len(l.Steps) < 3 {
-		t.Fatalf("lesson 04: %d synthetic steps, want >= 3", len(l.Steps))
+		t.Fatalf("lesson 01: %d synthetic steps, want >= 3", len(l.Steps))
 	}
 	if l.Steps[0].Kind != "teach" || l.Steps[0].Markdown == "" {
 		t.Errorf("step 0 not a teach card: %+v", l.Steps[0])
@@ -109,12 +110,28 @@ func TestRealContentLoads(t *testing.T) {
 			t.Errorf("lesson 03 step kinds: %v", kinds)
 		}
 	}
-	for _, id := range []string{"04", "05"} {
-		if c.Lessons[id].Planned {
-			t.Errorf("lesson %s should have content", id)
+	for _, id := range []string{"04", "05", "06"} {
+		l := c.Lessons[id]
+		if l.Planned || !l.Manifest {
+			t.Errorf("lesson %s should be a non-planned manifest", id)
 		}
 		if len(c.Exercises[id]) < 5 {
 			t.Errorf("lesson %s blocks = %d, want >= 5", id, len(c.Exercises[id]))
+		}
+		if len(l.Steps) < 6 {
+			t.Errorf("lesson %s: %d steps, want >= 6", id, len(l.Steps))
+		}
+		kinds := map[string]int{}
+		for _, s := range l.Steps {
+			kinds[s.Kind]++
+		}
+		if kinds["checkpoint"] < 1 {
+			t.Errorf("lesson %s: no checkpoint step (%v)", id, kinds)
+		}
+	}
+	for _, id := range []string{"04", "05"} {
+		if len(c.Lessons[id].Steps) < 9 {
+			t.Errorf("lesson %s: %d steps, want >= 9 (broken into small pieces)", id, len(c.Lessons[id].Steps))
 		}
 	}
 	for _, id := range []string{"01", "02", "03", "04", "05"} {
@@ -151,9 +168,6 @@ func TestRealContentLoads(t *testing.T) {
 			t.Errorf("lesson %s: listen exercises = %d, want >= 3", id, listen)
 		}
 	}
-	if !c.Lessons["06"].Planned {
-		t.Error("lesson 06 should be planned")
-	}
 	if c.Lessons["01"].Planned {
 		t.Error("lesson 01 should have content")
 	}
@@ -163,7 +177,7 @@ func TestRealContentLoads(t *testing.T) {
 	if len(c.Lessons) < 28 {
 		t.Errorf("lessons = %d, want >= 28", len(c.Lessons))
 	}
-	for _, id := range []string{"06", "12", "18", "24", "30"} {
+	for _, id := range []string{"18", "24", "30"} {
 		if !c.Lessons[id].Planned {
 			t.Errorf("checkpoint lesson %s should be planned", id)
 		}

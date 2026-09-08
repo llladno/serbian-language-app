@@ -33,14 +33,15 @@ lessons:
   "04":
     title: "Бројеви, цена, сати"
     subtitle: "числа 0–1000, цена, возраст, часы, телефон"
-    file: "lessons/04-brojevi-i-novac.md"
+    file: "lessons/04.yaml"
   "05":
     title: "Куповина"
     subtitle: "магазин, количество, оплата, возврат"
-    file: "lessons/05-u-prodavnici.md"
+    file: "lessons/05.yaml"
   "06":
     title: "Провера 1"
     subtitle: "повторение уровня 1 + ролёвки"
+    file: "lessons/06.yaml"
   "07":
     title: "Дан по дан"
     subtitle: "рутина, настоящее время целиком, volim da"
