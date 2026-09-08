@@ -1,6 +1,17 @@
 <script setup lang="ts">
 import { RouterLink, useRoute } from 'vue-router'
 import { computed } from 'vue'
+import {
+  GraduationCap,
+  Home,
+  Languages,
+  MonitorSmartphone,
+  Moon,
+  Repeat,
+  SunMedium,
+  TriangleAlert,
+  Users,
+} from 'lucide-vue-next'
 import { clearAccount } from '../account'
 import { theme, cycleTheme, THEME_META } from '../theme'
 
@@ -9,19 +20,22 @@ defineProps<{ account: string }>()
 const route = useRoute()
 
 const links = [
-  { to: '/', label: 'Главная', icon: '◈' },
-  { to: '/course', label: 'Курс', icon: '≣' },
-  { to: '/review', label: 'Слова', icon: '✦' },
-  { to: '/vocab', label: 'Словарь', icon: '⌕' },
-  { to: '/false-friends', label: 'Ловушки', icon: '⚠' },
-  { to: '/people', label: 'Люди', icon: '☺' },
+  { to: '/', label: 'Главная', icon: Home },
+  { to: '/course', label: 'Курс', icon: GraduationCap },
+  { to: '/review', label: 'Слова', icon: Repeat },
+  { to: '/vocab', label: 'Словарь', icon: Languages },
+  { to: '/false-friends', label: 'Ловушки', icon: TriangleAlert },
+  { to: '/people', label: 'Люди', icon: Users },
 ]
 
 const active = computed(() => route.path)
 function isActive(to: string) {
   return to === '/' ? active.value === '/' : active.value.startsWith(to)
 }
+
+const THEME_ICON = { system: MonitorSmartphone, light: SunMedium, dark: Moon }
 const themeMeta = computed(() => THEME_META[theme.value])
+const themeIcon = computed(() => THEME_ICON[theme.value])
 </script>
 
 <template>
@@ -44,7 +58,7 @@ const themeMeta = computed(() => THEME_META[theme.value])
               : 'text-[var(--muted)] hover:text-[var(--fg)]'
           "
         >
-          <span class="text-xs opacity-70">{{ l.icon }}</span>{{ l.label }}
+          <component :is="l.icon" :size="15" :stroke-width="2.25" />{{ l.label }}
         </RouterLink>
       </nav>
 
@@ -55,16 +69,16 @@ const themeMeta = computed(() => THEME_META[theme.value])
         :title="`Тема: ${themeMeta.label}`"
         @click="cycleTheme()"
       >
-        {{ themeMeta.icon }}
+        <component :is="themeIcon" :size="17" :stroke-width="2.25" />
       </button>
 
       <button
-        class="flex h-9 shrink-0 items-center gap-1 rounded-lg px-2.5 text-sm text-[var(--muted)] transition hover:text-[var(--fg)]"
+        class="flex h-9 shrink-0 items-center gap-1.5 rounded-lg px-2.5 text-sm text-[var(--muted)] transition hover:text-[var(--fg)]"
         title="Сменить пользователя"
         @click="clearAccount()"
       >
         <span class="max-w-[7rem] truncate font-semibold text-[var(--fg)]">{{ account }}</span>
-        <span class="text-xs opacity-60">⇄</span>
+        <Repeat :size="13" :stroke-width="2.25" class="opacity-70" />
       </button>
     </div>
   </header>
@@ -78,10 +92,10 @@ const themeMeta = computed(() => THEME_META[theme.value])
       v-for="l in links"
       :key="l.to"
       :to="l.to"
-      class="flex flex-col items-center gap-0.5 py-2 text-[10px] font-medium transition"
+      class="flex flex-col items-center gap-1 py-2 text-[10px] font-medium transition"
       :class="isActive(l.to) ? 'text-[var(--accent)]' : 'text-[var(--muted)]'"
     >
-      <span class="text-base leading-none">{{ l.icon }}</span>{{ l.label }}
+      <component :is="l.icon" :size="19" :stroke-width="2.25" />{{ l.label }}
     </RouterLink>
   </nav>
 </template>

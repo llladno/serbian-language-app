@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, ref } from 'vue'
+import { ChevronDown } from 'lucide-vue-next'
 
 const props = withDefaults(
   defineProps<{
@@ -60,7 +61,12 @@ onBeforeUnmount(() => {
       <span :class="modelValue ? 'serbian text-[var(--fg)]' : 'text-[var(--muted)]'">
         {{ modelValue || placeholder }}
       </span>
-      <span class="text-xs text-[var(--muted)] transition" :class="{ 'rotate-180': open }">▾</span>
+      <ChevronDown
+        :size="15"
+        :stroke-width="2.5"
+        class="shrink-0 text-[var(--muted)] transition"
+        :class="{ 'rotate-180': open }"
+      />
     </button>
 
     <div

@@ -9,6 +9,15 @@ import ReadingText from '../components/ReadingText.vue'
 import StepProgress from '../components/StepProgress.vue'
 import ExerciseBlockView from '../components/exercises/ExerciseBlock.vue'
 import Confetti from '../components/Confetti.vue'
+import {
+  ArrowLeft,
+  ArrowRight,
+  BookOpen,
+  CircleCheckBig,
+  Dumbbell,
+  Lightbulb,
+  RotateCcw,
+} from 'lucide-vue-next'
 
 const route = useRoute()
 const store = useCourseStore()
@@ -22,13 +31,13 @@ const celebrate = ref(false)
 const idx = ref(0)
 const graded = reactive<Record<string, boolean>>({})
 
-const KIND_META: Record<string, { icon: string; label: string }> = {
-  teach: { icon: '▤', label: 'Теория' },
-  practice: { icon: '✎', label: 'Практика' },
-  reading: { icon: '📖', label: 'Чтение' },
-  checkpoint: { icon: '✓', label: 'Проверка' },
+const KIND_META: Record<string, { icon: unknown; label: string }> = {
+  teach: { icon: Lightbulb, label: 'Теория' },
+  practice: { icon: Dumbbell, label: 'Практика' },
+  reading: { icon: BookOpen, label: 'Чтение' },
+  checkpoint: { icon: CircleCheckBig, label: 'Проверка' },
 }
-const kindMeta = (k: string) => KIND_META[k] ?? { icon: '•', label: k }
+const kindMeta = (k: string) => KIND_META[k] ?? { icon: Lightbulb, label: k }
 
 const steps = computed<Step[]>(() => lesson.value?.steps ?? [])
 const cur = computed<Step | undefined>(() => steps.value[idx.value])
@@ -42,29 +51,30 @@ const canAdvance = computed(() => {
   return (s.exercise_ids ?? []).every((eid) => eid in graded)
 })
 
-function firstUnfinished(): number {
-  const i = steps.value.findIndex((s) => s.status !== 'done')
-  return i === -1 ? 0 : i
-}
-
 async function loadLesson(id: string) {
   lesson.value = null
   blocks.value = []
   priors.value = {}
   error.value = null
   celebrate.value = false
+  idx.value = 0
   for (const k of Object.keys(graded)) delete graded[k]
   try {
-    lesson.value = await api.lesson(id)
-    if (!lesson.value.planned) {
+    const l = await api.lesson(id)
+    // Pin the starting step in the same tick the lesson lands, so the body
+    // never renders step 0 for a frame while exercises load.
+    const wanted = route.query.step as string | undefined
+    const at = wanted ? (l.steps ?? []).findIndex((s) => s.id === wanted) : -1
+    const firstOpen = (l.steps ?? []).findIndex((s) => s.status !== 'done')
+    idx.value = at >= 0 ? at : firstOpen === -1 ? 0 : firstOpen
+    lesson.value = l
+
+    if (!l.planned) {
       const [bl, pr] = await Promise.all([api.exercises(id), api.lessonAttempts(id)])
       blocks.value = bl
       priors.value = pr
       for (const [exId, a] of Object.entries(pr)) graded[exId] = a.correct
     }
-    const wanted = route.query.step as string | undefined
-    const at = wanted ? steps.value.findIndex((s) => s.id === wanted) : -1
-    idx.value = at >= 0 ? at : firstUnfinished()
     markSeen()
     window.scrollTo(0, 0)
   } catch (e) {
@@ -72,7 +82,8 @@ async function loadLesson(id: string) {
   }
 }
 
-watch(() => route.params.id as string, loadLesson, { immediate: true })
+// route.fullPath covers ?step= deep links within the same lesson.
+watch(() => route.fullPath, () => loadLesson(route.params.id as string), { immediate: true })
 
 async function markSeen() {
   const s = cur.value
@@ -150,59 +161,101 @@ async function resetLesson() {
     </div>
 
     <template v-else-if="cur">
-      <header class="card mt-1 p-4">
-        <div class="flex items-center justify-between gap-3 text-xs text-[var(--muted)]">
-          <RouterLink to="/course" class="hover:text-[var(--fg)]">← {{ lesson.title }}</RouterLink>
+      <header class="mb-6">
+        <div class="mb-2.5 flex items-center justify-between gap-3 text-xs">
+          <RouterLink
+            to="/course"
+            class="inline-flex items-center gap-1 text-[var(--muted)] transition hover:text-[var(--fg)]"
+          >
+            <ArrowLeft :size="13" :stroke-width="2.5" />{{ lesson.title }}
+          </RouterLink>
           <button
             v-if="Object.keys(priors).length"
-            class="font-medium hover:text-[var(--accent)]"
+            class="inline-flex items-center gap-1 font-medium text-[var(--muted)] transition hover:text-[var(--accent)]"
             @click="resetLesson"
           >
-            ↺ заново
+            <RotateCcw :size="12" :stroke-width="2.5" />заново
           </button>
         </div>
 
-        <div class="mt-2 flex items-center gap-2">
+        <div class="flex items-center gap-2.5">
           <span
-            class="rounded-full bg-[var(--accent-soft)] px-2 py-0.5 text-[11px] font-semibold text-[var(--accent)]"
+            class="inline-flex items-center gap-1.5 rounded-full bg-[var(--accent-soft)] px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-[var(--accent)]"
           >
-            {{ kindMeta(cur.kind).icon }} {{ kindMeta(cur.kind).label }}
+            <component :is="kindMeta(cur.kind).icon" :size="13" :stroke-width="2.5" />
+            {{ kindMeta(cur.kind).label }}
           </span>
-          <h1 class="truncate text-base font-extrabold">{{ cur.title }}</h1>
-          <span class="ml-auto shrink-0 text-xs tabular-nums text-[var(--muted)]">
-            {{ idx + 1 }}/{{ steps.length }}
+          <h1 class="min-w-0 flex-1 truncate text-lg font-extrabold tracking-tight">{{ cur.title }}</h1>
+          <span class="shrink-0 text-xs font-semibold tabular-nums text-[var(--muted)]">
+            {{ idx + 1 }}<span class="opacity-50">/{{ steps.length }}</span>
           </span>
         </div>
 
         <StepProgress class="mt-3" :steps="steps" :current="idx" />
       </header>
 
-      <div class="mt-5">
-        <MarkdownView v-if="cur.kind === 'teach'" :source="cur.markdown ?? ''" />
+      <Transition name="step" mode="out-in">
+        <div :key="cur.id" class="space-y-6">
+          <article v-if="cur.kind === 'teach'" class="card p-5 sm:p-6">
+            <MarkdownView :source="cur.markdown ?? ''" />
+          </article>
 
-        <template v-else-if="cur.kind === 'reading'">
-          <MarkdownView v-if="cur.markdown && !cur.markdown_ru" :source="cur.markdown" />
-          <ReadingText v-else :serbian="cur.markdown ?? ''" :translation="cur.markdown_ru" />
-          <div v-if="curBlock" class="mt-8 space-y-8">
+          <template v-else-if="cur.kind === 'reading'">
+            <section class="card p-5 sm:p-6">
+              <MarkdownView v-if="cur.markdown && !cur.markdown_ru" :source="cur.markdown" />
+              <ReadingText v-else :serbian="cur.markdown ?? ''" :translation="cur.markdown_ru" />
+            </section>
+            <div v-if="curBlock" class="space-y-4">
+              <ExerciseBlockView :lesson="lesson.id" :block="curBlock" :priors="priors" @graded="onGraded" />
+            </div>
+          </template>
+
+          <div v-else-if="curBlock" class="space-y-4">
+            <p v-if="cur.markdown" class="rounded-xl bg-[var(--bg-soft)] px-4 py-2.5 text-sm text-[var(--muted)]">
+              {{ cur.markdown }}
+            </p>
             <ExerciseBlockView :lesson="lesson.id" :block="curBlock" :priors="priors" @graded="onGraded" />
           </div>
-        </template>
-
-        <div v-else-if="curBlock" class="space-y-8">
-          <p v-if="cur.markdown" class="text-sm text-[var(--muted)]">{{ cur.markdown }}</p>
-          <ExerciseBlockView :lesson="lesson.id" :block="curBlock" :priors="priors" @graded="onGraded" />
         </div>
-      </div>
+      </Transition>
 
       <div
-        class="sticky bottom-0 mt-10 -mx-4 flex items-center justify-between gap-3 border-t border-[var(--border)] bg-[var(--bg)]/90 px-4 py-3 backdrop-blur"
+        class="sticky bottom-0 mt-10 -mx-4 flex items-center justify-between gap-3 border-t border-[var(--border)] bg-[var(--bg)]/90 px-4 py-3 backdrop-blur sm:-mx-6 sm:px-6"
+        style="padding-bottom: calc(0.75rem + env(safe-area-inset-bottom))"
       >
-        <button class="btn btn-ghost" :disabled="idx === 0" @click="back">← Назад</button>
-        <span v-if="!canAdvance" class="text-xs text-[var(--muted)]">ответь на все задания шага</span>
+        <button
+          class="btn btn-ghost disabled:invisible"
+          :disabled="idx === 0"
+          @click="back"
+        >
+          <ArrowLeft :size="16" :stroke-width="2.5" />Назад
+        </button>
+        <span v-if="!canAdvance" class="text-center text-xs text-[var(--muted)]">
+          ответь на все задания
+        </span>
         <button class="btn btn-primary disabled:opacity-40" :disabled="!canAdvance" @click="next">
-          {{ atLast ? (lesson.status === 'done' ? '✓ Урок пройден' : 'Завершить урок') : 'Дальше →' }}
+          <template v-if="atLast">
+            <CircleCheckBig :size="16" :stroke-width="2.5" />
+            {{ lesson.status === 'done' ? 'Урок пройден' : 'Завершить урок' }}
+          </template>
+          <template v-else> Дальше<ArrowRight :size="16" :stroke-width="2.5" /> </template>
         </button>
       </div>
     </template>
   </template>
 </template>
+
+<style scoped>
+.step-enter-active,
+.step-leave-active {
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+.step-enter-from {
+  opacity: 0;
+  transform: translateX(12px);
+}
+.step-leave-to {
+  opacity: 0;
+  transform: translateX(-12px);
+}
+</style>

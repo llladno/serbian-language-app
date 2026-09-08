@@ -2,6 +2,7 @@
 // Plays the Serbian pronunciation for a word (content/audio/<id>.mp3,
 // served at /audio/). Renders nothing when the clip is missing.
 import { ref } from 'vue'
+import { Volume2 } from 'lucide-vue-next'
 
 const props = withDefaults(defineProps<{ src?: string; size?: number }>(), { size: 30 })
 
@@ -26,13 +27,13 @@ function play(e: Event) {
   <button
     v-if="src"
     type="button"
-    class="inline-grid shrink-0 place-items-center rounded-full text-[var(--muted)] transition hover:bg-[var(--ring-track)] hover:text-[var(--accent)] active:scale-90"
-    :class="{ 'text-[var(--accent)]': playing }"
-    :style="{ width: size + 'px', height: size + 'px', fontSize: Math.round(size * 0.6) + 'px' }"
+    class="inline-grid shrink-0 place-items-center rounded-full border border-[var(--border)] text-[var(--muted)] transition hover:border-[var(--accent)] hover:bg-[var(--accent-soft)] hover:text-[var(--accent)] active:scale-90"
+    :class="{ 'border-[var(--accent)] bg-[var(--accent-soft)] text-[var(--accent)]': playing }"
+    :style="{ width: size + 'px', height: size + 'px' }"
     :aria-label="playing ? 'играет' : 'озвучить'"
     :title="playing ? 'играет…' : 'озвучить'"
     @click="play"
   >
-    {{ playing ? '🔊' : '🔈' }}
+    <Volume2 :size="Math.round(size * 0.5)" :stroke-width="2.25" />
   </button>
 </template>
