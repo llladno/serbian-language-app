@@ -48,6 +48,8 @@ func ImportSQLite(dst *Store, sqlitePath string) (int, error) {
 			`INSERT INTO attempts (user_name, exercise_id, lesson, block, answer, correct, attempted_at) VALUES (?, ?, ?, ?, ?, ?, ?)`, 7},
 		{`SELECT user_name, lesson, status, started_at, completed_at FROM lesson_progress`,
 			`INSERT INTO lesson_progress (user_name, lesson, status, started_at, completed_at) VALUES (?, ?, ?, ?, ?)`, 5},
+		{`SELECT user_name, lesson, step, status, completed_at FROM lesson_step_progress`,
+			`INSERT INTO lesson_step_progress (user_name, lesson, step, status, completed_at) VALUES (?, ?, ?, ?, ?)`, 5},
 	}
 
 	total := 0
