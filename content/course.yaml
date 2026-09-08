@@ -27,9 +27,9 @@ lessons:
     subtitle: "jesam, откуда я, языки, профессии"
     file: "lessons/02.yaml"
   "03":
-    title: "Pitanja"
-    subtitle: "вопросы: da li, ko/šta/gde, переспрос"
-    file: "lessons/03-pitanja.md"
+    title: "Људи око мене"
+    subtitle: "семья, imam / nemam, мой / твой"
+    file: "lessons/03.yaml"
   "04":
     title: "Бројеви, цена, сати"
     subtitle: "числа 0–1000, цена, возраст, часы, телефон"

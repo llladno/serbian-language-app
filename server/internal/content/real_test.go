@@ -93,7 +93,23 @@ func TestRealContentLoads(t *testing.T) {
 			t.Errorf("lesson 02 step kinds: %v", kinds)
 		}
 	}
-	for _, id := range []string{"03", "04", "05"} {
+	{
+		l := c.Lessons["03"]
+		if !l.Manifest || l.Title == "Pitanja" {
+			t.Fatalf("lesson 03 should be the 'Ljudi oko mene' manifest, got title=%q manifest=%v", l.Title, l.Manifest)
+		}
+		if len(l.Steps) < 6 {
+			t.Errorf("lesson 03: %d steps, want >= 6", len(l.Steps))
+		}
+		kinds := map[string]int{}
+		for _, s := range l.Steps {
+			kinds[s.Kind]++
+		}
+		if kinds["reading"] < 1 || kinds["checkpoint"] < 1 {
+			t.Errorf("lesson 03 step kinds: %v", kinds)
+		}
+	}
+	for _, id := range []string{"04", "05"} {
 		if c.Lessons[id].Planned {
 			t.Errorf("lesson %s should have content", id)
 		}
