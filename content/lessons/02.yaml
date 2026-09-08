@@ -1,0 +1,178 @@
+lesson: "02"
+title: "Ко си ти"
+subtitle: "jesam, откуда я, языки, профессии"
+teaches:
+  [
+    biti, govoriti, ruski, srpski, engleski, zemlja, programer, student,
+    lekar, konobar, nastavnik,
+  ]
+
+steps:
+  - id: "02.1"
+    kind: teach
+    title: "Глагол «быть» — jesam"
+    md: "02/1-jesam.md"
+
+  - id: "02.2"
+    kind: practice
+    title: "sam / si / je"
+    also_ok: ["nisam", "nisi", "nije"]
+    exercises:
+      - id: "02.2.1"
+        type: choice
+        prompt: "«Я из России» —"
+        options: ["Ja sam iz Rusije.", "Ja iz Rusije.", "Ja je iz Rusije."]
+        answer: "Ja sam iz Rusije."
+      - id: "02.2.2"
+        type: choice
+        prompt: "«Ана из Сербии» —"
+        options: ["Ana je iz Srbije.", "Ana si iz Srbije.", "Ana sam iz Srbije."]
+        answer: "Ana je iz Srbije."
+      - id: "02.2.3"
+        type: fill_blank
+        prompt: "Ti ___ student? (ты)"
+        accept: ["si"]
+      - id: "02.2.4"
+        type: fill_blank
+        prompt: "«Он не студент» → On ___ student."
+        accept: ["nije"]
+      - id: "02.2.5"
+        type: word_bank
+        prompt: "Собери: «я не студент»"
+        bank: ["Ja", "nisam", "student"]
+        accept: ["Ja nisam student."]
+
+  - id: "02.3"
+    kind: teach
+    title: "Откуда я и где живу"
+    md: "02/3-odakle.md"
+
+  - id: "02.4"
+    kind: practice
+    title: "Откуда и где"
+    also_ok: ["rusije", "srbije", "beogradu"]
+    exercises:
+      - id: "02.4.1"
+        type: choice
+        prompt: "«Откуда ты?» —"
+        options: ["Odakle si?", "Odakle je?", "Odakle sam?"]
+        answer: "Odakle si?"
+      - id: "02.4.2"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["iz Rusije", "из России"]
+          - ["iz Srbije", "из Сербии"]
+          - ["živim u Novom Sadu", "живу в Нови-Саде"]
+      - id: "02.4.3"
+        type: fill_blank
+        prompt: "Живу в Белграде: «Živim ___ Beogradu.»"
+        accept: ["u"]
+      - id: "02.4.4"
+        type: word_bank
+        prompt: "Собери: «я из Сербии»"
+        bank: ["Ja", "sam", "iz", "Srbije"]
+        accept: ["Ja sam iz Srbije."]
+
+  - id: "02.5"
+    kind: teach
+    title: "Языки и работа"
+    md: "02/5-jezici-posao.md"
+
+  - id: "02.6"
+    kind: practice
+    title: "Говорю и работаю"
+    also_ok: ["govorim", "govoriš", "radim", "radi", "programera"]
+    exercises:
+      - id: "02.6.1"
+        type: choice
+        prompt: "«Говорю по-русски» —"
+        options: ["Govorim ruski.", "Govori ruski.", "Govorim ruska."]
+        answer: "Govorim ruski."
+      - id: "02.6.2"
+        type: choice
+        prompt: "«Работаю программистом» —"
+        options: ["Radim kao programer.", "Radim programer.", "Radim kao programera."]
+        answer: "Radim kao programer."
+      - id: "02.6.3"
+        type: fill_blank
+        prompt: "Она врач: «Ona radi ___ lekar.»"
+        accept: ["kao"]
+      - id: "02.6.4"
+        type: word_bank
+        prompt: "Собери: «ты говоришь по-сербски?»"
+        bank: ["Govoriš", "srpski"]
+        accept: ["Govoriš srpski?"]
+
+  - id: "02.7"
+    kind: reading
+    title: "Знакомство"
+    md: "02/7-citanje.md"
+    also_ok: ["radi"]
+    exercises:
+      - id: "02.7.1"
+        type: choice
+        prompt: "Откуда Ана?"
+        options: ["Iz Rusije.", "Iz Srbije.", "Iz Novog Sada."]
+        answer: "Iz Rusije."
+      - id: "02.7.2"
+        type: choice
+        prompt: "Кем работает Ана?"
+        options: ["Radi kao programer.", "Radi kao lekar.", "Radi kao konobar."]
+        answer: "Radi kao programer."
+
+  - id: "02.8"
+    kind: practice
+    title: "Диктант"
+    mixed: true
+    exercises:
+      - id: "02.8.1"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Ja sam iz Rusije."
+        accept: ["Ja sam iz Rusije."]
+      - id: "02.8.2"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Odakle si?"
+        accept: ["Odakle si?"]
+      - id: "02.8.3"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Radim kao programer."
+        accept: ["Radim kao programer."]
+
+  - id: "02.9"
+    kind: checkpoint
+    title: "Проверка"
+    also_ok: ["nije", "radim", "radi"]
+    exercises:
+      - id: "02.9.1"
+        type: choice
+        prompt: "«Ты студент?» (ты)"
+        options: ["Ti si student?", "Ti je student?", "Ti sam student?"]
+        answer: "Ti si student?"
+      - id: "02.9.2"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["Odakle si?", "Откуда ты?"]
+          - ["Govoriš srpski?", "Говоришь по-сербски?"]
+          - ["Radim kao lekar.", "Работаю врачом."]
+      - id: "02.9.3"
+        type: fill_blank
+        prompt: "«Ана не из Сербии, она из России» → Ana ___ iz Srbije."
+        accept: ["nije"]
+      - id: "02.9.4"
+        type: word_bank
+        prompt: "Собери: «я работаю программистом»"
+        bank: ["Radim", "kao", "programer"]
+        accept: ["Radim kao programer."]
+      - id: "02.9.5"
+        type: translate
+        prompt: "Откуда ты?"
+        accept: ["Odakle si?"]
+      - id: "02.9.6"
+        type: free
+        prompt: "Расскажи о себе: имя, откуда ты, где живёшь, кем работаешь (3–4 фразы)."
+        sample: "Ja sam {name_latin}. Iz Rusije sam, živim u Novom Sadu. Radim kao programer."

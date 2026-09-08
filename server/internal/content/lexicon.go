@@ -105,9 +105,22 @@ func unknownTokens(text string, known map[string]bool, alsoOK []string) []string
 	return out
 }
 
+// coveredByPrefix treats a token as known when some known word is its stem:
+// either a known word is a literal prefix of it ("grad" -> "gradu"), or the
+// two share a prefix of at least 4 runes ("rusija" ~ "rusije",
+// "govorim" ~ "govoriš").
 func coveredByPrefix(tok string, known map[string]bool) bool {
+	tr := []rune(tok)
 	for k := range known {
 		if len(k) >= 3 && strings.HasPrefix(tok, k) {
+			return true
+		}
+		kr := []rune(k)
+		n := 0
+		for n < len(kr) && n < len(tr) && kr[n] == tr[n] {
+			n++
+		}
+		if n >= 4 {
 			return true
 		}
 	}

@@ -25,7 +25,7 @@ lessons:
   "02":
     title: "Ко си ти"
     subtitle: "jesam, откуда я, языки, профессии"
-    file: "lessons/02-zamenice-i-prezent.md"
+    file: "lessons/02.yaml"
   "03":
     title: "Pitanja"
     subtitle: "вопросы: da li, ko/šta/gde, переспрос"
