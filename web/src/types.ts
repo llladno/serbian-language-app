@@ -99,12 +99,14 @@ export interface CheckResult {
   explain?: string
   sample?: string
   forms?: FormResult[]
+  match?: Record<string, boolean>
   near_miss?: boolean
 }
 
 export interface CheckPayload {
   answer?: string
   answers?: string[]
+  pairs?: Record<string, string>
   self?: boolean
 }
 

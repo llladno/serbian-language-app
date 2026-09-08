@@ -1,0 +1,113 @@
+# Шаблон манифеста урока. Скопируй в NN.yaml, добавь урок в course.yaml
+# с `file: "lessons/NN.yaml"`, положи фрагменты теории в lessons/NN/.
+# Загрузчик и tts.py этот файл игнорируют по имени.
+
+lesson: "NN"
+title: "Заголовок урока"
+subtitle: "короткое описание для карточки курса"
+
+# id слов из vocab.yaml, которые вводит этот урок (для гвардии лексики).
+teaches: [slovo-jedan, slovo-dva]
+
+steps:
+  # teach — только теория, ≤ ~180 слов, одна мысль. Без упражнений.
+  - id: "NN.1"
+    kind: teach
+    title: "Название шага"
+    md: "NN/1-slug.md"
+
+  # practice — 3–7 упражнений. Сложность НЕ убывает:
+  # choice < match/fill_blank < word_bank/fix_error < conjugate/listen < translate < free.
+  # Нарушить порядок можно только с `mixed: true`.
+  - id: "NN.2"
+    kind: practice
+    title: "Название шага"
+    # also_ok: доп. токены, разрешённые гвардии в этом шаге (падежные формы, имена)
+    also_ok: ["brata", "sestru"]
+    exercises:
+      # choice — выбор одного варианта. answer обязан быть среди options.
+      - id: "NN.2.1"
+        type: choice
+        prompt: "«Спасибо» —"
+        options: ["Hvala", "Molim", "Izvini"]
+        answer: "Hvala"
+        explain: "необязательный разбор после ответа"
+
+      # match — 2–6 пар [сербское, русское].
+      - id: "NN.2.2"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["Dobro jutro", "Доброе утро"]
+          - ["Laku noć", "Спокойной ночи"]
+
+      # fill_blank — вставить слово/форму. В ответе только вставка.
+      - id: "NN.2.3"
+        type: fill_blank
+        prompt: "Ja ___ iz Rusije."
+        accept: ["sam"]
+
+      # fix_error — исправить ошибку. accept — правильное предложение целиком.
+      - id: "NN.2.4"
+        type: fix_error
+        prompt: "Sam iz Rusije."
+        accept: ["Ja sam iz Rusije.", "Iz Rusije sam."]
+
+      # word_bank — собрать фразу из фишек. bank должен покрывать все accept
+      # (можно с лишними фишками-отвлекалками).
+      - id: "NN.2.5"
+        type: word_bank
+        prompt: "Собери: «меня зовут Ана»"
+        bank: ["Zovem", "se", "Ana", "Ja", "sam"]
+        accept: ["Zovem se Ana.", "Ja sam Ana."]
+
+      # conjugate — 6 форм; accept — список из 6 списков.
+      - id: "NN.2.6"
+        type: conjugate
+        prompt: "raditi — работать"
+        forms: ["ja", "ti", "on/ona/ono", "mi", "vi", "oni/one/ona"]
+        accept:
+          - ["radim"]
+          - ["radiš"]
+          - ["radi"]
+          - ["radimo"]
+          - ["radite"]
+          - ["rade"]
+        meta: "тип I"
+
+  # reading — текст SR/RU (маркер --- в NN/…md делит стороны). Опц. вопросы.
+  - id: "NN.3"
+    kind: reading
+    title: "Название шага"
+    md: "NN/3-citanje.md"
+    exercises:
+      - id: "NN.3.1"
+        type: choice
+        prompt: "Вопрос по тексту"
+        options: ["a", "b"]
+        answer: "a"
+
+  # checkpoint — смешанная проверка, порядок сложности не проверяется.
+  - id: "NN.4"
+    kind: checkpoint
+    title: "Проверка"
+    exercises:
+      # listen — диктант. say клиенту не отдаётся; аудио кладёт scripts/tts.py
+      # в content/audio/<id>.mp3 (напр. NN.4.1.mp3).
+      - id: "NN.4.1"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Dobar dan, kako ste?"
+        accept: ["Dobar dan, kako ste?"]
+
+      # translate — перевод фразы (ru -> sr).
+      - id: "NN.4.2"
+        type: translate
+        prompt: "Как дела?"
+        accept: ["Kako si?", "Kako ste?"]
+
+      # free — без автопроверки: показывается sample + самооценка.
+      - id: "NN.4.3"
+        type: free
+        prompt: "Опиши ситуацию своими словами."
+        sample: "Примерный ответ для сверки."

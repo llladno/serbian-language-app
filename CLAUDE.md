@@ -16,8 +16,11 @@ Vue-фронт в одном бинаре, контент — файлы в `con
 - **`web/`** — Vue 3 + Vite + Pinia + Tailwind. Роуты: курс, урок, упражнения,
   повторение (SRS), словарь, ложные друзья, прогресс.
 - **`content/`** — единственный источник правды по учебному материалу
-  (см. `README.md` → «Контент»). Уроки `.md`, упражнения `.yaml`,
-  `vocab.yaml`, `false-friends.yaml`, картинки `images/`, озвучка `audio/`.
+  (см. `README.md` → «Контент»). Уроки — манифесты `lessons/NN.yaml`
+  (шаги) + фрагменты `lessons/NN/*.md`; легаси `lessons/NN-*.md` +
+  `exercises/NN.yaml` ещё поддерживается. Плюс `vocab.yaml`,
+  `allow-words.yaml`, `persona.yaml`, `false-friends.yaml`, `images/`,
+  `audio/`.
 
 ## База данных — PostgreSQL (прод) / SQLite (локально)
 
@@ -73,20 +76,50 @@ Auto Deploy включён: push в `main` → Dokploy пересобирает 
 озвучка внутри образа, база — снаружи. Подробности и перенос данных —
 `docs/DEPLOY.md`.
 
-## Добавить урок
+## Модель урока: манифест + шаги
 
-`README.md` → «Добавить урок». Кратко: `content/course.yaml` (`file:`),
-`content/lessons/NN-slug.md`, `content/exercises/NN.yaml`, слова в
-`content/vocab.yaml`, `python3 scripts/tts.py`. Гард-тест —
-`server/internal/content/real_test.go`.
+У урока две модели, `content/load.go` выбирает по расширению `file:` в
+`course.yaml`:
 
-### Текст для чтения в уроке
+- **манифест** (`file: "lessons/NN.yaml"`) — новая. Урок = упорядоченный
+  список **шагов** (`teach` / `practice` / `reading` / `checkpoint`).
+  Теория — фрагменты `content/lessons/NN/*.md`, упражнения — инлайн в
+  шаге. Пример со всеми видами — `content/lessons/_TEMPLATE.yaml`.
+- **легаси** (`file: "lessons/NN-slug.md"` + `content/exercises/NN.yaml`)
+  — старая. Загрузчик синтезирует из неё шаги (teach → practice-блоки →
+  reading), поэтому фронт-плеер работает одинаково.
 
-В `.md` урока можно добавить блок между маркерами `<!-- reading -->` и
-`<!-- /reading -->` (каждый на своей строке). Строка `---` внутри отделяет
-сербский текст от русского перевода. Загрузчик (`content/reading.go`)
-вырезает блок из markdown в поля `Lesson.Reading` / `Lesson.ReadingRU`;
-фронт рендерит его карточкой «📖 Текст для чтения».
+Прогресс — по шагам (`store.lesson_step_progress`), экран урока —
+пошаговый плеер (`web/src/views/LessonView.vue`).
+
+## Добавить урок (манифест)
+
+1. `content/course.yaml` — запись урока с `file: "lessons/NN.yaml"`.
+2. `content/lessons/NN.yaml` — манифест (скопируй `_TEMPLATE.yaml`).
+3. `content/lessons/NN/*.md` — фрагменты теории для `teach`/`reading`.
+4. Новые слова → `content/vocab.yaml` (`lesson: "NN"`), продублируй их
+   id в `teaches:` манифеста.
+5. Падежные формы, имена → `also_ok:` конкретного шага; общие
+   имена/числа/частицы → `content/allow-words.yaml`.
+6. `python3 scripts/tts.py` — озвучка новых слов и `listen`-упражнений
+   (файл по id упражнения, напр. `NN.8.1.mp3`).
+
+**Гард-тесты** (`server/internal/content/`):
+- `real_test.go` — структура уроков 01–05, наличие reading/checkpoint,
+  аудио для `listen`.
+- `lexicon_test.go` — в манифест-уроке `accept` / `options` / `bank` /
+  сербская сторона `pairs` / `say` используют только слова из
+  накопительного словаря к этому уроку (+ `teaches` / `also_ok` /
+  `allow-words`). Легаси-уроки — только предупреждения.
+- порядок сложности в `practice`-шаге не убывает (иначе `mixed: true`).
+
+### Текст для чтения
+
+Манифест: шаг `kind: reading`, `md:` на фрагмент, где строка `---`
+делит сербский текст и русский перевод. Легаси: блок между маркерами
+`<!-- reading -->` / `<!-- /reading -->` в `.md` урока. И то, и другое
+попадает в `Step.Markdown` / `Step.MarkdownRU` (и, для совместимости, в
+`Lesson.Reading` / `Lesson.ReadingRU`).
 
 Клик по слову → карточка из словаря — общий компонент `GlossedText.vue`
 (токенайзер `lib/reading.ts`, общий кэш `lib/lookup.ts`, эндпоинт
@@ -97,14 +130,27 @@ Auto Deploy включён: push в `main` → Dokploy пересобирает 
 переводит `new`-карточку в `learning` due-сегодня, мимо дневного лимита новых;
 `lib/review.ts` держит добавленные id в рамках сессии).
 
-### Упражнение `type: listen` (диктант)
+### Типы упражнений
 
-`content/exercises/NN.yaml`: `type: listen`, `say:` (текст для синтеза,
-клиенту не отдаётся), `accept:` (что печатать; `checker` нормализует регистр
-и пунктуацию), опц. `prompt` (инструкция). Аудио — `scripts/tts.py` кладёт
-`content/audio/<exerciseId>.mp3`, коммитится в репо. `exerciseDTO.audio`
-отдаётся, `say`/`accept` — нет. Фронт: `TextAnswer.vue` в режиме `listen`
-(кнопка воспроизведения + инструкция, без показа текста).
+`translate`, `fill_blank`, `fix_error`, `conjugate`, `free`, `listen`
+(диктант — `say:` синтезируется, `accept:` печатают), плюс лёгкие:
+`choice` (`options` + `answer`), `word_bank` (`bank` из фишек +
+`accept`), `match` (`pairs` [sr, ru]). Клиенту НИКОГДА не уходят
+`accept` / `answer` / соответствие `pairs` / `say` — только
+`options` / `bank` / `left` / `right`, перемешиваются на клиенте.
+Проверка — `POST /api/lessons/{id}/exercises/{exId}/check`
+(`checker.CheckChoice` / `CheckMatch` / `Check`). Компоненты —
+`web/src/components/exercises/*Answer.vue`.
+
+Аудио `listen` — `scripts/tts.py` кладёт `content/audio/<id>.mp3`
+(id упражнения) из кириллической транслитерации `say`, коммитится в
+репо. Скрипт сканирует и `exercises/*.yaml`, и `lessons/*.yaml`.
+
+### Личный слой
+
+`content/persona.yaml` (`name`, `city`, `job`, …). Загрузчик подставляет
+`{ключ}` в теорию, промпты и `sample` — но **не** в ответы. Отсутствие
+файла — no-op.
 
 ## Стиль
 

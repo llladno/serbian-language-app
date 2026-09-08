@@ -15,7 +15,7 @@ const emit = defineEmits<{ graded: [ok: boolean] }>()
 
 const choices = ref([...props.right].sort(() => Math.random() - 0.5))
 const picks = ref<Record<string, string>>({})
-const result = ref<(CheckResult & { match?: Record<string, boolean> }) | null>(null)
+const result = ref<CheckResult | null>(null)
 const fromPrior = ref(!!props.prior)
 const pending = ref(false)
 

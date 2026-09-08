@@ -55,11 +55,15 @@ docker run --rm -p 8080:8080 -v srpski-data:/app/data srpski
 
 Источник правды — каталог `content/`:
 
-- `course.yaml` — фазы и порядок уроков.
-- `content/lessons/NN-*.md` — теория урока (markdown).
-- `content/exercises/NN.yaml` — упражнения урока (см.
-  `content/exercises/_TEMPLATE.yaml`).
+- `course.yaml` — уровни и порядок уроков.
+- `content/lessons/NN.yaml` — манифест урока: список **шагов** (`teach` /
+  `practice` / `reading` / `checkpoint`), см. `lessons/_TEMPLATE.yaml`.
+  Фрагменты теории — `content/lessons/NN/*.md`.
+  Старая модель (`lessons/NN-slug.md` + `exercises/NN.yaml`) ещё
+  поддерживается — загрузчик синтезирует из неё шаги.
 - `content/vocab.yaml` — словарь.
+- `content/allow-words.yaml` — имена/числа/частицы для гвардии лексики.
+- `content/persona.yaml` — личный слой (`{name}` и т.п.).
 - `content/false-friends.yaml` — ложные друзья.
 - `content/images/<id>.jpg` — фото к слову (опц.), раздаётся на `/img/`.
 - `content/audio/<id>.mp3` — озвучка слова (опц.), раздаётся на `/audio/`.
@@ -81,16 +85,17 @@ docker run --rm -p 8080:8080 -v srpski-data:/app/data srpski
 
 ### Добавить урок
 
-1. В `content/course.yaml` у нужного номера добавь `file: lessons/NN-slug.md`.
-2. Положи теорию в `content/lessons/NN-slug.md` (обычный markdown,
-   без раздела упражнений).
-3. Скопируй `content/exercises/_TEMPLATE.yaml` в `content/exercises/NN.yaml`
-   и заполни блоки (типы: `translate`, `fill_blank`, `fix_error`,
-   `conjugate`, `free`).
-4. Новые слова — в `content/vocab.yaml` (карточки SRS заводятся
-   автоматически).
-5. Озвучка новых слов — `python3 scripts/tts.py` (дописывает только
-   недостающие `content/audio/*.mp3`).
+1. В `content/course.yaml` у нужного номера — `file: "lessons/NN.yaml"`.
+2. Скопируй `content/lessons/_TEMPLATE.yaml` в `content/lessons/NN.yaml`,
+   собери шаги. Упражнения в `practice`-шаге — от лёгких к сложным
+   (`choice` < `fill_blank`/`match` < `word_bank` < `translate` < `free`);
+   иначе `mixed: true`.
+3. Теорию для `teach`/`reading` — в `content/lessons/NN/*.md`.
+4. Новые слова — в `content/vocab.yaml` (`lesson: "NN"`), их id — в
+   `teaches:` манифеста. Падежные формы — в `also_ok:` шага.
+5. Озвучка — `python3 scripts/tts.py` (дописывает недостающие
+   `content/audio/*.mp3` для слов и `listen`-упражнений).
+6. `make test` — гвардии проверят структуру, лексику и порядок сложности.
 
 Тесты: `make test` (стор — на SQLite in-memory).
 `make test-pg` — тесты стора против настоящего Postgres
