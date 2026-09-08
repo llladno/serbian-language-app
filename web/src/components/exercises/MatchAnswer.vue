@@ -2,6 +2,7 @@
 import { computed, ref } from 'vue'
 import { api } from '../../api'
 import type { CheckResult, LessonAttempt } from '../../types'
+import AppSelect from '../AppSelect.vue'
 
 const props = defineProps<{
   lesson: string
@@ -14,7 +15,8 @@ const props = defineProps<{
 const emit = defineEmits<{ graded: [ok: boolean] }>()
 
 const choices = ref([...props.right].sort(() => Math.random() - 0.5))
-const picks = ref<Record<string, string>>({})
+const blank = () => Object.fromEntries(props.left.map((l) => [l, '']))
+const picks = ref<Record<string, string>>(blank())
 const result = ref<CheckResult | null>(null)
 const fromPrior = ref(!!props.prior)
 const pending = ref(false)
@@ -35,7 +37,7 @@ async function submit() {
 function retry() {
   result.value = null
   fromPrior.value = false
-  picks.value = {}
+  picks.value = blank()
 }
 </script>
 
@@ -54,18 +56,13 @@ function retry() {
       <div class="space-y-2">
         <div v-for="l in left" :key="l" class="flex items-center gap-2">
           <span class="serbian w-2/5 shrink-0 font-medium">{{ l }}</span>
-          <select
+          <AppSelect
             v-model="picks[l]"
-            class="field flex-1"
+            class="flex-1"
+            :options="choices"
             :disabled="!!result"
-            :class="{
-              'ring-2 ring-[var(--good)]': result?.match?.[l] === true,
-              'ring-2 ring-[var(--bad)]': result?.match?.[l] === false,
-            }"
-          >
-            <option value="" disabled>— выбери —</option>
-            <option v-for="r in choices" :key="r" :value="r">{{ r }}</option>
-          </select>
+            :state="result ? (result.match?.[l] ? 'ok' : 'bad') : null"
+          />
         </div>
       </div>
 

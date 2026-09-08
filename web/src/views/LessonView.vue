@@ -22,6 +22,14 @@ const celebrate = ref(false)
 const idx = ref(0)
 const graded = reactive<Record<string, boolean>>({})
 
+const KIND_META: Record<string, { icon: string; label: string }> = {
+  teach: { icon: '▤', label: 'Теория' },
+  practice: { icon: '✎', label: 'Практика' },
+  reading: { icon: '📖', label: 'Чтение' },
+  checkpoint: { icon: '✓', label: 'Проверка' },
+}
+const kindMeta = (k: string) => KIND_META[k] ?? { icon: '•', label: k }
+
 const steps = computed<Step[]>(() => lesson.value?.steps ?? [])
 const cur = computed<Step | undefined>(() => steps.value[idx.value])
 const curBlock = computed(() => blocks.value.find((b) => b.id === cur.value?.id))
@@ -132,29 +140,42 @@ async function resetLesson() {
   <p v-if="error" class="card p-4 text-[var(--bad)]">{{ error }}</p>
 
   <template v-else-if="lesson">
-    <div class="flex items-center justify-between gap-3">
+    <div v-if="lesson.planned">
       <RouterLink to="/course" class="text-sm text-[var(--muted)] hover:text-[var(--fg)]">← к курсу</RouterLink>
-      <button
-        v-if="!lesson.planned && Object.keys(priors).length"
-        class="text-sm font-medium text-[var(--muted)] hover:text-[var(--accent)]"
-        @click="resetLesson"
-      >
-        Пройти заново
-      </button>
-    </div>
-
-    <div v-if="lesson.planned" class="card mt-4 border-dashed p-8 text-center">
-      <h1 class="text-xl font-bold">{{ lesson.title }}</h1>
-      <p class="mt-1 text-[var(--muted)]">{{ lesson.subtitle }}</p>
-      <p class="mt-4 text-sm text-[var(--muted)]">Урок ещё не готов — скоро появится.</p>
+      <div class="card mt-4 border-dashed p-8 text-center">
+        <h1 class="text-xl font-bold">{{ lesson.title }}</h1>
+        <p class="mt-1 text-[var(--muted)]">{{ lesson.subtitle }}</p>
+        <p class="mt-4 text-sm text-[var(--muted)]">Урок ещё не готов — скоро появится.</p>
+      </div>
     </div>
 
     <template v-else-if="cur">
-      <div class="mt-3">
-        <h1 class="text-lg font-extrabold">{{ lesson.title }}</h1>
-        <p class="mt-0.5 text-sm text-[var(--muted)]">{{ cur.title }}</p>
-        <StepProgress class="mt-2" :current="idx + 1" :total="steps.length" />
-      </div>
+      <header class="card mt-1 p-4">
+        <div class="flex items-center justify-between gap-3 text-xs text-[var(--muted)]">
+          <RouterLink to="/course" class="hover:text-[var(--fg)]">← {{ lesson.title }}</RouterLink>
+          <button
+            v-if="Object.keys(priors).length"
+            class="font-medium hover:text-[var(--accent)]"
+            @click="resetLesson"
+          >
+            ↺ заново
+          </button>
+        </div>
+
+        <div class="mt-2 flex items-center gap-2">
+          <span
+            class="rounded-full bg-[var(--accent-soft)] px-2 py-0.5 text-[11px] font-semibold text-[var(--accent)]"
+          >
+            {{ kindMeta(cur.kind).icon }} {{ kindMeta(cur.kind).label }}
+          </span>
+          <h1 class="truncate text-base font-extrabold">{{ cur.title }}</h1>
+          <span class="ml-auto shrink-0 text-xs tabular-nums text-[var(--muted)]">
+            {{ idx + 1 }}/{{ steps.length }}
+          </span>
+        </div>
+
+        <StepProgress class="mt-3" :steps="steps" :current="idx" />
+      </header>
 
       <div class="mt-5">
         <MarkdownView v-if="cur.kind === 'teach'" :source="cur.markdown ?? ''" />
