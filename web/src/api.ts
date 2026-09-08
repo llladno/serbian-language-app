@@ -73,6 +73,11 @@ export const api = {
       method: 'POST',
       body: JSON.stringify(payload),
     }),
+  setStepStatus: (lesson: string, step: string, status: 'in_progress' | 'done') =>
+    request<void>(`/lessons/${lesson}/steps/${encodeURIComponent(step)}`, {
+      method: 'POST',
+      body: JSON.stringify({ status }),
+    }),
   completeLesson: (id: string) =>
     request<void>(`/lessons/${id}/complete`, { method: 'POST' }),
   resetLesson: (id: string) => request<void>(`/lessons/${id}/reset`, { method: 'POST' }),
