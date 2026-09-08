@@ -45,21 +45,27 @@ lessons:
   "07":
     title: "Дан по дан"
     subtitle: "рутина, настоящее время целиком, volim da"
+    file: "lessons/07.yaml"
   "08":
     title: "Кући"
     subtitle: "дом, комнаты, вещи, u/na"
+    file: "lessons/08.yaml"
   "09":
     title: "Храна и пиће"
     subtitle: "продукты, в кафе, заказ"
+    file: "lessons/09.yaml"
   "10":
     title: "Град око мене"
     subtitle: "где что, ima/nema, локатив базово, вопросы 2"
+    file: "lessons/10.yaml"
   "11":
     title: "Време и природа"
     subtitle: "погода, времена года, sviđa mi se"
+    file: "lessons/11.yaml"
   "12":
     title: "Провера 2"
     subtitle: "повторение уровня 2"
+    file: "lessons/12.yaml"
   "13":
     title: "Прошлост"
     subtitle: "перфект, juče sam…"

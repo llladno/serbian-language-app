@@ -2446,6 +2446,39 @@
   pos: "verb"
   aspect: "nesv"
   tags: ["verbs", "home"]
+- id: "mali"
+  emoji: "🔹"
+  latin: "mali / mala / malo"
+  cyrillic: "мали / мала / мало"
+  ru: "маленький"
+  note: "меняется по роду: mali stan, mala soba, malo dete"
+  lesson: "08"
+  pos: "adj"
+  tags: ["adjectives", "home"]
+- id: "veliki"
+  emoji: "🔷"
+  latin: "veliki / velika / veliko"
+  cyrillic: "велики / велика / велико"
+  ru: "большой"
+  lesson: "08"
+  pos: "adj"
+  tags: ["adjectives", "home"]
+- id: "nov"
+  emoji: "✨"
+  latin: "nov / nova / novo"
+  cyrillic: "нов / нова / ново"
+  ru: "новый"
+  lesson: "08"
+  pos: "adj"
+  tags: ["adjectives"]
+- id: "star"
+  emoji: "🕰️"
+  latin: "star / stara / staro"
+  cyrillic: "стар / стара / старо"
+  ru: "старый"
+  lesson: "08"
+  pos: "adj"
+  tags: ["adjectives"]
 
 # ---- Урок 09 — еда, напитки, кафе ----
 

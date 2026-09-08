@@ -134,7 +134,30 @@ func TestRealContentLoads(t *testing.T) {
 			t.Errorf("lesson %s: %d steps, want >= 9 (broken into small pieces)", id, len(c.Lessons[id].Steps))
 		}
 	}
-	for _, id := range []string{"01", "02", "03", "04", "05"} {
+	// Block 2 (level 2) is fully authored as manifests.
+	for _, id := range []string{"07", "08", "09", "10", "11", "12"} {
+		l := c.Lessons[id]
+		if l == nil || l.Planned || !l.Manifest {
+			t.Errorf("lesson %s should be a non-planned manifest", id)
+			continue
+		}
+		kinds := map[string]int{}
+		for _, s := range l.Steps {
+			kinds[s.Kind]++
+		}
+		if kinds["checkpoint"] < 1 || kinds["reading"] < 1 {
+			t.Errorf("lesson %s step kinds: %v", id, kinds)
+		}
+		min := 9
+		if id == "12" {
+			min = 6 // review lesson, fewer steps
+		}
+		if len(l.Steps) < min {
+			t.Errorf("lesson %s: %d steps, want >= %d", id, len(l.Steps), min)
+		}
+	}
+	// Every teaching lesson of blocks 1-2 has a dictation step with audio.
+	for _, id := range []string{"01", "02", "03", "04", "05", "07", "08", "09", "10", "11"} {
 		l := c.Lessons[id]
 		if l.Reading == "" || l.ReadingRU == "" {
 			t.Errorf("lesson %s: want a reading block with translation", id)

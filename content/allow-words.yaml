@@ -65,7 +65,12 @@ particles:
   - vi
   - ja
   - ti
+  - me
   - ovo
+  - ovaj
+  - ova
+  - taj
+  - vodu
   - ovde
   - tamo
   - evo
@@ -81,4 +86,48 @@ particles:
   - jedna
   - jedno
   - jednu
+# частые неправильные формы наст. времени (ići, hteti, moći) — вводятся
+# по кускам с урока 02, но словарные записи держат только инфинитив
+verb_forms:
+  - idem
+  - ideš
+  - ides
+  - ide
+  - idemo
+  - idete
+  - idu
+  - idite
+  - idi
+  - hoću
+  - hocu
+  - hoćeš
+  - hoces
+  - hoće
+  - hoce
+  - hoćemo
+  - hoćete
+  - neću
+  - necu
+  - nećeš
+  - neće
+  - nece
+  - mogu
+  - možeš
+  - mozes
+  - možemo
+  - možete
+  - jedem
+  - jedeš
+  - jedes
+  - jede
+  - jedemo
+  - jedete
+  - jedu
+  - pijem
+  - piješ
+  - pijes
+  - pije
+  - pijemo
+  - pijete
+  - piju
 digits: ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]
