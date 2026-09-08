@@ -58,12 +58,16 @@ type exerciseBlockDTO struct {
 }
 
 type exerciseDTO struct {
-	ID     string   `json:"id"`
-	Type   string   `json:"type"`
-	Prompt string   `json:"prompt"`
-	Forms  []string `json:"forms,omitempty"`
-	Meta   string   `json:"meta,omitempty"`
-	Audio  string   `json:"audio,omitempty"` // listen: clip under /audio/
+	ID      string   `json:"id"`
+	Type    string   `json:"type"`
+	Prompt  string   `json:"prompt"`
+	Forms   []string `json:"forms,omitempty"`
+	Meta    string   `json:"meta,omitempty"`
+	Audio   string   `json:"audio,omitempty"` // listen: clip under /audio/
+	Options []string `json:"options,omitempty"` // choice (correct answer omitted)
+	Bank    []string `json:"bank,omitempty"`    // word_bank chips (accept omitted)
+	Left    []string `json:"left,omitempty"`    // match: left column
+	Right   []string `json:"right,omitempty"`   // match: right column (client shuffles)
 }
 
 type attemptDTO struct {
@@ -78,6 +82,7 @@ type checkResultDTO struct {
 	Explain  string           `json:"explain,omitempty"`
 	Sample   string           `json:"sample,omitempty"`
 	Forms    []checker.Result `json:"forms,omitempty"`
+	Match    map[string]bool  `json:"match,omitempty"` // match: per-pair correctness
 	NearMiss bool             `json:"near_miss,omitempty"`
 }
 

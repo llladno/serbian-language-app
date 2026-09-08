@@ -227,9 +227,19 @@ func (h handlers) getExercises(w http.ResponseWriter, r *http.Request) {
 	for _, b := range h.Course().Exercises[id] {
 		bd := exerciseBlockDTO{ID: b.ID, Title: b.Title, Instruction: b.Instruction}
 		for _, e := range b.Exercises {
-			bd.Exercises = append(bd.Exercises, exerciseDTO{
-				ID: e.ID, Type: e.Type, Prompt: e.Prompt, Forms: e.Forms, Meta: e.Meta, Audio: e.Audio,
-			})
+			d := exerciseDTO{ID: e.ID, Type: e.Type, Prompt: e.Prompt, Forms: e.Forms, Meta: e.Meta, Audio: e.Audio}
+			switch e.Type {
+			case "choice":
+				d.Options = e.Options
+			case "word_bank":
+				d.Bank = e.Bank
+			case "match":
+				for _, p := range e.Pairs {
+					d.Left = append(d.Left, p[0])
+					d.Right = append(d.Right, p[1])
+				}
+			}
+			bd.Exercises = append(bd.Exercises, d)
 		}
 		out = append(out, bd)
 	}
@@ -237,9 +247,10 @@ func (h handlers) getExercises(w http.ResponseWriter, r *http.Request) {
 }
 
 type checkRequest struct {
-	Answer  string   `json:"answer"`
-	Answers []string `json:"answers"`
-	Self    *bool    `json:"self"`
+	Answer  string            `json:"answer"`
+	Answers []string          `json:"answers"`
+	Pairs   map[string]string `json:"pairs"` // match: left -> picked right
+	Self    *bool             `json:"self"`
 }
 
 func (h handlers) findExercise(lesson, exID string) (content.Exercise, string, bool) {
@@ -298,6 +309,19 @@ func (h handlers) checkExercise(w http.ResponseWriter, r *http.Request) {
 		resp.Sample = ex.Sample
 		recordAnswer = req.Answer
 		correct = self
+	case "choice":
+		res := checker.CheckChoice(req.Answer, ex.Answer)
+		resp.OK = res.OK
+		resp.Expected = res.Expected
+		recordAnswer = req.Answer
+		correct = res.OK
+	case "match":
+		ok, per := checker.CheckMatch(req.Pairs, ex.Pairs)
+		resp.OK = ok
+		resp.Match = per
+		b, _ := json.Marshal(req.Pairs)
+		recordAnswer = string(b)
+		correct = ok
 	default:
 		res := checker.Check(req.Answer, ex.Accept)
 		resp.OK = res.OK

@@ -353,6 +353,34 @@ func TestSetStepStatus(t *testing.T) {
 	}
 }
 
+func TestExercisesEndpointHidesNewAnswers(t *testing.T) {
+	h, _ := newTestAPI(t)
+	rr := do(h, "GET", "/api/lessons/90/exercises", "")
+	body := rr.Body.String()
+	for _, leak := range []string{`"answer"`, `"accept"`, `"pairs"`, `"say"`} {
+		if strings.Contains(body, leak) {
+			t.Errorf("exercises endpoint leaked %s: %s", leak, body)
+		}
+	}
+	if !strings.Contains(body, `"options"`) {
+		t.Error("choice options not delivered")
+	}
+}
+
+func TestCheckChoiceEndpoint(t *testing.T) {
+	h, _ := newTestAPI(t)
+	rr := do(h, "POST", "/api/lessons/90/exercises/90.2.1/check", `{"answer":"Da"}`)
+	res := decodeBody[checkResultDTO](t, rr)
+	if !res.OK {
+		t.Fatalf("right choice not OK: %s", rr.Body)
+	}
+	rr = do(h, "POST", "/api/lessons/90/exercises/90.2.1/check", `{"answer":"Ne"}`)
+	res = decodeBody[checkResultDTO](t, rr)
+	if res.OK || res.Expected != "Da" {
+		t.Fatalf("wrong choice graded OK or missing expected: %+v", res)
+	}
+}
+
 func TestListenExerciseExposesAudioNotAnswer(t *testing.T) {
 	h, _ := newTestAPI(t)
 	rr := do(h, "GET", "/api/lessons/01/exercises", "")
