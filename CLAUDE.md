@@ -87,7 +87,9 @@ Auto Deploy включён: push в `main` → Dokploy пересобирает 
   шаге. Пример со всеми видами — `content/lessons/_TEMPLATE.yaml`.
 - **легаси** (`file: "lessons/NN-slug.md"` + `content/exercises/NN.yaml`)
   — старая. Загрузчик синтезирует из неё шаги (teach → practice-блоки →
-  reading), поэтому фронт-плеер работает одинаково.
+  reading), поэтому фронт-плеер работает одинаково. В реальном `content/`
+  легаси-уроков не осталось — блоки 1–2 (уроки 01–12) целиком манифесты;
+  синтез шагов покрыт тестом на фикстуре (`testdata/content`).
 
 Прогресс — по шагам (`store.lesson_step_progress`), экран урока —
 пошаговый плеер (`web/src/views/LessonView.vue`).
