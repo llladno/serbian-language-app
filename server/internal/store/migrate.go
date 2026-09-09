@@ -60,6 +60,18 @@ func loadMigrations() ([]migration, error) {
 		}
 		out = append(out, migration{version: v, name: e.Name(), sql: string(b)})
 	}
+	// hook-only versions: a registered hook with no matching .sql file becomes
+	// a migration with an empty script (splitSQL("") == nil → 0 statements →
+	// the runner still fires hooks[v]).
+	haveFile := map[int]bool{}
+	for _, m := range out {
+		haveFile[m.version] = true
+	}
+	for v := range hooks {
+		if !haveFile[v] {
+			out = append(out, migration{version: v, name: fmt.Sprintf("%03d_hook", v), sql: ""})
+		}
+	}
 	sort.Slice(out, func(i, j int) bool { return out[i].version < out[j].version })
 	return out, nil
 }

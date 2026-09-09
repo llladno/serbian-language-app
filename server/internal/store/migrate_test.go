@@ -4,6 +4,8 @@ import (
 	"database/sql"
 	"slices"
 	"testing"
+
+	"github.com/grisha/serbian-app/server/internal/auth"
 )
 
 func TestMigrationsIdempotent(t *testing.T) {
@@ -276,5 +278,55 @@ func TestMigration002RekeysStateTablesMultiUser(t *testing.T) {
 	if _, err := s.db.Exec(`INSERT INTO identities (id, user_id, provider, provider_uid, created_at)
 		VALUES (?, ?, ?, ?, ?)`, "idn_ok", grisha, "password", "p2", "2026-09-09T00:00:00Z"); err != nil {
 		t.Errorf("identities insert with real user_id failed: %v", err)
+	}
+}
+
+func TestMigration003Accounts(t *testing.T) {
+	s := &Store{db: mustOpenRaw(t)}
+	if err := s.runMigrationsUpTo(2); err != nil {
+		t.Fatal(err)
+	}
+
+	seed := func(name string) string {
+		id := auth.NewUserID()
+		mustExec(t, s, `INSERT INTO users (id, name, created_at) VALUES (?, ?, '2026-09-06T10:00:00Z')`, id, name)
+		return id
+	}
+	grishaID := seed("Гриша")
+	seed("Алина")
+	seed("DeployCheck")
+	chk2ID := seed("chk2")
+	mustExec(t, s, `INSERT INTO lesson_progress (user_id, lesson, status) VALUES (?, '01', 'done')`, chk2ID)
+
+	if err := s.runMigrations(); err != nil {
+		t.Fatal(err)
+	} // applies version 3
+
+	var n int
+	s.db.QueryRow(`SELECT COUNT(*) FROM users WHERE name IN ('DeployCheck','chk2')`).Scan(&n)
+	if n != 0 {
+		t.Fatalf("junk users left: %d", n)
+	}
+	s.db.QueryRow(`SELECT COUNT(*) FROM lesson_progress`).Scan(&n)
+	if n != 0 {
+		t.Fatalf("junk state left: %d", n)
+	}
+	var puid string
+	if err := s.db.QueryRow(
+		`SELECT provider_uid FROM identities WHERE user_id = ? AND provider = 'telegram'`, grishaID,
+	).Scan(&puid); err != nil {
+		t.Fatalf("Гриша telegram identity: %v", err)
+	}
+	if puid != "pending:llladnooo" {
+		t.Fatalf("provider_uid = %q", puid)
+	}
+
+	// idempotent: re-running the runner does not re-fire the hook or duplicate identities
+	if err := s.runMigrations(); err != nil {
+		t.Fatalf("re-run: %v", err)
+	}
+	s.db.QueryRow(`SELECT COUNT(*) FROM identities WHERE user_id = ? AND provider = 'telegram'`, grishaID).Scan(&n)
+	if n != 1 {
+		t.Fatalf("telegram identities for Гриша = %d, want 1", n)
 	}
 }

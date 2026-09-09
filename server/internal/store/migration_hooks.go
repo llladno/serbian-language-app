@@ -1,14 +1,18 @@
 package store
 
 import (
+	"database/sql"
+	"errors"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/grisha/serbian-app/server/internal/auth"
 )
 
 func init() {
 	registerHook(2, migrate002)
+	registerHook(3, migrate003)
 }
 
 // migrate002 fills users_new with a generated id per legacy row, re-keys the
@@ -110,6 +114,68 @@ func migrate002(tx *dbtx, pg bool) error {
 	for _, q := range auth002Tables {
 		if _, err := tx.Exec(q); err != nil {
 			return fmt.Errorf("create auth tables: %w", err)
+		}
+	}
+	return nil
+}
+
+var junkAccounts = []string{"DeployCheck", "ProbaPG", "chk2", "kbcheck"}
+
+var legacyTelegram = map[string]string{
+	"Гриша": "llladnooo",
+	"Алина": "alinsssk",
+}
+
+// migrate003 removes seed/test accounts and attaches the two real accounts to
+// their Telegram identity (provider_uid "pending:<username>" until first login).
+// Idempotent at the runner level (version 3 is recorded once); also guards the
+// identity insert so a manual re-run cannot duplicate.
+func migrate003(tx *dbtx, pg bool) error {
+	stateTables := []string{"srs_cards", "reviews", "attempts", "lesson_progress", "lesson_step_progress"}
+	for _, name := range junkAccounts {
+		var id string
+		switch err := tx.QueryRow(`SELECT id FROM users WHERE name = ?`, name).Scan(&id); {
+		case errors.Is(err, sql.ErrNoRows):
+			continue // account not present — fine
+		case err != nil:
+			return fmt.Errorf("lookup junk account %q: %w", name, err)
+		}
+		for _, tbl := range stateTables {
+			if _, err := tx.Exec(`DELETE FROM `+tbl+` WHERE user_id = ?`, id); err != nil {
+				return fmt.Errorf("delete %s for %q: %w", tbl, name, err)
+			}
+		}
+		if _, err := tx.Exec(`DELETE FROM identities WHERE user_id = ?`, id); err != nil {
+			return fmt.Errorf("delete identities for %q: %w", name, err)
+		}
+		if _, err := tx.Exec(`DELETE FROM users WHERE id = ?`, id); err != nil {
+			return fmt.Errorf("delete user %q: %w", name, err)
+		}
+	}
+	for name, username := range legacyTelegram {
+		var id string
+		switch err := tx.QueryRow(`SELECT id FROM users WHERE name = ?`, name).Scan(&id); {
+		case errors.Is(err, sql.ErrNoRows):
+			continue
+		case err != nil:
+			return fmt.Errorf("lookup %q: %w", name, err)
+		}
+		var exists int
+		switch err := tx.QueryRow(
+			`SELECT 1 FROM identities WHERE user_id = ? AND provider = 'telegram'`, id).Scan(&exists); {
+		case errors.Is(err, sql.ErrNoRows):
+			// no telegram identity yet — create it below
+		case err != nil:
+			return fmt.Errorf("check telegram identity for %q: %w", name, err)
+		default:
+			continue // already linked
+		}
+		if _, err := tx.Exec(`INSERT INTO identities
+			(id, user_id, provider, provider_uid, tg_username, created_at)
+			VALUES (?, ?, 'telegram', ?, ?, ?)`,
+			auth.NewIdentityID(), id, "pending:"+username, username,
+			time.Now().UTC().Format(time.RFC3339)); err != nil {
+			return fmt.Errorf("link telegram for %q: %w", name, err)
 		}
 	}
 	return nil
