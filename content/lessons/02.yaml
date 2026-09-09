@@ -234,8 +234,8 @@ steps:
           explain: "učiti → ja učim. «Учу сербский» — про процесс, поэтому настоящее время."
 
       - who: npc
-        sr: "Dobro! Ja radim kao nastavnik, danas sam umoran, ali sutra ne radim, pa mogu…"
-        ru: "Хорошо! Я работаю учителем, сегодня устал, но завтра не работаю, так что могу…"
+        sr: "Radim kao nastavnik. Danas sam umoran."
+        ru: "Работаю учителем. Сегодня устал."
 
       - who: me
         sr: "Izvinite, ne razumem. Polako, molim."
@@ -252,8 +252,8 @@ steps:
           explain: "Эти две фразы — «ne razumem» и «polako» — выручат чаще любых других."
 
       - who: npc
-        sr: "Dobro, izvinite. Polako: ja sam nastavnik."
-        ru: "Хорошо, извините. Медленно: я учитель."
+        sr: "Dobro, izvinite. Polako: radim kao nastavnik."
+        ru: "Хорошо, извините. Медленно: работаю учителем."
 
       - who: me
         sr: "Sada razumem. Hvala!"
