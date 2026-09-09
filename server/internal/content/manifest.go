@@ -5,25 +5,40 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/grisha/serbian-app/server/internal/checker"
 )
 
 type manifestFile struct {
-	Lesson   string   `yaml:"lesson"`
-	Title    string   `yaml:"title"`
-	Subtitle string   `yaml:"subtitle"`
-	Teaches  []string `yaml:"teaches"`
-	Steps    []struct {
-		ID        string         `yaml:"id"`
-		Kind      string         `yaml:"kind"`
-		Title     string         `yaml:"title"`
-		MD        string         `yaml:"md"`
-		AlsoOK    []string       `yaml:"also_ok"`
-		Mixed     bool           `yaml:"mixed"`
-		Exercises []exerciseYAML `yaml:"exercises"`
-	} `yaml:"steps"`
+	Lesson   string     `yaml:"lesson"`
+	Title    string     `yaml:"title"`
+	Subtitle string     `yaml:"subtitle"`
+	Teaches  []string   `yaml:"teaches"`
+	Steps    []stepYAML `yaml:"steps"`
 }
 
-var stepKinds = map[string]bool{"teach": true, "practice": true, "reading": true, "checkpoint": true}
+type stepYAML struct {
+	ID        string         `yaml:"id"`
+	Kind      string         `yaml:"kind"`
+	Title     string         `yaml:"title"`
+	MD        string         `yaml:"md"`
+	AlsoOK    []string       `yaml:"also_ok"`
+	Mixed     bool           `yaml:"mixed"`
+	Exercises []exerciseYAML `yaml:"exercises"`
+
+	Scene string     `yaml:"scene"`
+	Voice string     `yaml:"voice"`
+	Turns []turnYAML `yaml:"turns"`
+}
+
+type turnYAML struct {
+	Who      string        `yaml:"who"`
+	SR       string        `yaml:"sr"`
+	RU       string        `yaml:"ru"`
+	Exercise *exerciseYAML `yaml:"exercise"`
+}
+
+var stepKinds = map[string]bool{"teach": true, "practice": true, "reading": true, "checkpoint": true, "dialogue": true}
 
 // parseManifest loads a lessons/NN.yaml manifest into a Lesson with Steps.
 // Course.Exercises is populated separately (see collectExercises).
@@ -90,9 +105,16 @@ func parseManifest(dir, rel string) (*Lesson, error) {
 			if step.Markdown == "" {
 				return nil, fmt.Errorf("%s: step %s: reading needs md", rel, s.ID)
 			}
+		case "dialogue":
+			if err := decodeDialogue(dir, rel, s, &step, seenEx); err != nil {
+				return nil, err
+			}
 		}
-		if err := checkDifficultyOrder(rel, step); err != nil {
-			return nil, err
+		// A dialogue's order is the scenario's, not a difficulty ramp.
+		if s.Kind != "dialogue" {
+			if err := checkDifficultyOrder(rel, step); err != nil {
+				return nil, err
+			}
 		}
 		l.Steps = append(l.Steps, step)
 	}
@@ -140,4 +162,118 @@ func synthesizeSteps(l *Lesson, blocks []ExerciseBlock) []Step {
 		})
 	}
 	return steps
+}
+
+// dialogueTypes are the exercise types a dialogue turn may use. The others
+// (conjugate, match, word_bank…) do not read as something a person says.
+var dialogueTypes = map[string]bool{"choice": true, "translate": true, "fill_blank": true}
+
+// decodeDialogue fills step.Turns and step.Exercises from a dialogue step. The
+// exercises land in Step.Exercises as well, so answer checking, attempts,
+// progress and SRS treat them like any other exercise.
+func decodeDialogue(dir, rel string, s stepYAML, step *Step, seenEx map[string]bool) error {
+	if s.Scene == "" {
+		return fmt.Errorf("%s: step %s: dialogue needs a scene", rel, s.ID)
+	}
+	switch s.Voice {
+	case "", "f":
+		step.Voice = "f"
+	case "m":
+		step.Voice = "m"
+	default:
+		return fmt.Errorf("%s: step %s: voice must be f or m, got %q", rel, s.ID, s.Voice)
+	}
+	if len(s.Turns) == 0 {
+		return fmt.Errorf("%s: step %s: dialogue needs turns", rel, s.ID)
+	}
+	step.Scene = s.Scene
+
+	me := 0
+	for i, t := range s.Turns {
+		n := i + 1
+		if t.SR == "" {
+			return fmt.Errorf("%s: step %s: turn %d needs sr", rel, s.ID, n)
+		}
+		turn := Turn{Who: t.Who, SR: t.SR, RU: t.RU}
+		clip := fmt.Sprintf("%s-t%d.mp3", s.ID, n)
+		if _, err := os.Stat(filepath.Join(dir, "audio", clip)); err == nil {
+			turn.Audio = clip
+		}
+
+		switch t.Who {
+		case "npc":
+			if t.Exercise != nil {
+				return fmt.Errorf("%s: step %s: turn %d: npc turn cannot have an exercise", rel, s.ID, n)
+			}
+		case "me":
+			if t.Exercise == nil {
+				return fmt.Errorf("%s: step %s: turn %d: me turn needs an exercise", rel, s.ID, n)
+			}
+			if !dialogueTypes[t.Exercise.Type] {
+				return fmt.Errorf("%s: step %s: turn %d: type %q is not allowed in a dialogue (choice, translate, fill_blank)", rel, s.ID, n, t.Exercise.Type)
+			}
+			if seenEx[t.Exercise.ID] {
+				return fmt.Errorf("%s: duplicate exercise id %q", rel, t.Exercise.ID)
+			}
+			seenEx[t.Exercise.ID] = true
+			ex, err := decodeExercise(dir, rel, *t.Exercise)
+			if err != nil {
+				return err
+			}
+			if err := checkTurnLine(rel, s.ID, n, t.SR, ex); err != nil {
+				return err
+			}
+			step.Exercises = append(step.Exercises, ex)
+			me++
+		default:
+			return fmt.Errorf("%s: step %s: turn %d: who must be npc or me, got %q", rel, s.ID, n, t.Who)
+		}
+		step.Turns = append(step.Turns, turn)
+	}
+	if me == 0 {
+		return fmt.Errorf("%s: step %s: dialogue needs at least one me turn", rel, s.ID)
+	}
+
+	// Pointers are bound only now: the appends above may reallocate
+	// step.Exercises, and a pointer taken mid-loop would dangle into the
+	// old array.
+	k := 0
+	for i := range step.Turns {
+		if step.Turns[i].Who == "me" {
+			step.Turns[i].Exercise = &step.Exercises[k]
+			k++
+		}
+	}
+	return nil
+}
+
+// checkTurnLine keeps the canonical line in sync with what the checker accepts:
+// the chat must never show a line the exercise would have rejected.
+func checkTurnLine(rel, stepID string, n int, sr string, ex Exercise) error {
+	switch ex.Type {
+	case "choice":
+		if checker.Normalize(sr) != checker.Normalize(ex.Answer) {
+			return fmt.Errorf("%s: step %s: turn %d: sr %q must equal the choice answer %q", rel, stepID, n, sr, ex.Answer)
+		}
+	case "translate":
+		for _, a := range ex.Accept {
+			if checker.Normalize(a) == checker.Normalize(sr) {
+				return nil
+			}
+		}
+		return fmt.Errorf("%s: step %s: turn %d: sr %q is not among accept", rel, stepID, n, sr)
+	case "fill_blank":
+		have := map[string]bool{}
+		for _, tok := range strings.Fields(checker.Normalize(sr)) {
+			have[tok] = true
+		}
+		for _, a := range ex.Accept {
+			for _, tok := range strings.Fields(checker.Normalize(a)) {
+				if !have[tok] {
+					return fmt.Errorf("%s: step %s: turn %d: accept %q is not part of sr %q", rel, stepID, n, a, sr)
+				}
+			}
+		}
+	}
+	return nil
 }

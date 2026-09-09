@@ -61,6 +61,21 @@ type Step struct {
 	AlsoOK    []string // extra tokens the lexicon guard allows in this step
 	Mixed     bool     // practice: opt out of the difficulty-order check
 	Exercises []Exercise
+
+	Scene string // dialogue: Russian setup line ("Ты зашёл в пекару")
+	Voice string // dialogue: f | m — the other speaker's voice
+	Turns []Turn // dialogue: the ordered conversation
+}
+
+// Turn is one line of a dialogue step. A "me" turn carries the exercise that
+// produces the line; SR is the canonical line shown in the chat afterwards,
+// so the thread reads the same whatever the exercise type was.
+type Turn struct {
+	Who      string // npc | me
+	SR       string
+	RU       string
+	Audio    string // filename under content/audio/, "" when the clip is absent
+	Exercise *Exercise
 }
 
 // ExerciseBlock is a titled group of exercises (блок A/B/C… в уроке).
