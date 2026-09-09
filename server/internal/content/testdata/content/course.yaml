@@ -14,3 +14,6 @@ lessons:
   "90":
     title: "Fixture lesson"
     file: "lessons/90.yaml"
+  "91":
+    title: "Fixture dialogue"
+    file: "lessons/91.yaml"

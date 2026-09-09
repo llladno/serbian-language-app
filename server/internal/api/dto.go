@@ -46,6 +46,21 @@ type stepDTO struct {
 	MarkdownRU  string   `json:"markdown_ru,omitempty"`
 	ExerciseIDs []string `json:"exercise_ids,omitempty"`
 	Status      string   `json:"status"` // not_started | in_progress | done
+
+	Scene string    `json:"scene,omitempty"` // dialogue: Russian setup line
+	Voice string    `json:"voice,omitempty"` // dialogue: f | m
+	Turns []turnDTO `json:"turns,omitempty"`
+}
+
+// turnDTO is one dialogue line. For a "me" turn the line itself (sr/ru/audio)
+// travels only once the user has an attempt on its exercise — otherwise the
+// correct answer would be readable straight from the page source.
+type turnDTO struct {
+	Who        string `json:"who"`
+	SR         string `json:"sr,omitempty"`
+	RU         string `json:"ru,omitempty"`
+	Audio      string `json:"audio,omitempty"`
+	ExerciseID string `json:"exercise_id,omitempty"`
 }
 
 // ---- exercises (accept lists intentionally omitted) ----
@@ -63,7 +78,7 @@ type exerciseDTO struct {
 	Prompt  string   `json:"prompt"`
 	Forms   []string `json:"forms,omitempty"`
 	Meta    string   `json:"meta,omitempty"`
-	Audio   string   `json:"audio,omitempty"` // listen: clip under /audio/
+	Audio   string   `json:"audio,omitempty"`   // listen: clip under /audio/
 	Options []string `json:"options,omitempty"` // choice (correct answer omitted)
 	Bank    []string `json:"bank,omitempty"`    // word_bank chips (accept omitted)
 	Left    []string `json:"left,omitempty"`    // match: left column

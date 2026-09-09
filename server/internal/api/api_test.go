@@ -480,3 +480,40 @@ func TestVocabFilter(t *testing.T) {
 		t.Errorf("vocab filter = %+v", v)
 	}
 }
+
+func TestDialogueHidesUnansweredLines(t *testing.T) {
+	h, _ := newTestAPI(t)
+
+	before := decodeBody[lessonDTO](t, do(h, "GET", "/api/lessons/91", ""))
+	if len(before.Steps) != 1 || before.Steps[0].Kind != "dialogue" {
+		t.Fatalf("fixture lesson 91 should hold one dialogue step, got %+v", before.Steps)
+	}
+	s := before.Steps[0]
+	if s.Scene == "" || s.Voice != "f" {
+		t.Errorf("scene=%q voice=%q", s.Scene, s.Voice)
+	}
+	if len(s.Turns) != 3 {
+		t.Fatalf("want 3 turns, got %d", len(s.Turns))
+	}
+	if s.Turns[0].SR != "Izvolite?" {
+		t.Errorf("npc line must always be visible, got %q", s.Turns[0].SR)
+	}
+	if s.Turns[1].SR != "" || s.Turns[1].RU != "" {
+		t.Errorf("unanswered me line leaked: sr=%q ru=%q", s.Turns[1].SR, s.Turns[1].RU)
+	}
+	if s.Turns[1].ExerciseID != "91.1.1" {
+		t.Errorf("me turn must expose its exercise id, got %q", s.Turns[1].ExerciseID)
+	}
+
+	if rr := do(h, "POST", "/api/lessons/91/exercises/91.1.1/check", `{"answer":"Jedan hleb, molim."}`); rr.Code != 200 {
+		t.Fatalf("check: status %d", rr.Code)
+	}
+
+	after := decodeBody[lessonDTO](t, do(h, "GET", "/api/lessons/91", ""))
+	if got := after.Steps[0].Turns[1].SR; got != "Jedan hleb, molim." {
+		t.Errorf("answered me line should be revealed, got %q", got)
+	}
+	if got := after.Steps[0].Turns[1].RU; got != "Один хлеб, пожалуйста." {
+		t.Errorf("answered me line translation = %q", got)
+	}
+}

@@ -199,11 +199,29 @@ func (h handlers) getLesson(w http.ResponseWriter, r *http.Request) {
 		fail(w, 500, err.Error())
 		return
 	}
+	attempts, err := us.LessonAttempts(id)
+	if err != nil {
+		fail(w, 500, err.Error())
+		return
+	}
 	steps := make([]stepDTO, 0, len(l.Steps))
 	for _, s := range l.Steps {
 		d := stepDTO{ID: s.ID, Kind: s.Kind, Title: s.Title, Markdown: s.Markdown, MarkdownRU: s.MarkdownRU}
 		for _, e := range s.Exercises {
 			d.ExerciseIDs = append(d.ExerciseIDs, e.ID)
+		}
+		d.Scene, d.Voice = s.Scene, s.Voice
+		for _, t := range s.Turns {
+			td := turnDTO{Who: t.Who}
+			shown := t.Who == "npc"
+			if t.Exercise != nil {
+				td.ExerciseID = t.Exercise.ID
+				_, shown = attempts[t.Exercise.ID]
+			}
+			if shown {
+				td.SR, td.RU, td.Audio = t.SR, t.RU, t.Audio
+			}
+			d.Turns = append(d.Turns, td)
 		}
 		if d.Status = stepSt[s.ID]; d.Status == "" {
 			d.Status = "not_started"

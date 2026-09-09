@@ -1,0 +1,26 @@
+lesson: "91"
+title: "Fixture dialogue"
+subtitle: "диалог для тестов API"
+
+steps:
+  - id: "91.1"
+    kind: dialogue
+    title: "У пекари"
+    scene: "Ты зашёл в пекару."
+    voice: f
+    turns:
+      - who: npc
+        sr: "Izvolite?"
+        ru: "Слушаю вас?"
+      - who: me
+        sr: "Jedan hleb, molim."
+        ru: "Один хлеб, пожалуйста."
+        exercise:
+          id: "91.1.1"
+          type: choice
+          prompt: "Попроси хлеб"
+          options: ["Jedan hleb, molim.", "Jedan hleb, hvala."]
+          answer: "Jedan hleb, molim."
+      - who: npc
+        sr: "Hvala."
+        ru: "Спасибо."
