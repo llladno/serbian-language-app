@@ -277,3 +277,25 @@ steps:
 		t.Fatalf("want scene error, got %v", err)
 	}
 }
+
+func TestDialogueTurnAudio(t *testing.T) {
+	dir := t.TempDir()
+	writeDialogueFixture(t, dir)
+	if err := os.MkdirAll(filepath.Join(dir, "audio"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(dir, "audio", "05.9-t1.mp3"), []byte("x"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	l, err := parseManifest(dir, "lessons/05.yaml")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := l.Steps[0].Turns[0].Audio; got != "05.9-t1.mp3" {
+		t.Errorf("turn 1 audio = %q, want 05.9-t1.mp3", got)
+	}
+	if got := l.Steps[0].Turns[1].Audio; got != "" {
+		t.Errorf("turn 2 has no clip on disk, got audio %q", got)
+	}
+}
