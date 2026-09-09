@@ -11,8 +11,10 @@ Usage:
     python3 scripts/tts.py --voice sr-RS-NicholasNeural
     python3 scripts/tts.py --only zdravo --only hleb
 
-Writes content/audio/<id>.mp3 for every entry in content/vocab.yaml and for
-every `type: listen` exercise (keyed by exercise id, e.g. 01-E-1.mp3).
+Writes content/audio/<id>.mp3 for every entry in content/vocab.yaml, for
+every `type: listen` exercise (keyed by exercise id, e.g. 01-E-1.mp3) and for
+every dialogue turn (keyed <step id>-t<N>, e.g. 05.9-t1.mp3 — the two speakers
+get different voices).
 Re-run any time; existing files are skipped unless --force.
 
 The sr-RS voices are Cyrillic-trained and mispronounce Latin text, so
@@ -39,7 +41,9 @@ VOCAB = os.path.join(ROOT, "content", "vocab.yaml")
 EXERCISES_GLOB = os.path.join(ROOT, "content", "exercises", "*.yaml")
 LESSONS_GLOB = os.path.join(ROOT, "content", "lessons", "*.yaml")
 AUDIO_DIR = os.path.join(ROOT, "content", "audio")
-DEFAULT_VOICE = "sr-RS-SophieNeural"
+VOICE_F = "sr-RS-SophieNeural"
+VOICE_M = "sr-RS-NicholasNeural"
+DEFAULT_VOICE = VOICE_F
 CONCURRENCY = 4
 
 
@@ -106,6 +110,32 @@ def listen_entries() -> list[dict]:
     return out
 
 
+def dialogue_entries() -> list[dict]:
+    """Collect {id, cyrillic, voice} rows for every dialogue turn, keyed
+    <step id>-t<N> (05.9-t1.mp3). The other speaker uses the step's `voice`
+    (f by default) and the learner's own lines always take the opposite one,
+    so the chat has two distinct voices."""
+    out = []
+    for path in sorted(glob.glob(LESSONS_GLOB)):
+        if os.path.basename(path) == "_TEMPLATE.yaml":
+            continue
+        doc = yaml.safe_load(open(path, encoding="utf-8")) or {}
+        for step in doc.get("steps") or []:
+            if step.get("kind") != "dialogue":
+                continue
+            npc = VOICE_M if step.get("voice") == "m" else VOICE_F
+            me = VOICE_F if npc == VOICE_M else VOICE_M
+            for i, turn in enumerate(step.get("turns") or [], start=1):
+                if not turn.get("sr"):
+                    continue
+                out.append({
+                    "id": f"{step['id']}-t{i}",
+                    "cyrillic": sr_lat_to_cyr(turn["sr"]),
+                    "voice": npc if turn.get("who") == "npc" else me,
+                })
+    return out
+
+
 def speech_text(entry: dict) -> str:
     """Pick a clean, speakable string from a vocab entry.
 
@@ -146,13 +176,13 @@ async def run(entries, voice, force):
             print(f"  ! {eid}: no speakable text, skipped")
             continue
         planned.append((eid, text))
-        tasks.append(synth(sem, voice, text, dest))
+        tasks.append(synth(sem, e.get("voice") or voice, text, dest))
 
     if not tasks:
         print("nothing to do — all audio present (use --force to regenerate)")
         return 0
 
-    print(f"generating {len(tasks)} file(s) with {voice}\n")
+    print(f"generating {len(tasks)} file(s)\n")
     ok = errs = 0
     results = await asyncio.gather(*tasks)
     for (eid, text), (dest, err) in zip(planned, results):
@@ -176,6 +206,7 @@ def main():
     with open(VOCAB, encoding="utf-8") as f:
         entries = [e for e in yaml.safe_load(f) if isinstance(e, dict) and e.get("id")]
     entries += listen_entries()
+    entries += dialogue_entries()
     if args.only:
         want = set(args.only)
         entries = [e for e in entries if e["id"] in want]
