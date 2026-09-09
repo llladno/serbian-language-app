@@ -1,5 +1,5 @@
 // Package store persists mutable app state (SRS schedule, exercise
-// attempts, lesson progress), scoped per account name.
+// attempts, lesson progress), scoped per account (users.id).
 //
 // Two backends are supported behind one code path: PostgreSQL (production,
 // selected by a "postgres://" / "postgresql://" DSN) and SQLite (local dev
@@ -9,6 +9,7 @@ package store
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"sort"
 	"strconv"
@@ -18,6 +19,7 @@ import (
 	_ "github.com/jackc/pgx/v5/stdlib" // "pgx" driver
 	_ "modernc.org/sqlite"
 
+	"github.com/grisha/serbian-app/server/internal/auth"
 	"github.com/grisha/serbian-app/server/internal/srs"
 )
 
@@ -31,10 +33,10 @@ type Store struct {
 	db *database
 }
 
-// UserStore is a per-account view over the state tables.
+// UserStore is a per-account view over the state tables, keyed by user id.
 type UserStore struct {
 	db   *database
-	user string
+	user string // users.id
 }
 
 // IsPostgresDSN reports whether dsn selects the Postgres backend.
@@ -317,9 +319,15 @@ func NormalizeName(s string) string {
 	return strings.Join(strings.Fields(s), " ")
 }
 
-// EnsureUser creates the account if it does not exist. Returns the
-// normalized name.
-func (s *Store) EnsureUser(name string) (string, error) {
+// UserRow is one account record.
+type UserRow struct {
+	ID        string
+	Name      string
+	CreatedAt string
+}
+
+// CreateUser inserts a users row with a generated id and returns it.
+func (s *Store) CreateUser(name string) (string, error) {
 	n := NormalizeName(name)
 	if n == "" {
 		return "", fmt.Errorf("empty name")
@@ -327,43 +335,98 @@ func (s *Store) EnsureUser(name string) (string, error) {
 	if len([]rune(n)) > 40 {
 		return "", fmt.Errorf("name too long")
 	}
-	_, err := s.db.Exec(
-		`INSERT INTO users (name, created_at) VALUES (?, ?) ON CONFLICT (name) DO NOTHING`,
-		n, time.Now().UTC().Format(time.RFC3339))
-	return n, err
-}
-
-// UserExists reports whether an account with this exact (normalized) name exists.
-func (s *Store) UserExists(name string) (bool, error) {
-	var one int
-	err := s.db.QueryRow(`SELECT 1 FROM users WHERE name = ?`, NormalizeName(name)).Scan(&one)
-	if err == sql.ErrNoRows {
-		return false, nil
+	id := auth.NewUserID()
+	if _, err := s.db.Exec(`INSERT INTO users (id, name, created_at) VALUES (?, ?, ?)`,
+		id, n, time.Now().UTC().Format(time.RFC3339)); err != nil {
+		return "", err
 	}
-	return err == nil, err
+	return id, nil
 }
 
-// ListUsers returns all account names, oldest first.
-func (s *Store) ListUsers() ([]string, error) {
-	rows, err := s.db.Query(`SELECT name FROM users ORDER BY created_at ASC`)
+// UserByID returns the account with this id. sql.ErrNoRows if absent.
+func (s *Store) UserByID(id string) (UserRow, error) {
+	var u UserRow
+	err := s.db.QueryRow(
+		`SELECT id, name, created_at FROM users WHERE id = ?`, id).Scan(&u.ID, &u.Name, &u.CreatedAt)
+	return u, err
+}
+
+// UserByName returns the oldest account with this display name (bridge for
+// the pre-session X-User header; removed when auth ships).
+func (s *Store) UserByName(name string) (UserRow, error) {
+	var u UserRow
+	err := s.db.QueryRow(
+		`SELECT id, name, created_at FROM users WHERE name = ? ORDER BY created_at ASC LIMIT 1`,
+		NormalizeName(name)).Scan(&u.ID, &u.Name, &u.CreatedAt)
+	return u, err
+}
+
+// EnsureUserByName returns the account with this name, creating it if absent.
+func (s *Store) EnsureUserByName(name string) (UserRow, error) {
+	if u, err := s.UserByName(name); err == nil {
+		return u, nil
+	} else if !errors.Is(err, sql.ErrNoRows) {
+		return UserRow{}, err
+	}
+	id, err := s.CreateUser(name)
+	if err != nil {
+		return UserRow{}, err
+	}
+	return s.UserByID(id)
+}
+
+// RenameUser changes an account's display name.
+func (s *Store) RenameUser(id, name string) error {
+	n := NormalizeName(name)
+	if n == "" {
+		return fmt.Errorf("empty name")
+	}
+	if len([]rune(n)) > 40 {
+		return fmt.Errorf("name too long")
+	}
+	_, err := s.db.Exec(`UPDATE users SET name = ? WHERE id = ?`, n, id)
+	return err
+}
+
+// DeleteUser removes the account and all of its learning state in one tx.
+func (s *Store) DeleteUser(id string) error {
+	tx, err := s.db.Begin()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+	for _, tbl := range []string{"srs_cards", "reviews", "attempts", "lesson_progress", "lesson_step_progress"} {
+		if _, err := tx.Exec(`DELETE FROM `+tbl+` WHERE user_id = ?`, id); err != nil {
+			return err
+		}
+	}
+	if _, err := tx.Exec(`DELETE FROM users WHERE id = ?`, id); err != nil {
+		return err
+	}
+	return tx.Commit()
+}
+
+// ListUsers returns all accounts, oldest first.
+func (s *Store) ListUsers() ([]UserRow, error) {
+	rows, err := s.db.Query(`SELECT id, name, created_at FROM users ORDER BY created_at ASC`)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var out []string
+	var out []UserRow
 	for rows.Next() {
-		var n string
-		if err := rows.Scan(&n); err != nil {
+		var u UserRow
+		if err := rows.Scan(&u.ID, &u.Name, &u.CreatedAt); err != nil {
 			return nil, err
 		}
-		out = append(out, n)
+		out = append(out, u)
 	}
 	return out, nil
 }
 
-// User returns a per-account view of the state tables.
-func (s *Store) User(name string) *UserStore {
-	return &UserStore{db: s.db, user: NormalizeName(name)}
+// User returns a per-account view of the state tables, keyed by user id.
+func (s *Store) User(id string) *UserStore {
+	return &UserStore{db: s.db, user: id}
 }
 
 // UserProgress is a one-line summary of one account's progress.
@@ -380,53 +443,54 @@ type UserProgress struct {
 // AllUsersProgress returns a progress summary per account, best first
 // (lessons done, then cards known).
 func (s *Store) AllUsersProgress(today time.Time) ([]UserProgress, error) {
-	names, err := s.ListUsers()
+	users, err := s.ListUsers()
 	if err != nil {
 		return nil, err
 	}
 	lessons := map[string]int{}
-	scanCount(s.db, `SELECT user_name, COUNT(*) FROM lesson_progress WHERE status='done' GROUP BY user_name`, lessons)
+	scanCount(s.db, `SELECT user_id, COUNT(*) FROM lesson_progress WHERE status='done' GROUP BY user_id`, lessons)
 
 	known := map[string]int{}
 	total := map[string]int{}
-	if rows, err := s.db.Query(`SELECT user_name, COUNT(*),
+	if rows, err := s.db.Query(`SELECT user_id, COUNT(*),
 		SUM(CASE WHEN state='review' AND interval_days>=7 THEN 1 ELSE 0 END)
-		FROM srs_cards GROUP BY user_name`); err == nil {
+		FROM srs_cards GROUP BY user_id`); err == nil {
 		for rows.Next() {
-			var n string
+			var id string
 			var t, k int
-			if rows.Scan(&n, &t, &k) == nil {
-				total[n] = t
-				known[n] = k
+			if rows.Scan(&id, &t, &k) == nil {
+				total[id] = t
+				known[id] = k
 			}
 		}
 		rows.Close()
 	}
 
 	reviewedToday := map[string]int{}
-	scanCount(s.db, `SELECT user_name, COUNT(*) FROM reviews WHERE substr(reviewed_at,1,10)='`+
-		today.Format(dateFmt)+`' GROUP BY user_name`, reviewedToday)
+	scanCount(s.db, `SELECT user_id, COUNT(*) FROM reviews WHERE substr(reviewed_at,1,10)='`+
+		today.Format(dateFmt)+`' GROUP BY user_id`, reviewedToday)
 
 	lastActive := map[string]string{}
-	if rows, err := s.db.Query(`SELECT user_name, MAX(d) FROM (
-		SELECT user_name, substr(reviewed_at,1,10) d FROM reviews
-		UNION ALL SELECT user_name, substr(attempted_at,1,10) FROM attempts
-	) GROUP BY user_name`); err == nil {
+	if rows, err := s.db.Query(`SELECT user_id, MAX(d) FROM (
+		SELECT user_id, substr(reviewed_at,1,10) d FROM reviews
+		UNION ALL SELECT user_id, substr(attempted_at,1,10) FROM attempts
+	) GROUP BY user_id`); err == nil {
 		for rows.Next() {
-			var n, d string
-			if rows.Scan(&n, &d) == nil {
-				lastActive[n] = d
+			var id, d string
+			if rows.Scan(&id, &d) == nil {
+				lastActive[id] = d
 			}
 		}
 		rows.Close()
 	}
 
-	out := make([]UserProgress, 0, len(names))
-	for _, n := range names {
-		streak, _ := s.User(n).StreakDays(today)
+	out := make([]UserProgress, 0, len(users))
+	for _, ur := range users {
+		streak, _ := s.User(ur.ID).StreakDays(today)
 		out = append(out, UserProgress{
-			Name: n, LessonsDone: lessons[n], CardsKnown: known[n], TotalCards: total[n],
-			StreakDays: streak, ReviewedToday: reviewedToday[n], LastActive: lastActive[n],
+			Name: ur.Name, LessonsDone: lessons[ur.ID], CardsKnown: known[ur.ID],
+			TotalCards: total[ur.ID], StreakDays: streak,
+			ReviewedToday: reviewedToday[ur.ID], LastActive: lastActive[ur.ID],
 		})
 	}
 	sort.Slice(out, func(i, j int) bool {
@@ -462,8 +526,8 @@ func (u *UserStore) EnsureCards(seeds []CardSeed) error {
 		return err
 	}
 	defer tx.Rollback()
-	stmt, err := tx.Prepare(`INSERT INTO srs_cards (user_name, card_id, kind, ref_id, updated_at)
-		VALUES (?, ?, ?, ?, ?) ON CONFLICT (user_name, card_id) DO NOTHING`)
+	stmt, err := tx.Prepare(`INSERT INTO srs_cards (user_id, card_id, kind, ref_id, updated_at)
+		VALUES (?, ?, ?, ?, ?) ON CONFLICT (user_id, card_id) DO NOTHING`)
 	if err != nil {
 		return err
 	}
@@ -504,7 +568,7 @@ func (u *UserStore) DueQueue(today time.Time, newLimit int) ([]CardRow, error) {
 	var out []CardRow
 
 	rows, err := u.db.Query(`SELECT `+cardCols+` FROM srs_cards
-		WHERE user_name = ? AND state IN ('learning','review') AND (due IS NULL OR due <= ?)
+		WHERE user_id = ? AND state IN ('learning','review') AND (due IS NULL OR due <= ?)
 		ORDER BY due ASC`, u.user, todayStr)
 	if err != nil {
 		return nil, err
@@ -521,7 +585,7 @@ func (u *UserStore) DueQueue(today time.Time, newLimit int) ([]CardRow, error) {
 
 	if newLimit > 0 {
 		nrows, err := u.db.Query(`SELECT `+cardCols+` FROM srs_cards
-			WHERE user_name = ? AND state = 'new' ORDER BY RANDOM() LIMIT ?`, u.user, newLimit)
+			WHERE user_id = ? AND state = 'new' ORDER BY RANDOM() LIMIT ?`, u.user, newLimit)
 		if err != nil {
 			return nil, err
 		}
@@ -545,7 +609,7 @@ func (u *UserStore) GradeCard(cardID string, g srs.Grade, now time.Time) (srs.Ca
 	}
 	defer tx.Rollback()
 
-	c, err := scanCard(tx.QueryRow(`SELECT `+cardCols+` FROM srs_cards WHERE user_name = ? AND card_id = ?`, u.user, cardID))
+	c, err := scanCard(tx.QueryRow(`SELECT `+cardCols+` FROM srs_cards WHERE user_id = ? AND card_id = ?`, u.user, cardID))
 	if err != nil {
 		return srs.Card{}, fmt.Errorf("load card %s: %w", cardID, err)
 	}
@@ -555,12 +619,12 @@ func (u *UserStore) GradeCard(cardID string, g srs.Grade, now time.Time) (srs.Ca
 	if !updated.Due.IsZero() {
 		dueStr = updated.Due.Format(dateFmt)
 	}
-	if _, err := tx.Exec(`UPDATE srs_cards SET ease=?, interval_days=?, reps=?, lapses=?, state=?, due=?, updated_at=? WHERE user_name=? AND card_id=?`,
+	if _, err := tx.Exec(`UPDATE srs_cards SET ease=?, interval_days=?, reps=?, lapses=?, state=?, due=?, updated_at=? WHERE user_id=? AND card_id=?`,
 		updated.Ease, updated.IntervalDays, updated.Reps, updated.Lapses, string(updated.State), dueStr,
 		now.UTC().Format(time.RFC3339), u.user, cardID); err != nil {
 		return srs.Card{}, err
 	}
-	if _, err := tx.Exec(`INSERT INTO reviews (user_name, card_id, grade, reviewed_at) VALUES (?, ?, ?, ?)`,
+	if _, err := tx.Exec(`INSERT INTO reviews (user_id, card_id, grade, reviewed_at) VALUES (?, ?, ?, ?)`,
 		u.user, cardID, int(g), now.UTC().Format(time.RFC3339)); err != nil {
 		return srs.Card{}, err
 	}
@@ -579,14 +643,14 @@ func (u *UserStore) ActivateCard(seed CardSeed, now time.Time) (bool, error) {
 	}
 	defer tx.Rollback()
 
-	if _, err := tx.Exec(`INSERT INTO srs_cards (user_name, card_id, kind, ref_id, updated_at)
-		VALUES (?, ?, ?, ?, ?) ON CONFLICT (user_name, card_id) DO NOTHING`,
+	if _, err := tx.Exec(`INSERT INTO srs_cards (user_id, card_id, kind, ref_id, updated_at)
+		VALUES (?, ?, ?, ?, ?) ON CONFLICT (user_id, card_id) DO NOTHING`,
 		u.user, seed.CardID, seed.Kind, seed.RefID, now.UTC().Format(time.RFC3339)); err != nil {
 		return false, err
 	}
 
 	var state string
-	if err := tx.QueryRow(`SELECT state FROM srs_cards WHERE user_name = ? AND card_id = ?`,
+	if err := tx.QueryRow(`SELECT state FROM srs_cards WHERE user_id = ? AND card_id = ?`,
 		u.user, seed.CardID).Scan(&state); err != nil {
 		return false, err
 	}
@@ -594,7 +658,7 @@ func (u *UserStore) ActivateCard(seed CardSeed, now time.Time) (bool, error) {
 		return false, tx.Commit()
 	}
 
-	if _, err := tx.Exec(`UPDATE srs_cards SET state=?, due=?, updated_at=? WHERE user_name=? AND card_id=?`,
+	if _, err := tx.Exec(`UPDATE srs_cards SET state=?, due=?, updated_at=? WHERE user_id=? AND card_id=?`,
 		string(srs.Learning), now.Format(dateFmt), now.UTC().Format(time.RFC3339), u.user, seed.CardID); err != nil {
 		return false, err
 	}
@@ -604,14 +668,14 @@ func (u *UserStore) ActivateCard(seed CardSeed, now time.Time) (bool, error) {
 // ReviewedToday counts reviews logged on today's date.
 func (u *UserStore) ReviewedToday(today time.Time) (int, error) {
 	var n int
-	err := u.db.QueryRow(`SELECT COUNT(*) FROM reviews WHERE user_name = ? AND substr(reviewed_at,1,10) = ?`,
+	err := u.db.QueryRow(`SELECT COUNT(*) FROM reviews WHERE user_id = ? AND substr(reviewed_at,1,10) = ?`,
 		u.user, today.Format(dateFmt)).Scan(&n)
 	return n, err
 }
 
 // StreakDays counts consecutive days (ending today) with at least one review.
 func (u *UserStore) StreakDays(today time.Time) (int, error) {
-	rows, err := u.db.Query(`SELECT DISTINCT substr(reviewed_at,1,10) AS d FROM reviews WHERE user_name = ? ORDER BY d DESC`, u.user)
+	rows, err := u.db.Query(`SELECT DISTINCT substr(reviewed_at,1,10) AS d FROM reviews WHERE user_id = ? ORDER BY d DESC`, u.user)
 	if err != nil {
 		return 0, err
 	}
@@ -637,7 +701,7 @@ func (u *UserStore) AddAttempt(a Attempt, now time.Time) error {
 	if a.Correct {
 		correct = 1
 	}
-	_, err := u.db.Exec(`INSERT INTO attempts (user_name, exercise_id, lesson, block, answer, correct, attempted_at)
+	_, err := u.db.Exec(`INSERT INTO attempts (user_id, exercise_id, lesson, block, answer, correct, attempted_at)
 		VALUES (?, ?, ?, ?, ?, ?, ?)`,
 		u.user, a.ExerciseID, a.Lesson, a.Block, a.Answer, correct, now.UTC().Format(time.RFC3339))
 	return err
@@ -648,7 +712,7 @@ func (u *UserStore) WeakExercises(limit int) ([]WeakExercise, error) {
 	rows, err := u.db.Query(`
 SELECT exercise_id, lesson, SUM(1 - correct) AS wrong, COUNT(*) AS total
 FROM attempts
-WHERE user_name = ?
+WHERE user_id = ?
 GROUP BY exercise_id, lesson
 HAVING COUNT(*) >= 2 AND SUM(1 - correct) * 2 >= COUNT(*)
 ORDER BY wrong DESC, total DESC
@@ -676,9 +740,9 @@ func (u *UserStore) SetLessonStatus(lesson, status string, now time.Time) error 
 		completedCol = iso
 	}
 	_, err := u.db.Exec(`
-INSERT INTO lesson_progress (user_name, lesson, status, started_at, completed_at)
+INSERT INTO lesson_progress (user_id, lesson, status, started_at, completed_at)
 VALUES (?, ?, ?, ?, ?)
-ON CONFLICT(user_name, lesson) DO UPDATE SET
+ON CONFLICT(user_id, lesson) DO UPDATE SET
 	status = excluded.status,
 	started_at = COALESCE(lesson_progress.started_at, excluded.started_at),
 	completed_at = COALESCE(excluded.completed_at, lesson_progress.completed_at)`,
@@ -694,9 +758,9 @@ func (u *UserStore) SetStepStatus(lesson, step, status string, now time.Time) er
 		completedCol = now.UTC().Format(time.RFC3339)
 	}
 	_, err := u.db.Exec(`
-INSERT INTO lesson_step_progress (user_name, lesson, step, status, completed_at)
+INSERT INTO lesson_step_progress (user_id, lesson, step, status, completed_at)
 VALUES (?, ?, ?, ?, ?)
-ON CONFLICT(user_name, lesson, step) DO UPDATE SET
+ON CONFLICT(user_id, lesson, step) DO UPDATE SET
 	status = excluded.status,
 	completed_at = COALESCE(lesson_step_progress.completed_at, excluded.completed_at)`,
 		u.user, lesson, step, status, completedCol)
@@ -705,7 +769,7 @@ ON CONFLICT(user_name, lesson, step) DO UPDATE SET
 
 // StepStatuses returns step id -> status for one lesson.
 func (u *UserStore) StepStatuses(lesson string) (map[string]string, error) {
-	rows, err := u.db.Query(`SELECT step, status FROM lesson_step_progress WHERE user_name = ? AND lesson = ?`, u.user, lesson)
+	rows, err := u.db.Query(`SELECT step, status FROM lesson_step_progress WHERE user_id = ? AND lesson = ?`, u.user, lesson)
 	if err != nil {
 		return nil, err
 	}
@@ -733,7 +797,7 @@ func (u *UserStore) LessonAttempts(lesson string) (map[string]AttemptSummary, er
 SELECT a.exercise_id, a.answer, a.correct
 FROM attempts a
 JOIN (SELECT exercise_id, MAX(id) AS mid FROM attempts
-      WHERE user_name = ? AND lesson = ? GROUP BY exercise_id) last
+      WHERE user_id = ? AND lesson = ? GROUP BY exercise_id) last
   ON a.id = last.mid`, u.user, lesson)
 	if err != nil {
 		return nil, err
@@ -760,13 +824,13 @@ func (u *UserStore) ResetLesson(lesson string) error {
 		return err
 	}
 	defer tx.Rollback()
-	if _, err := tx.Exec(`DELETE FROM attempts WHERE user_name = ? AND lesson = ?`, u.user, lesson); err != nil {
+	if _, err := tx.Exec(`DELETE FROM attempts WHERE user_id = ? AND lesson = ?`, u.user, lesson); err != nil {
 		return err
 	}
-	if _, err := tx.Exec(`DELETE FROM lesson_progress WHERE user_name = ? AND lesson = ?`, u.user, lesson); err != nil {
+	if _, err := tx.Exec(`DELETE FROM lesson_progress WHERE user_id = ? AND lesson = ?`, u.user, lesson); err != nil {
 		return err
 	}
-	if _, err := tx.Exec(`DELETE FROM lesson_step_progress WHERE user_name = ? AND lesson = ?`, u.user, lesson); err != nil {
+	if _, err := tx.Exec(`DELETE FROM lesson_step_progress WHERE user_id = ? AND lesson = ?`, u.user, lesson); err != nil {
 		return err
 	}
 	return tx.Commit()
@@ -780,13 +844,13 @@ func (u *UserStore) ResetExercises() error {
 		return err
 	}
 	defer tx.Rollback()
-	if _, err := tx.Exec(`DELETE FROM attempts WHERE user_name = ?`, u.user); err != nil {
+	if _, err := tx.Exec(`DELETE FROM attempts WHERE user_id = ?`, u.user); err != nil {
 		return err
 	}
-	if _, err := tx.Exec(`DELETE FROM lesson_progress WHERE user_name = ?`, u.user); err != nil {
+	if _, err := tx.Exec(`DELETE FROM lesson_progress WHERE user_id = ?`, u.user); err != nil {
 		return err
 	}
-	if _, err := tx.Exec(`DELETE FROM lesson_step_progress WHERE user_name = ?`, u.user); err != nil {
+	if _, err := tx.Exec(`DELETE FROM lesson_step_progress WHERE user_id = ?`, u.user); err != nil {
 		return err
 	}
 	return tx.Commit()
@@ -794,7 +858,7 @@ func (u *UserStore) ResetExercises() error {
 
 // LessonStatuses returns lesson id -> status for every tracked lesson.
 func (u *UserStore) LessonStatuses() (map[string]string, error) {
-	rows, err := u.db.Query(`SELECT lesson, status FROM lesson_progress WHERE user_name = ?`, u.user)
+	rows, err := u.db.Query(`SELECT lesson, status FROM lesson_progress WHERE user_id = ?`, u.user)
 	if err != nil {
 		return nil, err
 	}
@@ -813,7 +877,7 @@ func (u *UserStore) LessonStatuses() (map[string]string, error) {
 // LessonStatus returns one lesson's status, or "" if untracked.
 func (u *UserStore) LessonStatus(lesson string) (string, error) {
 	var st string
-	err := u.db.QueryRow(`SELECT status FROM lesson_progress WHERE user_name = ? AND lesson = ?`, u.user, lesson).Scan(&st)
+	err := u.db.QueryRow(`SELECT status FROM lesson_progress WHERE user_id = ? AND lesson = ?`, u.user, lesson).Scan(&st)
 	if err == sql.ErrNoRows {
 		return "", nil
 	}
@@ -826,9 +890,9 @@ func (u *UserStore) ActivityByDay(since time.Time) ([]DayActivity, error) {
 	sinceISO := since.Format(time.RFC3339)
 	rows, err := u.db.Query(`
 SELECT d, SUM(n) FROM (
-	SELECT substr(reviewed_at,1,10) AS d, COUNT(*) AS n FROM reviews WHERE user_name = ? AND reviewed_at >= ? GROUP BY d
+	SELECT substr(reviewed_at,1,10) AS d, COUNT(*) AS n FROM reviews WHERE user_id = ? AND reviewed_at >= ? GROUP BY d
 	UNION ALL
-	SELECT substr(attempted_at,1,10) AS d, COUNT(*) AS n FROM attempts WHERE user_name = ? AND attempted_at >= ? GROUP BY d
+	SELECT substr(attempted_at,1,10) AS d, COUNT(*) AS n FROM attempts WHERE user_id = ? AND attempted_at >= ? GROUP BY d
 )
 GROUP BY d ORDER BY d ASC`, u.user, sinceISO, u.user, sinceISO)
 	if err != nil {
@@ -849,7 +913,7 @@ GROUP BY d ORDER BY d ASC`, u.user, sinceISO, u.user, sinceISO)
 // NewCount returns how many cards are still in the "new" state.
 func (u *UserStore) NewCount() (int, error) {
 	var n int
-	err := u.db.QueryRow(`SELECT COUNT(*) FROM srs_cards WHERE user_name = ? AND state = 'new'`, u.user).Scan(&n)
+	err := u.db.QueryRow(`SELECT COUNT(*) FROM srs_cards WHERE user_id = ? AND state = 'new'`, u.user).Scan(&n)
 	return n, err
 }
 
@@ -857,7 +921,7 @@ func (u *UserStore) NewCount() (int, error) {
 func (u *UserStore) DueCount(today time.Time) (int, error) {
 	var n int
 	err := u.db.QueryRow(`SELECT COUNT(*) FROM srs_cards
-		WHERE user_name = ? AND state IN ('learning','review') AND (due IS NULL OR due <= ?)`,
+		WHERE user_id = ? AND state IN ('learning','review') AND (due IS NULL OR due <= ?)`,
 		u.user, today.Format(dateFmt)).Scan(&n)
 	return n, err
 }
@@ -865,9 +929,9 @@ func (u *UserStore) DueCount(today time.Time) (int, error) {
 // CardStats returns the total number of cards and how many are "known"
 // (in review with an interval of at least a week).
 func (u *UserStore) CardStats() (total, known int, err error) {
-	if err = u.db.QueryRow(`SELECT COUNT(*) FROM srs_cards WHERE user_name = ?`, u.user).Scan(&total); err != nil {
+	if err = u.db.QueryRow(`SELECT COUNT(*) FROM srs_cards WHERE user_id = ?`, u.user).Scan(&total); err != nil {
 		return
 	}
-	err = u.db.QueryRow(`SELECT COUNT(*) FROM srs_cards WHERE user_name = ? AND state = 'review' AND interval_days >= 7`, u.user).Scan(&known)
+	err = u.db.QueryRow(`SELECT COUNT(*) FROM srs_cards WHERE user_id = ? AND state = 'review' AND interval_days >= 7`, u.user).Scan(&known)
 	return
 }

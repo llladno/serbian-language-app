@@ -2,6 +2,7 @@
 package api
 
 import (
+	"database/sql"
 	"encoding/json"
 	"errors"
 	"io"
@@ -98,16 +99,16 @@ func (h handlers) user(w http.ResponseWriter, r *http.Request) (*store.UserStore
 		fail(w, http.StatusUnauthorized, "no account")
 		return nil, false
 	}
-	exists, err := h.Store.UserExists(name)
+	row, err := h.Store.UserByName(name)
+	if errors.Is(err, sql.ErrNoRows) {
+		fail(w, http.StatusUnauthorized, "unknown account")
+		return nil, false
+	}
 	if err != nil {
 		fail(w, 500, err.Error())
 		return nil, false
 	}
-	if !exists {
-		fail(w, http.StatusUnauthorized, "unknown account")
-		return nil, false
-	}
-	return h.Store.User(name), true
+	return h.Store.User(row.ID), true
 }
 
 // ---- handlers ----
@@ -117,13 +118,14 @@ func (h handlers) health(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h handlers) listUsers(w http.ResponseWriter, r *http.Request) {
-	names, err := h.Store.ListUsers()
+	rows, err := h.Store.ListUsers()
 	if err != nil {
 		fail(w, 500, err.Error())
 		return
 	}
-	if names == nil {
-		names = []string{}
+	names := make([]string, 0, len(rows))
+	for _, u := range rows {
+		names = append(names, u.Name)
 	}
 	writeJSON(w, 200, map[string]any{"users": names})
 }
@@ -136,12 +138,12 @@ func (h handlers) createUser(w http.ResponseWriter, r *http.Request) {
 		fail(w, 400, "bad request body")
 		return
 	}
-	name, err := h.Store.EnsureUser(req.Name)
+	row, err := h.Store.EnsureUserByName(req.Name)
 	if err != nil {
 		fail(w, 400, err.Error())
 		return
 	}
-	writeJSON(w, 200, map[string]string{"name": name})
+	writeJSON(w, 200, map[string]string{"name": row.Name})
 }
 
 func (h handlers) getCourse(w http.ResponseWriter, r *http.Request) {

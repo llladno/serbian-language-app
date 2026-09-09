@@ -42,10 +42,41 @@ func newStore(t *testing.T) *Store {
 func newUser(t *testing.T) (*Store, *UserStore) {
 	t.Helper()
 	s := newStore(t)
-	if _, err := s.EnsureUser("Гриша"); err != nil {
+	id, err := s.CreateUser("Гриша")
+	if err != nil {
 		t.Fatal(err)
 	}
-	return s, s.User("Гриша")
+	return s, s.User(id)
+}
+
+func TestAccountLifecycle(t *testing.T) {
+	s := newStore(t)
+	id, err := s.CreateUser("  Гриша  ")
+	if err != nil || id[:4] != "usr_" {
+		t.Fatalf("create: %v %q", err, id)
+	}
+	row, err := s.UserByID(id)
+	if err != nil || row.Name != "Гриша" {
+		t.Fatalf("byID: %v %+v", err, row)
+	}
+	if err := s.RenameUser(id, "Гриша Н."); err != nil {
+		t.Fatal(err)
+	}
+	u := s.User(id)
+	if err := u.SetLessonStatus("01", "done", day0); err != nil {
+		t.Fatal(err)
+	}
+	if err := s.DeleteUser(id); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := s.UserByID(id); err == nil {
+		t.Fatalf("user still present")
+	}
+	var n int
+	s.db.QueryRow(`SELECT COUNT(*) FROM lesson_progress WHERE user_id = ?`, id).Scan(&n)
+	if n != 0 {
+		t.Fatalf("state left after delete: %d", n)
+	}
 }
 
 func TestEnsureCardsIdempotent(t *testing.T) {
@@ -68,8 +99,11 @@ func TestEnsureCardsIdempotent(t *testing.T) {
 
 func TestAccountsAreIsolated(t *testing.T) {
 	s, a := newUser(t)
-	s.EnsureUser("Оля")
-	b := s.User("Оля")
+	olyaID, err := s.CreateUser("Оля")
+	if err != nil {
+		t.Fatal(err)
+	}
+	b := s.User(olyaID)
 
 	a.EnsureCards([]CardSeed{{"vocab:x", "vocab", "x"}, {"vocab:y", "vocab", "y"}})
 	b.EnsureCards([]CardSeed{{"vocab:x", "vocab", "x"}})
@@ -96,24 +130,46 @@ func TestAccountsAreIsolated(t *testing.T) {
 
 func TestListUsers(t *testing.T) {
 	s, _ := newUser(t)
-	s.EnsureUser("Оля")
-	names, err := s.ListUsers()
+	if _, err := s.CreateUser("Оля"); err != nil {
+		t.Fatal(err)
+	}
+	users, err := s.ListUsers()
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(names) != 2 || names[0] != "Гриша" || names[1] != "Оля" {
-		t.Errorf("users = %v", names)
+	if len(users) != 2 || users[0].Name != "Гриша" || users[1].Name != "Оля" {
+		t.Errorf("users = %+v", users)
 	}
 }
 
-func TestEnsureUserNormalizesAndValidates(t *testing.T) {
-	s, _ := newUser(t)
-	n, err := s.EnsureUser("  Марко   Краљевић  ")
-	if err != nil || n != "Марко Краљевић" {
-		t.Errorf("normalize: %q %v", n, err)
+func TestCreateUserNormalizesAndValidates(t *testing.T) {
+	s := newStore(t)
+	id, err := s.CreateUser("  Марко   Краљевић  ")
+	if err != nil {
+		t.Fatalf("create: %v", err)
 	}
-	if _, err := s.EnsureUser("   "); err == nil {
+	row, err := s.UserByID(id)
+	if err != nil || row.Name != "Марко Краљевић" {
+		t.Errorf("normalize: %+v %v", row, err)
+	}
+	if _, err := s.CreateUser("   "); err == nil {
 		t.Error("empty name should fail")
+	}
+	long := ""
+	for i := 0; i < 41; i++ {
+		long += "я"
+	}
+	if _, err := s.CreateUser(long); err == nil {
+		t.Error("over-long name should fail")
+	}
+	// EnsureUserByName is idempotent on the display name.
+	a, err := s.EnsureUserByName("Марко Краљевић")
+	if err != nil || a.ID != id {
+		t.Errorf("EnsureUserByName returned %+v (%v), want id %q", a, err, id)
+	}
+	b, err := s.EnsureUserByName("Ана")
+	if err != nil || b.ID == "" {
+		t.Fatalf("EnsureUserByName create: %+v %v", b, err)
 	}
 }
 
@@ -299,7 +355,7 @@ func TestStreakDays(t *testing.T) {
 	_, u := newUser(t)
 	u.EnsureCards([]CardSeed{{"vocab:x", "vocab", "x"}})
 	u.GradeCard("vocab:x", srs.Good, day0)
-	if _, err := u.db.Exec(`INSERT INTO reviews (user_name, card_id, grade, reviewed_at) VALUES ('Гриша', 'vocab:x', 2, '2026-09-05T09:00:00Z')`); err != nil {
+	if _, err := u.db.Exec(`INSERT INTO reviews (user_id, card_id, grade, reviewed_at) VALUES (?, 'vocab:x', 2, '2026-09-05T09:00:00Z')`, u.user); err != nil {
 		t.Fatal(err)
 	}
 	streak, err := u.StreakDays(day0)
@@ -337,11 +393,11 @@ func TestMigrationV1toV2(t *testing.T) {
 	}
 	defer s.Close()
 
-	names, _ := s.ListUsers()
-	if len(names) != 1 || names[0] != legacyOwner {
-		t.Fatalf("users after migrate = %v", names)
+	users, _ := s.ListUsers()
+	if len(users) != 1 || users[0].Name != legacyOwner {
+		t.Fatalf("users after migrate = %+v", users)
 	}
-	u := s.User(legacyOwner)
+	u := s.User(users[0].ID)
 	total, _, _ := u.CardStats()
 	if total != 1 {
 		t.Errorf("migrated cards = %d, want 1", total)
@@ -365,9 +421,14 @@ func TestImportSQLite(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	src.EnsureUser("Гриша")
-	src.EnsureUser("Оля")
-	u := src.User("Гриша")
+	grishaID, err := src.CreateUser("Гриша")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := src.CreateUser("Оля"); err != nil {
+		t.Fatal(err)
+	}
+	u := src.User(grishaID)
 	u.EnsureCards([]CardSeed{{"vocab:x", "vocab", "x"}, {"vocab:y", "vocab", "y"}})
 	u.GradeCard("vocab:x", srs.Good, day0)
 	u.AddAttempt(Attempt{"01-A-1", "01", "A", "z", true}, day0)
@@ -382,11 +443,15 @@ func TestImportSQLite(t *testing.T) {
 	if n < 6 {
 		t.Errorf("imported %d rows, want >= 6", n)
 	}
-	names, _ := dst.ListUsers()
-	if len(names) != 2 {
-		t.Fatalf("users after import = %v", names)
+	users, _ := dst.ListUsers()
+	if len(users) != 2 {
+		t.Fatalf("users after import = %+v", users)
 	}
-	du := dst.User("Гриша")
+	grishaRow, err := dst.UserByName("Гриша")
+	if err != nil {
+		t.Fatalf("Гриша after import: %v", err)
+	}
+	du := dst.User(grishaRow.ID)
 	total, _, _ := du.CardStats()
 	if total != 2 {
 		t.Errorf("cards = %d, want 2", total)

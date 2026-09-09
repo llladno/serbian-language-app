@@ -26,7 +26,7 @@ func newTestAPI(t *testing.T) (http.Handler, *store.Store) {
 		t.Fatal(err)
 	}
 	t.Cleanup(func() { st.Close() })
-	if _, err := st.EnsureUser("tester"); err != nil {
+	if _, err := st.EnsureUserByName("tester"); err != nil {
 		t.Fatal(err)
 	}
 	h := Handler(Deps{
@@ -112,7 +112,8 @@ func TestCheckRecordsAttemptAndReturnsResult(t *testing.T) {
 	if !res.OK {
 		t.Errorf("expected ok, got %+v", res)
 	}
-	if s, _ := st.User("tester").LessonStatus("01"); s != "in_progress" {
+	tester, _ := st.UserByName("tester")
+	if s, _ := st.User(tester.ID).LessonStatus("01"); s != "in_progress" {
 		t.Errorf("lesson status = %q, want in_progress", s)
 	}
 }
@@ -149,7 +150,7 @@ func TestUsersEndpoints(t *testing.T) {
 
 func TestAccountsAreIsolatedOverAPI(t *testing.T) {
 	h, st := newTestAPI(t)
-	st.EnsureUser("Оля")
+	_, _ = st.EnsureUserByName("Оля")
 	doAs(h, "tester", "POST", "/api/lessons/01/complete", "")
 
 	a := decodeBody[progressDTO](t, doAs(h, "tester", "GET", "/api/progress", ""))
@@ -280,7 +281,7 @@ func TestResetExercisesKeepsSRS(t *testing.T) {
 
 func TestLeaderboard(t *testing.T) {
 	h, st := newTestAPI(t)
-	st.EnsureUser("Оля")
+	_, _ = st.EnsureUserByName("Оля")
 	do(h, "POST", "/api/lessons/01/complete", "")                                      // tester: 1 lesson
 	doAs(h, "Оля", "POST", "/api/lessons/01/exercises/01-A-1/check", `{"answer":"x"}`) // Оля: activity, 0 lessons
 

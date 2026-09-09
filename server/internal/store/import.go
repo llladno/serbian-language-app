@@ -9,8 +9,9 @@ import (
 // (intended: a fresh Postgres store). It is a no-op — returning 0, nil —
 // when dst already has accounts, so it is safe to wire on every boot.
 //
-// A v1 (accountless) SQLite file is migrated to v2 in place first, so its
-// rows land under the legacy account.
+// Opening the source runs its migrations to head first, so a legacy
+// (accountless or name-keyed) file is re-keyed to users(id) / user_id before
+// its rows are read; the generated ids are carried over verbatim.
 func ImportSQLite(dst *Store, sqlitePath string) (int, error) {
 	var existing int
 	if err := dst.db.QueryRow(`SELECT COUNT(*) FROM users`).Scan(&existing); err != nil {
@@ -38,18 +39,18 @@ func ImportSQLite(dst *Store, sqlitePath string) (int, error) {
 		cols  int
 	}
 	tables := []table{
-		{`SELECT name, created_at FROM users`,
-			`INSERT INTO users (name, created_at) VALUES (?, ?)`, 2},
-		{`SELECT user_name, card_id, kind, ref_id, ease, interval_days, reps, lapses, state, due, updated_at FROM srs_cards`,
-			`INSERT INTO srs_cards (user_name, card_id, kind, ref_id, ease, interval_days, reps, lapses, state, due, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, 11},
-		{`SELECT user_name, card_id, grade, reviewed_at FROM reviews`,
-			`INSERT INTO reviews (user_name, card_id, grade, reviewed_at) VALUES (?, ?, ?, ?)`, 4},
-		{`SELECT user_name, exercise_id, lesson, block, answer, correct, attempted_at FROM attempts`,
-			`INSERT INTO attempts (user_name, exercise_id, lesson, block, answer, correct, attempted_at) VALUES (?, ?, ?, ?, ?, ?, ?)`, 7},
-		{`SELECT user_name, lesson, status, started_at, completed_at FROM lesson_progress`,
-			`INSERT INTO lesson_progress (user_name, lesson, status, started_at, completed_at) VALUES (?, ?, ?, ?, ?)`, 5},
-		{`SELECT user_name, lesson, step, status, completed_at FROM lesson_step_progress`,
-			`INSERT INTO lesson_step_progress (user_name, lesson, step, status, completed_at) VALUES (?, ?, ?, ?, ?)`, 5},
+		{`SELECT id, name, created_at FROM users`,
+			`INSERT INTO users (id, name, created_at) VALUES (?, ?, ?)`, 3},
+		{`SELECT user_id, card_id, kind, ref_id, ease, interval_days, reps, lapses, state, due, updated_at FROM srs_cards`,
+			`INSERT INTO srs_cards (user_id, card_id, kind, ref_id, ease, interval_days, reps, lapses, state, due, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, 11},
+		{`SELECT user_id, card_id, grade, reviewed_at FROM reviews`,
+			`INSERT INTO reviews (user_id, card_id, grade, reviewed_at) VALUES (?, ?, ?, ?)`, 4},
+		{`SELECT user_id, exercise_id, lesson, block, answer, correct, attempted_at FROM attempts`,
+			`INSERT INTO attempts (user_id, exercise_id, lesson, block, answer, correct, attempted_at) VALUES (?, ?, ?, ?, ?, ?, ?)`, 7},
+		{`SELECT user_id, lesson, status, started_at, completed_at FROM lesson_progress`,
+			`INSERT INTO lesson_progress (user_id, lesson, status, started_at, completed_at) VALUES (?, ?, ?, ?, ?)`, 5},
+		{`SELECT user_id, lesson, step, status, completed_at FROM lesson_step_progress`,
+			`INSERT INTO lesson_step_progress (user_id, lesson, step, status, completed_at) VALUES (?, ?, ?, ?, ?)`, 5},
 	}
 
 	total := 0
