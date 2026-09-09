@@ -20,7 +20,18 @@ export interface Course {
   lessons: LessonRef[]
 }
 
-export type StepKind = 'teach' | 'practice' | 'reading' | 'checkpoint'
+export type StepKind = 'teach' | 'practice' | 'reading' | 'checkpoint' | 'dialogue'
+
+// Turn is one line of a dialogue step. For a "me" turn the server sends sr/ru
+// only once the exercise has an attempt — before that the line would spoil the
+// answer.
+export interface Turn {
+  who: 'npc' | 'me'
+  sr?: string
+  ru?: string
+  audio?: string
+  exercise_id?: string
+}
 
 export interface Step {
   id: string
@@ -30,6 +41,9 @@ export interface Step {
   markdown_ru?: string
   exercise_ids?: string[]
   status: LessonStatus
+  scene?: string
+  voice?: 'f' | 'm'
+  turns?: Turn[]
 }
 
 export interface Lesson {
@@ -101,6 +115,9 @@ export interface CheckResult {
   forms?: FormResult[]
   match?: Record<string, boolean>
   near_miss?: boolean
+  line?: string
+  line_ru?: string
+  line_audio?: string
 }
 
 export interface CheckPayload {
