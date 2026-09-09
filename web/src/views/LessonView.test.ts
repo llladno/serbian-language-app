@@ -66,3 +66,51 @@ describe('LessonView step player', () => {
     expect(w.findComponent({ name: 'ExerciseBlock' }).exists()).toBe(true)
   })
 })
+
+describe('LessonView dialogue step', () => {
+  const dialogueLesson: Lesson = {
+    ...lesson,
+    steps: [
+      {
+        id: '01.d',
+        kind: 'dialogue',
+        title: 'У пекари',
+        scene: 'Ты зашёл в пекару.',
+        exercise_ids: ['01.d.1'],
+        status: 'not_started',
+        turns: [
+          { who: 'npc', sr: 'Izvolite?', ru: 'Слушаю вас?' },
+          { who: 'me', exercise_id: '01.d.1' },
+        ],
+      },
+    ],
+  }
+  const dialogueBlocks: ExerciseBlock[] = [
+    {
+      id: '01.d',
+      title: 'У пекари',
+      exercises: [
+        { id: '01.d.1', type: 'choice', prompt: 'Попроси хлеб', options: ['Jedan hleb, molim.', 'Hvala.'] },
+      ],
+    },
+  ]
+
+  it('renders the chat and gates advancing until the turn is answered', async () => {
+    vi.spyOn(api, 'lesson').mockResolvedValue(structuredClone(dialogueLesson))
+    vi.spyOn(api, 'exercises').mockResolvedValue(structuredClone(dialogueBlocks))
+    vi.spyOn(api, 'lessonAttempts').mockResolvedValue({})
+    vi.spyOn(api, 'check').mockResolvedValue({ ok: true, line: 'Jedan hleb, molim.', line_ru: 'Один хлеб, пожалуйста.' })
+
+    const w = mount(LessonView)
+    await flushPromises()
+
+    expect(w.text()).toContain('Ты зашёл в пекару.')
+    expect(w.text()).toContain('Izvolite?')
+    expect(w.find('button.btn-primary').attributes('disabled')).toBeDefined()
+
+    await w.findAll('button').find((b) => b.text() === 'Jedan hleb, molim.')!.trigger('click')
+    await flushPromises()
+
+    expect(w.find('button.btn-primary').attributes('disabled')).toBeUndefined()
+  })
+})

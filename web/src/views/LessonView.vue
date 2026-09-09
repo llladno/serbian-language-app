@@ -6,6 +6,7 @@ import { useCourseStore } from '../stores/course'
 import type { Lesson, ExerciseBlock, LessonAttempts, Step } from '../types'
 import MarkdownView from '../components/MarkdownView.vue'
 import ReadingText from '../components/ReadingText.vue'
+import DialogueStep from '../components/DialogueStep.vue'
 import StepProgress from '../components/StepProgress.vue'
 import ExerciseBlockView from '../components/exercises/ExerciseBlock.vue'
 import Confetti from '../components/Confetti.vue'
@@ -209,6 +210,15 @@ async function resetLesson() {
               <ExerciseBlockView :lesson="lesson.id" :block="curBlock" :priors="priors" @graded="onGraded" />
             </div>
           </template>
+
+          <DialogueStep
+            v-else-if="cur.kind === 'dialogue'"
+            :lesson="lesson.id"
+            :step="cur"
+            :exercises="curBlock?.exercises ?? []"
+            :priors="priors"
+            @graded="onGraded"
+          />
 
           <div v-else-if="curBlock" class="space-y-4">
             <p v-if="cur.markdown" class="rounded-xl bg-[var(--bg-soft)] px-4 py-2.5 text-sm text-[var(--muted)]">
