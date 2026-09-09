@@ -7,7 +7,7 @@ teaches:
     spavaca-soba, dnevni-boravak, hodnik, terasa, balkon, sto-meb, stolica,
     krevet, orman, frizider, sporet, sudopera, lampa, polica, tepih,
     ogledalo, slika, vrata, prozor, kljuc, zid, pod, stanovati, mali,
-    veliki, nov, star,
+    veliki, nov, star, kirija,
   ]
 
 steps:
@@ -246,3 +246,92 @@ steps:
         type: free
         prompt: "Опиши свою квартиру: 4 фразы (сколько комнат, что на кухне, где спишь, есть ли балкон)."
         sample: "Živim u malom stanu. Kuhinja ima šporet i frižider. Spavam u sobi. Nemam balkon, ali imam terasu."
+
+  - id: "08.14"
+    kind: dialogue
+    title: "Гледамо стан"
+    scene: "Ты пришёл смотреть квартиру. Хозяйка открывает дверь и показывает комнаты."
+    voice: f
+    also_ok: ["soba", "sobe", "gledamo", "uzimam"]
+    turns:
+      - who: npc
+        sr: "Izvolite, ovo je stan."
+        ru: "Проходите, вот квартира."
+
+      - who: me
+        sr: "Hvala. Koliko soba ima?"
+        ru: "Спасибо. Сколько комнат?"
+        exercise:
+          id: "08.14.1"
+          type: choice
+          prompt: "Спроси, сколько здесь комнат"
+          options:
+            - "Hvala. Koliko soba ima?"
+            - "Hvala. Gde je soba?"
+            - "Hvala. Koliko košta soba?"
+          answer: "Hvala. Koliko soba ima?"
+
+      - who: npc
+        sr: "Dve sobe, kuhinja i kupatilo."
+        ru: "Две комнаты, кухня и ванная."
+
+      - who: me
+        sr: "A gde je kupatilo?"
+        ru: "А где ванная?"
+        exercise:
+          id: "08.14.2"
+          type: fill_blank
+          prompt: "A ___ je kupatilo?"
+          accept: ["gde"]
+
+      - who: npc
+        sr: "Kupatilo je tamo, a kuhinja ovde."
+        ru: "Ванная там, а кухня здесь."
+
+      - who: me
+        sr: "Ima li balkon?"
+        ru: "Балкон есть?"
+        exercise:
+          id: "08.14.3"
+          type: choice
+          prompt: "Спроси, есть ли балкон"
+          options:
+            - "Ima li balkon?"
+            - "Ima li lift?"
+            - "Ima li ključ?"
+          answer: "Ima li balkon?"
+
+      - who: npc
+        sr: "Da, veliki balkon. I lift u zgradi."
+        ru: "Да, большой балкон. И лифт в доме."
+
+      - who: me
+        sr: "Koliko je kirija?"
+        ru: "Сколько стоит аренда?"
+        exercise:
+          id: "08.14.4"
+          type: translate
+          prompt: "Спроси, сколько стоит аренда"
+          accept: ["Koliko je kirija?", "Kolika je kirija?", "Koliko košta kirija?"]
+          explain: "«kirija» — плата за жильё; «Koliko je kirija?» слышишь на каждом просмотре."
+
+      - who: npc
+        sr: "Trideset hiljada dinara."
+        ru: "Тридцать тысяч динаров."
+
+      - who: me
+        sr: "Dobro, stan je dobar. Uzimam."
+        ru: "Хорошо, квартира хорошая. Беру."
+        exercise:
+          id: "08.14.5"
+          type: choice
+          prompt: "Скажи, что квартира хорошая и ты её берёшь"
+          options:
+            - "Dobro, stan je dobar. Uzimam."
+            - "Dobro, stan je mali. Uzimam."
+            - "Dobro, stan je star. Ne uzimam."
+          answer: "Dobro, stan je dobar. Uzimam."
+
+      - who: npc
+        sr: "Dobro! Evo ključ."
+        ru: "Хорошо! Вот ключ."

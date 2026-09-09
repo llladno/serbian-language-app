@@ -216,3 +216,110 @@ steps:
         type: free
         prompt: "В магазине: попроси полкило сыра и хлеб, спроси, сколько с тебя — 3 фразы."
         sample: "Treba mi pola kile sira i hleb. To je sve. Koliko dugujem?"
+
+  - id: "06.8"
+    kind: dialogue
+    title: "Први дан"
+    scene: "Ты только приехал и снял квартиру. Хозяин, Марко, встречает тебя у подъезда, чтобы отдать ключи."
+    voice: m
+    turns:
+      - who: npc
+        sr: "Dobar dan! Vi ste iz Rusije?"
+        ru: "Добрый день! Вы из России?"
+
+      - who: me
+        sr: "Dobar dan. Da, ja sam iz Rusije."
+        ru: "Добрый день. Да, я из России."
+        exercise:
+          id: "06.8.1"
+          type: choice
+          prompt: "Поздоровайся и подтверди, что ты из России"
+          options:
+            - "Dobar dan. Da, ja sam iz Rusije."
+            - "Dobro veče. Da, ja sam iz Rusije."
+            - "Dobar dan. Ne, ja sam iz Rusije."
+          answer: "Dobar dan. Da, ja sam iz Rusije."
+
+      - who: npc
+        sr: "Drago mi je. Ja sam Marko."
+        ru: "Приятно познакомиться. Я Марко."
+
+      - who: me
+        sr: "Drago mi je takođe."
+        ru: "Мне тоже приятно."
+        exercise:
+          id: "06.8.2"
+          type: choice
+          prompt: "Ответь вежливо"
+          options:
+            - "Drago mi je takođe."
+            - "Nema na čemu."
+            - "Ne žalim se."
+          answer: "Drago mi je takođe."
+
+      - who: npc
+        sr: "Evo, ovo je za vas."
+        ru: "Вот, это вам."
+
+      - who: me
+        sr: "Hvala. Koliko dugujem?"
+        ru: "Спасибо. Сколько с меня?"
+        exercise:
+          id: "06.8.3"
+          type: translate
+          prompt: "Поблагодари и спроси, сколько с тебя"
+          accept: ["Hvala. Koliko dugujem?", "Hvala, koliko dugujem?", "Koliko dugujem?"]
+          explain: "«Koliko dugujem?» — «сколько я должен»: так спрашивают и в кафе, и при оплате жилья."
+
+      - who: npc
+        sr: "Trideset hiljada dinara."
+        ru: "Тридцать тысяч динаров."
+
+      - who: me
+        sr: "Može karticom?"
+        ru: "Можно картой?"
+        exercise:
+          id: "06.8.4"
+          type: choice
+          prompt: "Спроси, можно ли картой"
+          options:
+            - "Može karticom?"
+            - "Može kešom?"
+            - "Koliko je sati?"
+          answer: "Može karticom?"
+
+      - who: npc
+        sr: "Ne, samo keš."
+        ru: "Нет, только наличные."
+
+      - who: me
+        sr: "Dobro. Izvolite."
+        ru: "Хорошо. Вот, пожалуйста."
+        exercise:
+          id: "06.8.5"
+          type: choice
+          prompt: "Согласись и протяни деньги"
+          options:
+            - "Dobro. Izvolite."
+            - "Dobro. Molim?"
+            - "Dobro. Doviđenja."
+          answer: "Dobro. Izvolite."
+          explain: "«Izvolite» работает в обе стороны: и «вот, пожалуйста», и «слушаю вас»."
+
+      - who: npc
+        sr: "Hvala. Vidimo se sutra u pet?"
+        ru: "Спасибо. Увидимся завтра в пять?"
+
+      - who: me
+        sr: "Da, sutra u pet. Doviđenja!"
+        ru: "Да, завтра в пять. До свидания!"
+        exercise:
+          id: "06.8.6"
+          type: fill_blank
+          prompt: "Da, sutra ___ pet. Doviđenja!"
+          accept: ["u"]
+          explain: "Время — с предлогом «u»: u pet, u osam, u podne."
+
+      - who: npc
+        sr: "Prijatno!"
+        ru: "Всего доброго!"

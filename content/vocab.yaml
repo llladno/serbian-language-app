@@ -3438,3 +3438,14 @@
   pos: "adv"
   tags: ["survival"]
 
+- id: "kirija"
+  emoji: "🔑"
+  latin: "kirija"
+  cyrillic: "кирија"
+  ru: "аренда, плата за жильё"
+  note: "«Koliko je kirija?» — сколько стоит аренда"
+  lesson: "08"
+  pos: "noun"
+  gender: "f"
+  tags: ["home"]
+
