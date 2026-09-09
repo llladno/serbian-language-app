@@ -4,7 +4,7 @@ subtitle: "jesam, откуда я, языки, профессии"
 teaches:
   [
     biti, govoriti, ruski, srpski, engleski, zemlja, programer, student,
-    lekar, konobar, nastavnik,
+    lekar, konobar, nastavnik, ne-razumem, ponovite, polako,
   ]
 
 steps:
@@ -176,3 +176,94 @@ steps:
         type: free
         prompt: "Расскажи о себе: имя, откуда ты, где живёшь, кем работаешь (3–4 фразы)."
         sample: "Ja sam {name_latin}. Iz Rusije sam, živim u Novom Sadu. Radim kao programer."
+
+  - id: "02.10"
+    kind: dialogue
+    title: "Сосед у входа"
+    scene: "Ты выходишь из подъезда, сосед придерживает дверь и заговаривает."
+    voice: m
+    also_ok: ["učim", "znam"]
+    turns:
+      - who: npc
+        sr: "Dobar dan! Vi ste novi ovde?"
+        ru: "Добрый день! Вы здесь новенький?"
+
+      - who: me
+        sr: "Dobar dan. Da, ja sam iz Rusije."
+        ru: "Добрый день. Да, я из России."
+        exercise:
+          id: "02.10.1"
+          type: choice
+          prompt: "Поздоровайся и скажи, что ты из России"
+          options:
+            - "Dobar dan. Da, ja sam iz Rusije."
+            - "Dobar dan. Ne, ja sam iz Rusije."
+            - "Laku noć. Da, ja sam iz Rusije."
+          answer: "Dobar dan. Da, ja sam iz Rusije."
+
+      - who: npc
+        sr: "Drago mi je. Ja sam Marko."
+        ru: "Приятно познакомиться. Я Марко."
+
+      - who: me
+        sr: "Drago mi je takođe."
+        ru: "Мне тоже приятно."
+        exercise:
+          id: "02.10.2"
+          type: choice
+          prompt: "Ответь, что тебе тоже приятно"
+          options:
+            - "Drago mi je takođe."
+            - "Nema na čemu."
+            - "Vidimo se."
+          answer: "Drago mi je takođe."
+          explain: "«takođe» — «тоже, взаимно»: короткий вежливый ответ на «drago mi je»."
+
+      - who: npc
+        sr: "Govorite li srpski?"
+        ru: "Вы говорите по-сербски?"
+
+      - who: me
+        sr: "Malo. Učim srpski."
+        ru: "Немного. Учу сербский."
+        exercise:
+          id: "02.10.3"
+          type: fill_blank
+          prompt: "Malo. ___ srpski."
+          accept: ["Učim"]
+          explain: "učiti → ja učim. «Учу сербский» — про процесс, поэтому настоящее время."
+
+      - who: npc
+        sr: "Dobro! Ja radim kao nastavnik, danas sam umoran, ali sutra ne radim, pa mogu…"
+        ru: "Хорошо! Я работаю учителем, сегодня устал, но завтра не работаю, так что могу…"
+
+      - who: me
+        sr: "Izvinite, ne razumem. Polako, molim."
+        ru: "Извините, не понимаю. Помедленнее, пожалуйста."
+        exercise:
+          id: "02.10.4"
+          type: choice
+          prompt: "Он говорит слишком быстро. Попроси помедленнее"
+          options:
+            - "Izvinite, ne razumem. Polako, molim."
+            - "Izvinite, ne znam. Hvala, molim."
+            - "Dobro, razumem. Polako, molim."
+          answer: "Izvinite, ne razumem. Polako, molim."
+          explain: "Эти две фразы — «ne razumem» и «polako» — выручат чаще любых других."
+
+      - who: npc
+        sr: "Dobro, izvinite. Polako: ja sam nastavnik."
+        ru: "Хорошо, извините. Медленно: я учитель."
+
+      - who: me
+        sr: "Sada razumem. Hvala!"
+        ru: "Теперь понимаю. Спасибо!"
+        exercise:
+          id: "02.10.5"
+          type: translate
+          prompt: "Скажи: «теперь понимаю, спасибо»"
+          accept: ["Sada razumem. Hvala!", "Sad razumem. Hvala!", "Sada razumem, hvala!", "Sad razumem, hvala"]
+
+      - who: npc
+        sr: "Nema na čemu. Vidimo se!"
+        ru: "Не за что. Увидимся!"

@@ -306,3 +306,72 @@ steps:
         type: free
         prompt: "Останови прохожего и спроси дорогу до рынка, уточни, далеко ли — 3–4 фразы."
         sample: "Izvinite, kako da dođem do pijace? Da li je daleko? Hvala vam puno!"
+
+  - id: "10.18"
+    kind: dialogue
+    title: "Где је станица"
+    scene: "Ты вышел не на той остановке и ищешь автобусную станцию. Спрашиваешь прохожую."
+    voice: f
+    also_ok: ["autobuska", "semafora", "pošte", "idite"]
+    turns:
+      - who: me
+        sr: "Izvinite, gde je autobuska stanica?"
+        ru: "Извините, где автобусная станция?"
+        exercise:
+          id: "10.18.1"
+          type: choice
+          prompt: "Вежливо спроси, где автобусная станция"
+          options:
+            - "Izvinite, gde je autobuska stanica?"
+            - "Izvinite, kada je autobuska stanica?"
+            - "Izvinite, kako je autobuska stanica?"
+          answer: "Izvinite, gde je autobuska stanica?"
+          explain: "«gde» — про место. «kada» — про время, «kako» — про способ."
+
+      - who: npc
+        sr: "Idite pravo do semafora, pa levo."
+        ru: "Идите прямо до светофора, потом налево."
+
+      - who: me
+        sr: "Pravo, pa levo?"
+        ru: "Прямо, потом налево?"
+        exercise:
+          id: "10.18.2"
+          type: fill_blank
+          prompt: "Pravo, pa ___?"
+          accept: ["levo"]
+          explain: "Повторить услышанное — лучший способ проверить, что понял правильно."
+
+      - who: npc
+        sr: "Da. Ulica desno, kod pošte."
+        ru: "Да. Улица направо, у почты."
+
+      - who: me
+        sr: "Je li daleko?"
+        ru: "Это далеко?"
+        exercise:
+          id: "10.18.3"
+          type: choice
+          prompt: "Спроси, далеко ли это"
+          options:
+            - "Je li daleko?"
+            - "Je li blizu pošta?"
+            - "Je li levo?"
+          answer: "Je li daleko?"
+
+      - who: npc
+        sr: "Ne, blizu je."
+        ru: "Нет, близко."
+
+      - who: me
+        sr: "Hvala! Doviđenja!"
+        ru: "Спасибо! До свидания!"
+        exercise:
+          id: "10.18.4"
+          type: translate
+          prompt: "Поблагодари и попрощайся"
+          accept: ["Hvala! Doviđenja!", "Hvala, doviđenja!", "Hvala. Doviđenja."]
+
+      - who: npc
+        sr: "Nema na čemu. Prijatno!"
+        ru: "Не за что. Всего доброго!"

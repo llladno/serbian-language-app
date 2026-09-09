@@ -3408,3 +3408,33 @@
   pos: "noun"
   gender: "n"
   tags: ["nature"]
+
+- id: "ne-razumem"
+  emoji: "🤷"
+  latin: "ne razumem"
+  cyrillic: "не разумем"
+  ru: "не понимаю"
+  note: "первая фраза, которая понадобится в реальном разговоре"
+  lesson: "02"
+  pos: "phrase"
+  tags: ["survival"]
+
+- id: "ponovite"
+  emoji: "🔁"
+  latin: "ponovite, molim"
+  cyrillic: "поновите, молим"
+  ru: "повторите, пожалуйста"
+  lesson: "02"
+  pos: "phrase"
+  tags: ["survival"]
+
+- id: "polako"
+  emoji: "🐢"
+  latin: "polako"
+  cyrillic: "полако"
+  ru: "медленно, потихоньку"
+  note: "и «помедленнее», и «не спеши» — очень сербское слово"
+  lesson: "02"
+  pos: "adv"
+  tags: ["survival"]
+

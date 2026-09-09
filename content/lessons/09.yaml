@@ -278,3 +278,93 @@ steps:
         type: free
         prompt: "Закажи завтрак в кафе и попроси счёт: 4 фразы (поздоровайся, закажи кофе и что-то поесть, спроси счёт, скажи как платишь)."
         sample: "Dobar dan! Jednu kafu i palačinke, molim. Možemo li da platimo? Karticom, može?"
+
+  - id: "09.16"
+    kind: dialogue
+    title: "У кафићу"
+    scene: "Ты сел за столик в кафиче. Подходит официант."
+    voice: m
+    also_ok: ["poručujete", "kafu"]
+    turns:
+      - who: npc
+        sr: "Dobar dan, izvolite. Jelovnik?"
+        ru: "Добрый день, пожалуйста. Меню?"
+
+      - who: me
+        sr: "Dobar dan. Da, hvala."
+        ru: "Добрый день. Да, спасибо."
+        exercise:
+          id: "09.16.1"
+          type: choice
+          prompt: "Поздоровайся и согласись взять меню"
+          options:
+            - "Dobar dan. Da, hvala."
+            - "Dobar dan. Ne, hvala."
+            - "Laku noć. Da, hvala."
+          answer: "Dobar dan. Da, hvala."
+
+      - who: npc
+        sr: "Izvolite, poručujete?"
+        ru: "Пожалуйста, заказываете?"
+
+      - who: me
+        sr: "Za mene supa i salata."
+        ru: "Мне суп и салат."
+        exercise:
+          id: "09.16.2"
+          type: choice
+          prompt: "Закажи суп и салат"
+          options:
+            - "Za mene supa i salata."
+            - "Za mene meso i pivo."
+            - "Za mene sladoled i kolač."
+          answer: "Za mene supa i salata."
+          explain: "«za mene» — «мне, для меня»: обычный способ заказать в кафиче."
+
+      - who: npc
+        sr: "Dobro. Pijete nešto?"
+        ru: "Хорошо. Будете что-нибудь пить?"
+
+      - who: me
+        sr: "Jedan sok, molim."
+        ru: "Один сок, пожалуйста."
+        exercise:
+          id: "09.16.3"
+          type: fill_blank
+          prompt: "Jedan ___, molim."
+          accept: ["sok"]
+
+      - who: npc
+        sr: "Dobro, hvala."
+        ru: "Хорошо, спасибо."
+
+      - who: npc
+        sr: "Izvolite. Je li ukusno?"
+        ru: "Пожалуйста. Вкусно?"
+
+      - who: me
+        sr: "Da, ukusno je. Hvala."
+        ru: "Да, вкусно. Спасибо."
+        exercise:
+          id: "09.16.4"
+          type: choice
+          prompt: "Скажи, что вкусно"
+          options:
+            - "Da, ukusno je. Hvala."
+            - "Da, ljuto je. Hvala."
+            - "Ne, slano je. Hvala."
+          answer: "Da, ukusno je. Hvala."
+
+      - who: me
+        sr: "Molim vas, račun."
+        ru: "Счёт, пожалуйста."
+        exercise:
+          id: "09.16.5"
+          type: translate
+          prompt: "Попроси счёт"
+          accept: ["Molim vas, račun.", "Račun, molim.", "Molim vas račun", "Račun, molim vas."]
+          explain: "«Račun, molim» — короче и звучит так же вежливо."
+
+      - who: npc
+        sr: "Evo računa. Prijatno!"
+        ru: "Вот счёт. Всего доброго!"
