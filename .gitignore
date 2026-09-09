@@ -6,3 +6,6 @@ node_modules/
 /serbian-app
 *.db
 .DS_Store
+
+# subagent-driven-development scratch (ledger, briefs, review packages)
+.superpowers/
