@@ -1,6 +1,7 @@
 package store
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/grisha/serbian-app/server/internal/auth"
@@ -16,7 +17,7 @@ func init() {
 func migrate002(tx *dbtx, pg bool) error {
 	rows, err := tx.Query(`SELECT name, created_at FROM users ORDER BY created_at`)
 	if err != nil {
-		return err
+		return fmt.Errorf("read legacy users: %w", err)
 	}
 	type u struct{ name, created string }
 	var legacy []u
@@ -24,7 +25,7 @@ func migrate002(tx *dbtx, pg bool) error {
 		var x u
 		if err := rows.Scan(&x.name, &x.created); err != nil {
 			rows.Close()
-			return err
+			return fmt.Errorf("scan legacy user: %w", err)
 		}
 		legacy = append(legacy, x)
 	}
@@ -36,25 +37,29 @@ func migrate002(tx *dbtx, pg bool) error {
 		idByName[x.name] = id
 		if _, err := tx.Exec(`INSERT INTO users_new (id, name, created_at) VALUES (?, ?, ?)`,
 			id, x.name, x.created); err != nil {
-			return err
+			return fmt.Errorf("mint user id for %s: %w", x.name, err)
 		}
 	}
 
-	// state tables: copy rows whose user_name resolves to a known id
-	copies := []struct{ dst, src, cols string }{
-		{"srs_cards_new", "srs_cards", "card_id, kind, ref_id, ease, interval_days, reps, lapses, state, due, updated_at"},
-		{"reviews_new", "reviews", "card_id, grade, reviewed_at"},
-		{"attempts_new", "attempts", "exercise_id, lesson, block, answer, correct, attempted_at"},
-		{"lesson_progress_new", "lesson_progress", "lesson, status, started_at, completed_at"},
-		{"lesson_step_progress_new", "lesson_step_progress", "lesson, step, status, completed_at"},
+	// state tables: copy rows whose user_name resolves to a known id.
+	// reviews/attempts get fresh autoincrement ids in *_new, assigned in scan
+	// order; store.go reads MAX(id) as "the latest attempt", so their source
+	// SELECT must be ordered by the old id (an unordered Postgres seqscan
+	// could otherwise scramble it). The 3 composite-PK tables have no id.
+	copies := []struct{ dst, src, cols, orderBy string }{
+		{"srs_cards_new", "srs_cards", "card_id, kind, ref_id, ease, interval_days, reps, lapses, state, due, updated_at", ""},
+		{"reviews_new", "reviews", "card_id, grade, reviewed_at", " ORDER BY id"},
+		{"attempts_new", "attempts", "exercise_id, lesson, block, answer, correct, attempted_at", " ORDER BY id"},
+		{"lesson_progress_new", "lesson_progress", "lesson, status, started_at, completed_at", ""},
+		{"lesson_step_progress_new", "lesson_step_progress", "lesson, step, status, completed_at", ""},
 	}
 	for _, c := range copies {
-		src, err := tx.Query(`SELECT user_name, ` + c.cols + ` FROM ` + c.src)
+		src, err := tx.Query(`SELECT user_name, ` + c.cols + ` FROM ` + c.src + c.orderBy)
 		if err != nil {
-			return err
+			return fmt.Errorf("read %s: %w", c.src, err)
 		}
 		var batch [][]any
-		ncol := len(splitCols(c.cols))
+		ncol := len(strings.Split(c.cols, ", "))
 		for src.Next() {
 			vals := make([]any, ncol+1)
 			ptrs := make([]any, ncol+1)
@@ -63,12 +68,12 @@ func migrate002(tx *dbtx, pg bool) error {
 			}
 			if err := src.Scan(ptrs...); err != nil {
 				src.Close()
-				return err
+				return fmt.Errorf("scan %s: %w", c.src, err)
 			}
 			batch = append(batch, vals)
 		}
 		src.Close()
-		ph := "?" + strings0(", ?", ncol) // ncol+1 placeholders: user_id + ncol copied cols
+		ph := "?" + strings.Repeat(", ?", ncol) // ncol+1 placeholders: user_id + ncol copied cols
 		ins := `INSERT INTO ` + c.dst + ` (user_id, ` + c.cols + `) VALUES (` + ph + `)`
 		for _, vals := range batch {
 			name, _ := vals[0].(string)
@@ -78,7 +83,7 @@ func migrate002(tx *dbtx, pg bool) error {
 			}
 			args := append([]any{uid}, vals[1:]...)
 			if _, err := tx.Exec(ins, args...); err != nil {
-				return err
+				return fmt.Errorf("copy %s: %w", c.src, err)
 			}
 		}
 	}
@@ -86,10 +91,10 @@ func migrate002(tx *dbtx, pg bool) error {
 	// swap state tables + users
 	for _, name := range []string{"users", "srs_cards", "reviews", "attempts", "lesson_progress", "lesson_step_progress"} {
 		if _, err := tx.Exec(`DROP TABLE ` + name); err != nil {
-			return err
+			return fmt.Errorf("drop %s: %w", name, err)
 		}
 		if _, err := tx.Exec(`ALTER TABLE ` + name + `_new RENAME TO ` + name); err != nil {
-			return err
+			return fmt.Errorf("swap %s: %w", name, err)
 		}
 	}
 	for _, q := range []string{
@@ -97,14 +102,14 @@ func migrate002(tx *dbtx, pg bool) error {
 		`CREATE INDEX attempts_user ON attempts(user_id)`,
 	} {
 		if _, err := tx.Exec(q); err != nil {
-			return err
+			return fmt.Errorf("recreate state index: %w", err)
 		}
 	}
 
 	// auth tables — created here, after users is in place, so FKs resolve
 	for _, q := range auth002Tables {
 		if _, err := tx.Exec(q); err != nil {
-			return err
+			return fmt.Errorf("create auth tables: %w", err)
 		}
 	}
 	return nil
@@ -135,9 +140,3 @@ var auth002Tables = []string{
 	`CREATE INDEX sessions_expires ON sessions(expires_at)`,
 	`CREATE INDEX email_tokens_ident ON email_tokens(identity_id)`,
 }
-
-// splitCols splits a ", "-separated column list.
-func splitCols(s string) []string { return strings.Split(s, ", ") }
-
-// strings0 repeats sep n times (n placeholders' worth of separators).
-func strings0(sep string, n int) string { return strings.Repeat(sep, n) }

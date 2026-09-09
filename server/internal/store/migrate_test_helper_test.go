@@ -27,6 +27,85 @@ func mustExec(t *testing.T, s *Store, q string, a ...any) {
 	}
 }
 
+// openPreMigration002Store returns a Store whose database has migration 001
+// applied but not 002, on whichever backend testDSN() selects. On Postgres it
+// drops and recreates the "public" schema first, so migrate002's row-copy path
+// (the []any scan-then-reinsert) is exercised against a real pgx connection; a
+// t.Cleanup rebuilds the full schema afterwards for the rest of the suite.
+func openPreMigration002Store(t *testing.T) *Store {
+	t.Helper()
+	dsn := testDSN()
+	if !IsPostgresDSN(dsn) {
+		s := &Store{db: mustOpenRaw(t)}
+		if err := s.runMigrationsUpTo(1); err != nil {
+			t.Fatalf("migrate up to 1: %v", err)
+		}
+		return s
+	}
+	db, err := sql.Open("pgx", dsn)
+	if err != nil {
+		t.Fatalf("open pg: %v", err)
+	}
+	db.SetMaxOpenConns(4)
+	reset := func() {
+		if _, err := db.Exec(`DROP SCHEMA public CASCADE; CREATE SCHEMA public`); err != nil {
+			t.Fatalf("reset public schema: %v", err)
+		}
+	}
+	reset()
+	t.Cleanup(func() {
+		reset()
+		restored, err := Open(dsn) // reapplies 001+002 for the next test
+		if err != nil {
+			t.Fatalf("restore schema: %v", err)
+		}
+		restored.Close()
+		db.Close()
+	})
+	s := &Store{db: &database{sqlDB: db, pg: true}}
+	if err := s.runMigrationsUpTo(1); err != nil {
+		t.Fatalf("migrate up to 1: %v", err)
+	}
+	return s
+}
+
+// queryInts / queryStrings collect a single-column result set, in row order.
+func queryInts(t *testing.T, s *Store, q string, a ...any) []int {
+	t.Helper()
+	rows, err := s.db.Query(q, a...)
+	if err != nil {
+		t.Fatalf("%s: %v", q, err)
+	}
+	defer rows.Close()
+	var out []int
+	for rows.Next() {
+		var n int
+		if err := rows.Scan(&n); err != nil {
+			t.Fatalf("scan: %v", err)
+		}
+		out = append(out, n)
+	}
+	return out
+}
+
+func queryStrings(t *testing.T, s *Store, q string, a ...any) []string {
+	t.Helper()
+	rows, err := s.db.Query(q, a...)
+	if err != nil {
+		t.Fatalf("%s: %v", q, err)
+	}
+	defer rows.Close()
+	var out []string
+	for rows.Next() {
+		var v string
+		if err := rows.Scan(&v); err != nil {
+			t.Fatalf("scan: %v", err)
+		}
+		out = append(out, v)
+	}
+	return out
+}
+
 // openRawV1 creates a database with the v1 (accountless) schema so the
 // migration path can be exercised.
 func openRawV1(path string) (*sql.DB, error) {

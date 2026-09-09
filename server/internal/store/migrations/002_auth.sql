@@ -1,9 +1,9 @@
--- Migration 002: real auth schema.
+-- Migration 002: real auth schema. Completed by the migrate002 hook in
+-- migration_hooks.go — this .sql only creates the *_new staging tables.
 --
--- This file creates only the *_new shadow tables. The Go hook migrate002
--- (migration_hooks.go) fills them from the legacy name-keyed rows, swaps
--- them into place, and then creates identities/sessions/email_tokens --
--- those reference users(id), so on SQLite they must not exist while
+-- The hook fills those from the legacy name-keyed rows, swaps them into
+-- place, and only then creates identities/sessions/email_tokens: they
+-- reference users(id), so on SQLite they must not exist while
 -- DROP TABLE users runs.
 
 CREATE TABLE users_new (
