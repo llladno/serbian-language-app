@@ -1,0 +1,663 @@
+# Авторизация, миграции БД и личный профиль — дизайн
+
+- **Дата:** 2026-09-09
+- **Статус:** утверждён, ждёт плана реализации
+- **Связано:** `CLAUDE.md` (раздел «База данных»), `docs/DEPLOY.md`
+
+## Мотивация
+
+Сейчас аккаунт — это просто имя в поле ввода. `GET /api/users` отдаёт
+список всех имён, `POST /api/users` заводит любое, заголовок `X-User`
+на каждом запросе — и кто угодно заходит под кем угодно. Прогресс
+хранится по строке `user_name` во всех таблицах состояния.
+
+Нужно превратить это в настоящее приложение с аккаунтами: пароль,
+подтверждение почты, сессии, отзыв доступа — и заложить архитектуру под
+вход через Telegram (обе поверхности: Mini App и Login Widget). Плюс
+структурная правка фронта: главной страницы-дашборда больше нет, вместо
+неё личный профиль, который совмещает управление аккаунтом и прогресс.
+
+Требование пользователя: заложить **всю** базовую безопасность сразу — и
+во вход, и в схему БД, — а не наслаивать потом.
+
+## Цели
+
+1. Механизм миграций схемы (сейчас только идемпотентный `CREATE TABLE IF
+   NOT EXISTS`, пути `ALTER` нет).
+2. Модель идентичности: `users` (1) ↔ `identities` (N), провайдеры
+   `password` и `telegram`. Ключ таблиц состояния — `user_id`, не имя.
+3. Регистрация по email+пароль, подтверждение почты, вход, серверные
+   сессии в `HttpOnly`-куке, сброс пароля.
+4. Полная базовая безопасность: хеш пароля, CSRF, антибрутфорс, защита
+   от энумерации, одноразовые токены с TTL, безопасные заголовки.
+5. Seam под Telegram-вход: таблица `identities`, валидация подписи,
+   эндпойнт, линковка второго провайдера. Полная провязка UI — позже.
+6. Открытая регистрация (любой с улицы).
+7. Раздел «Люди» → «Рейтинг» (тот же leaderboard, переименование).
+8. Миграция существующих аккаунтов `Гриша` и `Алина` на identity
+   `telegram` (`llladnooo`, `@alinsssk`); тестовый мусор удалить.
+9. `ProfileView` на `/profile` вместо `DashboardView` на `/`: аккаунт +
+   весь нынешний дашборд-прогресс. Дефолтный роут после входа — `/profile`.
+
+## Не-цели (сейчас)
+
+- **JWT / stateless-токены.** Нужен мгновенный отзыв и список устройств —
+  это серверные сессии. JWT окупается на нескольких независимых сервисах
+  без общего хранилища, у нас монолит.
+- **Отдельный auth-сервис / Keycloak / Authentik.** Лишняя всегда-живая
+  зависимость и операционка для приложения на двух пользователей.
+- **argon2id.** На VPS мало RAM; 64 МБ на каждый параллельный логин →
+  OOM. Берём bcrypt.
+- **2FA, WebAuthn, магические ссылки, детект аномалий, проверка пароля по
+  базам утечек, таблица `security_events`.** Оставляем точки расширения.
+- **Полная провязка Telegram-входа в UI и провижининг бота.** Архитектура
+  и эндпойнт — да; кнопка/виджет и `TELEGRAM_BOT_TOKEN` — отдельный шаг
+  раскатки, после того как пользователь заведёт бота.
+- **Роли / админка через API.** Разовые операции (чистка юзеров) — через
+  миграцию или CLI-флаг.
+
+## Что уже сделано (в скоуп не входит)
+
+- **Перенос на Postgres завершён.** Прод крутится на сервисе Dokploy
+  `srpski-db` (`serbian-app-srpskidb-ybpd9a:5432`, база/юзер `srpski`),
+  у приложения проставлен `DATABASE_URL`, `/api/health` зелёный, данные
+  со старой SQLite перенесены (`-import-sqlite`).
+- Дуальный бэкенд `store.Open(dsn)` (Postgres по `postgres://`, иначе
+  SQLite), `rebind` переписывает `?`→`$N`, `schemaSQL(pg)`.
+- Telegram WebApp shim (`web/src/telegram.ts`) — тема/expand внутри Mini
+  App. Авторизации в нём нет.
+
+## Сводка решений
+
+| Вопрос | Решение |
+|---|---|
+| Внешний «бекенд-сервис» | Это была БД. Уже подключена, отдельного сервиса нет. |
+| Отправка почты | SMTP через готовый ящик на домене (доступы даёт пользователь). |
+| Регистрация | Открытая для всех. |
+| Раздел «Люди» | Остаётся, переименовать в «Рейтинг». |
+| Существующие аккаунты | `Гриша`/`Алина` → identity `telegram`; мусор удалить. |
+| Сброс пароля | В этот заход, полный цикл. |
+| Профиль | `/profile` = аккаунт + прогресс. Дефолт после входа. |
+| Telegram | Обе поверхности (Mini App initData + Login Widget), один `tg_id` → один `user_id`. |
+| Модель идентичности | Таблица `identities`. |
+| Сессии | Непрозрачный токен, `HttpOnly`-кука, таблица `sessions`. |
+| Ключ состояния | `user_id` (ре-кей 5 таблиц). |
+| Хеш пароля | `bcrypt(base64(sha256(password)))`, cost 12. |
+| Пул Postgres | 10 → 5 коннектов. |
+
+---
+
+## Секция 1 — Схема БД и миграции
+
+### 1.1 Раннер миграций
+
+- Каталог `server/internal/store/migrations/NNN_name.sql`, вшит через
+  `go:embed`.
+- Таблица `schema_migrations (version INTEGER PRIMARY KEY, applied_at TEXT NOT NULL)`.
+- На старте `store.Open`, после подключения и до возврата `*Store`:
+  прочитать применённые версии, применить недостающие по возрастанию,
+  **каждую в отдельной транзакции**, записать версию. Сбой любой →
+  откат этой транзакции, `Open` возвращает ошибку, приложение не
+  стартует.
+- Портируемость PG/SQLite — как в нынешнем `schemaSQL`: единственный
+  макрос-замена под автоинкремент (`{{.AutoID}}` → `INTEGER PRIMARY KEY
+  AUTOINCREMENT` / `BIGINT GENERATED BY DEFAULT AS IDENTITY PRIMARY
+  KEY`). Всё остальное — переносимый SQL:
+  - идентификаторы генерим в Go (`usr_<22 base62>`, `idn_…`, и т.п.),
+    не `gen_random_uuid()`;
+  - время — строки RFC3339 (`TEXT`), как уже принято в проекте;
+  - многооператорные файлы бьются по `;` (как нынешний `execScript`),
+    строcovые литералы с `;` в этих миграциях не используем.
+- `001_init.sql` — свёртка текущей схемы (`users`, `srs_cards`,
+  `reviews`, `attempts`, `lesson_progress`, `lesson_step_progress`,
+  индексы). Идемпотентна (`IF NOT EXISTS`), поэтому на существующем
+  проде просто фиксирует `version = 1`.
+- Путь `PRAGMA user_version` v1→v2 (SQLite-легаси, беспарольные таблицы)
+  остаётся в коде как есть; он отрабатывает **до** раннера и приводит
+  файл к состоянию, которое `001` уже видит как готовое.
+- Нынешний флаг `-import-sqlite` не трогаем.
+
+### 1.2 Новые таблицы (`002_auth.sql`)
+
+```
+identities
+  id                TEXT PRIMARY KEY          -- idn_…, генерит Go
+  user_id           TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE
+  provider          TEXT NOT NULL             -- 'password' | 'telegram'
+  provider_uid      TEXT NOT NULL             -- password: lower(email); telegram: tg_id (строка)
+  email             TEXT                      -- password-only
+  password_hash     TEXT                      -- password-only, PHC-строка bcrypt
+  email_verified_at TEXT                      -- password-only
+  tg_username       TEXT                      -- telegram-only, кэш для отображения
+  created_at        TEXT NOT NULL
+  UNIQUE (provider, provider_uid)
+
+sessions
+  token_hash   TEXT PRIMARY KEY               -- sha256(hex) от значения куки
+  user_id      TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE
+  created_at   TEXT NOT NULL
+  last_seen_at TEXT NOT NULL
+  expires_at   TEXT NOT NULL
+  user_agent   TEXT
+
+email_tokens
+  token_hash   TEXT PRIMARY KEY               -- sha256(hex) от значения в ссылке
+  identity_id  TEXT NOT NULL REFERENCES identities(id) ON DELETE CASCADE
+  kind         TEXT NOT NULL                  -- 'verify' | 'reset'
+  created_at   TEXT NOT NULL
+  expires_at   TEXT NOT NULL
+  used_at      TEXT
+
+INDEX identities_user   ON identities(user_id)
+INDEX sessions_user     ON sessions(user_id)
+INDEX sessions_expires  ON sessions(expires_at)
+INDEX email_tokens_ident ON email_tokens(identity_id)
+```
+
+- Один юзер — максимум одна `password`-identity и одна
+  `telegram`-identity (не форсим уникальность по `(user_id, provider)`
+  на уровне БД сейчас, но код это гарантирует).
+- Уникальность email — через `UNIQUE (provider, provider_uid)` с
+  `provider_uid = lower(email)`.
+- Внешние ключи (`identities`, `sessions`, `email_tokens` → `users`;
+  `email_tokens` → `identities`) с `ON DELETE CASCADE`. Postgres
+  форсит их сам; для SQLite раннер выставляет `PRAGMA foreign_keys=ON`
+  на каждом соединении. На таблицы состояния FK **не** вешаем —
+  их чистка при удалении юзера идёт явным транзакционным `DELETE`
+  (см. 3.2), чтобы не зависеть от порядка и прагм.
+
+### 1.3 Правка существующих таблиц (`002_auth.sql`, продолжение)
+
+- `users`:
+  - добавить `id TEXT` — в этой же миграции сгенерить значение каждой
+    существующей строке;
+  - после заполнения — `id` становится `NOT NULL`, на нём `PRIMARY KEY`
+    (пересбор таблицы: create `users_new` → copy → drop → rename, чтобы
+    работало и на SQLite);
+  - `name` остаётся `TEXT NOT NULL`, **перестаёт быть PK и уникальным** —
+    просто отображаемое имя;
+  - `created_at` — как есть.
+- 5 таблиц состояния: ключ `user_name` → `user_id`.
+  - Паттерн для каждой: `create <t>_new` (та же схема, но `user_id`
+    вместо `user_name`, тот же составной PK) → `INSERT ... SELECT` с
+    `user_id = (SELECT id FROM users WHERE users.name = <t>.user_name)`
+    → `DROP <t>` → `ALTER TABLE <t>_new RENAME TO <t>` → пересоздать
+    индексы. Работает одинаково на PG и SQLite.
+  - Строки состояния, чей `user_name` не находится в `users` (осиротевшие
+    от удалённого мусора), в перенос не попадают.
+
+### 1.4 Миграция данных аккаунтов
+
+Отдельный файл `003_migrate_accounts.sql` (DDL и данные разнесены):
+
+1. Сгенерить `users.id` всем.
+2. **Удалить тестовый мусор** и его строки состояния: `DeployCheck`,
+   `ProbaPG`, `chk2`, `kbcheck`. (Список подтверждён пользователем.)
+3. `Гриша` и `Алина` — завести по строке `identities`:
+   - `provider = 'telegram'`;
+   - `tg_username` = `llladnooo` (Гриша) / `alinsssk` (Алина);
+   - `provider_uid` — числовой `tg_id`, **если пользователь его
+     предоставит** (вшивается в миграцию); иначе временно
+     `provider_uid = 'pending:' + tg_username`, а на первом реальном
+     TG-входе `/auth/telegram` матчит по `tg_username`, переписывает
+     `provider_uid` на настоящий `tg_id` и снимает префикс `pending:`.
+   - Пароля у этих аккаунтов нет — вход только через Telegram, пока сами
+     не добавят пароль в профиле.
+
+> Перед применением `002` на проде — ручной дамп PG (бэкап Dokploy или
+> `pg_dump`), прогон миграции на копии дампа локально. См. секцию 6.
+
+---
+
+## Секция 2 — Модель безопасности
+
+### 2.1 Сессии и кука
+
+- Имя куки: `__Host-session` в проде (`Secure`, `Path=/`, без `Domain`).
+  В dev, когда `APP_BASE_URL` начинается с `http://`, — имя `session`
+  без префикса и без `Secure` (иначе не работает на `localhost`).
+- Атрибуты: `HttpOnly`, `Secure` (prod), `SameSite=Lax`, `Path=/`.
+  `Lax`, чтобы переход по ссылке из письма приземлялся залогиненным.
+- Значение — 32 байта из `crypto/rand`, `base64.RawURLEncoding`. В БД
+  хранится только `sha256(hex)` в `sessions.token_hash`. Дамп БД не даёт
+  рабочих кук.
+- Срок: скользящий 30 дней (`expires_at` продлевается при активности),
+  жёсткий максимум 90 дней от `created_at`.
+- `last_seen_at` обновляется не чаще раза в час (для списка устройств).
+- Ротация значения куки: при `login`, при `reset`, при смене пароля.
+- `logout` — удалить строку. `logout-all` / смена пароля — удалить все
+  строки юзера, кроме текущей (у смены пароля — по желанию все).
+- Сравнение `token_hash` — `subtle.ConstantTimeCompare`.
+
+### 2.2 CSRF
+
+- `SameSite=Lax` + middleware `checkOrigin` на всех не-GET/HEAD/OPTIONS
+  запросах к `/api/*`: `Origin` (или `Referer`, если `Origin` пуст)
+  должен совпадать с ожидаемым хостом (`APP_BASE_URL`). Не совпал → 403.
+- Отдельный CSRF-токен не вводим — для same-origin SPA этого достаточно.
+
+### 2.3 Пароли
+
+- Хранение: `bcrypt(base64(sha256(password)))`, `cost = 12`.
+  `sha256`-препроцесс снимает лимит bcrypt в 72 байта и проблему
+  null-байтов; `base64` — чтобы на вход bcrypt шёл текст без `\0`.
+- `cost` — константа `bcryptCost = 12` (не env; менять — правкой кода).
+- Политика (NIST 800-63B): длина 8–128, без правил на состав, без
+  принудительной ротации. Проверка «слишком частый пароль» — не сейчас.
+- Подсказка силы пароля — только на клиенте, на приём не влияет.
+
+### 2.4 Антибрутфорс и защита от энумерации
+
+- `internal/ratelimit`: `golang.org/x/time/rate` по строковому ключу,
+  мапа под мьютексом, периодическая чистка неактивных ключей. В процессе
+  (один инстанс).
+  - `login`: 5/мин на IP + 10/час на `email`.
+  - `register`, `resend-verification`, `forgot`: 3/час на IP + 3/час на
+    email.
+- `login`: единый ответ `401 {"error": "неверная почта или пароль"}` —
+  не раскрываем, что именно не так. Верный пароль + неподтверждённая
+  почта → `403 {"error": "email_unverified"}` + фоновая переотправка
+  письма (раскрывает лишь то, что знающий пароль и так знает).
+- `register` и `forgot`: **ответ и его тайминг одинаковы** независимо от
+  того, есть ли такой email. Письмо-ветка выбирается в фоне
+  (зарегистрирован → «у тебя уже есть аккаунт»; свободен → ссылка
+  подтверждения / сброса). Формулировки в письме и на экране: «если этот
+  адрес зарегистрирован…».
+- Мягкий лок аккаунта после 10 неудачных логинов подряд — окно 15 минут,
+  счётчик сбрасывается успешным входом. Не навсегда.
+
+### 2.5 Токены почты (verify / reset)
+
+- 32 байта `crypto/rand`, `base64.RawURLEncoding`. В БД — `sha256(hex)`.
+- Одноразовые (`used_at`), TTL: `verify` — 24 ч, `reset` — 1 ч.
+- `reset` при успешном использовании: пометить `used_at`, инвалидировать
+  прочие `reset`-токены этой identity, удалить все сессии юзера.
+- `verify` по ссылке — `GET /api/auth/verify?token=…` (клик из письма),
+  успех → редирект на `/verify?ok=1`.
+- Токены не логируются ни на каком уровне.
+
+### 2.6 Telegram
+
+- **Mini App:** валидация `initData` по спеке Telegram — secret key
+  `HMAC_SHA256("WebAppData", bot_token)`, проверка поля `hash`, проверка
+  свежести `auth_date` (< 24 ч). Пользователь берётся из
+  верифицированного `initData`, не из того, что распарсил клиент.
+- **Login Widget:** проверка `hash`, secret key `SHA256(bot_token)`,
+  проверка `auth_date`.
+- `TELEGRAM_BOT_TOKEN` — секрет в env, на клиент не уходит никогда.
+- Пока `TELEGRAM_BOT_TOKEN` не задан — `/auth/telegram` отвечает
+  `503 {"error": "telegram_disabled"}`, кнопка/виджет на фронте скрыты.
+- Привязка TG к существующему аккаунту (`/me/link/telegram`) — **только
+  когда запрос идёт с валидной сессией этого юзера**. Иначе — угон через
+  линковку.
+- Если пришедший `tg_id` уже привязан к другому юзеру — `409`, не
+  перевязываем молча.
+
+### 2.7 Заголовки и транспорт
+
+Middleware `securityHeaders` на всех ответах:
+
+- `Strict-Transport-Security: max-age=31536000; includeSubDomains` (prod);
+- `X-Content-Type-Options: nosniff`;
+- `Referrer-Policy: strict-origin-when-cross-origin`;
+- `Content-Security-Policy` с `frame-ancestors 'self' https://web.telegram.org
+  https://*.telegram.org` — Mini App живёт в iframe Telegram, поэтому
+  **не** `X-Frame-Options: DENY`;
+- базовый `default-src 'self'`; уточнить под нужды Vite-сборки (инлайн-
+  стили Tailwind, шрифты) на этапе реализации.
+- HTTPS обеспечивает Traefik/Dokploy (уже есть).
+
+### 2.8 БД, секреты, бэкапы
+
+- Проверить, что у сервиса `srpski-db` нет публично проброшенного порта
+  (только внутренняя docker-сеть Dokploy). `sslmode=disable` внутри сети
+  допустимо.
+- Секреты (`DATABASE_URL`, `SMTP_*`, `TELEGRAM_BOT_TOKEN`) — только env
+  Dokploy, не в репозитории. Проверить `.gitignore` на `.env`.
+- **Включить бэкапы БД в Dokploy** (расписание + S3-совместимое
+  хранилище) — сейчас выключены.
+- Все запросы параметризованы (уже так, через `rebind`).
+- `email` не пишем в info-логи. Логирование `X-User` (если было) уходит
+  вместе с заголовком.
+
+---
+
+## Секция 3 — Бэкенд
+
+### 3.1 Пакеты
+
+- `internal/auth` (новый): хеш/проверка пароля, генерация и хеш токенов,
+  валидация Telegram-подписей, сборка/проверка сессий.
+- `internal/mail` (новый): интерфейс `Mailer`, `SMTPMailer`, `LogMailer`,
+  шаблоны писем.
+- `internal/ratelimit` (новый): токен-бакет по ключу.
+- `internal/store`: новые методы под `identities` / `sessions` /
+  `email_tokens`, ре-кей существующих на `user_id`, раннер миграций.
+- `internal/api`: новые хендлеры `/api/auth/*` и `/api/me*`, middleware,
+  `Deps` расширяется (`Mailer`, `RateLimiter`, `Config`).
+
+### 3.2 Эндпойнты
+
+**`/api/auth/*` — публичные:**
+
+| Метод | Путь | Тело / параметры | Поведение |
+|---|---|---|---|
+| POST | `/auth/register` | `{email, password, name}` | Создаёт `users` + identity `password` (не подтверждён), фоново шлёт письмо. Всегда `200` generic. Email занят → фоновое письмо «уже зарегистрирован». |
+| POST | `/auth/login` | `{email, password}` | Пароль верный + почта подтверждена → кука + `200 {user}`. Верный + не подтверждён → `403 email_unverified` + переотправка. Иначе → `401` generic. Rate-limit. |
+| POST | `/auth/logout` | — | Удаляет текущую сессию, чистит куку. |
+| POST | `/auth/logout-all` | — | Удаляет все сессии юзера. Требует сессию. |
+| GET | `/auth/verify` | `?token=` | Помечает `email_verified_at`, редирект на `/verify?ok=1`. Токен протух/использован → редирект `/verify?err=1`. |
+| POST | `/auth/resend-verification` | `{email}` | Generic `200`, rate-limit. |
+| POST | `/auth/forgot` | `{email}` | Generic `200`, фоново письмо сброса если аккаунт есть. |
+| POST | `/auth/reset` | `{token, password}` | Меняет пароль, гасит reset-токены и все сессии, автологин (ставит новую куку). Токен невалиден → `400`. |
+| GET | `/auth/session` | — | `200 {user}` или `401`. Фронт зовёт на загрузке. |
+| POST | `/auth/telegram` | `{init_data}` или payload виджета | Валидация подписи → find-or-create identity `telegram` (+ матч `pending:` по username) → кука + `200 {user}`. Токен бота не задан → `503`. |
+
+**`/api/me*` — только с валидной сессией:**
+
+| Метод | Путь | Тело | Поведение |
+|---|---|---|---|
+| GET | `/me` | — | `{id, name, email, email_verified, telegram: {linked, username}, sessions: [{id, user_agent, last_seen_at, current}]}` |
+| PATCH | `/me` | `{name}` | Меняет отображаемое имя (валидация как `NormalizeName`, длина ≤ 40). |
+| POST | `/me/password` | `{current, new}` | Проверяет `current`, ставит `new`, удаляет прочие сессии. У аккаунта без пароля (только TG) — `current` не требуется, создаётся `password`-identity; email при этом обязателен и уходит на подтверждение. |
+| POST | `/me/link/telegram` | `{init_data}` / payload | Привязывает identity `telegram` к текущему юзеру. `tg_id` занят другим → `409`. |
+| DELETE | `/me/telegram` | — | Отвязать TG (запрещено, если это единственный способ входа). |
+| DELETE | `/me/sessions/{id}` | — | Убить конкретное устройство. |
+| DELETE | `/me` | `{password?}` | Удаляет юзера. Одна транзакция: явный `DELETE` из 5 таблиц состояния по `user_id`, затем из `users` (identities/sessions/email_tokens уходят каскадом). Требует ввод пароля, либо — для TG-only — свежую сессию (< 5 мин) или повторный TG-вход. |
+
+**Снимается:** `GET /api/users`, `POST /api/users`.
+
+**Прочие `/api/*`** (`/course`, `/lessons/*`, `/review/*`, `/progress`,
+`/leaderboard`, `/vocab`, `/lookup`, `/false-friends`, `/reset-exercises`)
+— без изменений тела, но теперь за `requireAuth`.
+
+### 3.3 Middleware
+
+Порядок: `securityHeaders` → `checkOrigin` → (`requireAuth` для
+защищённых) → хендлер.
+
+- **`requireAuth`:** читает куку → `sha256` → `SELECT ... FROM sessions
+  WHERE token_hash = ?` → проверка `expires_at > now` → грузит `user_id`
+  → кладёт в контекст запроса `*store.UserStore` (и лёгкую сводку юзера).
+  Нет/протухла → `401`. Заменяет `handlers.user()` и разбор `X-User`.
+  Троттлинг `last_seen_at`.
+- **`checkOrigin`:** см. 2.2.
+- **`securityHeaders`:** см. 2.7.
+- Публичные `/api/health` и `/api/auth/*` (кроме `logout-all`) —
+  без `requireAuth`.
+
+**Мост на один релиз (шаг раскатки 3):** `requireAuth` при отсутствии
+куки пробует старый путь `X-User` (как сейчас) и, если имя резолвится в
+существующего юзера, пускает. Убирается на шаге 5.
+
+### 3.4 Mailer — `internal/mail`
+
+```go
+type Mailer interface {
+    Send(ctx context.Context, to, subject, text, html string) error
+}
+```
+
+- **`SMTPMailer`:** stdlib `net/smtp`, STARTTLS (или implicit TLS по
+  порту), конфиг из env `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`,
+  `SMTP_PASS`, `SMTP_FROM`, `SMTP_FROM_NAME`.
+- **`LogMailer`:** пишет получателя, тему и ссылку в stdout. Выбирается,
+  когда `SMTP_HOST` пуст (dev, тесты, первые шаги раскатки).
+- Письма (`text/template` + `html/template`, по-русски): `verify`,
+  `reset`, `already_registered`, `password_changed`.
+- **Отправка — фоновой горутиной** с собственным `context.WithTimeout`
+  (например 15 с) и одним ретраем. HTTP-ответ отдаётся сразу и с
+  одинаковым таймингом независимо от ветки (см. 2.4). Ошибку отправки
+  логируем (без адреса на info).
+
+### 3.5 Конфиг
+
+Новые env (все — секреты Dokploy, кроме `APP_BASE_URL`):
+
+| Переменная | Назначение | Дефолт |
+|---|---|---|
+| `APP_BASE_URL` | Хост для ссылок в письмах и `checkOrigin` | `http://localhost:8080` |
+| `SMTP_HOST` / `PORT` / `USER` / `PASS` / `FROM` / `FROM_NAME` | SMTP | пусто → `LogMailer` |
+| `TELEGRAM_BOT_TOKEN` | Валидация Telegram-подписей | пусто → TG-вход выключен |
+
+TTL сессий и токенов, `bcryptCost`, лимиты rate-limit — константы в коде
+с дефолтами из этой спеки. Пул Postgres: `SetMaxOpenConns(5)`.
+
+---
+
+## Секция 4 — Фронтенд
+
+### 4.1 Сессия вместо localStorage
+
+- `web/src/account.ts` удаляется. Новый стор `web/src/stores/session.ts`
+  (Pinia):
+  - `state: { user: SessionUser | null, loading: boolean }`;
+  - `SessionUser = { id, name, email, emailVerified, tgLinked }`;
+  - `fetchSession()` — `GET /api/auth/session`; `login/register/logout/
+    forgot/reset/resendVerification/telegramLogin` — обёртки над `api`.
+- `web/src/api.ts`:
+  - убрать заголовок `X-User` и импорт `getAccount`;
+  - `fetch(url, { ...init, credentials: 'same-origin' })`;
+  - `401` → `session.user = null`, `router.push('/login')` (не
+    `location.assign`);
+  - убрать `listAccounts`, `createAccount`; добавить методы из 3.2.
+- `web/src/main.ts` — как есть (`applyTheme`, `initTelegram`), плюс
+  `App.vue` на маунте зовёт `session.fetchSession()`.
+
+### 4.2 Роутинг и гварды
+
+- Публичные роуты: `/login`, `/register`, `/verify`, `/forgot`,
+  `/reset`.
+- `/` → редирект на `/profile`. `DashboardView` с `/` снимается.
+- `/people` → `/rating` (компонент `RatingView`, бывший `PeopleView`).
+- `router.beforeEach`:
+  - ждёт `!session.loading`;
+  - приватный роут без `user` → `/login?next=<path>`;
+  - публичный auth-роут при наличии `user` → `/profile`;
+  - `user` есть, но `!emailVerified` и роут не `/verify` → `/verify`.
+- Остальные роуты (`/course`, `/lesson/:id`, `/review`, `/vocab`,
+  `/false-friends`) — приватные, без прочих изменений.
+
+### 4.3 Экраны входа
+
+Общий layout `AuthShell` (центрированная карточка, вордмарк «Српски» —
+как у нынешнего `LoginGate`). Компоненты во `views/`:
+
+- **`LoginView`** — email + пароль; ссылки на `/register`, `/forgot`;
+  кнопка «Войти через Telegram» (видна только если TG включён).
+- **`RegisterView`** — имя + email + пароль (+ подсказка силы); submit →
+  экран «проверь почту».
+- **`VerifyView`** — режимы по query: `?ok=1` (успех + «продолжить»),
+  `?err=1` (токен протух → кнопка «отправить снова»), без параметров и
+  залогинен-не-подтверждён (гейт: «письмо на `<email>`, отправить
+  снова» с кулдауном).
+- **`ForgotView`** — email → generic-сообщение.
+- **`ResetView`** — `token` из query, новый пароль + подтверждение →
+  автологин → `/profile`.
+
+`LoginGate.vue` удаляется.
+
+### 4.4 `ProfileView` (`/profile`)
+
+- `AccountCard` сверху: имя (инлайн-правка → `PATCH /me`), email + бейдж
+  подтверждения, Telegram (`@username` / кнопка «Привязать»), кнопки
+  «Сменить пароль» (инлайн-форма), «Устройства» (список сессий из
+  `GET /me`, отзыв → `DELETE /me/sessions/{id}`), «Выйти» (`logout`),
+  danger «Удалить аккаунт» (`DELETE /me` с вводом пароля).
+- Ниже — весь нынешний дашборд как компонент `ProgressDashboard`
+  (переносится из `DashboardView.vue` целиком: кольцо повторений,
+  стрик + хитмап, «продолжить урок», слово дня, кольца фаз, слабые
+  места, превью рейтинга). Кнопка «сбросить прогресс по заданиям» →
+  в danger-зону `AccountCard`.
+- `DashboardView.vue` удаляется; его шаблон становится
+  `components/ProgressDashboard.vue`.
+
+### 4.5 Навбар (`AppNav.vue`)
+
+- Из `links` убрать `{ to: '/', label: 'Главная' }`. Первый пункт —
+  `{ to: '/profile', label: 'Профиль', icon: User }`.
+- `{ to: '/people', label: 'Люди', icon: Users }` →
+  `{ to: '/rating', label: 'Рейтинг', icon: Trophy }`.
+- Нижняя мобильная панель — те же 6 пунктов, `grid-cols-6` без правок.
+- Кнопка юзера справа-сверху: ведёт на `/profile` (сейчас —
+  `clearAccount()`); заменить на `RouterLink`. Кнопка темы — как есть.
+
+### 4.6 Telegram Mini App
+
+- `telegram.ts` (тема/expand) — без изменений.
+- Новое: в `App.vue` / `session.fetchSession()`, если `isTelegram()` и
+  сессии нет — до редиректа на `/login` попробовать
+  `session.telegramLogin(window.Telegram.WebApp.initData)`. Успех →
+  обычный вход. Внутри Telegram авторизация прозрачна, как только на
+  бэке задан `TELEGRAM_BOT_TOKEN`.
+
+### 4.7 Dev-плюмбинг
+
+- Vite уже проксирует `/api` на `:8080`. Сервер в dev (`APP_BASE_URL`
+  на `http://`) отдаёт куку с именем `session` без `Secure`.
+- Проверить, что `vite.config.ts` proxy не режет `Set-Cookie` (при
+  необходимости — `cookieDomainRewrite: ''`).
+
+---
+
+## Секция 5 — Тесты
+
+### Go
+
+- **`store`:**
+  - раннер миграций: применяет по порядку, идемпотентен, пишет версии,
+    откат транзакции при сбое одной миграции;
+  - миграция данных: сид name-keyed строк (`Гриша` + мусор) → после:
+    у всех `users.id`, состояние переkey-ено на `user_id`, мусор и его
+    строки удалены, у `Гриша` строка identity `telegram` с
+    `tg_username = llladnooo`;
+  - CRUD `identities` / `sessions` / `email_tokens`; на SQLite in-memory
+    и `make test-pg`.
+- **`auth`:** хеш/проверка пароля (`bcrypt(base64(sha256))`), генерация
+  и `sha256` токенов — round-trip; валидация Telegram `initData` и
+  payload виджета на известных векторах (валидный / битый `hash` /
+  протухший `auth_date`).
+- **`mail`:** `LogMailer` ловит отправку; рендер всех 4 шаблонов (нет
+  `{{`, есть и text, и html).
+- **`ratelimit`:** пропускает N, блокирует, доливает со временем,
+  выселяет неактивные ключи.
+- **`api`:** `api_test.go` переписать под хелпер `authed(t, *store.Store,
+  user)` (создаёт сессию, возвращает cookie jar). Инъекция фейкового
+  `Mailer` (сборщик писем), `Now func()` (уже есть), фейкового
+  `RateLimiter`. Кейсы:
+  - `register` → создаёт неподтверждённого, 1 письмо, ответ generic;
+  - `register` с занятым email → всё равно generic `200`, письмо
+    «уже зарегистрирован»;
+  - `login`: не подтверждён → `403`; подтверждён → кука; неверный
+    пароль → `401` generic; после N попыток → rate-limit;
+  - `verify`: свежий токен → `email_verified_at`; протухший /
+    использованный → редирект с ошибкой;
+  - `forgot` → generic; `reset` → пароль сменился, старые сессии
+    удалены, автологин;
+  - `/auth/telegram`: поддельный валидный `initData` (тестовый
+    `bot_token`) → identity создана; матч `pending:` по username →
+    `provider_uid` переписан; битый `hash` → `401`; токен не задан →
+    `503`;
+  - `requireAuth`: нет куки → `401` на `/api/progress`; валидная кука →
+    `200`;
+  - `checkOrigin`: POST с чужим `Origin` → `403`;
+  - `/me/password` удаляет прочие сессии;
+  - `GET /api/users` / `POST /api/users` → `404`.
+
+### Vitest
+
+- `stores/session.ts`: `fetchSession` заполняет/чистит `user`; ветка
+  `401`.
+- Auth-экраны: валидация форм, отрисовка ошибок, кнопка «отправить
+  снова» заблокирована во время кулдауна.
+- `router.beforeEach`: без сессии → `/login?next=`; не подтверждён →
+  `/verify`; залогинен на `/login` → `/profile`.
+- Обновить тесты, импортящие `account.ts`.
+- Существующие тесты вьюх/сторов/компонентов мокают `api` — не затронуты.
+
+### Security-чеклист (в PR, проверка руками + где можно автоматом)
+
+- [ ] кука: `HttpOnly`, `Secure` (prod), `SameSite=Lax`, префикс `__Host-`;
+- [ ] значение токена сессии не встречается в теле ответов и логах; в БД
+      только `sha256`;
+- [ ] `register` / `forgot` / `login`-с-неверным-паролем — совпадающие
+      ответ и тайминг для существующего и несуществующего email;
+- [ ] `verify` / `reset` токены одноразовы, TTL enforced;
+- [ ] заголовок CSP: `frame-ancestors` пускает `web.telegram.org`,
+      остальным запрещает;
+- [ ] rate-limit реально срабатывает на login/register/forgot;
+- [ ] `GET/POST /api/users` удалены;
+- [ ] у `srpski-db` нет публичного порта;
+- [ ] бэкапы Dokploy включены.
+
+---
+
+## Секция 6 — Порядок раскатки
+
+Каждый шаг — свой коммит(ы), деплой, проверка. Шаги 3–4 — одна ветка/PR.
+План реализации, вероятно, разобьётся на две части: шаги 1–5 (БД +
+auth + фронт, критичный путь) и шаги 6–8 (SMTP, Telegram, бэкапы —
+зависят от внешних доступов от пользователя).
+
+1. **Раннер миграций** + свёртка текущей схемы в `001_init.sql`.
+   Поведение не меняется. Проверка: прод поднялся, таблица
+   `schema_migrations` с `version = 1`, `/api/health` зелёный.
+2. **Схема `002` + миграция данных.** Рисковый шаг:
+   - ручной дамп PG (бэкап Dokploy или `pg_dump`);
+   - прогон `002` на копии прод-дампа локально, глазами проверить
+     `users` / `identities` / состояние;
+   - деплой в тихое окно; проверка: `Гриша`/`Алина` на месте с
+     прогрессом, мусора нет, состояние читается.
+3. **Бэкенд auth.** Эндпойнты, middleware, `ratelimit`, `LogMailer`
+   (SMTP ещё нет). `requireAuth` с **мостом `X-User`**. Старый фронт
+   продолжает работать через мост.
+4. **Фронт auth.** `session`-стор, экраны, роутер, `ProfileView`,
+   навбар. Деплой вместе с бэком из шага 3 (или сразу после).
+   Проверка: регистрация → письмо в логах → verify по ссылке из логов →
+   вход → `/profile`.
+5. **Убрать мост `X-User`** из `requireAuth`. Деплой.
+6. **SMTP.** `LogMailer` → `SMTPMailer`, когда пользователь даст
+   доступы. Тестовое письмо себе, проверить, что не в спам (SPF/DKIM).
+7. **Telegram.** Выставить `TELEGRAM_BOT_TOKEN`, включить авто-логин в
+   Mini App + кнопку/виджет. `Гриша`/`Алина` делают первый TG-вход →
+   `pending:`-identity матчатся по username → `tg_id` фиксируется →
+   старый прогресс на месте.
+8. **Бэкапы БД** в Dokploy (расписание + S3).
+
+Откат: шаги 1, 3, 4, 5 — обычный редеплой предыдущего образа. Шаг 2 —
+восстановление из дампа (схему `002` назад не откатываем автоматически).
+
+---
+
+## Секция 7 — Что нужно от пользователя
+
+Можно готовить параллельно с шагами 1–5:
+
+- **SMTP** (для шага 6): хост, порт, логин, пароль, from-адрес
+  (например `noreply@pockets-money.ru` или поддомен), from-имя.
+  Провайдер почты на домене?
+- **Telegram-бот** (для шага 7): создать у `@BotFather`, передать токен;
+  `/setdomain` → `serbianapp.pockets-money.ru`; при желании — URL Mini
+  App для запуска из бота.
+- **`tg_id` для `Гриша` и `Алина`** (через `@userinfobot`) — вшить в
+  миграцию. Либо матч по `@username` на первом входе (работает, чуть
+  менее чисто).
+- **Подтверждение удаления** аккаунтов `DeployCheck`, `ProbaPG`, `chk2`,
+  `kbcheck`. — *подтверждено в брейншторме.*
+- **Дамп PG** перед шагом 2: включить бэкап в Dokploy или снять
+  `pg_dump` по SSH (у Claude нет пароля root).
+
+---
+
+## Открытые вопросы и допущения
+
+- **`sslmode=disable`** остаётся для внутренней сети Dokploy. Если
+  сервис БД когда-нибудь выносится за пределы сети — пересмотреть.
+- **CSP `default-src`** уточняется на этапе реализации под то, что
+  реально грузит Vite-сборка (инлайн-стили, шрифты).
+- **Список устройств в профиле** — MVP: показываем `user_agent` и
+  `last_seen_at`, без геолокации по IP.
+- **Дискриминатор имён в рейтинге** при коллизии — короткий суффикс
+  (например первые 4 символа `user_id`); финальный вид — на реализации.
+- Предполагается, что Vite-proxy в dev корректно пробрасывает
+  `Set-Cookie` (проверить, при необходимости `cookieDomainRewrite`).
