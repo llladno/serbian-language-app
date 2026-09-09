@@ -111,3 +111,30 @@ steps:
         type: free
         prompt: "Опиши ситуацию своими словами."
         sample: "Примерный ответ для сверки."
+
+  # dialogue — разговор из реплик. Ставится в конец урока: «а теперь примени».
+  # Реплики `me` — задания (choice / translate / fill_blank); поле `sr` — то,
+  # что останется в ленте после ответа, оно обязано совпадать с `answer`
+  # (choice) или входить в `accept` (translate). Озвучка: `python3
+  # scripts/tts.py` кладёт NN.X-tN.mp3 по одному файлу на реплику; собеседник
+  # говорит голосом `voice` (f по умолчанию), твои реплики — противоположным.
+  - id: "NN.5"
+    kind: dialogue
+    title: "Название сцены"
+    scene: "Где ты и что происходит — по-русски, одной фразой."
+    voice: f            # f | m — голос собеседника
+    also_ok: ["ključ"]  # декоративные слова сцены, не идущие в словарь
+    turns:
+      - who: npc
+        sr: "Izvolite?"
+        ru: "Слушаю вас?"
+
+      - who: me
+        sr: "Dobar dan. Treba mi hleb."
+        ru: "Добрый день. Мне нужен хлеб."
+        exercise:
+          id: "NN.5.1"
+          type: choice
+          prompt: "Поздоровайся и скажи, что тебе нужен хлеб"
+          options: ["Dobar dan. Treba mi hleb.", "Laku noć. Treba mi hleb."]
+          answer: "Dobar dan. Treba mi hleb."

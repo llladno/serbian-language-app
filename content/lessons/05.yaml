@@ -293,3 +293,76 @@ steps:
         type: free
         prompt: "Зайди в магазин: поздоровайся, попроси хлеб и молоко, расплатись — 3–4 фразы."
         sample: "Dobar dan! Treba mi hleb i mleko. Koliko dugujem? Karticom, može?"
+
+  - id: "05.18"
+    kind: dialogue
+    title: "У пекари"
+    scene: "Ты зашёл в пекару за хлебом. За прилавком — продавщица."
+    voice: f
+    turns:
+      - who: npc
+        sr: "Dobar dan, izvolite?"
+        ru: "Добрый день, слушаю вас?"
+
+      - who: me
+        sr: "Dobar dan. Treba mi hleb."
+        ru: "Добрый день. Мне нужен хлеб."
+        exercise:
+          id: "05.18.1"
+          type: choice
+          prompt: "Поздоровайся и скажи, что тебе нужен хлеб"
+          options:
+            - "Dobar dan. Treba mi hleb."
+            - "Dobar dan. Treba mi kafa."
+            - "Laku noć. Treba mi hleb."
+          answer: "Dobar dan. Treba mi hleb."
+          explain: "«Laku noć» говорят на ночь — в пекару утром это прозвучит странно."
+
+      - who: npc
+        sr: "Imamo svež hleb. Koliko komada?"
+        ru: "У нас свежий хлеб. Сколько штук?"
+
+      - who: me
+        sr: "Dva komada, molim."
+        ru: "Две штуки, пожалуйста."
+        exercise:
+          id: "05.18.2"
+          type: fill_blank
+          prompt: "___ komada, molim."
+          accept: ["Dva"]
+          explain: "«komad» — счётное слово: dva komada, tri komada."
+
+      - who: npc
+        sr: "Još nešto?"
+        ru: "Ещё что-нибудь?"
+
+      - who: me
+        sr: "To je sve. Koliko košta?"
+        ru: "Это всё. Сколько стоит?"
+        exercise:
+          id: "05.18.3"
+          type: choice
+          prompt: "Скажи, что это всё, и спроси цену"
+          options:
+            - "To je sve. Koliko košta?"
+            - "To je sve. Koliko je sati?"
+            - "Još nešto? Koliko košta?"
+          answer: "To je sve. Koliko košta?"
+          explain: "«Koliko je sati?» — это про время, а не про цену."
+
+      - who: npc
+        sr: "Sto dvadeset dinara."
+        ru: "Сто двадцать динаров."
+
+      - who: me
+        sr: "Može karticom?"
+        ru: "Можно картой?"
+        exercise:
+          id: "05.18.4"
+          type: translate
+          prompt: "Спроси, можно ли картой"
+          accept: ["Može karticom?", "Da li može karticom?", "Mogu karticom?"]
+
+      - who: npc
+        sr: "Može. Izvolite račun. Prijatno!"
+        ru: "Можно. Вот чек. Всего доброго!"

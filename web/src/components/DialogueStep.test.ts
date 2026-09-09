@@ -102,3 +102,44 @@ describe('DialogueStep', () => {
     expect(w.text()).not.toContain('Попроси хлеб')
   })
 })
+
+describe('DialogueStep mistakes', () => {
+  it('marks a wrong answer in the chat and keeps its explanation', async () => {
+    vi.spyOn(api, 'check').mockResolvedValue({
+      ok: false,
+      line: 'Jedan hleb, molim.',
+      line_ru: 'Один хлеб, пожалуйста.',
+      explain: '«molim» — просьба.',
+    })
+    const w = mount(DialogueStep, { props })
+    await w.findAll('button').find((b) => b.text() === 'Jedan hleb, hvala.')!.trigger('click')
+    await flushPromises()
+
+    expect(w.text()).toContain('ты ответил иначе')
+    expect(w.text()).toContain('«molim» — просьба.')
+  })
+
+  it('leaves a correct answer unmarked', async () => {
+    vi.spyOn(api, 'check').mockResolvedValue({ ok: true, line: 'Jedan hleb, molim.' })
+    const w = mount(DialogueStep, { props })
+    await w.findAll('button').find((b) => b.text() === 'Jedan hleb, molim.')!.trigger('click')
+    await flushPromises()
+
+    expect(w.text()).not.toContain('ты ответил иначе')
+  })
+
+  it('marks a turn answered wrongly in an earlier session', () => {
+    const answeredStep: Step = {
+      ...step,
+      turns: [
+        step.turns![0],
+        { who: 'me', exercise_id: '05.9.1', sr: 'Jedan hleb, molim.', ru: 'Один хлеб, пожалуйста.' },
+        step.turns![2],
+      ],
+    }
+    const w = mount(DialogueStep, {
+      props: { ...props, step: answeredStep, priors: { '05.9.1': { answer: 'Jedan hleb, hvala.', correct: false } } },
+    })
+    expect(w.text()).toContain('ты ответил иначе')
+  })
+})

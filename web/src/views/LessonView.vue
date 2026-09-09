@@ -15,6 +15,7 @@ import {
   ArrowRight,
   BookOpen,
   CircleCheckBig,
+  MessagesSquare,
   Dumbbell,
   Lightbulb,
   RotateCcw,
@@ -37,6 +38,7 @@ const KIND_META: Record<string, { icon: unknown; label: string }> = {
   practice: { icon: Dumbbell, label: 'Практика' },
   reading: { icon: BookOpen, label: 'Чтение' },
   checkpoint: { icon: CircleCheckBig, label: 'Проверка' },
+  dialogue: { icon: MessagesSquare, label: 'Разговор' },
 }
 const kindMeta = (k: string) => KIND_META[k] ?? { icon: Lightbulb, label: k }
 

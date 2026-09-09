@@ -64,12 +64,19 @@ function onGraded(exerciseId: string, ok: boolean, result: CheckResult) {
   emit('graded', exerciseId, ok)
 }
 
+// A settled "me" turn: the canonical line, plus — when the answer was wrong —
+// the miss marker and its explanation, so a mistake is never silently swallowed
+// by the conversation moving on.
 function lineOf(t: { exercise_id?: string; sr?: string; ru?: string; audio?: string }) {
   const res = t.exercise_id ? answered[t.exercise_id] : undefined
+  const prior = t.exercise_id ? props.priors[t.exercise_id] : undefined
+  const wrong = res ? !res.ok : prior ? !prior.correct : false
   return {
     sr: res?.line ?? t.sr ?? '',
     ru: res?.line_ru ?? t.ru,
     audio: res?.line_audio ?? t.audio,
+    wrong,
+    note: res?.explain,
   }
 }
 </script>
@@ -121,6 +128,8 @@ function lineOf(t: { exercise_id?: string; sr?: string; ru?: string; audio?: str
             :sr="lineOf(turns[v.index]).sr"
             :ru="lineOf(turns[v.index]).ru"
             :audio="lineOf(turns[v.index]).audio"
+            :wrong="lineOf(turns[v.index]).wrong"
+            :note="lineOf(turns[v.index]).note"
             :show-translation="showTranslations"
           />
 

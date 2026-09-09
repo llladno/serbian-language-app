@@ -13,6 +13,10 @@ const props = defineProps<{
   ru?: string
   audio?: string
   showTranslation?: boolean
+  // a "me" line the learner got wrong: the correct line still stands in the
+  // chat, but it has to be visibly marked as a miss, with the explanation.
+  wrong?: boolean
+  note?: string
 }>()
 
 const open = ref(false)
@@ -23,9 +27,10 @@ const translated = computed(() => props.showTranslation || open.value)
   <div class="flex" :class="who === 'me' ? 'justify-end' : 'justify-start'">
     <div
       class="max-w-[85%] rounded-2xl px-3.5 py-2.5"
-      :class="
-        who === 'me' ? 'rounded-br-sm bg-[var(--accent-soft)]' : 'rounded-bl-sm bg-[var(--bg-soft)]'
-      "
+      :class="[
+        who === 'me' ? 'rounded-br-sm bg-[var(--accent-soft)]' : 'rounded-bl-sm bg-[var(--bg-soft)]',
+        wrong ? 'ring-1 ring-[var(--bad)]' : '',
+      ]"
     >
       <div class="flex items-start gap-2">
         <p class="serbian leading-7"><GlossedText :text="sr" /></p>
@@ -44,6 +49,9 @@ const translated = computed(() => props.showTranslation || open.value)
       </div>
 
       <p v-if="translated && ru" class="mt-1.5 text-sm text-[var(--muted)]">{{ ru }}</p>
+
+      <p v-if="wrong" class="mt-1.5 text-sm font-semibold text-[var(--bad)]">✗ ты ответил иначе</p>
+      <p v-if="wrong && note" class="mt-0.5 text-sm text-[var(--muted)]">{{ note }}</p>
     </div>
   </div>
 </template>
