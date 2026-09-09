@@ -15,7 +15,7 @@ describe('ChoiceAnswer', () => {
     await flushPromises()
 
     expect(check).toHaveBeenCalledWith('01', '01.2.1', { answer: 'Hvala' })
-    expect(w.emitted('graded')?.[0]).toEqual([true])
+    expect(w.emitted('graded')?.[0]?.[0]).toBe(true)
     expect(w.text()).toContain('Верно')
   })
 
@@ -25,7 +25,16 @@ describe('ChoiceAnswer', () => {
     await w.findAll('button').find((b) => b.text() === 'Molim')!.trigger('click')
     await flushPromises()
 
-    expect(w.emitted('graded')?.[0]).toEqual([false])
+    expect(w.emitted('graded')?.[0]?.[0]).toBe(false)
     expect(w.text()).toContain('Hvala')
+  })
+
+  it('passes the check result along with the verdict', async () => {
+    vi.spyOn(api, 'check').mockResolvedValue({ ok: true, line: 'Hvala', line_ru: 'Спасибо' })
+    const w = mount(ChoiceAnswer, { props })
+    await w.findAll('button').find((b) => b.text() === 'Hvala')!.trigger('click')
+    await flushPromises()
+
+    expect(w.emitted('graded')?.[0]).toEqual([true, { ok: true, line: 'Hvala', line_ru: 'Спасибо' }])
   })
 })

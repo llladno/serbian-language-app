@@ -21,7 +21,7 @@ const props = defineProps<{
 // sentence to transcribe lives only in the audio.
 const glossPrompt = computed(() => props.type === 'fill_blank' || props.type === 'fix_error')
 
-const emit = defineEmits<{ graded: [ok: boolean] }>()
+const emit = defineEmits<{ graded: [ok: boolean, result: CheckResult] }>()
 
 const answer = ref(props.prior?.answer ?? '')
 const result = ref<CheckResult | null>(null)
@@ -34,7 +34,7 @@ async function submit() {
   try {
     result.value = await api.check(props.lesson, props.exerciseId, { answer: answer.value })
     fromPrior.value = false
-    emit('graded', !!result.value.ok)
+    emit('graded', !!result.value.ok, result.value)
   } finally {
     pending.value = false
   }

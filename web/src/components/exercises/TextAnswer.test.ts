@@ -27,7 +27,7 @@ describe('TextAnswer', () => {
     expect(w.text()).toContain('Zdravo! Kako si?')
     expect(w.text()).toContain('почти')
     expect(w.find('.chunk-wrong').exists()).toBe(true)
-    expect(w.emitted('graded')?.[0]).toEqual([false])
+    expect(w.emitted('graded')?.[0]?.[0]).toBe(false)
   })
 
   it('reports success and emits graded true', async () => {
@@ -38,7 +38,7 @@ describe('TextAnswer', () => {
     await flushPromises()
 
     expect(w.text()).toContain('Верно')
-    expect(w.emitted('graded')?.[0]).toEqual([true])
+    expect(w.emitted('graded')?.[0]?.[0]).toBe(true)
   })
 
   it('does not submit an empty answer', async () => {
@@ -82,6 +82,6 @@ describe('TextAnswer', () => {
     await w.find('input').setValue('Zdravo, kako si?')
     await w.find('form').trigger('submit')
     await flushPromises()
-    expect(w.emitted('graded')?.[0]).toEqual([true])
+    expect(w.emitted('graded')?.[0]?.[0]).toBe(true)
   })
 })

@@ -10,7 +10,7 @@ const props = defineProps<{
   options: string[]
   prior?: LessonAttempt
 }>()
-const emit = defineEmits<{ graded: [ok: boolean] }>()
+const emit = defineEmits<{ graded: [ok: boolean, result: CheckResult] }>()
 
 const shuffled = ref([...props.options].sort(() => Math.random() - 0.5))
 const picked = ref<string | null>(props.prior?.answer ?? null)
@@ -24,7 +24,7 @@ async function choose(opt: string) {
   pending.value = true
   try {
     result.value = await api.check(props.lesson, props.exerciseId, { answer: opt })
-    emit('graded', !!result.value.ok)
+    emit('graded', !!result.value.ok, result.value)
   } finally {
     pending.value = false
   }

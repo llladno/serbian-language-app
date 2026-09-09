@@ -25,6 +25,6 @@ describe('WordBankAnswer', () => {
     await flushPromises()
 
     expect(check).toHaveBeenCalledWith('01', '01.4.3', { answer: 'Zovem se Ana' })
-    expect(w.emitted('graded')?.[0]).toEqual([true])
+    expect(w.emitted('graded')?.[0]?.[0]).toBe(true)
   })
 })
