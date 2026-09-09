@@ -282,6 +282,22 @@ func (h handlers) findExercise(lesson, exID string) (content.Exercise, string, b
 	return content.Exercise{}, "", false
 }
 
+// findTurn locates the dialogue turn an exercise belongs to, if any.
+func (h handlers) findTurn(lesson, exID string) (content.Turn, bool) {
+	l := h.Course().Lessons[lesson]
+	if l == nil {
+		return content.Turn{}, false
+	}
+	for _, s := range l.Steps {
+		for _, t := range s.Turns {
+			if t.Exercise != nil && t.Exercise.ID == exID {
+				return t, true
+			}
+		}
+	}
+	return content.Turn{}, false
+}
+
 func (h handlers) checkExercise(w http.ResponseWriter, r *http.Request) {
 	us, ok := h.user(w, r)
 	if !ok {
@@ -302,6 +318,9 @@ func (h handlers) checkExercise(w http.ResponseWriter, r *http.Request) {
 
 	now := h.Now()
 	resp := checkResultDTO{Explain: ex.Explain}
+	if t, ok := h.findTurn(lesson, exID); ok {
+		resp.Line, resp.LineRU, resp.LineAudio = t.SR, t.RU, t.Audio
+	}
 	var recordAnswer string
 	var correct bool
 

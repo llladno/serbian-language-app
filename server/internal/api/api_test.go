@@ -517,3 +517,41 @@ func TestDialogueHidesUnansweredLines(t *testing.T) {
 		t.Errorf("answered me line translation = %q", got)
 	}
 }
+
+func TestCheckReturnsDialogueLine(t *testing.T) {
+	h, _ := newTestAPI(t)
+
+	res := decodeBody[checkResultDTO](t, do(h, "POST",
+		"/api/lessons/91/exercises/91.1.1/check", `{"answer":"Jedan hleb, molim."}`))
+	if !res.OK {
+		t.Fatal("answer should be accepted")
+	}
+	if res.Line != "Jedan hleb, molim." || res.LineRU != "Один хлеб, пожалуйста." {
+		t.Errorf("line=%q line_ru=%q", res.Line, res.LineRU)
+	}
+}
+
+func TestCheckReturnsLineAfterWrongAnswer(t *testing.T) {
+	h, _ := newTestAPI(t)
+
+	res := decodeBody[checkResultDTO](t, do(h, "POST",
+		"/api/lessons/91/exercises/91.1.1/check", `{"answer":"Jedan hleb, hvala."}`))
+	if res.OK {
+		t.Fatal("answer should be rejected")
+	}
+	// The chat shows the correct line even after a miss — otherwise the
+	// conversation loses its thread.
+	if res.Line != "Jedan hleb, molim." {
+		t.Errorf("line после ошибки = %q", res.Line)
+	}
+}
+
+func TestCheckOutsideDialogueHasNoLine(t *testing.T) {
+	h, _ := newTestAPI(t)
+
+	res := decodeBody[checkResultDTO](t, do(h, "POST",
+		"/api/lessons/90/exercises/90.2.1/check", `{"answer":"Da"}`))
+	if res.Line != "" || res.LineRU != "" {
+		t.Errorf("plain exercise leaked a dialogue line: %q / %q", res.Line, res.LineRU)
+	}
+}

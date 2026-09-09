@@ -99,6 +99,13 @@ type checkResultDTO struct {
 	Forms    []checker.Result `json:"forms,omitempty"`
 	Match    map[string]bool  `json:"match,omitempty"` // match: per-pair correctness
 	NearMiss bool             `json:"near_miss,omitempty"`
+
+	// dialogue: the canonical line this answer produces, so the chat can show
+	// a bubble without a second request — sent whether the answer was right
+	// or wrong.
+	Line      string `json:"line,omitempty"`
+	LineRU    string `json:"line_ru,omitempty"`
+	LineAudio string `json:"line_audio,omitempty"`
 }
 
 // ---- vocab / false friends ----
