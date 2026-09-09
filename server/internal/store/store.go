@@ -179,11 +179,11 @@ func Open(dsn string) (*Store, error) {
 		return nil, err
 	}
 	if pg {
-		sqlDB.SetMaxOpenConns(10)
+		sqlDB.SetMaxOpenConns(5)
 		sqlDB.SetConnMaxIdleTime(5 * time.Minute)
 	} else {
 		sqlDB.SetMaxOpenConns(1) // modernc sqlite + WAL: single writer
-		if _, err := sqlDB.Exec(`PRAGMA journal_mode=WAL; PRAGMA busy_timeout=5000;`); err != nil {
+		if _, err := sqlDB.Exec(`PRAGMA journal_mode=WAL; PRAGMA busy_timeout=5000; PRAGMA foreign_keys=ON;`); err != nil {
 			return nil, err
 		}
 	}
@@ -260,27 +260,24 @@ CREATE INDEX IF NOT EXISTS attempts_user ON attempts(user_name);
 `
 }
 
+// applySchema brings the database up to date. On SQLite it first runs the
+// legacy v1->v2 account migration (accountless tables predate numbered
+// migrations), then hands off to the numbered migration runner, which is the
+// single source of truth for schema on both backends.
 func (s *Store) applySchema() error {
-	if s.db.pg {
-		// Fresh or existing Postgres: the CREATE ... IF NOT EXISTS script is
-		// idempotent. No v1 legacy path — that only ever existed on SQLite.
-		return s.db.execScript(schemaSQL(true))
-	}
-
-	var ver int
-	_ = s.db.QueryRow(`PRAGMA user_version`).Scan(&ver)
-	if ver == 1 {
-		if err := s.migrateV1toV2(); err != nil {
-			return fmt.Errorf("migrate v1->v2: %w", err)
+	if !s.db.pg {
+		var ver int
+		_ = s.db.QueryRow(`PRAGMA user_version`).Scan(&ver)
+		if ver == 1 {
+			if err := s.migrateV1toV2(); err != nil {
+				return fmt.Errorf("migrate v1->v2: %w", err)
+			}
+			if _, err := s.db.Exec(`PRAGMA user_version = 2`); err != nil {
+				return err
+			}
 		}
 	}
-	if _, err := s.db.Exec(schemaSQL(false)); err != nil {
-		return err
-	}
-	if _, err := s.db.Exec(fmt.Sprintf(`PRAGMA user_version = %d`, schemaVer)); err != nil {
-		return err
-	}
-	return nil
+	return s.runMigrations()
 }
 
 // migrateV1toV2 moves the accountless v1 tables under the legacy account.
