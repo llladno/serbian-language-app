@@ -27,6 +27,14 @@ type migration struct {
 	sql     string
 }
 
+// hooks holds Go steps that run inside a migration's transaction, keyed by
+// version, after that version's .sql (if any). Registered from migration_hooks.go.
+var hooks = map[int]func(tx *dbtx, pg bool) error{}
+
+// registerHook binds a Go step to a migration version. Called from an init()
+// in migration_hooks.go.
+func registerHook(version int, fn func(tx *dbtx, pg bool) error) { hooks[version] = fn }
+
 // loadMigrations reads and orders migrations/NNN_*.sql from the embed FS.
 func loadMigrations() ([]migration, error) {
 	entries, err := migrationFS.ReadDir("migrations")
@@ -58,7 +66,17 @@ func loadMigrations() ([]migration, error) {
 
 // runMigrations applies every migration whose version is not yet recorded
 // in schema_migrations, each in its own transaction, lowest version first.
-func (s *Store) runMigrations() error {
+func (s *Store) runMigrations() error { return s.runMigrationsFiltered(0) }
+
+// runMigrationsUpTo applies migrations with version <= max (test helper).
+func (s *Store) runMigrationsUpTo(max int) error { return s.runMigrationsFiltered(max) }
+
+// runMigrationsFiltered applies every unapplied migration whose version is
+// <= max (max <= 0 means no limit), each in its own transaction, lowest
+// version first. A Go hook registered for a version runs inside that
+// version's transaction, after the .sql statements and before the version is
+// recorded in schema_migrations.
+func (s *Store) runMigrationsFiltered(max int) error {
 	if _, err := s.db.Exec(`CREATE TABLE IF NOT EXISTS schema_migrations (
 		version INTEGER PRIMARY KEY, applied_at TEXT NOT NULL)`); err != nil {
 		return fmt.Errorf("schema_migrations: %w", err)
@@ -84,7 +102,7 @@ func (s *Store) runMigrations() error {
 	}
 	macro := autoIDExpr(s.db.pg)
 	for _, m := range migs {
-		if applied[m.version] {
+		if applied[m.version] || (max > 0 && m.version > max) {
 			continue
 		}
 		script := strings.ReplaceAll(m.sql, "{{.AutoID}}", macro)
@@ -96,6 +114,12 @@ func (s *Store) runMigrations() error {
 			if _, err := tx.Exec(stmt); err != nil {
 				tx.Rollback()
 				return fmt.Errorf("migration %s: %s: %w", m.name, firstLine(stmt), err)
+			}
+		}
+		if hook := hooks[m.version]; hook != nil {
+			if err := hook(tx, s.db.pg); err != nil {
+				tx.Rollback()
+				return fmt.Errorf("migration %s hook: %w", m.name, err)
 			}
 		}
 		if _, err := tx.Exec(`INSERT INTO schema_migrations (version, applied_at) VALUES (?, ?)`,

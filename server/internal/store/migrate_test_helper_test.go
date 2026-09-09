@@ -1,6 +1,31 @@
 package store
 
-import "database/sql"
+import (
+	"database/sql"
+	"testing"
+)
+
+// mustOpenRaw opens a bare in-memory SQLite database wrapped as *database, with
+// no schema applied, so a migration can be driven step by step from a test.
+func mustOpenRaw(t *testing.T) *database {
+	t.Helper()
+	db, err := sql.Open("sqlite", ":memory:")
+	if err != nil {
+		t.Fatal(err)
+	}
+	db.SetMaxOpenConns(1) // :memory: is per-connection; keep one conn
+	db.Exec(`PRAGMA foreign_keys=ON`)
+	t.Cleanup(func() { db.Close() })
+	return &database{sqlDB: db, pg: false}
+}
+
+// mustExec runs a statement against the store or fails the test.
+func mustExec(t *testing.T, s *Store, q string, a ...any) {
+	t.Helper()
+	if _, err := s.db.Exec(q, a...); err != nil {
+		t.Fatalf("%s: %v", q, err)
+	}
+}
 
 // openRawV1 creates a database with the v1 (accountless) schema so the
 // migration path can be exercised.
