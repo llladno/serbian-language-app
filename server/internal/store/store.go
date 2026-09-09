@@ -338,7 +338,7 @@ func (s *Store) CreateUser(name string) (string, error) {
 	id := auth.NewUserID()
 	if _, err := s.db.Exec(`INSERT INTO users (id, name, created_at) VALUES (?, ?, ?)`,
 		id, n, time.Now().UTC().Format(time.RFC3339)); err != nil {
-		return "", err
+		return "", fmt.Errorf("create user: %w", err)
 	}
 	return id, nil
 }
@@ -384,24 +384,38 @@ func (s *Store) RenameUser(id, name string) error {
 	if len([]rune(n)) > 40 {
 		return fmt.Errorf("name too long")
 	}
-	_, err := s.db.Exec(`UPDATE users SET name = ? WHERE id = ?`, n, id)
-	return err
+	if _, err := s.db.Exec(`UPDATE users SET name = ? WHERE id = ?`, n, id); err != nil {
+		return fmt.Errorf("rename user: %w", err)
+	}
+	return nil
 }
 
-// DeleteUser removes the account and all of its learning state in one tx.
+// DeleteUser removes the account and every row that belongs to it — the auth
+// rows and the learning state — in one tx. The auth tables are cleared
+// explicitly rather than via ON DELETE CASCADE: on SQLite the cascade only
+// fires while PRAGMA foreign_keys stays on for the connection, which is too
+// fragile to depend on (migrate003 deletes identities explicitly for the same
+// reason). email_tokens references identities, so it is cleared first.
 func (s *Store) DeleteUser(id string) error {
 	tx, err := s.db.Begin()
 	if err != nil {
-		return err
+		return fmt.Errorf("delete user: begin: %w", err)
 	}
 	defer tx.Rollback()
-	for _, tbl := range []string{"srs_cards", "reviews", "attempts", "lesson_progress", "lesson_step_progress"} {
-		if _, err := tx.Exec(`DELETE FROM `+tbl+` WHERE user_id = ?`, id); err != nil {
-			return err
+	for _, step := range []struct{ what, q string }{
+		{"email_tokens", `DELETE FROM email_tokens WHERE identity_id IN (SELECT id FROM identities WHERE user_id = ?)`},
+		{"identities", `DELETE FROM identities WHERE user_id = ?`},
+		{"sessions", `DELETE FROM sessions WHERE user_id = ?`},
+		{"srs_cards", `DELETE FROM srs_cards WHERE user_id = ?`},
+		{"reviews", `DELETE FROM reviews WHERE user_id = ?`},
+		{"attempts", `DELETE FROM attempts WHERE user_id = ?`},
+		{"lesson_progress", `DELETE FROM lesson_progress WHERE user_id = ?`},
+		{"lesson_step_progress", `DELETE FROM lesson_step_progress WHERE user_id = ?`},
+		{"users", `DELETE FROM users WHERE id = ?`},
+	} {
+		if _, err := tx.Exec(step.q, id); err != nil {
+			return fmt.Errorf("delete user: %s: %w", step.what, err)
 		}
-	}
-	if _, err := tx.Exec(`DELETE FROM users WHERE id = ?`, id); err != nil {
-		return err
 	}
 	return tx.Commit()
 }
@@ -410,14 +424,14 @@ func (s *Store) DeleteUser(id string) error {
 func (s *Store) ListUsers() ([]UserRow, error) {
 	rows, err := s.db.Query(`SELECT id, name, created_at FROM users ORDER BY created_at ASC`)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("list users: %w", err)
 	}
 	defer rows.Close()
 	var out []UserRow
 	for rows.Next() {
 		var u UserRow
 		if err := rows.Scan(&u.ID, &u.Name, &u.CreatedAt); err != nil {
-			return nil, err
+			return nil, fmt.Errorf("list users: %w", err)
 		}
 		out = append(out, u)
 	}
@@ -471,18 +485,23 @@ func (s *Store) AllUsersProgress(today time.Time) ([]UserProgress, error) {
 		today.Format(dateFmt)+`' GROUP BY user_id`, reviewedToday)
 
 	lastActive := map[string]string{}
-	if rows, err := s.db.Query(`SELECT user_id, MAX(d) FROM (
+	// The derived table needs an explicit alias — Postgres rejects a subquery
+	// in FROM without one. Surface the error instead of swallowing it: a
+	// silent failure here leaves every LastActive empty on prod.
+	laRows, err := s.db.Query(`SELECT user_id, MAX(d) FROM (
 		SELECT user_id, substr(reviewed_at,1,10) d FROM reviews
 		UNION ALL SELECT user_id, substr(attempted_at,1,10) FROM attempts
-	) GROUP BY user_id`); err == nil {
-		for rows.Next() {
-			var id, d string
-			if rows.Scan(&id, &d) == nil {
-				lastActive[id] = d
-			}
-		}
-		rows.Close()
+	) AS activity GROUP BY user_id`)
+	if err != nil {
+		return nil, fmt.Errorf("last active: %w", err)
 	}
+	for laRows.Next() {
+		var id, d string
+		if laRows.Scan(&id, &d) == nil {
+			lastActive[id] = d
+		}
+	}
+	laRows.Close()
 
 	out := make([]UserProgress, 0, len(users))
 	for _, ur := range users {

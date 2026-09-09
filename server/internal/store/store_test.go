@@ -62,6 +62,9 @@ func TestAccountLifecycle(t *testing.T) {
 	if err := s.RenameUser(id, "Гриша Н."); err != nil {
 		t.Fatal(err)
 	}
+	if row, err := s.UserByID(id); err != nil || row.Name != "Гриша Н." {
+		t.Fatalf("after rename: %v %+v", err, row)
+	}
 	u := s.User(id)
 	if err := u.SetLessonStatus("01", "done", day0); err != nil {
 		t.Fatal(err)
@@ -139,6 +142,51 @@ func TestListUsers(t *testing.T) {
 	}
 	if len(users) != 2 || users[0].Name != "Гриша" || users[1].Name != "Оля" {
 		t.Errorf("users = %+v", users)
+	}
+}
+
+func TestAllUsersProgress(t *testing.T) {
+	s := newStore(t)
+	activeID, err := s.CreateUser("Активный")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := s.CreateUser("Пассивный"); err != nil {
+		t.Fatal(err)
+	}
+
+	u := s.User(activeID)
+	u.EnsureCards([]CardSeed{{"vocab:x", "vocab", "x"}})
+	if _, err := u.GradeCard("vocab:x", srs.Good, day0); err != nil {
+		t.Fatal(err)
+	}
+	if err := u.AddAttempt(Attempt{"01-A-1", "01", "A", "z", true}, day0); err != nil {
+		t.Fatal(err)
+	}
+	if err := u.SetLessonStatus("01", "done", day0); err != nil {
+		t.Fatal(err)
+	}
+
+	prog, err := s.AllUsersProgress(day0)
+	if err != nil {
+		t.Fatalf("AllUsersProgress: %v", err)
+	}
+	if len(prog) != 2 {
+		t.Fatalf("progress rows = %d, want 2 (%+v)", len(prog), prog)
+	}
+	// more progress (a completed lesson) sorts first
+	if prog[0].Name != "Активный" || prog[1].Name != "Пассивный" {
+		t.Fatalf("ordering = [%q, %q], want [Активный, Пассивный]", prog[0].Name, prog[1].Name)
+	}
+	want := day0.Format(dateFmt)
+	if prog[0].LastActive != want {
+		t.Errorf("active LastActive = %q, want %q (alias regression?)", prog[0].LastActive, want)
+	}
+	if prog[1].LastActive != "" {
+		t.Errorf("passive LastActive = %q, want empty", prog[1].LastActive)
+	}
+	if prog[0].LessonsDone != 1 {
+		t.Errorf("active LessonsDone = %d, want 1", prog[0].LessonsDone)
 	}
 }
 
