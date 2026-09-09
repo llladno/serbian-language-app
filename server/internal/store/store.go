@@ -312,6 +312,15 @@ func firstLine(s string) string {
 	return s
 }
 
+// nullIf maps an empty string to a SQL NULL, so optional TEXT columns stay
+// NULL rather than storing "". Used by identities.go and sessions.go.
+func nullIf(s string) any {
+	if s == "" {
+		return nil
+	}
+	return s
+}
+
 // ---- account management ----
 
 // NormalizeName trims and collapses whitespace in an account name.

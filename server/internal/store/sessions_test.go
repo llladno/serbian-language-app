@@ -92,7 +92,8 @@ func TestTouchSessionSlides(t *testing.T) {
 	if err := s.CreateSession("hash-fresh", uid, "", day0, day0.Add(time.Hour)); err != nil {
 		t.Fatal(err)
 	}
-	if err := s.TouchSession("hash-fresh", day0.Add(time.Hour)); err != nil {
+	touchAt := day0.Add(30 * time.Minute) // still live (expires day0+1h)
+	if err := s.TouchSession("hash-fresh", touchAt); err != nil {
 		t.Fatal(err)
 	}
 	got, err := s.SessionByHash("hash-fresh", day0.Add(10*24*time.Hour))
@@ -100,8 +101,39 @@ func TestTouchSessionSlides(t *testing.T) {
 		t.Fatalf("session should still be live after a touch: %v", err)
 	}
 	exp, _ := time.Parse(time.RFC3339, got.ExpiresAt)
-	if want := day0.Add(time.Hour).Add(sessionSlide); !exp.Equal(want) {
+	if want := touchAt.Add(sessionSlide); !exp.Equal(want) {
 		t.Errorf("expires_at = %s, want slid to %s", exp, want)
+	}
+}
+
+// TestTouchSessionExpiredNoop covers the liveness guard: touching a session
+// whose expires_at is already in the past must not slide it back to life.
+func TestTouchSessionExpiredNoop(t *testing.T) {
+	s := newStore(t)
+	uid := mkUser(t, s, "Гриша")
+
+	if err := s.CreateSession("hash-dead", uid, "", day0, day0.Add(-time.Hour)); err != nil {
+		t.Fatal(err)
+	}
+	if err := s.TouchSession("hash-dead", day0); err != nil {
+		t.Fatalf("TouchSession on expired session should be a no-op nil, got %v", err)
+	}
+	// expires_at untouched, session still dead
+	var expStr string
+	if err := s.db.QueryRow(`SELECT expires_at FROM sessions WHERE token_hash = ?`, "hash-dead").
+		Scan(&expStr); err != nil {
+		t.Fatal(err)
+	}
+	if exp, _ := time.Parse(time.RFC3339, expStr); !exp.Equal(day0.Add(-time.Hour)) {
+		t.Errorf("expires_at = %s, want unchanged %s", exp, day0.Add(-time.Hour))
+	}
+	if _, err := s.SessionByHash("hash-dead", day0); !errors.Is(err, sql.ErrNoRows) {
+		t.Errorf("expired session revived: err = %v, want sql.ErrNoRows", err)
+	}
+
+	// an unknown token hash is likewise a silent no-op
+	if err := s.TouchSession("no-such-hash", day0); err != nil {
+		t.Errorf("TouchSession on unknown hash = %v, want nil", err)
 	}
 }
 

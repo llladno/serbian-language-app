@@ -2,6 +2,8 @@ package store
 
 import (
 	"database/sql"
+	"net/url"
+	"strings"
 	"testing"
 )
 
@@ -41,6 +43,14 @@ func openPreMigration002Store(t *testing.T) *Store {
 			t.Fatalf("migrate up to 1: %v", err)
 		}
 		return s
+	}
+	// testDSN() honors TEST_DATABASE_URL straight from the environment, and
+	// reset() runs DROP SCHEMA public CASCADE. Refuse to touch a database whose
+	// name doesn't end in "_test", so a stray prod DSN can't wipe prod.
+	if u, perr := url.Parse(dsn); perr != nil {
+		t.Fatalf("parse test DSN: %v", perr)
+	} else if dbName := strings.TrimPrefix(u.Path, "/"); !strings.HasSuffix(dbName, "_test") {
+		t.Fatalf("refusing to DROP SCHEMA on non-test database %q", dbName)
 	}
 	db, err := sql.Open("pgx", dsn)
 	if err != nil {

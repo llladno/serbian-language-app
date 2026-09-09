@@ -53,6 +53,13 @@ func TestUseEmailTokenHappy(t *testing.T) {
 	}
 }
 
+func TestUseEmailTokenUnknownHash(t *testing.T) {
+	s := newStore(t)
+	if _, err := s.UseEmailToken("no-such-token", "verify", day0); !errors.Is(err, sql.ErrNoRows) {
+		t.Errorf("unknown token err = %v, want sql.ErrNoRows", err)
+	}
+}
+
 func TestUseEmailTokenExpired(t *testing.T) {
 	s := newStore(t)
 	idn := mkIdentity(t, s)

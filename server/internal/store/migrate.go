@@ -96,7 +96,7 @@ func (s *Store) runMigrationsFiltered(max int) error {
 	applied := map[int]bool{}
 	rows, err := s.db.Query(`SELECT version FROM schema_migrations`)
 	if err != nil {
-		return err
+		return fmt.Errorf("query applied versions: %w", err)
 	}
 	for rows.Next() {
 		var v int
@@ -105,6 +105,12 @@ func (s *Store) runMigrationsFiltered(max int) error {
 			return fmt.Errorf("scan applied version: %w", err)
 		}
 		applied[v] = true
+	}
+	// A truncated iteration would leave `applied` incomplete → 002 re-runs →
+	// `users_new` already exists → cryptic boot failure. Fail loudly instead.
+	if err := rows.Err(); err != nil {
+		rows.Close()
+		return fmt.Errorf("iterate applied versions: %w", err)
 	}
 	rows.Close()
 

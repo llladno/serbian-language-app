@@ -1,6 +1,8 @@
 package store
 
 import (
+	"database/sql"
+	"errors"
 	"fmt"
 	"time"
 )
@@ -49,11 +51,19 @@ func (s *Store) SessionByHash(tokenHash string, now time.Time) (Session, error) 
 
 // TouchSession bumps last_seen_at to now and slides expires_at to now +
 // sessionSlide, clamped so it never passes created_at + sessionMaxAge.
+// Best-effort: the lookup filters on expires_at > now, so an already-expired
+// (or deleted) session is a no-op returning nil rather than being slid back to
+// life — the caller has already gated liveness on SessionByHash.
 func (s *Store) TouchSession(tokenHash string, now time.Time) error {
+	nowISO := now.UTC().Format(time.RFC3339)
 	var createdStr string
-	if err := s.db.QueryRow(`SELECT created_at FROM sessions WHERE token_hash = ?`, tokenHash).
-		Scan(&createdStr); err != nil {
-		return err // sql.ErrNoRows propagates
+	switch err := s.db.QueryRow(
+		`SELECT created_at FROM sessions WHERE token_hash = ? AND expires_at > ?`,
+		tokenHash, nowISO).Scan(&createdStr); {
+	case errors.Is(err, sql.ErrNoRows):
+		return nil // gone or expired — nothing to touch
+	case err != nil:
+		return fmt.Errorf("touch session: %w", err)
 	}
 	created, _ := time.Parse(time.RFC3339, createdStr)
 	slide := now.Add(sessionSlide)
@@ -61,7 +71,7 @@ func (s *Store) TouchSession(tokenHash string, now time.Time) error {
 		slide = hardCap
 	}
 	if _, err := s.db.Exec(`UPDATE sessions SET last_seen_at = ?, expires_at = ? WHERE token_hash = ?`,
-		now.UTC().Format(time.RFC3339), slide.UTC().Format(time.RFC3339), tokenHash); err != nil {
+		nowISO, slide.UTC().Format(time.RFC3339), tokenHash); err != nil {
 		return fmt.Errorf("touch session: %w", err)
 	}
 	return nil

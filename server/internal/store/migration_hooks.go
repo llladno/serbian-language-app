@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"log"
 	"strings"
 	"time"
 
@@ -79,17 +80,28 @@ func migrate002(tx *dbtx, pg bool) error {
 		src.Close()
 		ph := "?" + strings.Repeat(", ?", ncol) // ncol+1 placeholders: user_id + ncol copied cols
 		ins := `INSERT INTO ` + c.dst + ` (user_id, ` + c.cols + `) VALUES (` + ph + `)`
+		var copied, dropped int
 		for _, vals := range batch {
-			name, _ := vals[0].(string)
+			// A []byte here (some drivers return TEXT as bytes) would coerce to
+			// "" and silently drop every row — hard-fail instead.
+			name, ok := vals[0].(string)
+			if !ok {
+				return fmt.Errorf("copy %s: user_name is %T, want string", c.src, vals[0])
+			}
 			uid, ok := idByName[name]
 			if !ok {
-				continue // orphaned row (deleted account) — dropped
+				dropped++ // orphaned row (deleted account) — dropped
+				continue
 			}
 			args := append([]any{uid}, vals[1:]...)
 			if _, err := tx.Exec(ins, args...); err != nil {
 				return fmt.Errorf("copy %s: %w", c.src, err)
 			}
+			copied++
 		}
+		// The orphan drop is the one irreversible step — log it so the deploy
+		// log shows exactly what was and wasn't carried over.
+		log.Printf("migrate002: %s: copied %d rows, dropped %d orphaned", c.src, copied, dropped)
 	}
 
 	// swap state tables + users

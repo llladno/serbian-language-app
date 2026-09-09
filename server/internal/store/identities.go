@@ -23,15 +23,6 @@ const identityCols = `id, user_id, provider, provider_uid,
 	COALESCE(email,''), COALESCE(password_hash,''), COALESCE(email_verified_at,''),
 	COALESCE(tg_username,''), created_at`
 
-// nullIf maps an empty string to a SQL NULL, so optional TEXT columns stay
-// NULL rather than storing "".
-func nullIf(s string) any {
-	if s == "" {
-		return nil
-	}
-	return s
-}
-
 func scanIdentity(row interface{ Scan(...any) error }) (Identity, error) {
 	var it Identity
 	err := row.Scan(&it.ID, &it.UserID, &it.Provider, &it.ProviderUID,

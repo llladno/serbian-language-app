@@ -1,6 +1,7 @@
 package store
 
 import (
+	"database/sql"
 	"fmt"
 	"time"
 )
@@ -26,28 +27,27 @@ func (s *Store) CreateEmailToken(tokenHash, identityID, kind string, now, expire
 }
 
 // UseEmailToken atomically marks a live, unused token of the given kind used
-// and returns its identity_id. sql.ErrNoRows if the token is unknown, already
-// used, expired, or the wrong kind.
+// and returns its identity_id. The guarded UPDATE is the atomic point: only
+// one caller can flip used_at from NULL to a value, so two concurrent callers
+// can never both succeed (a SELECT-then-UPDATE pair would let both through
+// under READ COMMITTED). sql.ErrNoRows if the token is unknown, already used,
+// expired, or the wrong kind.
 func (s *Store) UseEmailToken(tokenHash, kind string, now time.Time) (string, error) {
-	tx, err := s.db.Begin()
-	if err != nil {
-		return "", fmt.Errorf("use email token: begin: %w", err)
-	}
-	defer tx.Rollback()
-
 	nowISO := now.UTC().Format(time.RFC3339)
-	var identityID string
-	if err := tx.QueryRow(`SELECT identity_id FROM email_tokens
+	res, err := s.db.Exec(`UPDATE email_tokens SET used_at = ?
 		WHERE token_hash = ? AND kind = ? AND used_at IS NULL AND expires_at > ?`,
-		tokenHash, kind, nowISO).Scan(&identityID); err != nil {
-		return "", err // sql.ErrNoRows propagates
+		nowISO, tokenHash, kind, nowISO)
+	if err != nil {
+		return "", fmt.Errorf("use email token: %w", err)
 	}
-	if _, err := tx.Exec(`UPDATE email_tokens SET used_at = ? WHERE token_hash = ?`,
-		nowISO, tokenHash); err != nil {
-		return "", fmt.Errorf("use email token: mark used: %w", err)
+	n, _ := res.RowsAffected()
+	if n != 1 {
+		return "", sql.ErrNoRows
 	}
-	if err := tx.Commit(); err != nil {
-		return "", fmt.Errorf("use email token: commit: %w", err)
+	var identityID string
+	if err := s.db.QueryRow(`SELECT identity_id FROM email_tokens WHERE token_hash = ?`,
+		tokenHash).Scan(&identityID); err != nil {
+		return "", err
 	}
 	return identityID, nil
 }
