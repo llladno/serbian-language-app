@@ -31,7 +31,7 @@ type migration struct {
 func loadMigrations() ([]migration, error) {
 	entries, err := migrationFS.ReadDir("migrations")
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("read migrations dir: %w", err)
 	}
 	var out []migration
 	for _, e := range entries {
@@ -48,7 +48,7 @@ func loadMigrations() ([]migration, error) {
 		}
 		b, err := migrationFS.ReadFile("migrations/" + e.Name())
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("read migration %s: %w", e.Name(), err)
 		}
 		out = append(out, migration{version: v, name: e.Name(), sql: string(b)})
 	}
@@ -72,7 +72,7 @@ func (s *Store) runMigrations() error {
 		var v int
 		if err := rows.Scan(&v); err != nil {
 			rows.Close()
-			return err
+			return fmt.Errorf("scan applied version: %w", err)
 		}
 		applied[v] = true
 	}
@@ -80,7 +80,7 @@ func (s *Store) runMigrations() error {
 
 	migs, err := loadMigrations()
 	if err != nil {
-		return err
+		return fmt.Errorf("load migrations: %w", err)
 	}
 	macro := autoIDExpr(s.db.pg)
 	for _, m := range migs {
@@ -90,7 +90,7 @@ func (s *Store) runMigrations() error {
 		script := strings.ReplaceAll(m.sql, "{{.AutoID}}", macro)
 		tx, err := s.db.Begin()
 		if err != nil {
-			return err
+			return fmt.Errorf("begin %s: %w", m.name, err)
 		}
 		for _, stmt := range splitSQL(script) {
 			if _, err := tx.Exec(stmt); err != nil {

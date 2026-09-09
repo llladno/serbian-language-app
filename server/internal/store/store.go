@@ -23,7 +23,6 @@ import (
 
 const (
 	dateFmt     = "2006-01-02"
-	schemaVer   = 2
 	legacyOwner = "Гриша" // v1 rows (no account) are migrated to this account
 )
 
@@ -111,20 +110,6 @@ func rebind(q string, pg bool) string {
 		}
 	}
 	return b.String()
-}
-
-// execScript runs a multi-statement SQL string one statement at a time
-// (the Postgres wire protocol rejects multiple commands per Exec).
-func (d *database) execScript(script string) error {
-	for _, stmt := range strings.Split(script, ";") {
-		if strings.TrimSpace(stmt) == "" {
-			continue
-		}
-		if _, err := d.sqlDB.Exec(stmt); err != nil {
-			return fmt.Errorf("%s: %w", firstLine(stmt), err)
-		}
-	}
-	return nil
 }
 
 // CardSeed identifies a card that should exist for a given content item.
