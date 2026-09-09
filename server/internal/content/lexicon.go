@@ -146,3 +146,16 @@ func strictStrings(e Exercise) []string {
 	}
 	return out
 }
+
+// turnStrings collects the Serbian lines of a dialogue step. The Russian
+// fields (RU, Scene) and the exercise prompts are deliberately Russian and
+// are not checked.
+func turnStrings(s Step) []string {
+	out := make([]string, 0, len(s.Turns))
+	for _, t := range s.Turns {
+		if t.SR != "" {
+			out = append(out, t.SR)
+		}
+	}
+	return out
+}

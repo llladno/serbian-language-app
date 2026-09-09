@@ -40,6 +40,17 @@ func TestLexiconGuardRealContent(t *testing.T) {
 			}
 			known := knownWords(c, id)
 			for _, s := range l.Steps {
+				for _, txt := range turnStrings(s) {
+					for _, u := range unknownTokens(txt, known, s.AlsoOK) {
+						msg := "lesson %s step %s: unknown word %q in a dialogue line " +
+							"(add it to the step's also_ok or the lesson's teaches)"
+						if l.Manifest {
+							t.Errorf(msg, id, s.ID, u)
+						} else {
+							t.Logf("[legacy] "+msg, id, s.ID, u)
+						}
+					}
+				}
 				for _, e := range s.Exercises {
 					for _, txt := range strictStrings(e) {
 						for _, u := range unknownTokens(txt, known, s.AlsoOK) {
@@ -55,5 +66,39 @@ func TestLexiconGuardRealContent(t *testing.T) {
 				}
 			}
 		}
+	}
+}
+
+func TestTurnStrings(t *testing.T) {
+	s := Step{Kind: "dialogue", Turns: []Turn{
+		{Who: "npc", SR: "Izvolite?", RU: "Слушаю вас?"},
+		{Who: "me", SR: "Jedan hleb, molim.", RU: "Один хлеб, пожалуйста."},
+	}}
+	got := turnStrings(s)
+	if len(got) != 2 || got[0] != "Izvolite?" || got[1] != "Jedan hleb, molim." {
+		t.Fatalf("turnStrings = %v", got)
+	}
+	for _, g := range got {
+		if isCyrillic(g) {
+			t.Errorf("russian text leaked into the guard: %q", g)
+		}
+	}
+}
+
+func TestDialogueLineHitsGuard(t *testing.T) {
+	known := map[string]bool{"jedan": true, "hleb": true, "molim": true}
+	s := Step{Kind: "dialogue", AlsoOK: []string{"malo"}, Turns: []Turn{
+		{Who: "me", SR: "Jedan hleb, molim."},
+		{Who: "npc", SR: "Sačekajte malo."},
+	}}
+
+	var unknown []string
+	for _, txt := range turnStrings(s) {
+		unknown = append(unknown, unknownTokens(txt, known, s.AlsoOK)...)
+	}
+	// "malo" is covered by also_ok, "sačekajte" is not taught anywhere.
+	// Normalize keeps diacritics, so the guard sees č and c as different.
+	if len(unknown) != 1 || unknown[0] != "sačekajte" {
+		t.Fatalf("unknown = %v, want [sačekajte]", unknown)
 	}
 }
