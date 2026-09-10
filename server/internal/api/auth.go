@@ -357,7 +357,13 @@ func (h handlers) resendVerification(w http.ResponseWriter, r *http.Request) {
 		}
 		id, err := h.Store.IdentityByProviderUID("password", uid)
 		if err != nil {
-			return // unknown address (or a store blip) — stay silent
+			// Unknown address is the common case (sql.ErrNoRows) — stay
+			// silent. A real store fault is worth a server-side line; it
+			// carries no email and costs nothing in enumeration terms.
+			if !errors.Is(err, sql.ErrNoRows) {
+				log.Printf("resend: lookup identity: %v", err)
+			}
+			return
 		}
 		if id.EmailVerifiedAt != "" {
 			return // already confirmed, nothing to resend
@@ -395,6 +401,12 @@ func (h handlers) forgotPassword(w http.ResponseWriter, r *http.Request) {
 		}
 		id, err := h.Store.IdentityByProviderUID("password", uid)
 		if err != nil {
+			// sql.ErrNoRows (no account for this address) is the silent,
+			// expected path; a genuine store fault is logged server-side
+			// only — no email, no enumeration signal.
+			if !errors.Is(err, sql.ErrNoRows) {
+				log.Printf("forgot: lookup identity: %v", err)
+			}
 			return
 		}
 		name := ""
@@ -417,10 +429,13 @@ func (h handlers) forgotPassword(w http.ResponseWriter, r *http.Request) {
 
 // resetPassword handles POST {token, password}. It validates the new password
 // shape first (cheap, and so a bad password never burns the token), consumes
-// the "reset" token, writes the new hash, kills every existing session for the
-// account, then autologins this device and returns the account. A security
-// notice is mailed after the response. The token is never logged and never
-// echoed in an error body.
+// the "reset" token, kills every existing session for the account, writes the
+// new hash, marks the address verified (finishing an emailed link proves inbox
+// control), then autologins this device and returns the account. Sessions are
+// purged before the password is touched so a failed purge fails the whole
+// request instead of silently leaving a stale session alive. A security notice
+// is mailed after the response. The token is never logged and never echoed in
+// an error body.
 func (h handlers) resetPassword(w http.ResponseWriter, r *http.Request) {
 	var req struct {
 		Token    string `json:"token"`
@@ -450,6 +465,23 @@ func (h handlers) resetPassword(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	idn, err := h.Store.IdentityByID(identityID)
+	if err != nil {
+		log.Printf("reset-password: identity by id: %v", err)
+		fail(w, http.StatusInternalServerError, "internal error")
+		return
+	}
+
+	// Kill every existing session before touching the password. Nothing is
+	// mutated yet, so this is safe to retry; and a failed purge must not be
+	// swallowed — a stale session outliving a reset is exactly the guarantee
+	// this endpoint owes the user, so a failure here is a 500, not a 200.
+	if err := h.Store.DeleteUserSessions(idn.UserID); err != nil {
+		log.Printf("reset-password: delete sessions: %v", err)
+		fail(w, http.StatusInternalServerError, "internal error")
+		return
+	}
+
 	hash, err := auth.HashPassword(req.Password)
 	if err != nil {
 		log.Printf("reset-password: hash password: %v", err)
@@ -461,23 +493,19 @@ func (h handlers) resetPassword(w http.ResponseWriter, r *http.Request) {
 		fail(w, http.StatusInternalServerError, "internal error")
 		return
 	}
+	if err := h.Store.SetEmailVerified(identityID, h.Now()); err != nil {
+		// Completing an emailed reset link proves control of the inbox, so the
+		// address is verified now — a user who reset without ever verifying
+		// shouldn't then be bounced to /verify. Non-fatal, like verifyEmail:
+		// log and carry on.
+		log.Printf("reset: set verified: %v", err)
+	}
 	if err := h.Store.DeleteIdentityTokens(identityID, "reset"); err != nil {
 		// Best-effort cleanup of any sibling reset tokens; the one just used is
 		// already spent, so a failure here is not fatal.
 		log.Printf("reset-password: delete reset tokens: %v", err)
 	}
 
-	idn, err := h.Store.IdentityByID(identityID)
-	if err != nil {
-		log.Printf("reset-password: identity by id: %v", err)
-		fail(w, http.StatusInternalServerError, "internal error")
-		return
-	}
-	if err := h.Store.DeleteUserSessions(idn.UserID); err != nil {
-		// A stale session outliving a password reset is the thing to avoid, but
-		// the caller's request already succeeded; log and carry on.
-		log.Printf("reset-password: delete sessions: %v", err)
-	}
 	if err := h.issueSession(w, r, idn.UserID); err != nil {
 		log.Printf("reset-password: %v", err)
 		fail(w, http.StatusInternalServerError, "internal error")

@@ -564,6 +564,44 @@ func TestResetShortPassword(t *testing.T) {
 	}
 }
 
+// TestResetMarksEmailVerified: a user who never verified, then completes an
+// emailed reset link, is verified afterwards — finishing the link proves inbox
+// control, so the autologin session must not be bounced to /verify.
+func TestResetMarksEmailVerified(t *testing.T) {
+	h, st, sink := newAuthAPI(t, nil)
+
+	if rr := anon(h, "POST", "/api/auth/register", registerBody("bob@example.com", "password123", "Bob")); rr.Code != http.StatusOK {
+		t.Fatalf("register = %d %s", rr.Code, rr.Body)
+	}
+	if id, err := st.IdentityByProviderUID("password", "bob@example.com"); err != nil || id.EmailVerifiedAt != "" {
+		t.Fatalf("precondition: identity should be unverified, got %+v err %v", id, err)
+	}
+
+	if rr := anon(h, "POST", "/api/auth/forgot", `{"email":"bob@example.com"}`); rr.Code != http.StatusOK {
+		t.Fatalf("forgot = %d", rr.Code)
+	}
+	token := mailToken(t, sink.all()[len(sink.all())-1])
+
+	rr := anon(h, "POST", "/api/auth/reset", fmt.Sprintf(`{"token":%q,"password":"newpass456"}`, token))
+	if rr.Code != http.StatusOK {
+		t.Fatalf("reset = %d %s", rr.Code, rr.Body)
+	}
+	cookie := grabSessionCookie(t, rr)
+
+	// The identity column is stamped...
+	if id, err := st.IdentityByProviderUID("password", "bob@example.com"); err != nil || id.EmailVerifiedAt == "" {
+		t.Errorf("email_verified_at still empty after reset: %+v err %v", id, err)
+	}
+	// ...and the autologin session reports it, so the SPA won't route to /verify.
+	sr := doCookie(h, cookie, "GET", "/api/auth/session", "")
+	if sr.Code != http.StatusOK {
+		t.Fatalf("session after reset = %d %s", sr.Code, sr.Body)
+	}
+	if got := decodeBody[sessionUserDTO](t, sr); !got.EmailVerified {
+		t.Errorf("session DTO email_verified = false after reset, want true; DTO = %+v", got)
+	}
+}
+
 // ---- clientIP ----
 
 // TestClientIP locks the proxy-header trust order: X-Real-Ip wins, else the
