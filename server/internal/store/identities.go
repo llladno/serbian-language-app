@@ -55,6 +55,35 @@ func (s *Store) IdentityByProviderUID(provider, uid string) (Identity, error) {
 		provider, uid))
 }
 
+// IdentityForUser returns the user's identity for one provider. By the part-1
+// invariant there is at most one identity per (user_id, provider). Used by
+// /me, the change-password flow and /me/link/telegram. sql.ErrNoRows if the
+// user has no identity with that provider.
+func (s *Store) IdentityForUser(userID, provider string) (Identity, error) {
+	return scanIdentity(s.db.QueryRow(
+		`SELECT `+identityCols+` FROM identities WHERE user_id = ? AND provider = ?`,
+		userID, provider))
+}
+
+// IdentityByID looks up one identity by its id. Used by password reset to
+// resolve a token's identity_id back to a user. sql.ErrNoRows if absent.
+func (s *Store) IdentityByID(id string) (Identity, error) {
+	return scanIdentity(s.db.QueryRow(
+		`SELECT `+identityCols+` FROM identities WHERE id = ?`, id))
+}
+
+// DeleteUserIdentity removes the user's identity for a provider (used by
+// DELETE /me/telegram). Deleting the row cascades to its email_tokens. It is
+// not an error if no row matched.
+func (s *Store) DeleteUserIdentity(userID, provider string) error {
+	if _, err := s.db.Exec(
+		`DELETE FROM identities WHERE user_id = ? AND provider = ?`,
+		userID, provider); err != nil {
+		return fmt.Errorf("delete user identity: %w", err)
+	}
+	return nil
+}
+
 // IdentitiesForUser returns every identity of a user, oldest first.
 func (s *Store) IdentitiesForUser(userID string) ([]Identity, error) {
 	rows, err := s.db.Query(

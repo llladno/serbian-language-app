@@ -23,6 +23,9 @@ func testDSN() string {
 func newStore(t *testing.T) *Store {
 	t.Helper()
 	dsn := testDSN()
+	if IsPostgresDSN(dsn) {
+		requireTestDB(t, dsn) // guard before Open/TRUNCATE can touch the db
+	}
 	s, err := Open(dsn)
 	if err != nil {
 		t.Fatalf("open: %v", err)
