@@ -33,7 +33,8 @@ var (
 // The shared secret is HMAC_SHA256(key=[]byte("WebAppData"), msg=botToken); the
 // check string is the "\n"-joined, key-sorted list of "k=v" for every field
 // except hash, using raw (URL-decoded) values. The data is valid iff the
-// recomputed HMAC equals the supplied hash and now.Sub(auth_date) < maxAge.
+// recomputed HMAC equals the supplied hash, the user carries a non-zero id,
+// and 0 <= now.Sub(auth_date) < maxAge.
 func VerifyInitData(initData, botToken string, now time.Time, maxAge time.Duration) (TelegramUser, error) {
 	values, err := url.ParseQuery(initData)
 	if err != nil {
@@ -58,6 +59,9 @@ func VerifyInitData(initData, botToken string, now time.Time, maxAge time.Durati
 		FirstName string `json:"first_name"`
 	}
 	if err := json.Unmarshal([]byte(rawUser), &u); err != nil {
+		return TelegramUser{}, ErrMalformed
+	}
+	if u.ID == 0 {
 		return TelegramUser{}, ErrMalformed
 	}
 
@@ -90,6 +94,9 @@ func VerifyWidget(params map[string]string, botToken string, now time.Time, maxA
 		}
 		id = n
 	} else {
+		return TelegramUser{}, ErrMalformed
+	}
+	if id == 0 {
 		return TelegramUser{}, ErrMalformed
 	}
 
@@ -153,7 +160,8 @@ func verifyHash(fields map[string]string, secret []byte) error {
 }
 
 // parseAuthDate reads auth_date (unix seconds) and enforces freshness. A
-// missing or unparseable value is ErrMalformed; an expired one is ErrStale.
+// missing or unparseable value is ErrMalformed; a value older than maxAge or
+// dated in the future is ErrStale.
 func parseAuthDate(fields map[string]string, now time.Time, maxAge time.Duration) (time.Time, error) {
 	raw, ok := fields["auth_date"]
 	if !ok {
@@ -164,7 +172,7 @@ func parseAuthDate(fields map[string]string, now time.Time, maxAge time.Duration
 		return time.Time{}, ErrMalformed
 	}
 	authDate := time.Unix(secs, 0)
-	if now.Sub(authDate) >= maxAge {
+	if d := now.Sub(authDate); d < 0 || d >= maxAge {
 		return authDate, ErrStale
 	}
 	return authDate, nil
