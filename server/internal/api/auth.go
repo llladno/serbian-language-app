@@ -23,6 +23,10 @@ import (
 // verifyTTL is how long an email-verification token stays usable.
 const verifyTTL = 24 * time.Hour
 
+// resetTTL is how long a password-reset token stays usable. It is short on
+// purpose: a reset link is high-value and a legitimate user acts on it at once.
+const resetTTL = time.Hour
+
 // badCredentials is the deliberately vague message returned for every login
 // failure (unknown email, wrong password, soft lock) so the response never
 // tells an attacker which accounts exist.
@@ -297,20 +301,205 @@ func (h handlers) currentSession(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, summaryToDTO(ac.UserID, sum))
 }
 
+// verifyEmail handles GET /api/auth/verify?token=. It consumes the token, marks
+// the address confirmed, and redirects to the SPA either way — a browser opened
+// this link, so it must land on a page, never a JSON error. Every failure path
+// (missing token, unknown/used/expired token, or a real store error) redirects
+// to /verify?err=1 with an identical 302: the endpoint never renders a body and
+// never logs the token, so a leaked link in a referrer or a log stays inert.
 func (h handlers) verifyEmail(w http.ResponseWriter, r *http.Request) {
-	fail(w, http.StatusNotImplemented, "not implemented")
+	redirect := func(q string) {
+		http.Redirect(w, r, h.Config.AppBaseURL+"/verify?"+q, http.StatusFound)
+	}
+	token := r.URL.Query().Get("token")
+	if token == "" {
+		redirect("err=1")
+		return
+	}
+	identityID, err := h.Store.UseEmailToken(auth.HashToken(token), "verify", h.Now())
+	if err != nil {
+		if !errors.Is(err, sql.ErrNoRows) {
+			log.Printf("verify: use token: %v", err)
+		}
+		redirect("err=1")
+		return
+	}
+	if err := h.Store.SetEmailVerified(identityID, h.Now()); err != nil {
+		// The token is spent; failing to stamp the column is a server fault,
+		// but the user cannot retry with this link. Log and still land them on
+		// the success page — the next login resends a verify mail anyway.
+		log.Printf("verify: set verified: %v", err)
+	}
+	redirect("ok=1")
 }
 
+// resendVerification handles POST {email}. It answers 200 {"status":"ok"}
+// unconditionally and before any lookup, so the response cannot be used to
+// probe which addresses have an account. The real work — only for an existing,
+// still-unverified password identity — mints a fresh verify token and mails it,
+// after the response, in h.Async.
 func (h handlers) resendVerification(w http.ResponseWriter, r *http.Request) {
-	fail(w, http.StatusNotImplemented, "not implemented")
+	var req struct {
+		Email string `json:"email"`
+	}
+	if err := decode(r, &req); err != nil {
+		fail(w, http.StatusBadRequest, "bad request body")
+		return
+	}
+	uid := strings.ToLower(strings.TrimSpace(req.Email))
+	slowOK := allow(h.Slow, "ip:"+clientIP(r)) && allow(h.Slow, "email:"+uid)
+
+	writeJSON(w, http.StatusOK, map[string]string{"status": "ok"})
+
+	h.Async(func() {
+		if !slowOK {
+			return
+		}
+		id, err := h.Store.IdentityByProviderUID("password", uid)
+		if err != nil {
+			return // unknown address (or a store blip) — stay silent
+		}
+		if id.EmailVerifiedAt != "" {
+			return // already confirmed, nothing to resend
+		}
+		name := ""
+		if row, err := h.Store.UserByID(id.UserID); err == nil {
+			name = row.Name
+		}
+		if err := h.sendVerifyEmail(id.ID, id.Email, name); err != nil {
+			log.Printf("resend-verification: send verify mail: %v", err)
+		}
+	})
 }
 
+// forgotPassword handles POST {email}. Like register/resend it answers 200
+// {"status":"ok"} immediately and uniformly — the sync path never branches on
+// whether the account exists — then, in h.Async, mints a short-lived "reset"
+// token for an existing password identity and mails the link.
 func (h handlers) forgotPassword(w http.ResponseWriter, r *http.Request) {
-	fail(w, http.StatusNotImplemented, "not implemented")
+	var req struct {
+		Email string `json:"email"`
+	}
+	if err := decode(r, &req); err != nil {
+		fail(w, http.StatusBadRequest, "bad request body")
+		return
+	}
+	uid := strings.ToLower(strings.TrimSpace(req.Email))
+	slowOK := allow(h.Slow, "ip:"+clientIP(r)) && allow(h.Slow, "email:"+uid)
+
+	writeJSON(w, http.StatusOK, map[string]string{"status": "ok"})
+
+	h.Async(func() {
+		if !slowOK {
+			return
+		}
+		id, err := h.Store.IdentityByProviderUID("password", uid)
+		if err != nil {
+			return
+		}
+		name := ""
+		if row, err := h.Store.UserByID(id.UserID); err == nil {
+			name = row.Name
+		}
+		raw, tokenHash, err := auth.NewToken()
+		if err != nil {
+			log.Printf("forgot-password: new token: %v", err)
+			return
+		}
+		if err := h.Store.CreateEmailToken(tokenHash, id.ID, "reset", h.Now(), h.Now().Add(resetTTL)); err != nil {
+			log.Printf("forgot-password: create token: %v", err)
+			return
+		}
+		subject, text, html := mail.RenderReset(h.Config.AppBaseURL, raw, name)
+		h.SendMail(id.Email, subject, text, html)
+	})
 }
 
+// resetPassword handles POST {token, password}. It validates the new password
+// shape first (cheap, and so a bad password never burns the token), consumes
+// the "reset" token, writes the new hash, kills every existing session for the
+// account, then autologins this device and returns the account. A security
+// notice is mailed after the response. The token is never logged and never
+// echoed in an error body.
 func (h handlers) resetPassword(w http.ResponseWriter, r *http.Request) {
-	fail(w, http.StatusNotImplemented, "not implemented")
+	var req struct {
+		Token    string `json:"token"`
+		Password string `json:"password"`
+	}
+	if err := decode(r, &req); err != nil {
+		fail(w, http.StatusBadRequest, "bad request body")
+		return
+	}
+	if n := len([]rune(req.Password)); n < 8 || n > 128 {
+		fail(w, http.StatusBadRequest, "password must be 8-128 characters")
+		return
+	}
+	if req.Token == "" {
+		fail(w, http.StatusBadRequest, "invalid_token")
+		return
+	}
+
+	identityID, err := h.Store.UseEmailToken(auth.HashToken(req.Token), "reset", h.Now())
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			fail(w, http.StatusBadRequest, "invalid_token")
+			return
+		}
+		log.Printf("reset-password: use token: %v", err)
+		fail(w, http.StatusInternalServerError, "internal error")
+		return
+	}
+
+	hash, err := auth.HashPassword(req.Password)
+	if err != nil {
+		log.Printf("reset-password: hash password: %v", err)
+		fail(w, http.StatusInternalServerError, "internal error")
+		return
+	}
+	if err := h.Store.SetPasswordHash(identityID, hash); err != nil {
+		log.Printf("reset-password: set password hash: %v", err)
+		fail(w, http.StatusInternalServerError, "internal error")
+		return
+	}
+	if err := h.Store.DeleteIdentityTokens(identityID, "reset"); err != nil {
+		// Best-effort cleanup of any sibling reset tokens; the one just used is
+		// already spent, so a failure here is not fatal.
+		log.Printf("reset-password: delete reset tokens: %v", err)
+	}
+
+	idn, err := h.Store.IdentityByID(identityID)
+	if err != nil {
+		log.Printf("reset-password: identity by id: %v", err)
+		fail(w, http.StatusInternalServerError, "internal error")
+		return
+	}
+	if err := h.Store.DeleteUserSessions(idn.UserID); err != nil {
+		// A stale session outliving a password reset is the thing to avoid, but
+		// the caller's request already succeeded; log and carry on.
+		log.Printf("reset-password: delete sessions: %v", err)
+	}
+	if err := h.issueSession(w, r, idn.UserID); err != nil {
+		log.Printf("reset-password: %v", err)
+		fail(w, http.StatusInternalServerError, "internal error")
+		return
+	}
+
+	name := ""
+	if row, err := h.Store.UserByID(idn.UserID); err == nil {
+		name = row.Name
+	}
+	to := idn.Email
+	h.Async(func() {
+		subject, text, html := mail.RenderPasswordChanged(h.Config.AppBaseURL, name)
+		h.SendMail(to, subject, text, html)
+	})
+
+	sum, err := h.summaryFor(idn.UserID)
+	if err != nil {
+		fail(w, http.StatusInternalServerError, "internal error")
+		return
+	}
+	writeJSON(w, http.StatusOK, summaryToDTO(idn.UserID, sum))
 }
 
 func (h handlers) telegramLogin(w http.ResponseWriter, r *http.Request) {

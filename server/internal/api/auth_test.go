@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"regexp"
 	"strings"
 	"sync"
 	"testing"
@@ -15,6 +16,21 @@ import (
 	"github.com/grisha/serbian-app/server/internal/ratelimit"
 	"github.com/grisha/serbian-app/server/internal/store"
 )
+
+// mailToken pulls the raw action token out of a captured mail body. Both the
+// verify link (…/api/auth/verify?token=) and the reset link (…/reset?token=)
+// carry it after "token="; the token is base64url, so QueryEscape leaves it
+// untouched and it appears verbatim up to the end of the line.
+var mailTokenRe = regexp.MustCompile(`token=([A-Za-z0-9_-]+)`)
+
+func mailToken(t *testing.T, m sentMail) string {
+	t.Helper()
+	sub := mailTokenRe.FindStringSubmatch(m.Text)
+	if sub == nil {
+		t.Fatalf("no token in mail body: %q", m.Text)
+	}
+	return sub[1]
+}
 
 // ---- test wiring ----
 
@@ -333,6 +349,219 @@ func TestLoginSoftLock(t *testing.T) {
 		t.Fatalf("after the lock window = %d %s, want 200", rr.Code, rr.Body)
 	}
 	grabSessionCookie(t, rr)
+}
+
+// ---- verify email / resend verification ----
+
+func TestVerifyEmailHappyRedirect(t *testing.T) {
+	h, st, sink := newAuthAPI(t, nil)
+
+	if rr := anon(h, "POST", "/api/auth/register", registerBody("bob@example.com", "password123", "Bob")); rr.Code != http.StatusOK {
+		t.Fatalf("register = %d %s", rr.Code, rr.Body)
+	}
+	msgs := sink.all()
+	if len(msgs) != 1 {
+		t.Fatalf("register sent %d mails, want 1", len(msgs))
+	}
+	token := mailToken(t, msgs[0])
+
+	rr := anon(h, "GET", "/api/auth/verify?token="+token, "")
+	if rr.Code != http.StatusFound {
+		t.Fatalf("verify = %d, want 302", rr.Code)
+	}
+	if loc := rr.Header().Get("Location"); loc != testBaseURL+"/verify?ok=1" {
+		t.Errorf("Location = %q, want %q", loc, testBaseURL+"/verify?ok=1")
+	}
+
+	id, err := st.IdentityByProviderUID("password", "bob@example.com")
+	if err != nil {
+		t.Fatalf("identity: %v", err)
+	}
+	if id.EmailVerifiedAt == "" {
+		t.Errorf("email_verified_at still empty after verify")
+	}
+
+	// The same token a second time fails closed.
+	rr = anon(h, "GET", "/api/auth/verify?token="+token, "")
+	if rr.Code != http.StatusFound || rr.Header().Get("Location") != testBaseURL+"/verify?err=1" {
+		t.Errorf("reused token = %d %q, want 302 %q", rr.Code, rr.Header().Get("Location"), testBaseURL+"/verify?err=1")
+	}
+}
+
+func TestVerifyEmailBadToken(t *testing.T) {
+	h, _, _ := newAuthAPI(t, nil)
+	for _, name := range []string{"garbage-token-value", ""} {
+		rr := anon(h, "GET", "/api/auth/verify?token="+name, "")
+		if rr.Code != http.StatusFound || rr.Header().Get("Location") != testBaseURL+"/verify?err=1" {
+			t.Errorf("token %q = %d %q, want 302 %q", name, rr.Code, rr.Header().Get("Location"), testBaseURL+"/verify?err=1")
+		}
+	}
+}
+
+func TestResendVerificationGeneric(t *testing.T) {
+	h, st, sink := newAuthAPI(t, nil)
+	if rr := anon(h, "POST", "/api/auth/register", registerBody("bob@example.com", "password123", "Bob")); rr.Code != http.StatusOK {
+		t.Fatalf("register = %d", rr.Code)
+	}
+	if n := len(sink.all()); n != 1 {
+		t.Fatalf("after register: %d mails, want 1", n)
+	}
+
+	// Existing + unverified: a fresh verify mail, generic body.
+	rr := anon(h, "POST", "/api/auth/resend-verification", `{"email":"Bob@example.com"}`)
+	if rr.Code != http.StatusOK {
+		t.Fatalf("resend = %d %s", rr.Code, rr.Body)
+	}
+	if got := decodeBody[map[string]string](t, rr); got["status"] != "ok" {
+		t.Errorf("body = %v, want {status: ok}", got)
+	}
+	msgs := sink.all()
+	if len(msgs) != 2 {
+		t.Fatalf("after resend: %d mails, want 2", len(msgs))
+	}
+	if msgs[1].To != "bob@example.com" || !strings.Contains(msgs[1].Text, "/api/auth/verify?token=") {
+		t.Errorf("resend mail is not a verification link: %+v", msgs[1])
+	}
+
+	// Nonexistent email: still 200, no mail.
+	rr = anon(h, "POST", "/api/auth/resend-verification", `{"email":"nobody@example.com"}`)
+	if rr.Code != http.StatusOK {
+		t.Fatalf("resend nonexistent = %d", rr.Code)
+	}
+	if n := len(sink.all()); n != 2 {
+		t.Errorf("nonexistent email produced mail: %d total", n)
+	}
+
+	// Already verified: 200, no mail.
+	id, _ := st.IdentityByProviderUID("password", "bob@example.com")
+	if err := st.SetEmailVerified(id.ID, fixedNow); err != nil {
+		t.Fatalf("SetEmailVerified: %v", err)
+	}
+	rr = anon(h, "POST", "/api/auth/resend-verification", `{"email":"bob@example.com"}`)
+	if rr.Code != http.StatusOK {
+		t.Fatalf("resend already-verified = %d", rr.Code)
+	}
+	if n := len(sink.all()); n != 2 {
+		t.Errorf("already-verified produced mail: %d total", n)
+	}
+}
+
+// ---- forgot password / reset password ----
+
+func TestForgotGeneric(t *testing.T) {
+	h, st, sink := newAuthAPI(t, nil)
+	registerAndVerify(t, h, st, "bob@example.com", "password123", "Bob")
+	base := len(sink.all()) // register verify mail
+
+	rr := anon(h, "POST", "/api/auth/forgot", `{"email":"Bob@example.com"}`)
+	if rr.Code != http.StatusOK {
+		t.Fatalf("forgot = %d %s", rr.Code, rr.Body)
+	}
+	body := rr.Body.String()
+	msgs := sink.all()
+	if len(msgs) != base+1 {
+		t.Fatalf("forgot sent %d new mails, want 1", len(msgs)-base)
+	}
+	reset := msgs[len(msgs)-1]
+	if reset.To != "bob@example.com" || !strings.Contains(reset.Text, "/reset?token=") {
+		t.Errorf("not a reset mail: %+v", reset)
+	}
+
+	// Nonexistent email: identical body, no mail.
+	rr = anon(h, "POST", "/api/auth/forgot", `{"email":"ghost@example.com"}`)
+	if rr.Code != http.StatusOK || rr.Body.String() != body {
+		t.Errorf("nonexistent forgot = %d %q, want 200 %q", rr.Code, rr.Body.String(), body)
+	}
+	if len(sink.all()) != base+1 {
+		t.Errorf("nonexistent forgot produced a mail: %d total", len(sink.all()))
+	}
+}
+
+func TestResetChangesPasswordAndKillsSessions(t *testing.T) {
+	h, st, sink := newAuthAPI(t, nil)
+	uid := registerAndVerify(t, h, st, "bob@example.com", "password123", "Bob")
+
+	// A pre-existing session (device A), created straight in the store.
+	cookieA := authed(t, st, uid)
+	if rr := doCookie(h, cookieA, "GET", "/api/auth/session", ""); rr.Code != http.StatusOK {
+		t.Fatalf("session A should be live before reset: %d", rr.Code)
+	}
+
+	if rr := anon(h, "POST", "/api/auth/forgot", `{"email":"bob@example.com"}`); rr.Code != http.StatusOK {
+		t.Fatalf("forgot = %d", rr.Code)
+	}
+	msgs := sink.all()
+	token := mailToken(t, msgs[len(msgs)-1])
+
+	rr := anon(h, "POST", "/api/auth/reset", fmt.Sprintf(`{"token":%q,"password":"newpass456"}`, token))
+	if rr.Code != http.StatusOK {
+		t.Fatalf("reset = %d %s", rr.Code, rr.Body)
+	}
+	newCookie := grabSessionCookie(t, rr)
+	if user := decodeBody[sessionUserDTO](t, rr); user.Name != "Bob" || user.Email != "bob@example.com" {
+		t.Errorf("reset DTO = %+v", user)
+	}
+
+	// The autologin cookie is live; the pre-existing one is dead.
+	if sr := doCookie(h, newCookie, "GET", "/api/auth/session", ""); sr.Code != http.StatusOK {
+		t.Errorf("autologin cookie not accepted: %d", sr.Code)
+	}
+	if sr := doCookie(h, cookieA, "GET", "/api/auth/session", ""); sr.Code != http.StatusUnauthorized {
+		t.Errorf("pre-existing session survived reset: %d", sr.Code)
+	}
+
+	// Old password no longer works; the new one does.
+	if lr := anon(h, "POST", "/api/auth/login", loginBody("bob@example.com", "password123")); lr.Code != http.StatusUnauthorized {
+		t.Errorf("old password still logs in: %d", lr.Code)
+	}
+	if lr := anon(h, "POST", "/api/auth/login", loginBody("bob@example.com", "newpass456")); lr.Code != http.StatusOK {
+		t.Errorf("new password rejected: %d %s", lr.Code, lr.Body)
+	}
+
+	// A password-changed notice went out.
+	last := sink.all()[len(sink.all())-1]
+	if last.To != "bob@example.com" || !strings.Contains(last.Subject, "Пароль изменён") {
+		t.Errorf("no password-changed mail: %+v", last)
+	}
+
+	// The reset token is single-use.
+	rr = anon(h, "POST", "/api/auth/reset", fmt.Sprintf(`{"token":%q,"password":"another789"}`, token))
+	if rr.Code != http.StatusBadRequest {
+		t.Fatalf("reused reset token = %d, want 400", rr.Code)
+	}
+	if got := decodeBody[map[string]string](t, rr); got["error"] != "invalid_token" {
+		t.Errorf("error = %q, want invalid_token", got["error"])
+	}
+}
+
+func TestResetBadToken(t *testing.T) {
+	h, _, _ := newAuthAPI(t, nil)
+	rr := anon(h, "POST", "/api/auth/reset", `{"token":"nonsense","password":"password123"}`)
+	if rr.Code != http.StatusBadRequest {
+		t.Fatalf("bad token = %d, want 400", rr.Code)
+	}
+	if got := decodeBody[map[string]string](t, rr); got["error"] != "invalid_token" {
+		t.Errorf("error = %q, want invalid_token", got["error"])
+	}
+}
+
+func TestResetShortPassword(t *testing.T) {
+	h, st, sink := newAuthAPI(t, nil)
+	registerAndVerify(t, h, st, "bob@example.com", "password123", "Bob")
+	if rr := anon(h, "POST", "/api/auth/forgot", `{"email":"bob@example.com"}`); rr.Code != http.StatusOK {
+		t.Fatalf("forgot = %d", rr.Code)
+	}
+	token := mailToken(t, sink.all()[len(sink.all())-1])
+
+	rr := anon(h, "POST", "/api/auth/reset", fmt.Sprintf(`{"token":%q,"password":"short"}`, token))
+	if rr.Code != http.StatusBadRequest {
+		t.Fatalf("short password = %d, want 400", rr.Code)
+	}
+	// The short-password rejection must not have burned the token.
+	rr = anon(h, "POST", "/api/auth/reset", fmt.Sprintf(`{"token":%q,"password":"newpass456"}`, token))
+	if rr.Code != http.StatusOK {
+		t.Errorf("valid reset after a short-password attempt = %d %s", rr.Code, rr.Body)
+	}
 }
 
 // ---- clientIP ----
