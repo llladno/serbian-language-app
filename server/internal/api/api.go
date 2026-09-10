@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/grisha/serbian-app/server/internal/checker"
+	"github.com/grisha/serbian-app/server/internal/config"
 	"github.com/grisha/serbian-app/server/internal/content"
 	"github.com/grisha/serbian-app/server/internal/srs"
 	"github.com/grisha/serbian-app/server/internal/store"
@@ -24,6 +25,9 @@ type Deps struct {
 	Store  *store.Store
 	Now    func() time.Time
 	Stale  func() bool
+	// Config is the resolved process configuration. The zero value works
+	// (non-secure cookies, no cross-origin writes); Task 11 populates it.
+	Config config.Config
 }
 
 type handlers struct{ Deps }
