@@ -2,12 +2,10 @@
 package api
 
 import (
-	"database/sql"
 	"encoding/json"
 	"errors"
 	"io"
 	"net/http"
-	"net/url"
 	"sort"
 	"strings"
 	"time"
@@ -15,6 +13,7 @@ import (
 	"github.com/grisha/serbian-app/server/internal/checker"
 	"github.com/grisha/serbian-app/server/internal/config"
 	"github.com/grisha/serbian-app/server/internal/content"
+	"github.com/grisha/serbian-app/server/internal/ratelimit"
 	"github.com/grisha/serbian-app/server/internal/srs"
 	"github.com/grisha/serbian-app/server/internal/store"
 )
@@ -26,13 +25,37 @@ type Deps struct {
 	Now    func() time.Time
 	Stale  func() bool
 	// Config is the resolved process configuration. The zero value works
-	// (non-secure cookies, no cross-origin writes); Task 11 populates it.
+	// (non-secure cookies, no cross-origin writes).
 	Config config.Config
+	// SendMail delivers a message. Production enqueues it; tests capture it.
+	// A nil value is replaced by a no-op in Handler.
+	SendMail func(to, subject, text, html string)
+	// Async runs f. Production spawns a goroutine; tests run it inline for
+	// deterministic assertions. A nil value defaults to `go f()` in Handler.
+	Async func(func())
+	// Login throttles login attempts per client IP (nil = no limit).
+	Login *ratelimit.Limiter
+	// LoginEmail throttles login attempts per target email (nil = no limit).
+	LoginEmail *ratelimit.Limiter
+	// Slow throttles register/resend/forgot per ip:/email: key (nil = no limit).
+	Slow *ratelimit.Limiter
+	// Fails is the soft account lock keyed by email (nil = never locks).
+	Fails *ratelimit.FailCounter
 }
 
 type handlers struct{ Deps }
 
-// Handler builds the /api router.
+// allow reports whether limiter l admits an event for key. A nil limiter (a
+// feature left unconfigured, or a test) always admits.
+func allow(l *ratelimit.Limiter, key string) bool { return l == nil || l.Allow(key) }
+
+// locked reports whether fail counter f currently holds key in a soft lock. A
+// nil counter never locks.
+func locked(f *ratelimit.FailCounter, key string) bool { return f != nil && f.Locked(key) }
+
+// Handler builds the /api router. Exact auth paths are public; every other
+// /api/ route sits behind requireAuth (a session cookie, or the legacy X-User
+// bridge). The whole tree is wrapped in the security-header and origin guards.
 func Handler(deps Deps) http.Handler {
 	if deps.Now == nil {
 		deps.Now = time.Now
@@ -40,29 +63,62 @@ func Handler(deps Deps) http.Handler {
 	if deps.Stale == nil {
 		deps.Stale = func() bool { return false }
 	}
+	if deps.SendMail == nil {
+		deps.SendMail = func(to, subject, text, html string) {}
+	}
+	if deps.Async == nil {
+		deps.Async = func(f func()) { go f() }
+	}
 	h := handlers{deps}
-	mux := http.NewServeMux()
-	mux.HandleFunc("GET /api/health", h.health)
-	mux.HandleFunc("GET /api/users", h.listUsers)
-	mux.HandleFunc("POST /api/users", h.createUser)
-	mux.HandleFunc("GET /api/course", h.getCourse)
-	mux.HandleFunc("GET /api/lessons/{id}", h.getLesson)
-	mux.HandleFunc("GET /api/lessons/{id}/exercises", h.getExercises)
-	mux.HandleFunc("POST /api/lessons/{id}/exercises/{exId}/check", h.checkExercise)
-	mux.HandleFunc("GET /api/lessons/{id}/attempts", h.lessonAttempts)
-	mux.HandleFunc("POST /api/lessons/{id}/steps/{step}", h.setStepStatus)
-	mux.HandleFunc("POST /api/lessons/{id}/complete", h.completeLesson)
-	mux.HandleFunc("POST /api/lessons/{id}/reset", h.resetLesson)
-	mux.HandleFunc("POST /api/reset-exercises", h.resetExercises)
-	mux.HandleFunc("GET /api/vocab", h.getVocab)
-	mux.HandleFunc("GET /api/lookup", h.lookup)
-	mux.HandleFunc("GET /api/false-friends", h.getFalseFriends)
-	mux.HandleFunc("GET /api/review/queue", h.reviewQueue)
-	mux.HandleFunc("POST /api/review/grade", h.reviewGrade)
-	mux.HandleFunc("POST /api/review/add", h.reviewAdd)
-	mux.HandleFunc("GET /api/progress", h.getProgress)
-	mux.HandleFunc("GET /api/leaderboard", h.getLeaderboard)
-	return mux
+
+	root := http.NewServeMux()
+	root.HandleFunc("GET /api/health", h.health)
+
+	// Auth endpoints are public: they are how a caller gets a session in the
+	// first place, so they must not sit behind requireAuth.
+	root.HandleFunc("POST /api/auth/register", h.register)
+	root.HandleFunc("POST /api/auth/login", h.login)
+	root.HandleFunc("POST /api/auth/logout", h.logout)
+	root.HandleFunc("GET /api/auth/verify", h.verifyEmail)
+	root.HandleFunc("POST /api/auth/resend-verification", h.resendVerification)
+	root.HandleFunc("POST /api/auth/forgot", h.forgotPassword)
+	root.HandleFunc("POST /api/auth/reset", h.resetPassword)
+	root.HandleFunc("GET /api/auth/session", h.currentSession)
+	root.HandleFunc("POST /api/auth/telegram", h.telegramLogin)
+
+	// Everything else under /api/ requires a resolved caller.
+	protected := http.NewServeMux()
+	protected.HandleFunc("POST /api/auth/logout-all", h.logoutAll)
+	protected.HandleFunc("GET /api/me", h.getMe)
+	protected.HandleFunc("PATCH /api/me", h.patchMe)
+	protected.HandleFunc("POST /api/me/password", h.changePassword)
+	protected.HandleFunc("POST /api/me/link/telegram", h.linkTelegram)
+	protected.HandleFunc("DELETE /api/me/telegram", h.unlinkTelegram)
+	protected.HandleFunc("DELETE /api/me/sessions/{id}", h.deleteSession)
+	protected.HandleFunc("DELETE /api/me", h.deleteMe)
+
+	// Existing content/lesson/review/progress routes, moved verbatim.
+	protected.HandleFunc("GET /api/course", h.getCourse)
+	protected.HandleFunc("GET /api/lessons/{id}", h.getLesson)
+	protected.HandleFunc("GET /api/lessons/{id}/exercises", h.getExercises)
+	protected.HandleFunc("POST /api/lessons/{id}/exercises/{exId}/check", h.checkExercise)
+	protected.HandleFunc("GET /api/lessons/{id}/attempts", h.lessonAttempts)
+	protected.HandleFunc("POST /api/lessons/{id}/steps/{step}", h.setStepStatus)
+	protected.HandleFunc("POST /api/lessons/{id}/complete", h.completeLesson)
+	protected.HandleFunc("POST /api/lessons/{id}/reset", h.resetLesson)
+	protected.HandleFunc("POST /api/reset-exercises", h.resetExercises)
+	protected.HandleFunc("GET /api/vocab", h.getVocab)
+	protected.HandleFunc("GET /api/lookup", h.lookup)
+	protected.HandleFunc("GET /api/false-friends", h.getFalseFriends)
+	protected.HandleFunc("GET /api/review/queue", h.reviewQueue)
+	protected.HandleFunc("POST /api/review/grade", h.reviewGrade)
+	protected.HandleFunc("POST /api/review/add", h.reviewAdd)
+	protected.HandleFunc("GET /api/progress", h.getProgress)
+	protected.HandleFunc("GET /api/leaderboard", h.getLeaderboard)
+
+	root.Handle("/api/", h.requireAuth(protected))
+
+	return securityHeaders(deps.Config, checkOrigin(deps.Config, root))
 }
 
 // ---- helpers ----
@@ -91,28 +147,17 @@ func contains(hay, needle string) bool {
 	return strings.Contains(strings.ToLower(hay), strings.ToLower(needle))
 }
 
-// user resolves the account from the X-User header. On failure it writes a
-// 401/500 response and returns ok=false.
+// user resolves the account attached to the request by requireAuth. The
+// X-User / session parsing lives in requireAuth now; this only reads the
+// context it left behind. When no auth context is present it writes 401 and
+// returns ok=false.
 func (h handlers) user(w http.ResponseWriter, r *http.Request) (*store.UserStore, bool) {
-	raw := r.Header.Get("X-User")
-	if dec, err := url.PathUnescape(raw); err == nil {
-		raw = dec
-	}
-	name := store.NormalizeName(raw)
-	if name == "" {
-		fail(w, http.StatusUnauthorized, "no account")
+	ac, ok := authFrom(r)
+	if !ok {
+		fail(w, http.StatusUnauthorized, "no session")
 		return nil, false
 	}
-	row, err := h.Store.UserByName(name)
-	if errors.Is(err, sql.ErrNoRows) {
-		fail(w, http.StatusUnauthorized, "unknown account")
-		return nil, false
-	}
-	if err != nil {
-		fail(w, 500, err.Error())
-		return nil, false
-	}
-	return h.Store.User(row.ID), true
+	return h.Store.User(ac.UserID), true
 }
 
 // ---- handlers ----

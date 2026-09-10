@@ -9,11 +9,17 @@ import (
 	"testing"
 	"time"
 
+	"github.com/grisha/serbian-app/server/internal/auth"
+	"github.com/grisha/serbian-app/server/internal/config"
 	"github.com/grisha/serbian-app/server/internal/content"
 	"github.com/grisha/serbian-app/server/internal/store"
 )
 
 var fixedNow = time.Date(2026, 9, 6, 12, 0, 0, 0, time.UTC)
+
+// testBaseURL is the origin newTestAPI configures; non-GET helpers send it as
+// the Origin header so checkOrigin lets the request through.
+const testBaseURL = "http://localhost:8080"
 
 func newTestAPI(t *testing.T) (http.Handler, *store.Store) {
 	t.Helper()
@@ -34,6 +40,9 @@ func newTestAPI(t *testing.T) (http.Handler, *store.Store) {
 		Store:  st,
 		Now:    func() time.Time { return fixedNow },
 		Stale:  func() bool { return false },
+		Config: config.Config{AppBaseURL: testBaseURL},
+		// SendMail/Async and the limiters stay nil: Handler's defaults plus
+		// the allow/locked helpers treat nil as permissive.
 	})
 	return h, st
 }
@@ -53,9 +62,50 @@ func doAs(h http.Handler, user, method, path, body string) *httptest.ResponseRec
 	if user != "" {
 		r.Header.Set("X-User", user)
 	}
+	setTestOrigin(r)
 	rr := httptest.NewRecorder()
 	h.ServeHTTP(rr, r)
 	return rr
+}
+
+// authed creates a live session for userID and returns the cookie that carries
+// its raw token. The cookie name matches config.Config{AppBaseURL: http...}.CookieName().
+func authed(t *testing.T, st *store.Store, userID string) *http.Cookie {
+	t.Helper()
+	raw, hash, err := auth.NewToken()
+	if err != nil {
+		t.Fatalf("NewToken: %v", err)
+	}
+	if err := st.CreateSession(hash, userID, "test-agent", fixedNow, fixedNow.Add(720*time.Hour)); err != nil {
+		t.Fatalf("CreateSession: %v", err)
+	}
+	return &http.Cookie{Name: "session", Value: raw}
+}
+
+// doCookie mirrors doAs but authenticates with a session cookie instead of the
+// X-User bridge.
+func doCookie(h http.Handler, c *http.Cookie, method, path, body string) *httptest.ResponseRecorder {
+	var r *http.Request
+	if body != "" {
+		r = httptest.NewRequest(method, path, strings.NewReader(body))
+	} else {
+		r = httptest.NewRequest(method, path, nil)
+	}
+	r.AddCookie(c)
+	setTestOrigin(r)
+	rr := httptest.NewRecorder()
+	h.ServeHTTP(rr, r)
+	return rr
+}
+
+// setTestOrigin stamps the Origin header on state-changing requests so
+// checkOrigin does not 403 them; GET/HEAD/OPTIONS are exempt from that guard.
+func setTestOrigin(r *http.Request) {
+	switch r.Method {
+	case http.MethodGet, http.MethodHead, http.MethodOptions:
+	default:
+		r.Header.Set("Origin", testBaseURL)
+	}
 }
 
 func decodeBody[T any](t *testing.T, rr *httptest.ResponseRecorder) T {
@@ -130,21 +180,45 @@ func TestStateEndpointsRequireAccount(t *testing.T) {
 	}
 }
 
-func TestUsersEndpoints(t *testing.T) {
-	h, _ := newTestAPI(t)
-	if rr := doAs(h, "", "POST", "/api/users", `{"name":"  Оля  "}`); rr.Code != 200 {
-		t.Fatalf("create: %d %s", rr.Code, rr.Body)
+// TestMiddlewareWiring pins the router precedence: exact auth paths reach their
+// (stub) handler without requireAuth, while any other /api/ route is gated.
+func TestMiddlewareWiring(t *testing.T) {
+	h, st := newTestAPI(t)
+	tester, _ := st.UserByName("tester")
+
+	// Public auth path: no credentials -> hits the stub (501), not requireAuth (401).
+	if rr := doAs(h, "", "POST", "/api/auth/register", `{}`); rr.Code != http.StatusNotImplemented {
+		t.Errorf("POST /api/auth/register unauthenticated = %d, want 501", rr.Code)
 	}
-	rr := doAs(h, "", "GET", "/api/users", "")
-	got := decodeBody[struct {
-		Users []string `json:"users"`
-	}](t, rr)
-	if len(got.Users) != 2 || got.Users[1] != "Оля" {
-		t.Errorf("users = %v", got.Users)
+	if rr := doAs(h, "", "GET", "/api/auth/session", ""); rr.Code != http.StatusNotImplemented {
+		t.Errorf("GET /api/auth/session unauthenticated = %d, want 501", rr.Code)
 	}
-	// the new account works and starts empty
-	if rr := doAs(h, "Оля", "GET", "/api/progress", ""); rr.Code != 200 {
-		t.Errorf("new account progress = %d", rr.Code)
+
+	// Protected path: no credentials -> requireAuth 401 (never reaches the stub).
+	if rr := doAs(h, "", "GET", "/api/progress", ""); rr.Code != http.StatusUnauthorized {
+		t.Errorf("GET /api/progress unauthenticated = %d, want 401", rr.Code)
+	}
+	if rr := doAs(h, "", "GET", "/api/me", ""); rr.Code != http.StatusUnauthorized {
+		t.Errorf("GET /api/me unauthenticated = %d, want 401", rr.Code)
+	}
+
+	// A cookie session flows through securityHeaders -> checkOrigin -> requireAuth.
+	c := authed(t, st, tester.ID)
+	if rr := doCookie(h, c, "GET", "/api/progress", ""); rr.Code != http.StatusOK {
+		t.Errorf("GET /api/progress with cookie = %d, want 200", rr.Code)
+	}
+	// requireAuth resolved the caller, so a protected stub is now reachable (501).
+	if rr := doCookie(h, c, "GET", "/api/me", ""); rr.Code != http.StatusNotImplemented {
+		t.Errorf("GET /api/me with cookie = %d, want 501", rr.Code)
+	}
+
+	// The origin guard still rejects a state-changing request with a foreign Origin.
+	r := httptest.NewRequest("POST", "/api/auth/login", strings.NewReader(`{}`))
+	r.Header.Set("Origin", "https://evil.example")
+	rr := httptest.NewRecorder()
+	h.ServeHTTP(rr, r)
+	if rr.Code != http.StatusForbidden {
+		t.Errorf("cross-origin POST /api/auth/login = %d, want 403", rr.Code)
 	}
 }
 

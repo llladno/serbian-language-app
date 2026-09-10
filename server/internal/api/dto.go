@@ -108,6 +108,36 @@ type checkResultDTO struct {
 	LineAudio string `json:"line_audio,omitempty"`
 }
 
+// ---- auth / profile ----
+
+// sessionUserDTO is the account view returned by the auth and profile
+// endpoints (GET /api/auth/session, GET /api/me).
+type sessionUserDTO struct {
+	ID            string `json:"id"`
+	Name          string `json:"name"`
+	Email         string `json:"email"`
+	EmailVerified bool   `json:"email_verified"`
+	Telegram      struct {
+		Linked   bool   `json:"linked"`
+		Username string `json:"username"`
+	} `json:"telegram"`
+}
+
+// deviceDTO is one active session in the profile "devices" list. ID is an
+// opaque handle (first 12 chars of the token hash) for DELETE /api/me/sessions/{id}.
+type deviceDTO struct {
+	ID         string `json:"id"`
+	UserAgent  string `json:"user_agent"`
+	LastSeenAt string `json:"last_seen_at"`
+	Current    bool   `json:"current"`
+}
+
+// meDTO is the full profile payload: the account plus its active sessions.
+type meDTO struct {
+	sessionUserDTO
+	Sessions []deviceDTO `json:"sessions"`
+}
+
 // ---- vocab / false friends ----
 
 type vocabDTO struct {
