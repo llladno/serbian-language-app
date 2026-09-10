@@ -36,24 +36,28 @@ func (h handlers) issueSession(w http.ResponseWriter, r *http.Request, userID st
 	if err != nil {
 		return fmt.Errorf("new session token: %w", err)
 	}
-	if err := h.Store.CreateSession(hash, userID, r.UserAgent(), h.Now(), h.Now().Add(sessionTTL)); err != nil {
+	now := h.Now()
+	if err := h.Store.CreateSession(hash, userID, r.UserAgent(), now, now.Add(sessionTTL)); err != nil {
 		return fmt.Errorf("create session: %w", err)
 	}
 	h.setSessionCookie(w, raw, sessionTTL)
 	return nil
 }
 
-// clientIP is the best available caller address for rate-limit keys. Behind
-// Traefik the real client is the first hop of X-Forwarded-For; without that
-// header (tests, direct connections) it falls back to RemoteAddr's host part.
+// clientIP is the best available caller address for per-IP rate-limit keys.
+// Behind Traefik/Dokploy the proxy sets X-Real-Ip to the real peer and
+// appends that peer to the RIGHT of any inbound X-Forwarded-For, so a client
+// cannot pin the key by sending its own X-Forwarded-For: the right-most entry
+// is the hop Traefik actually saw. Without either header (tests, direct
+// connections) it falls back to RemoteAddr's host part.
 func clientIP(r *http.Request) string {
+	if xrip := strings.TrimSpace(r.Header.Get("X-Real-Ip")); xrip != "" {
+		return xrip
+	}
 	if xff := r.Header.Get("X-Forwarded-For"); xff != "" {
-		first := xff
-		if i := strings.IndexByte(xff, ','); i >= 0 {
-			first = xff[:i]
-		}
-		if first = strings.TrimSpace(first); first != "" {
-			return first
+		parts := strings.Split(xff, ",")
+		if last := strings.TrimSpace(parts[len(parts)-1]); last != "" {
+			return last
 		}
 	}
 	if host, _, err := net.SplitHostPort(r.RemoteAddr); err == nil {
@@ -126,7 +130,7 @@ func (h handlers) register(w http.ResponseWriter, r *http.Request) {
 			h.SendMail(email, subject, text, html)
 			return
 		case !errors.Is(err, sql.ErrNoRows):
-			log.Printf("register: lookup identity %q: %v", uid, err)
+			log.Printf("register: lookup identity: %v", err)
 			return
 		}
 
@@ -190,12 +194,12 @@ func (h handlers) login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	uid := strings.ToLower(strings.TrimSpace(req.Email))
-	ip := clientIP(r)
 
 	if locked(h.Fails, uid) {
 		fail(w, http.StatusUnauthorized, badCredentials)
 		return
 	}
+	ip := clientIP(r)
 	if !allow(h.Login, "ip:"+ip) || !allow(h.LoginEmail, uid) {
 		fail(w, http.StatusTooManyRequests, "too many attempts")
 		return
@@ -208,7 +212,7 @@ func (h handlers) login(w http.ResponseWriter, r *http.Request) {
 		fail(w, http.StatusUnauthorized, badCredentials)
 		return
 	case err != nil:
-		log.Printf("login: lookup identity %q: %v", uid, err)
+		log.Printf("login: lookup identity: %v", err)
 		fail(w, http.StatusInternalServerError, "internal error")
 		return
 	}
@@ -219,16 +223,15 @@ func (h handlers) login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	name := id.Email
-	if row, err := h.Store.UserByID(id.UserID); err == nil && row.Name != "" {
-		name = row.Name
-	}
-
 	if id.EmailVerifiedAt == "" {
 		// Correct password, but the address was never confirmed. The
 		// credentials are good, so clear the fail count, resend the link,
 		// and tell the client to route to the "check your email" screen.
 		clearFails(h.Fails, uid)
+		name := id.Email
+		if row, err := h.Store.UserByID(id.UserID); err == nil && row.Name != "" {
+			name = row.Name
+		}
 		identityID, to := id.ID, id.Email
 		h.Async(func() {
 			if err := h.sendVerifyEmail(identityID, to, name); err != nil {
@@ -245,12 +248,12 @@ func (h handlers) login(w http.ResponseWriter, r *http.Request) {
 		fail(w, http.StatusInternalServerError, "internal error")
 		return
 	}
-	writeJSON(w, http.StatusOK, sessionUserDTO{
-		ID:            id.UserID,
-		Name:          name,
-		Email:         id.Email,
-		EmailVerified: true,
-	})
+	sum, err := h.summaryFor(id.UserID)
+	if err != nil {
+		fail(w, http.StatusInternalServerError, "internal error")
+		return
+	}
+	writeJSON(w, http.StatusOK, summaryToDTO(id.UserID, sum))
 }
 
 // logout drops the current session and clears the cookie. It is mounted on
@@ -271,9 +274,9 @@ func (h handlers) logout(w http.ResponseWriter, r *http.Request) {
 func (h handlers) logoutAll(w http.ResponseWriter, r *http.Request) {
 	ac, _ := authFrom(r)
 	if err := h.Store.DeleteUserSessions(ac.UserID); err != nil {
-		log.Printf("logout-all: delete sessions for %q: %v", ac.UserID, err)
-		fail(w, http.StatusInternalServerError, "internal error")
-		return
+		// Best-effort, like logout: a failed delete still clears this
+		// device's cookie and answers 204 rather than a false 500.
+		log.Printf("logout-all: delete sessions: %v", err)
 	}
 	h.clearSessionCookie(w)
 	w.WriteHeader(http.StatusNoContent)

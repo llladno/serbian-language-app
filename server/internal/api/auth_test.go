@@ -259,6 +259,36 @@ func TestLoginSuccessSetsCookie(t *testing.T) {
 	}
 }
 
+// TestLoginDTOReflectsTelegramLink pins that the login-success body carries the
+// real telegram linkage (it is built via summaryFor, not an inline literal that
+// always reported linked=false).
+func TestLoginDTOReflectsTelegramLink(t *testing.T) {
+	h, st, _ := newAuthAPI(t, nil)
+	uid := registerAndVerify(t, h, st, "linked@example.com", "password123", "Linked")
+
+	if err := st.CreateIdentity(store.Identity{
+		ID:          auth.NewIdentityID(),
+		UserID:      uid,
+		Provider:    "telegram",
+		ProviderUID: "5550123",
+		TgUsername:  "linked_tg",
+	}); err != nil {
+		t.Fatalf("CreateIdentity telegram: %v", err)
+	}
+
+	rr := anon(h, "POST", "/api/auth/login", loginBody("linked@example.com", "password123"))
+	if rr.Code != http.StatusOK {
+		t.Fatalf("login = %d %s", rr.Code, rr.Body)
+	}
+	user := decodeBody[sessionUserDTO](t, rr)
+	if !user.Telegram.Linked || user.Telegram.Username != "linked_tg" {
+		t.Errorf("login DTO telegram = %+v, want linked with username linked_tg", user.Telegram)
+	}
+	if user.Name != "Linked" || user.Email != "linked@example.com" || !user.EmailVerified {
+		t.Errorf("login DTO = %+v", user)
+	}
+}
+
 func TestLoginRateLimited(t *testing.T) {
 	h, st, _ := newAuthAPI(t, func(d *Deps) {
 		d.Login = ratelimit.NewLimiter(1, 0) // burst 0: never admits
@@ -303,6 +333,44 @@ func TestLoginSoftLock(t *testing.T) {
 		t.Fatalf("after the lock window = %d %s, want 200", rr.Code, rr.Body)
 	}
 	grabSessionCookie(t, rr)
+}
+
+// ---- clientIP ----
+
+// TestClientIP locks the proxy-header trust order: X-Real-Ip wins, else the
+// RIGHT-most X-Forwarded-For entry (the hop Traefik appended), never a
+// client-supplied left-most one, else RemoteAddr's host.
+func TestClientIP(t *testing.T) {
+	req := func(remote string, headers map[string]string) *http.Request {
+		r := httptest.NewRequest("POST", "/api/auth/login", nil)
+		r.RemoteAddr = remote
+		for k, v := range headers {
+			r.Header.Set(k, v)
+		}
+		return r
+	}
+
+	// Right-most XFF entry wins; a spoofed left-most entry is ignored.
+	if got := clientIP(req("10.0.0.1:9999", map[string]string{
+		"X-Forwarded-For": "1.2.3.4, 5.6.7.8",
+	})); got != "5.6.7.8" {
+		t.Errorf("XFF right-most: got %q, want 5.6.7.8", got)
+	}
+	// X-Real-Ip beats any X-Forwarded-For.
+	if got := clientIP(req("10.0.0.1:9999", map[string]string{
+		"X-Real-Ip":       "9.9.9.9",
+		"X-Forwarded-For": "1.2.3.4, 5.6.7.8",
+	})); got != "9.9.9.9" {
+		t.Errorf("X-Real-Ip precedence: got %q, want 9.9.9.9", got)
+	}
+	// Neither header: RemoteAddr host:port -> host.
+	if got := clientIP(req("192.0.2.5:55000", nil)); got != "192.0.2.5" {
+		t.Errorf("RemoteAddr host:port: got %q, want 192.0.2.5", got)
+	}
+	// Neither header, RemoteAddr already a bare host.
+	if got := clientIP(req("192.0.2.9", nil)); got != "192.0.2.9" {
+		t.Errorf("RemoteAddr bare host: got %q, want 192.0.2.9", got)
+	}
 }
 
 // ---- logout ----
