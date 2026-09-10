@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 	"net/http"
 	"net/url"
 	"time"
@@ -135,10 +136,17 @@ func (h handlers) requireAuth(next http.Handler) http.Handler {
 			switch {
 			case err == nil:
 				h.slideSession(sess, hash)
+				sum, err := h.summaryFor(sess.UserID)
+				if err != nil {
+					// The session was valid; a summary lookup failing is a
+					// real server fault, not a reason to try the bridge.
+					fail(w, http.StatusInternalServerError, "internal error")
+					return
+				}
 				ac := authCtx{
 					UserID:      sess.UserID,
 					SessionHash: hash,
-					Summary:     h.summaryFor(sess.UserID),
+					Summary:     sum,
 				}
 				next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), authCtxKey, ac)))
 				return
@@ -186,22 +194,33 @@ func (h handlers) slideSession(sess store.Session, hash string) {
 }
 
 // summaryFor loads the denormalized account view for an authenticated request.
-// Every lookup is best-effort: a missing identity (sql.ErrNoRows) or any other
-// store error just leaves that part of the summary zero.
-func (h handlers) summaryFor(userID string) userSummary {
+// A missing row (sql.ErrNoRows) leaves that part of the summary zero and the
+// load continues; any other store error is a real fault (timeout, connection
+// blip) and is returned so requireAuth can 500 rather than silently serve a
+// half-populated summary that downstream security checks would trust.
+func (h handlers) summaryFor(userID string) (userSummary, error) {
 	sum := userSummary{ID: userID}
+	// UserByID returning ErrNoRows for a live session's user_id is anomalous
+	// (the FK target is gone), but per the brief we leave Name zero and carry
+	// on rather than fail the request.
 	if u, err := h.Store.UserByID(userID); err == nil {
 		sum.Name = u.Name
+	} else if !errors.Is(err, sql.ErrNoRows) {
+		return userSummary{}, fmt.Errorf("load summary: %w", err)
 	}
 	if id, err := h.Store.IdentityForUser(userID, "password"); err == nil {
 		sum.Email = id.Email
 		sum.EmailVerified = id.EmailVerifiedAt != ""
+	} else if !errors.Is(err, sql.ErrNoRows) {
+		return userSummary{}, fmt.Errorf("load summary: %w", err)
 	}
 	if id, err := h.Store.IdentityForUser(userID, "telegram"); err == nil {
 		sum.TelegramLinked = true
 		sum.TelegramUsername = id.TgUsername
+	} else if !errors.Is(err, sql.ErrNoRows) {
+		return userSummary{}, fmt.Errorf("load summary: %w", err)
 	}
-	return sum
+	return sum, nil
 }
 
 // setSessionCookie writes the session cookie holding the raw token. The name

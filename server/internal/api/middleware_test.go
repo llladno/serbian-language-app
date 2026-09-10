@@ -3,7 +3,6 @@ package api
 import (
 	"net/http"
 	"net/http/httptest"
-	"strings"
 	"testing"
 	"time"
 
@@ -65,11 +64,32 @@ func TestRequireAuthValidCookie(t *testing.T) {
 	h, st := mwHandlers(t, "http://localhost:8080")
 	uid, cookie := liveSession(t, st, "Гриша")
 
-	var gotUID string
+	// Seed a verified password identity and a linked telegram identity so the
+	// assertions below pin summaryFor's field mapping.
+	if err := st.CreateIdentity(store.Identity{
+		ID:              auth.NewIdentityID(),
+		UserID:          uid,
+		Provider:        "password",
+		ProviderUID:     "grisha@example.com",
+		Email:           "grisha@example.com",
+		EmailVerifiedAt: fixedNow.Format(time.RFC3339),
+	}); err != nil {
+		t.Fatalf("CreateIdentity password: %v", err)
+	}
+	if err := st.CreateIdentity(store.Identity{
+		ID:          auth.NewIdentityID(),
+		UserID:      uid,
+		Provider:    "telegram",
+		ProviderUID: "123456",
+		TgUsername:  "grisha_tg",
+	}); err != nil {
+		t.Fatalf("CreateIdentity telegram: %v", err)
+	}
+
+	var gotAC authCtx
 	var gotOK bool
 	term := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		ac, ok := authFrom(r)
-		gotUID, gotOK = ac.UserID, ok
+		gotAC, gotOK = authFrom(r)
 		w.WriteHeader(http.StatusOK)
 	})
 
@@ -81,8 +101,24 @@ func TestRequireAuthValidCookie(t *testing.T) {
 	if w.Code != http.StatusOK {
 		t.Fatalf("status = %d, want 200", w.Code)
 	}
-	if !gotOK || gotUID != uid {
-		t.Fatalf("authFrom = (%q, %v), want (%q, true)", gotUID, gotOK, uid)
+	if !gotOK || gotAC.UserID != uid {
+		t.Fatalf("authFrom = (%q, %v), want (%q, true)", gotAC.UserID, gotOK, uid)
+	}
+	s := gotAC.Summary
+	if s.Name != "Гриша" {
+		t.Errorf("Summary.Name = %q, want %q", s.Name, "Гриша")
+	}
+	if s.Email != "grisha@example.com" {
+		t.Errorf("Summary.Email = %q, want %q", s.Email, "grisha@example.com")
+	}
+	if !s.EmailVerified {
+		t.Errorf("Summary.EmailVerified = false, want true")
+	}
+	if !s.TelegramLinked {
+		t.Errorf("Summary.TelegramLinked = false, want true")
+	}
+	if s.TelegramUsername != "grisha_tg" {
+		t.Errorf("Summary.TelegramUsername = %q, want %q", s.TelegramUsername, "grisha_tg")
 	}
 }
 
@@ -192,9 +228,8 @@ func TestSecurityHeadersPresent(t *testing.T) {
 		if got := w.Header().Get("Referrer-Policy"); got != "strict-origin-when-cross-origin" {
 			t.Errorf("Referrer-Policy = %q", got)
 		}
-		policy := w.Header().Get("Content-Security-Policy")
-		if !strings.Contains(policy, "frame-ancestors") || !strings.Contains(policy, "https://web.telegram.org") {
-			t.Errorf("CSP missing telegram frame-ancestors: %q", policy)
+		if policy := w.Header().Get("Content-Security-Policy"); policy != csp {
+			t.Fatalf("CSP = %q, want exactly %q", policy, csp)
 		}
 		if got := w.Header().Get("Strict-Transport-Security"); got != "" {
 			t.Errorf("HSTS should be absent on http base, got %q", got)
