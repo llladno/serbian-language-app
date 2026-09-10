@@ -53,6 +53,21 @@ func allow(l *ratelimit.Limiter, key string) bool { return l == nil || l.Allow(k
 // nil counter never locks.
 func locked(f *ratelimit.FailCounter, key string) bool { return f != nil && f.Locked(key) }
 
+// noteFail records one failed auth attempt for key. A nil counter is a no-op.
+func noteFail(f *ratelimit.FailCounter, key string) {
+	if f != nil {
+		f.Fail(key)
+	}
+}
+
+// clearFails wipes the failed-attempt record for key after a success. A nil
+// counter is a no-op.
+func clearFails(f *ratelimit.FailCounter, key string) {
+	if f != nil {
+		f.Reset(key)
+	}
+}
+
 // Handler builds the /api router. Exact auth paths are public; every other
 // /api/ route sits behind requireAuth (a session cookie, or the legacy X-User
 // bridge). The whole tree is wrapped in the security-header and origin guards.
@@ -83,12 +98,14 @@ func Handler(deps Deps) http.Handler {
 	root.HandleFunc("POST /api/auth/resend-verification", h.resendVerification)
 	root.HandleFunc("POST /api/auth/forgot", h.forgotPassword)
 	root.HandleFunc("POST /api/auth/reset", h.resetPassword)
-	root.HandleFunc("GET /api/auth/session", h.currentSession)
 	root.HandleFunc("POST /api/auth/telegram", h.telegramLogin)
 
 	// Everything else under /api/ requires a resolved caller.
 	protected := http.NewServeMux()
 	protected.HandleFunc("POST /api/auth/logout-all", h.logoutAll)
+	// Session inspection needs a resolved caller: 401 (not an empty body)
+	// when logged out, so requireAuth must run first.
+	protected.HandleFunc("GET /api/auth/session", h.currentSession)
 	protected.HandleFunc("GET /api/me", h.getMe)
 	protected.HandleFunc("PATCH /api/me", h.patchMe)
 	protected.HandleFunc("POST /api/me/password", h.changePassword)

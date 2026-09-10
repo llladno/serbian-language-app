@@ -22,6 +22,14 @@ var fixedNow = time.Date(2026, 9, 6, 12, 0, 0, 0, time.UTC)
 const testBaseURL = "http://localhost:8080"
 
 func newTestAPI(t *testing.T) (http.Handler, *store.Store) {
+	return newTestAPIWith(t, nil)
+}
+
+// newTestAPIWith builds the API with the default test wiring, then lets the
+// caller mutate the Deps before Handler runs — used by the auth tests to
+// inject a capturing SendMail, a synchronous Async, a fixed-clock function,
+// and real limiters with tiny thresholds.
+func newTestAPIWith(t *testing.T, tweak func(*Deps)) (http.Handler, *store.Store) {
 	t.Helper()
 	c, err := content.Load("../content/testdata/content")
 	if err != nil {
@@ -35,16 +43,20 @@ func newTestAPI(t *testing.T) (http.Handler, *store.Store) {
 	if _, err := st.EnsureUserByName("tester"); err != nil {
 		t.Fatal(err)
 	}
-	h := Handler(Deps{
+	d := Deps{
 		Course: func() *content.Course { return c },
 		Store:  st,
 		Now:    func() time.Time { return fixedNow },
 		Stale:  func() bool { return false },
 		Config: config.Config{AppBaseURL: testBaseURL},
-		// SendMail/Async and the limiters stay nil: Handler's defaults plus
-		// the allow/locked helpers treat nil as permissive.
-	})
-	return h, st
+		// SendMail/Async and the limiters stay nil unless tweak sets them:
+		// Handler's defaults plus the allow/locked helpers treat nil as
+		// permissive.
+	}
+	if tweak != nil {
+		tweak(&d)
+	}
+	return Handler(d), st
 }
 
 // do issues a request as account "tester".
@@ -186,12 +198,10 @@ func TestMiddlewareWiring(t *testing.T) {
 	h, st := newTestAPI(t)
 	tester, _ := st.UserByName("tester")
 
-	// Public auth path: no credentials -> hits the stub (501), not requireAuth (401).
-	if rr := doAs(h, "", "POST", "/api/auth/register", `{}`); rr.Code != http.StatusNotImplemented {
-		t.Errorf("POST /api/auth/register unauthenticated = %d, want 501", rr.Code)
-	}
-	if rr := doAs(h, "", "GET", "/api/auth/session", ""); rr.Code != http.StatusNotImplemented {
-		t.Errorf("GET /api/auth/session unauthenticated = %d, want 501", rr.Code)
+	// Public auth path: no credentials -> reaches the handler (register 400s on
+	// the empty body), not requireAuth (401).
+	if rr := doAs(h, "", "POST", "/api/auth/register", `{}`); rr.Code != http.StatusBadRequest {
+		t.Errorf("POST /api/auth/register unauthenticated = %d, want 400", rr.Code)
 	}
 
 	// Protected path: no credentials -> requireAuth 401 (never reaches the stub).
@@ -200,6 +210,11 @@ func TestMiddlewareWiring(t *testing.T) {
 	}
 	if rr := doAs(h, "", "GET", "/api/me", ""); rr.Code != http.StatusUnauthorized {
 		t.Errorf("GET /api/me unauthenticated = %d, want 401", rr.Code)
+	}
+	// GET /api/auth/session moved behind requireAuth in Task 12: 401 when
+	// logged out, not an empty session body.
+	if rr := doAs(h, "", "GET", "/api/auth/session", ""); rr.Code != http.StatusUnauthorized {
+		t.Errorf("GET /api/auth/session unauthenticated = %d, want 401", rr.Code)
 	}
 
 	// A cookie session flows through securityHeaders -> checkOrigin -> requireAuth.
@@ -210,6 +225,10 @@ func TestMiddlewareWiring(t *testing.T) {
 	// requireAuth resolved the caller, so a protected stub is now reachable (501).
 	if rr := doCookie(h, c, "GET", "/api/me", ""); rr.Code != http.StatusNotImplemented {
 		t.Errorf("GET /api/me with cookie = %d, want 501", rr.Code)
+	}
+	// ...and GET /api/auth/session, now protected, returns the account (200).
+	if rr := doCookie(h, c, "GET", "/api/auth/session", ""); rr.Code != http.StatusOK {
+		t.Errorf("GET /api/auth/session with cookie = %d, want 200", rr.Code)
 	}
 
 	// The origin guard still rejects a state-changing request with a foreign Origin.
