@@ -458,19 +458,21 @@ func (h handlers) clearSessionCookie(w http.ResponseWriter)
 - `Deps` расширяется:
 ```go
 type Deps struct {
-	Course   func() *content.Course
-	Store    *store.Store
-	Now      func() time.Time
-	Stale    func() bool
-	Config   config.Config
-	SendMail func(to, subject, text, html string)   // async in prod, sync in tests
-	Login    *ratelimit.Limiter                     // 5/min IP
-	LoginEmail *ratelimit.Limiter                   // 10/hour email
-	Slow     *ratelimit.Limiter                     // register/resend/forgot: 3/hour (keyed "ip:"+ip / "email:"+addr)
-	Fails    *ratelimit.FailCounter                 // soft lock, keyed email
+	Course     func() *content.Course
+	Store      *store.Store
+	Now        func() time.Time
+	Stale      func() bool
+	Config     config.Config
+	SendMail   func(to, subject, text, html string)  // delivers a message (prod: enqueue; tests: capture)
+	Async      func(func())                          // runs f; prod: `go f()`, tests: `f()` (deterministic)
+	Login      *ratelimit.Limiter                    // 5/min IP
+	LoginEmail *ratelimit.Limiter                    // 10/hour email
+	Slow       *ratelimit.Limiter                    // register/resend/forgot: 3/hour (keyed "ip:"+ip / "email:"+addr)
+	Fails      *ratelimit.FailCounter                // soft lock, keyed email
 }
 ```
-  Дефолты в `Handler`: если `SendMail == nil` → no-op; лимитеры `nil` → «всегда пропускать» обёртка (`func allow(l *ratelimit.Limiter, k string) bool { return l == nil || l.Allow(k) }`).
+  Дефолты в `Handler`: `SendMail == nil` → no-op; `Async == nil` → `func(f func()){ go f() }`; лимитеры `nil` → пропускать (через хелперы `allow`/`locked` из Global Constraints).
+  Хендлеры зовут фон через `h.Async(func(){ ... })` и письма через `h.SendMail(...)`.
 - `handlers.user(w, r)` — **переписать**: читать `authFrom(r)`; нет → `fail(401)`; есть → `Store.User(ctx.UserID)`. (Заменяет разбор `X-User` — теперь это делает `requireAuth`.)
 
 **`Handler` (переписать сборку):**
@@ -540,12 +542,12 @@ type meDTO struct { sessionUserDTO; Sessions []deviceDTO `json:"sessions"` }
 Общий хелпер в `auth.go`: `func (h handlers) issueSession(w http.ResponseWriter, r *http.Request, userID string) error` — `raw, hash, _ := auth.NewToken()`; `Store.CreateSession(hash, userID, r.UserAgent(), now, now.Add(sessionTTL))`; `h.setSessionCookie(w, raw, sessionTTL)`.
 
 **`register`** `{email, password, name}`:
-- Валидация: email непустой и похож на email (простой regex/`net/mail.ParseAddress`), пароль 8–128, name после `NormalizeName` непустой ≤40. Не прошло → `400 {"error":"..."}` (это не энумерация — формат).
-- `allow(h.Slow, "ip:"+ip)` и `allow(h.Slow, "email:"+lower(email))` → нет → всё равно вернуть generic `200` (не 429 — не палим). Просто не слать письмо.
-- Фон: `IdentityByProviderUID("password", lower(email))`:
-  - есть → `SendMail(already_registered)`;
-  - нет → `CreateUser(name)` → `CreateIdentity(Identity{ID: auth.NewIdentityID(), UserID, Provider:"password", ProviderUID: lower(email), Email: email, PasswordHash: hash})` → `raw, thash, _ := auth.NewToken()` → `CreateEmailToken(thash, identityID, "verify", now, now+24h)` → `SendMail(RenderVerify(baseURL, raw, name))`.
-- Ответ: всегда `200 {"status":"ok"}` сразу (фон — через `h.SendMail`, а создание юзера/identity/токена — тоже в фоне? **нет** — создание синхронно (быстро, одна-две вставки), только `Send` асинхронно). Тайминг: разница «есть/нет email» = один лишний `bcrypt` в ветке «нет» (~250 мс) vs 0 в ветке «есть». **Уравнять:** в ветке «есть» тоже прогнать `auth.HashPassword` по присланному паролю и выкинуть результат (constant-ish time). Задокументировать.
+- **Синхронно:** валидация формата — email через `net/mail.ParseAddress`, пароль 8–128, name после `NormalizeName` непустой ≤40. Не прошло → `400 {"error":"..."}` (формат, не энумерация). Прошло → `allow(h.Slow, "ip:"+ip)` && `allow(h.Slow, "email:"+lower(email))` (результат запомнить) → **сразу `200 {"status":"ok"}`**.
+- **Всё остальное — в фоновой горутине после ответа** (поэтому ветвление «есть/нет email» не даёт тайминг-оракула; ответ уже ушёл). Если rate-limit не пропустил — горутина просто ничего не делает. Иначе `IdentityByProviderUID("password", lower(email))`:
+  - есть → `h.SendMail(RenderAlreadyRegistered(...))`;
+  - нет → `hash := auth.HashPassword(password)` → `CreateUser(name)` → `CreateIdentity(Identity{ID: auth.NewIdentityID(), UserID, Provider:"password", ProviderUID: lower(email), Email: email, PasswordHash: hash})` → `raw, thash, _ := auth.NewToken()` → `CreateEmailToken(thash, identityID, "verify", now, now.Add(verifyTTL))` → `h.SendMail(RenderVerify(baseURL, raw, name))`.
+- Гонка двойного сабмита: второй `CreateIdentity` упрётся в `UNIQUE(provider, provider_uid)` (лог, не паника); `CreateUser` мог оставить сиротский `users`-ряд — редко, `Slow` 3/час это гасит. Задокументировать, не чинить.
+- В тестах `Deps.Async` синхронный → фейковый `SendMail` ловит письмо сразу после ответа, без `time.Sleep`.
 
 **`login`** `{email, password}`:
 - `locked(h.Fails, lower(email))` → `401` generic (лок отдельно не раскрываем), пароль не проверяем.
@@ -701,10 +703,11 @@ type meDTO struct { sessionUserDTO; Sessions []deviceDTO `json:"sessions"` }
 
 - Собрать `cfg := config.Load()`.
 - `var mailer mail.Mailer`; `if cfg.SMTPEnabled() { mailer = mail.NewSMTPMailer(cfg.SMTP) } else { mailer = mail.LogMailer{} }`.
-- `sendMail := func(to, subject, text, html string) { go func() { ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second); defer cancel(); if err := mailer.Send(ctx, to, subject, text, html); err != nil { /* one retry */ ctx2, c2 := context.WithTimeout(context.Background(), 15*time.Second); defer c2(); if err2 := mailer.Send(ctx2, ...); err2 != nil { log.Printf("mail send failed: %v", err2) } } }() }` — без адреса в info-логе (лог только на повторной ошибке, и без `to`).
+- `async := func(f func()) { go f() }`.
+- `sendMail := func(to, subject, text, html string) { /* runs inside an Async goroutine already — synchronous here */ ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second); defer cancel(); if err := mailer.Send(ctx, to, subject, text, html); err != nil { ctx2, c2 := context.WithTimeout(context.Background(), 15*time.Second); defer c2(); if err2 := mailer.Send(ctx2, to, subject, text, html); err2 != nil { log.Printf("mail send failed after retry: %v", err2) } } }` — лог только на повторной ошибке, без `to`/тела.
 - Лимитеры: `login := ratelimit.NewLimiter(5.0/60, 5)`, `loginEmail := ratelimit.NewLimiter(10.0/3600, 10)`, `slow := ratelimit.NewLimiter(3.0/3600, 3)`, `fails := ratelimit.NewFailCounter(10, 15*time.Minute)`.
 - Housekeeping: `go func() { t := time.NewTicker(1*time.Hour); for range t.C { if _, err := st.DeleteExpiredSessions(time.Now()); err != nil { log.Printf("session sweep: %v", err) } } }()`.
-- Передать всё в `api.Handler(api.Deps{... Config: cfg, SendMail: sendMail, Login: login, LoginEmail: loginEmail, Slow: slow, Fails: fails})`.
+- Передать всё в `api.Handler(api.Deps{... Config: cfg, SendMail: sendMail, Async: async, Login: login, LoginEmail: loginEmail, Slow: slow, Fails: fails})`.
 - `flag` `-import-sqlite` и прочее — не трогать.
 
 - [ ] **Step 1:** правки `main.go`.
