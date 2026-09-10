@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"math"
 	"net"
 	"net/http"
 	netmail "net/mail"
@@ -574,10 +575,35 @@ func (h handlers) telegramLogin(w http.ResponseWriter, r *http.Request) {
 	if strings.TrimSpace(envelope.InitData) != "" {
 		u, err = auth.VerifyInitData(envelope.InitData, token, h.Now(), telegramMaxAge)
 	} else {
-		var fields map[string]string
-		if jErr := json.Unmarshal(body, &fields); jErr != nil {
+		// A real Telegram Login Widget posts id and auth_date as JSON numbers,
+		// so decoding straight into map[string]string would fail. Unmarshal into
+		// map[string]any and coerce each value to the string form the data-check
+		// hash is computed over.
+		var raw map[string]any
+		if jErr := json.Unmarshal(body, &raw); jErr != nil {
 			fail(w, http.StatusUnauthorized, "bad_telegram_auth")
 			return
+		}
+		fields := make(map[string]string, len(raw))
+		for k, v := range raw {
+			switch val := v.(type) {
+			case nil:
+				// omit — a null field is not part of the check string
+			case string:
+				fields[k] = val
+			case bool:
+				fields[k] = strconv.FormatBool(val)
+			case float64:
+				if !math.IsInf(val, 0) && val == math.Trunc(val) {
+					fields[k] = strconv.FormatInt(int64(val), 10)
+				} else {
+					fields[k] = strconv.FormatFloat(val, 'f', -1, 64)
+				}
+			default:
+				// arrays/objects have no place in a widget payload; stringify so
+				// the hash check simply fails rather than panicking.
+				fields[k] = fmt.Sprintf("%v", val)
+			}
 		}
 		u, err = auth.VerifyWidget(fields, token, h.Now(), telegramMaxAge)
 	}
@@ -607,7 +633,10 @@ func (h handlers) telegramLogin(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// 2. A pending row seeded for this username — rewrite it to the real id.
-	matched, err := h.Store.AttachPendingTelegram(u.Username, tgID)
+	// Telegram usernames are case-insensitive and the migration-003 seed keys
+	// (pending:llladnooo, pending:alinsssk) are lowercase, but a verified
+	// payload may carry any case — lowercase the lookup key so the claim hits.
+	matched, err := h.Store.AttachPendingTelegram(strings.ToLower(u.Username), tgID)
 	if err != nil {
 		log.Printf("telegram login: attach pending: %v", err)
 		fail(w, http.StatusInternalServerError, "internal error")
@@ -633,6 +662,12 @@ func (h handlers) telegramLogin(w http.ResponseWriter, r *http.Request) {
 		name = "tg" + tgID
 	}
 	name = store.NormalizeName(name)
+	// NormalizeName can still leave a name store.CreateUser rejects (empty after
+	// trimming a whitespace-only first_name, or >40 runes) — that would be an
+	// unrecoverable 500 on every future login. Fall back to the stable tg id.
+	if name == "" || len([]rune(name)) > 40 {
+		name = "tg" + tgID
+	}
 
 	uid, err := h.Store.CreateUser(name)
 	if err != nil {
@@ -663,6 +698,10 @@ func (h handlers) finishTelegramLogin(w http.ResponseWriter, r *http.Request, us
 		fail(w, http.StatusInternalServerError, "internal error")
 		return
 	}
-	sum, _ := h.summaryFor(userID)
+	sum, err := h.summaryFor(userID)
+	if err != nil {
+		fail(w, http.StatusInternalServerError, "internal error")
+		return
+	}
 	writeJSON(w, http.StatusOK, summaryToDTO(userID, sum))
 }

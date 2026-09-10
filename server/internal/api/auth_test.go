@@ -744,6 +744,40 @@ func tgBody(initData string) string {
 	return fmt.Sprintf(`{"init_data":%q}`, initData)
 }
 
+// signTelegramWidget builds a signed Login Widget param map the way
+// auth.VerifyWidget checks it: secret = SHA256(botToken); check string =
+// key-sorted "k=v" lines (every field except hash) joined by "\n", over the
+// STRING forms of the values; hash = hex HMAC-SHA256 of that under the secret.
+// Values are passed in as strings even for numeric fields (id, auth_date) —
+// the caller re-emits them as JSON numbers when testing the widget wire shape.
+func signTelegramWidget(fields map[string]string, botToken string) map[string]string {
+	sum := sha256.Sum256([]byte(botToken))
+
+	keys := make([]string, 0, len(fields))
+	for k := range fields {
+		if k == "hash" {
+			continue
+		}
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+	lines := make([]string, len(keys))
+	for i, k := range keys {
+		lines[i] = k + "=" + fields[k]
+	}
+
+	mac := hmac.New(sha256.New, sum[:])
+	mac.Write([]byte(strings.Join(lines, "\n")))
+	sig := hex.EncodeToString(mac.Sum(nil))
+
+	out := make(map[string]string, len(fields)+1)
+	for k, v := range fields {
+		out[k] = v
+	}
+	out["hash"] = sig
+	return out
+}
+
 // newTelegramAPI is newAuthAPI with a Telegram bot token configured.
 func newTelegramAPI(t *testing.T) (http.Handler, *store.Store) {
 	t.Helper()
@@ -883,5 +917,141 @@ func TestTelegramBadHash401(t *testing.T) {
 	}
 	if n, _ := st.ListUsers(); len(n) != 1 {
 		t.Errorf("a rejected login created rows: user count = %d, want 1", len(n))
+	}
+}
+
+// TestTelegramLoginLongFirstName covers the safe-name fallback: a user with no
+// username and an over-length first_name would otherwise reach store.CreateUser,
+// which rejects >40-rune names, turning every future login into a 500.
+func TestTelegramLoginLongFirstName(t *testing.T) {
+	h, st := newTelegramAPI(t)
+
+	longName := strings.Repeat("ы", 60) // 60 runes, over the 40-rune cap
+	initData := signTelegramInitData(map[string]string{
+		"auth_date": strconv.FormatInt(fixedNow.Add(-time.Minute).Unix(), 10),
+		"query_id":  "AAHtest",
+		"user":      fmt.Sprintf(`{"id":314159,"username":"","first_name":%q}`, longName),
+	}, tgTestToken)
+
+	rr := anon(h, "POST", "/api/auth/telegram", tgBody(initData))
+	if rr.Code != http.StatusOK {
+		t.Fatalf("telegram login = %d %s, want 200", rr.Code, rr.Body)
+	}
+	user := decodeBody[sessionUserDTO](t, rr)
+	if user.Name != "tg314159" {
+		t.Errorf("name = %q, want tg314159 (an over-length first_name must fall back)", user.Name)
+	}
+	if _, err := st.IdentityByProviderUID("telegram", "314159"); err != nil {
+		t.Fatalf("identity after login: %v", err)
+	}
+}
+
+// TestTelegramClaimsPendingCaseInsensitive pins that a verified payload whose
+// username differs in case from the lowercase migration-003 seed key still
+// claims the pending row rather than spawning a fresh account.
+func TestTelegramClaimsPendingCaseInsensitive(t *testing.T) {
+	h, st := newTelegramAPI(t)
+
+	uid, err := st.CreateUser("Гриша")
+	if err != nil {
+		t.Fatalf("CreateUser: %v", err)
+	}
+	if err := st.CreateIdentity(store.Identity{
+		ID:          auth.NewIdentityID(),
+		UserID:      uid,
+		Provider:    "telegram",
+		ProviderUID: "pending:llladnooo", // seed key is lowercase
+		TgUsername:  "llladnooo",
+	}); err != nil {
+		t.Fatalf("CreateIdentity pending: %v", err)
+	}
+
+	rr := anon(h, "POST", "/api/auth/telegram", tgBody(tgInitData(999, "LLLadnooo")))
+	if rr.Code != http.StatusOK {
+		t.Fatalf("claim login = %d %s, want 200", rr.Code, rr.Body)
+	}
+	user := decodeBody[sessionUserDTO](t, rr)
+	if user.ID != uid {
+		t.Errorf("logged in as %q, want the pre-seeded %q (mixed-case username must claim pending)", user.ID, uid)
+	}
+
+	id, err := st.IdentityByProviderUID("telegram", "999")
+	if err != nil {
+		t.Fatalf("identity by real tg id: %v", err)
+	}
+	if id.UserID != uid || id.ProviderUID != "999" {
+		t.Errorf("identity = %+v, want user_id %q provider_uid 999", id, uid)
+	}
+	if _, err := st.IdentityByProviderUID("telegram", "pending:llladnooo"); !errors.Is(err, sql.ErrNoRows) {
+		t.Errorf("pending row survived the claim: err = %v", err)
+	}
+	if users, _ := st.ListUsers(); len(users) != 2 { // "tester" + "Гриша"
+		t.Errorf("user count = %d, want 2 (claim must not create a new user)", len(users))
+	}
+}
+
+// TestTelegramWidgetNumericFields exercises the Login Widget wire shape: a real
+// widget delivers id and auth_date as JSON numbers, which the handler must
+// coerce to their string forms before auth.VerifyWidget re-checks the hash.
+func TestTelegramWidgetNumericFields(t *testing.T) {
+	h, st := newTelegramAPI(t)
+
+	authDate := fixedNow.Add(-time.Minute).Unix()
+	signed := signTelegramWidget(map[string]string{
+		"id":         "424242",
+		"first_name": "Neo",
+		"username":   "neo_widget",
+		"auth_date":  strconv.FormatInt(authDate, 10),
+	}, tgTestToken)
+
+	// id and auth_date go on the wire as JSON numbers, not strings.
+	body := fmt.Sprintf(
+		`{"id":%s,"first_name":%q,"username":%q,"auth_date":%d,"hash":%q}`,
+		signed["id"], "Neo", "neo_widget", authDate, signed["hash"],
+	)
+
+	rr := anon(h, "POST", "/api/auth/telegram", body)
+	if rr.Code != http.StatusOK {
+		t.Fatalf("widget login = %d %s, want 200", rr.Code, rr.Body)
+	}
+	grabSessionCookie(t, rr)
+
+	user := decodeBody[sessionUserDTO](t, rr)
+	if user.Name != "neo_widget" || !user.Telegram.Linked || user.Telegram.Username != "neo_widget" {
+		t.Errorf("login DTO = %+v, want name neo_widget + linked telegram", user)
+	}
+	id, err := st.IdentityByProviderUID("telegram", "424242")
+	if err != nil {
+		t.Fatalf("identity after widget login: %v", err)
+	}
+	if id.UserID != user.ID {
+		t.Errorf("identity user_id = %q, want %q", id.UserID, user.ID)
+	}
+}
+
+// TestTelegramWidgetStringFieldsStillWork pins that the numeric-coercion change
+// did not regress a widget payload that (like our own frontend) already sends
+// every field as a JSON string.
+func TestTelegramWidgetStringFieldsStillWork(t *testing.T) {
+	h, _ := newTelegramAPI(t)
+
+	authDate := strconv.FormatInt(fixedNow.Add(-time.Minute).Unix(), 10)
+	signed := signTelegramWidget(map[string]string{
+		"id":         "515151",
+		"first_name": "Trin",
+		"username":   "trin_widget",
+		"auth_date":  authDate,
+	}, tgTestToken)
+	body := fmt.Sprintf(
+		`{"id":%q,"first_name":%q,"username":%q,"auth_date":%q,"hash":%q}`,
+		signed["id"], "Trin", "trin_widget", authDate, signed["hash"],
+	)
+
+	rr := anon(h, "POST", "/api/auth/telegram", body)
+	if rr.Code != http.StatusOK {
+		t.Fatalf("widget login (string fields) = %d %s, want 200", rr.Code, rr.Body)
+	}
+	if user := decodeBody[sessionUserDTO](t, rr); user.Name != "trin_widget" {
+		t.Errorf("name = %q, want trin_widget", user.Name)
 	}
 }
