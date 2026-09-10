@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"mime"
 	"mime/multipart"
+	"mime/quotedprintable"
 	"net"
 	"net/smtp"
 	"net/textproto"
@@ -37,15 +38,23 @@ func NewSMTPMailer(c SMTPConfig) *SMTPMailer {
 	return &SMTPMailer{cfg: c}
 }
 
-// Send delivers one multipart/alternative message (plain text + HTML). The
-// SMTP dialog honours ctx for the initial dial; net/smtp itself has no
-// context support past that point.
+// Send delivers one multipart/alternative message (plain text + HTML). ctx
+// governs the initial dial; net/smtp has no context support past that point,
+// so when ctx carries a deadline it is also pushed onto the raw connection to
+// bound the greeting/STARTTLS/AUTH/DATA dialog and stop a stalled server from
+// leaking the connection forever.
 func (m *SMTPMailer) Send(ctx context.Context, to, subject, text, html string) error {
 	addr := net.JoinHostPort(m.cfg.Host, m.cfg.Port)
 
 	conn, err := (&net.Dialer{}).DialContext(ctx, "tcp", addr)
 	if err != nil {
 		return fmt.Errorf("mail: dial %s: %w", addr, err)
+	}
+
+	// net/smtp ignores ctx once the socket is open. Bound the rest of the
+	// dialog with the context deadline; it rides the same fd through StartTLS.
+	if dl, ok := ctx.Deadline(); ok {
+		_ = conn.SetDeadline(dl)
 	}
 
 	c, err := smtp.NewClient(conn, m.cfg.Host)
@@ -77,11 +86,16 @@ func (m *SMTPMailer) Send(ctx context.Context, to, subject, text, html string) e
 		return fmt.Errorf("mail: RCPT TO %s: %w", to, err)
 	}
 
+	msg, err := buildMessage(m.cfg.From, m.cfg.FromName, to, subject, text, html)
+	if err != nil {
+		return err
+	}
+
 	w, err := c.Data()
 	if err != nil {
 		return fmt.Errorf("mail: DATA: %w", err)
 	}
-	if _, err := w.Write(buildMessage(m.cfg.From, m.cfg.FromName, to, subject, text, html)); err != nil {
+	if _, err := w.Write(msg); err != nil {
 		return fmt.Errorf("mail: write message: %w", err)
 	}
 	if err := w.Close(); err != nil {
@@ -92,21 +106,34 @@ func (m *SMTPMailer) Send(ctx context.Context, to, subject, text, html string) e
 
 // buildMessage renders one RFC 5322 message as MIME multipart/alternative
 // (a plain-text part and an HTML part) with CRLF line endings, ready to hand
-// to the SMTP DATA command. Non-ASCII Subject and display name are RFC 2047
-// encoded. This is the unit-tested seam; the SMTP wire dialog in Send is not
-// exercised by tests.
-func buildMessage(from, fromName, to, subject, text, html string) []byte {
+// to the SMTP DATA command. Part bodies are quoted-printable encoded so a
+// submission host that does not advertise 8BITMIME cannot silently corrupt a
+// UTF-8 body. Non-ASCII Subject and display name are RFC 2047 encoded. It
+// returns an error if to or subject carries a CR/LF (header-injection guard;
+// Send also calls c.Rcpt first, so this is defence in depth). This is the
+// unit-tested seam; the SMTP wire dialog in Send is not exercised by tests.
+func buildMessage(from, fromName, to, subject, text, html string) ([]byte, error) {
+	if strings.ContainsAny(to, "\r\n") {
+		return nil, fmt.Errorf("mail: recipient %q contains a newline", to)
+	}
+	if strings.ContainsAny(subject, "\r\n") {
+		return nil, fmt.Errorf("mail: subject %q contains a newline", subject)
+	}
+
 	var body bytes.Buffer
 	mw := multipart.NewWriter(&body)
 
 	writePart := func(contentType, content string) {
 		p, err := mw.CreatePart(textproto.MIMEHeader{
 			"Content-Type":              {contentType},
-			"Content-Transfer-Encoding": {"8bit"},
+			"Content-Transfer-Encoding": {"quoted-printable"},
 		})
-		if err == nil { // bytes.Buffer writes never fail
-			_, _ = p.Write([]byte(toCRLF(content)))
+		if err != nil { // bytes.Buffer writes never fail
+			return
 		}
+		qw := quotedprintable.NewWriter(p)
+		_, _ = qw.Write([]byte(toCRLF(content)))
+		_ = qw.Close()
 	}
 	writePart("text/plain; charset=utf-8", text)
 	writePart("text/html; charset=utf-8", html)
@@ -128,16 +155,26 @@ func buildMessage(from, fromName, to, subject, text, html string) []byte {
 	header("Content-Type", `multipart/alternative; boundary="`+mw.Boundary()+`"`)
 	msg.WriteString("\r\n")
 	msg.Write(body.Bytes())
-	return msg.Bytes()
+	return msg.Bytes(), nil
 }
 
-// formatAddress renders a "Name <addr>" header value, RFC 2047 encoding the
-// display name when it contains non-ASCII bytes.
+// addrSpecials are the RFC 5322 characters that force a display name to be
+// wrapped in a quoted-string rather than emitted as a bare atom sequence.
+const addrSpecials = "()<>[]:;@\\,.\""
+
+// formatAddress renders a "Name <addr>" header value. An empty name emits the
+// bare address. An ASCII name containing an RFC 5322 special is wrapped in a
+// quoted-string (with \ and " escaped); a clean ASCII name passes through. A
+// non-ASCII name becomes an RFC 2047 encoded-word, which needs no quoting.
 func formatAddress(name, addr string) string {
 	if name == "" {
 		return addr
 	}
 	if isASCII(name) {
+		if strings.ContainsAny(name, addrSpecials) {
+			esc := strings.NewReplacer(`\`, `\\`, `"`, `\"`).Replace(name)
+			return `"` + esc + `" <` + addr + ">"
+		}
 		return name + " <" + addr + ">"
 	}
 	return mime.QEncoding.Encode("utf-8", name) + " <" + addr + ">"

@@ -79,6 +79,31 @@ func TestRenderVerifyResetLinkShape(t *testing.T) {
 	}
 }
 
+// TestRenderVerifyHTMLHrefKeepsEscaping pins that html/template's URL-context
+// sanitiser leaves an already-percent-escaped token untouched in the href
+// attribute (no double-encoding, no unescaping).
+func TestRenderVerifyHTMLHrefKeepsEscaping(t *testing.T) {
+	const token = "a/b+c=d"
+	esc := url.QueryEscape(token) // "a%2Fb%2Bc%3Dd"
+	if esc != "a%2Fb%2Bc%3Dd" {
+		t.Fatalf("precondition: QueryEscape(%q) = %q", token, esc)
+	}
+
+	_, _, html := RenderVerify("https://x.example", token, "Имя")
+
+	wantHref := `href="https://x.example/api/auth/verify?token=` + esc + `"`
+	if !strings.Contains(html, wantHref) {
+		t.Errorf("html href mangled by html/template; want substring %q\n%s", wantHref, html)
+	}
+	if !strings.Contains(html, esc) {
+		t.Errorf("escaped token %q not present intact in html\n%s", esc, html)
+	}
+	// The raw, unescaped token must not leak into the href.
+	if strings.Contains(html, "token=a/b+c=d") {
+		t.Errorf("raw unescaped token leaked into html:\n%s", html)
+	}
+}
+
 func TestRenderAlreadyRegisteredPhrasing(t *testing.T) {
 	_, text, html := RenderAlreadyRegistered("https://srpski.example", "Гриша")
 	body := text + "\n" + html
