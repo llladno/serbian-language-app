@@ -505,7 +505,7 @@ func Handler(deps Deps) http.Handler {
 }
 ```
   Порядок регистрации: точные auth-пути на `api`; всё остальное `/api/` → `protected` за `requireAuth`. Убрать `GET/POST /api/users`.
-  `GET /api/auth/session` — **не** за `requireAuth`; хендлер сам зовёт `authFrom`, отдаёт `200 {user}` или `401`.
+  `GET /api/auth/session` — **за `requireAuth`** (в `protected`). `401` = не залогинен (фронт трактует как `user = null`), `200 {sessionUserDTO}` = залогинен. Task 11 зарегистрировал его на `root` по ошибке — Task 12 переносит регистрацию в `protected`. (Причина: `authFrom` заполняет только `requireAuth`; дублировать резолв сессии в хендлере не нужно.)
 
 **`dto.go` — добавить:**
 ```go
@@ -563,7 +563,7 @@ type meDTO struct { sessionUserDTO; Sessions []deviceDTO `json:"sessions"` }
 
 **`logoutAll`:** (за `requireAuth`) `Store.DeleteUserSessions(ctx.UserID)` затем заново `issueSession` для текущего устройства (или просто удалить все и `clearSessionCookie` + `204` — проще; спека допускает). **Решение:** удалить все, `clearSessionCookie`, `204` — пусть перелогинится.
 
-**`currentSession`:** `authFrom` → нет → `401`; есть → собрать `sessionUserDTO` (из `ctx.Summary` или дозагрузить) → `200`.
+**`currentSession`:** перенести регистрацию роута `GET /api/auth/session` с `root` в `protected` (за `requireAuth`). Хендлер: `ac, _ := authFrom(r)` (всегда ok — за `requireAuth`); собрать `sessionUserDTO` из `ac.Summary` (мост `X-User` даёт пустой Summary — тогда дозагрузить `UserByID(ac.UserID)` для имени) → `200`. Логаут/нет сессии до хендлера не доходит — `requireAuth` вернёт `401`.
 
 - [ ] **Step 1: тесты** `auth_test.go` (fake mailer sink, fake clock, лимитеры реальные с тестовыми настройками через новый `Deps`-хелпер или `nil`):
   - `TestRegisterCreatesUnverifiedAndSendsVerify` — `POST /register` → `200`; sink: 1 письмо, тема verify; в сторе — юзер + `password` identity с `email_verified_at` пустым.
