@@ -16,7 +16,7 @@
 
 ## Global Constraints
 
-- Модуль Go `github.com/grisha/serbian-app`; Go 1.25.0 — не поднимать.
+- Модуль Go `github.com/grisha/serbian-app`; **`go.mod` `go` = `1.25.0`, не поднимать, `toolchain`-директиву не добавлять** — Dockerfile пинит `golang:1.25-alpine`, `go 1.26` там не соберётся. При `go get` любой зависимости пинить версию, чей `go`-директив ≤ 1.25 (`go list -m -f '{{.GoVersion}}' <mod>@<ver>` для проверки). Конкретно: `golang.org/x/crypto@v0.41.0` (нужен go 1.23) — **не** `@latest` (v0.57 требует go 1.26). После любого `go mod tidy` проверить `head -3 go.mod`.
 - **Пароль:** `bcrypt(base64.StdEncoding(sha256(password)), cost)` где `cost = bcryptCost = 12` (константа в `auth`, не env). Длина пароля на приёме: 8–128 символов.
 - **Токены** (сессия, verify, reset): 32 байта `crypto/rand`, значение для клиента — `base64.RawURLEncoding`; в БД только `hex(sha256(raw))`. Сравнение хешей — `subtle.ConstantTimeCompare` / `hmac.Equal`.
 - **Кука:** имя `__Host-session` когда `APP_BASE_URL` начинается с `https://`, иначе `session`; всегда `HttpOnly`, `SameSite=Lax`, `Path=/`; `Secure` только для `__Host-`. Значение — `base64.RawURLEncoding` от 32 байт. `MaxAge` = TTL сессии.
@@ -89,16 +89,15 @@
 - `auth.VerifyPassword(hash, plain string) bool` — `bcrypt.CompareHashAndPassword([]byte(hash), pre(plain)) == nil`.
 - `const bcryptCost = 12` (не экспортируется).
 
-- [ ] **Step 1: зависимости**
+- [ ] **Step 1: зависимость `x/crypto` (пиновая версия!)**
 ```bash
 cd /Users/grisha/plans/serbian-app
-go get golang.org/x/crypto/bcrypt
-go get golang.org/x/time/rate
+go get golang.org/x/crypto@v0.41.0
 go mod tidy
+head -3 go.mod    # MUST still say: go 1.25.0  (no toolchain line)
 ```
-Оба попадут в `require` (bcrypt импортируется этой задачей, rate — Task 7; `go mod tidy` их оставит, т.к. Task 7 в той же ветке — но выполнить `go get` для обоих сразу здесь). Ожидается: `go.mod` содержит `golang.org/x/crypto` и `golang.org/x/time`.
-
-> Если `go mod tidy` вычистит `x/time` (Task 7 ещё не написан) — не страшно, Task 7 повторит `go get golang.org/x/time/rate`. Здесь достаточно `x/crypto`.
+`@v0.41.0` — потому что `@latest` (v0.57) тянет `go 1.26` в `go.mod`, а Dockerfile на `golang:1.25-alpine`. Если `go mod tidy` всё равно поднял `go`-строку или добавил `toolchain` — откатить: `go mod edit -go=1.25.0 -toolchain=none && go mod tidy`.
+`x/time/rate` здесь НЕ ставим (Task 7 поставит, тоже пиново).
 
 - [ ] **Step 2: падающий тест** `password_test.go`:
 ```go
@@ -324,6 +323,7 @@ func (f *FailCounter) Fail(key string)
 func (f *FailCounter) Reset(key string)
 func (f *FailCounter) SetNow(fn func() time.Time)
 ```
+- **Зависимость:** `go get golang.org/x/time@<пиновая>` — проверить `go list -m -f '{{.GoVersion}}' golang.org/x/time@<ver>` ≤ 1.25 (напр. `@v0.9.0`), НЕ `@latest`. После — `head -3 go.mod` = `go 1.25.0`, без `toolchain`.
 - `Limiter` внутри — `golang.org/x/time/rate.Limiter` на ключ (или свой bucket). Чистка: при каждом `Allow` с вероятностью/счётчиком, либо отдельный `func (l *Limiter) reap()` вызываемый по таймеру из `main` — проще: ленивая чистка записей, не тронутых > 10 мин, во время `Allow` (проход по N записям).
 - Всё потокобезопасно (`sync.Mutex`).
 
