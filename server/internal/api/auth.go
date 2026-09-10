@@ -2,12 +2,15 @@ package api
 
 import (
 	"database/sql"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"log"
 	"net"
 	"net/http"
 	netmail "net/mail"
+	"strconv"
 	"strings"
 	"time"
 
@@ -530,6 +533,136 @@ func (h handlers) resetPassword(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, summaryToDTO(idn.UserID, sum))
 }
 
+// telegramMaxAge is how old a Telegram auth_date may be before a sign-in is
+// rejected as stale. Telegram's own guidance for Mini Apps is 24h.
+const telegramMaxAge = 24 * time.Hour
+
+// telegramLogin handles POST /api/auth/telegram. It accepts either a Mini App
+// payload — {"init_data": "<query string>"} — or a flat Login Widget object
+// {id, first_name, username, auth_date, hash}; the presence of a non-empty
+// string "init_data" selects the Mini App path. After the signature verifies it
+// resolves the account three ways, in order: an existing telegram identity for
+// this tg id logs straight in; a "pending:<username>" row seeded by a migration
+// is rewritten to the real id and claimed; otherwise a brand-new account is
+// created. Every success mints a session and returns the account view.
+//
+// The bot token and the raw initData/hash are never logged.
 func (h handlers) telegramLogin(w http.ResponseWriter, r *http.Request) {
-	fail(w, http.StatusNotImplemented, "not implemented")
+	if !h.Config.TelegramEnabled() {
+		fail(w, http.StatusServiceUnavailable, "telegram_disabled")
+		return
+	}
+
+	// decode consumes r.Body and the two payload shapes are mutually exclusive,
+	// so read the body once and try each shape against the bytes.
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		fail(w, http.StatusBadRequest, "bad request body")
+		return
+	}
+	token := h.Config.TelegramBotToken
+
+	var envelope struct {
+		InitData string `json:"init_data"`
+	}
+	// A flat widget object has no "init_data" key, so this leaves InitData empty
+	// and the unmarshal error (if the body is not an object at all) is caught by
+	// the widget branch below.
+	_ = json.Unmarshal(body, &envelope)
+
+	var u auth.TelegramUser
+	if strings.TrimSpace(envelope.InitData) != "" {
+		u, err = auth.VerifyInitData(envelope.InitData, token, h.Now(), telegramMaxAge)
+	} else {
+		var fields map[string]string
+		if jErr := json.Unmarshal(body, &fields); jErr != nil {
+			fail(w, http.StatusUnauthorized, "bad_telegram_auth")
+			return
+		}
+		u, err = auth.VerifyWidget(fields, token, h.Now(), telegramMaxAge)
+	}
+	if err != nil {
+		if errors.Is(err, auth.ErrBadHash) || errors.Is(err, auth.ErrStale) || errors.Is(err, auth.ErrMalformed) {
+			fail(w, http.StatusUnauthorized, "bad_telegram_auth")
+			return
+		}
+		// VerifyInitData/VerifyWidget only ever return the sentinels above; a
+		// different error would be a contract break — fail closed.
+		fail(w, http.StatusUnauthorized, "bad_telegram_auth")
+		return
+	}
+
+	tgID := strconv.FormatInt(u.ID, 10)
+
+	// 1. Known telegram identity — straight login.
+	id, err := h.Store.IdentityByProviderUID("telegram", tgID)
+	switch {
+	case err == nil:
+		h.finishTelegramLogin(w, r, id.UserID)
+		return
+	case !errors.Is(err, sql.ErrNoRows):
+		log.Printf("telegram login: lookup identity: %v", err)
+		fail(w, http.StatusInternalServerError, "internal error")
+		return
+	}
+
+	// 2. A pending row seeded for this username — rewrite it to the real id.
+	matched, err := h.Store.AttachPendingTelegram(u.Username, tgID)
+	if err != nil {
+		log.Printf("telegram login: attach pending: %v", err)
+		fail(w, http.StatusInternalServerError, "internal error")
+		return
+	}
+	if matched {
+		id, err := h.Store.IdentityByProviderUID("telegram", tgID)
+		if err != nil {
+			log.Printf("telegram login: identity after claim: %v", err)
+			fail(w, http.StatusInternalServerError, "internal error")
+			return
+		}
+		h.finishTelegramLogin(w, r, id.UserID)
+		return
+	}
+
+	// 3. First contact — create the account and its telegram identity.
+	name := u.Username
+	if name == "" {
+		name = u.FirstName
+	}
+	if name == "" {
+		name = "tg" + tgID
+	}
+	name = store.NormalizeName(name)
+
+	uid, err := h.Store.CreateUser(name)
+	if err != nil {
+		log.Printf("telegram login: create user: %v", err)
+		fail(w, http.StatusInternalServerError, "internal error")
+		return
+	}
+	if err := h.Store.CreateIdentity(store.Identity{
+		ID:          auth.NewIdentityID(),
+		UserID:      uid,
+		Provider:    "telegram",
+		ProviderUID: tgID,
+		TgUsername:  u.Username,
+	}); err != nil {
+		log.Printf("telegram login: create identity: %v", err)
+		fail(w, http.StatusInternalServerError, "internal error")
+		return
+	}
+	h.finishTelegramLogin(w, r, uid)
+}
+
+// finishTelegramLogin mints a session for userID and writes the 200 account
+// view. Shared by the existing-identity, claimed-pending and new-account
+// branches of telegramLogin.
+func (h handlers) finishTelegramLogin(w http.ResponseWriter, r *http.Request, userID string) {
+	if err := h.issueSession(w, r, userID); err != nil {
+		log.Printf("telegram login: %v", err)
+		fail(w, http.StatusInternalServerError, "internal error")
+		return
+	}
+	sum, _ := h.summaryFor(userID)
+	writeJSON(w, http.StatusOK, summaryToDTO(userID, sum))
 }

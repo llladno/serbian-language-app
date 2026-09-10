@@ -1,12 +1,18 @@
 package api
 
 import (
+	"crypto/hmac"
+	"crypto/sha256"
 	"database/sql"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"regexp"
+	"sort"
+	"strconv"
 	"strings"
 	"sync"
 	"testing"
@@ -679,5 +685,203 @@ func TestLogoutAllKillsEverySession(t *testing.T) {
 	}
 	if sess, _ := st.ListUserSessions(uid); len(sess) != 0 {
 		t.Errorf("sessions survived logout-all: %d left", len(sess))
+	}
+}
+
+// ---- telegram login ----
+
+// tgTestToken is the bot token newTelegramAPI injects; the signing helper and
+// auth.VerifyInitData must agree on it.
+const tgTestToken = "12345:TESTTOKEN"
+
+// signTelegramInitData builds a signed Mini App initData query string with the
+// same construction as auth.VerifyInitData: the secret is
+// HMAC_SHA256(key="WebAppData", msg=botToken); the check string is the
+// key-sorted "k=v" lines (every field except hash) joined by "\n"; and hash is
+// the hex HMAC-SHA256 of that check string under the secret.
+func signTelegramInitData(fields map[string]string, botToken string) string {
+	sk := hmac.New(sha256.New, []byte("WebAppData"))
+	sk.Write([]byte(botToken))
+	secret := sk.Sum(nil)
+
+	keys := make([]string, 0, len(fields))
+	for k := range fields {
+		if k == "hash" {
+			continue
+		}
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+	lines := make([]string, len(keys))
+	for i, k := range keys {
+		lines[i] = k + "=" + fields[k]
+	}
+
+	mac := hmac.New(sha256.New, secret)
+	mac.Write([]byte(strings.Join(lines, "\n")))
+	sig := hex.EncodeToString(mac.Sum(nil))
+
+	q := url.Values{}
+	for k, v := range fields {
+		q.Set(k, v)
+	}
+	q.Set("hash", sig)
+	return q.Encode()
+}
+
+// tgInitData signs a fresh Mini App payload for (tgID, username) against the
+// fixed test clock.
+func tgInitData(tgID int64, username string) string {
+	return signTelegramInitData(map[string]string{
+		"auth_date": strconv.FormatInt(fixedNow.Add(-time.Minute).Unix(), 10),
+		"query_id":  "AAHtest",
+		"user":      fmt.Sprintf(`{"id":%d,"username":%q,"first_name":"Neo"}`, tgID, username),
+	}, tgTestToken)
+}
+
+// tgBody wraps an initData query string in the {init_data: "..."} envelope.
+func tgBody(initData string) string {
+	return fmt.Sprintf(`{"init_data":%q}`, initData)
+}
+
+// newTelegramAPI is newAuthAPI with a Telegram bot token configured.
+func newTelegramAPI(t *testing.T) (http.Handler, *store.Store) {
+	t.Helper()
+	h, st, _ := newAuthAPI(t, func(d *Deps) {
+		d.Config.TelegramBotToken = tgTestToken
+	})
+	return h, st
+}
+
+func TestTelegramDisabled503(t *testing.T) {
+	h, _, _ := newAuthAPI(t, nil) // no bot token configured
+	rr := anon(h, "POST", "/api/auth/telegram", tgBody("auth_date=1&hash=deadbeef"))
+	if rr.Code != http.StatusServiceUnavailable {
+		t.Fatalf("telegram disabled = %d %s, want 503", rr.Code, rr.Body)
+	}
+	if got := decodeBody[map[string]string](t, rr); got["error"] != "telegram_disabled" {
+		t.Errorf("error = %q, want telegram_disabled", got["error"])
+	}
+}
+
+func TestTelegramLoginNewUser(t *testing.T) {
+	h, st := newTelegramAPI(t)
+
+	rr := anon(h, "POST", "/api/auth/telegram", tgBody(tgInitData(555, "neo")))
+	if rr.Code != http.StatusOK {
+		t.Fatalf("telegram login = %d %s, want 200", rr.Code, rr.Body)
+	}
+	grabSessionCookie(t, rr)
+
+	user := decodeBody[sessionUserDTO](t, rr)
+	if user.Name != "neo" || !user.Telegram.Linked || user.Telegram.Username != "neo" {
+		t.Errorf("login DTO = %+v, want name neo + linked telegram", user)
+	}
+
+	id, err := st.IdentityByProviderUID("telegram", "555")
+	if err != nil {
+		t.Fatalf("identity after login: %v", err)
+	}
+	if id.UserID != user.ID || id.TgUsername != "neo" {
+		t.Errorf("identity = %+v, want user_id %q tg_username neo", id, user.ID)
+	}
+}
+
+func TestTelegramLoginExisting(t *testing.T) {
+	h, st := newTelegramAPI(t)
+	body := tgBody(tgInitData(777, "trinity"))
+
+	rr := anon(h, "POST", "/api/auth/telegram", body)
+	if rr.Code != http.StatusOK {
+		t.Fatalf("first login = %d %s", rr.Code, rr.Body)
+	}
+	first := decodeBody[sessionUserDTO](t, rr).ID
+
+	rr = anon(h, "POST", "/api/auth/telegram", body)
+	if rr.Code != http.StatusOK {
+		t.Fatalf("second login = %d %s", rr.Code, rr.Body)
+	}
+	second := decodeBody[sessionUserDTO](t, rr).ID
+
+	if first != second {
+		t.Errorf("user id changed across logins: %q then %q", first, second)
+	}
+	users, err := st.ListUsers()
+	if err != nil {
+		t.Fatalf("ListUsers: %v", err)
+	}
+	if len(users) != 2 { // "tester" fixture + the one telegram account
+		t.Errorf("user count = %d, want 2 (repeat login must not create a second user)", len(users))
+	}
+}
+
+func TestTelegramClaimsPending(t *testing.T) {
+	h, st := newTelegramAPI(t)
+
+	uid, err := st.CreateUser("Гриша")
+	if err != nil {
+		t.Fatalf("CreateUser: %v", err)
+	}
+	if err := st.CreateIdentity(store.Identity{
+		ID:          auth.NewIdentityID(),
+		UserID:      uid,
+		Provider:    "telegram",
+		ProviderUID: "pending:llladnooo",
+		TgUsername:  "llladnooo",
+	}); err != nil {
+		t.Fatalf("CreateIdentity pending: %v", err)
+	}
+
+	rr := anon(h, "POST", "/api/auth/telegram", tgBody(tgInitData(999, "llladnooo")))
+	if rr.Code != http.StatusOK {
+		t.Fatalf("claim login = %d %s, want 200", rr.Code, rr.Body)
+	}
+	user := decodeBody[sessionUserDTO](t, rr)
+	if user.ID != uid {
+		t.Errorf("logged in as %q, want the pre-seeded %q", user.ID, uid)
+	}
+	if user.Name != "Гриша" {
+		t.Errorf("name = %q, want Гриша", user.Name)
+	}
+
+	id, err := st.IdentityByProviderUID("telegram", "999")
+	if err != nil {
+		t.Fatalf("identity by real tg id: %v", err)
+	}
+	if id.UserID != uid || id.ProviderUID != "999" {
+		t.Errorf("identity = %+v, want user_id %q provider_uid 999", id, uid)
+	}
+	if _, err := st.IdentityByProviderUID("telegram", "pending:llladnooo"); !errors.Is(err, sql.ErrNoRows) {
+		t.Errorf("pending row survived the claim: err = %v", err)
+	}
+	if users, _ := st.ListUsers(); len(users) != 2 { // "tester" + "Гриша"
+		t.Errorf("user count = %d, want 2 (claim must not create a new user)", len(users))
+	}
+}
+
+func TestTelegramBadHash401(t *testing.T) {
+	h, st := newTelegramAPI(t)
+
+	vals, err := url.ParseQuery(tgInitData(555, "neo"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	hsh := []byte(vals.Get("hash"))
+	if hsh[0] == '0' {
+		hsh[0] = '1'
+	} else {
+		hsh[0] = '0'
+	}
+	vals.Set("hash", string(hsh))
+
+	rr := anon(h, "POST", "/api/auth/telegram", tgBody(vals.Encode()))
+	if rr.Code != http.StatusUnauthorized {
+		t.Fatalf("bad hash = %d %s, want 401", rr.Code, rr.Body)
+	}
+	if got := decodeBody[map[string]string](t, rr); got["error"] != "bad_telegram_auth" {
+		t.Errorf("error = %q, want bad_telegram_auth", got["error"])
+	}
+	if n, _ := st.ListUsers(); len(n) != 1 {
+		t.Errorf("a rejected login created rows: user count = %d, want 1", len(n))
 	}
 }
