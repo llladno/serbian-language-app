@@ -1,4 +1,3 @@
-import { getAccount, clearAccount } from './account'
 import type {
   Course,
   Lesson,
@@ -13,6 +12,8 @@ import type {
   Progress,
   LessonAttempts,
   LeaderRow,
+  SessionUser,
+  Me,
 } from './types'
 
 export class ApiError extends Error {
@@ -27,11 +28,8 @@ export class ApiError extends Error {
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const headers: Record<string, string> = {}
   if (init?.body) headers['Content-Type'] = 'application/json'
-  const account = getAccount()
-  // HTTP header values must be latin1 — percent-encode so Cyrillic names work.
-  if (account) headers['X-User'] = encodeURIComponent(account)
 
-  const res = await fetch('/api' + path, { ...init, headers })
+  const res = await fetch('/api' + path, { ...init, headers, credentials: 'same-origin' })
   if (!res.ok) {
     let msg = res.statusText
     try {
@@ -40,8 +38,21 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     } catch {
       /* keep statusText */
     }
-    if (res.status === 401 && account && !path.startsWith('/users')) {
-      clearAccount() // stale/removed account — back to login
+    // A 401 from an /auth/* endpoint is a normal, expected response (wrong
+    // password, no session yet on GET /auth/session) — the caller handles it.
+    // A 401 from anything else means a previously-live session just died;
+    // clear it and send the visitor to log back in. Dynamic imports avoid a
+    // static import cycle (router -> views -> api -> router / session).
+    if (res.status === 401 && !path.startsWith('/auth/')) {
+      const [{ useSessionStore }, { default: router }] = await Promise.all([
+        import('./stores/session'),
+        import('./router'),
+      ])
+      const session = useSessionStore()
+      session.user = null
+      if (router.currentRoute.value.path !== '/login') {
+        router.push({ path: '/login', query: { next: router.currentRoute.value.fullPath } })
+      }
     }
     throw new ApiError(res.status, msg)
   }
@@ -61,9 +72,39 @@ function qs(params?: Record<string, string | undefined>): string {
 }
 
 export const api = {
-  listAccounts: () => request<{ users: string[] }>('/users').then((r) => r.users),
-  createAccount: (name: string) =>
-    request<{ name: string }>('/users', { method: 'POST', body: JSON.stringify({ name }) }),
+  register: (email: string, password: string, name: string) =>
+    request<{ status: string }>('/auth/register', {
+      method: 'POST',
+      body: JSON.stringify({ email, password, name }),
+    }),
+  login: (email: string, password: string) =>
+    request<SessionUser>('/auth/login', { method: 'POST', body: JSON.stringify({ email, password }) }),
+  logout: () => request<void>('/auth/logout', { method: 'POST' }),
+  logoutAll: () => request<void>('/auth/logout-all', { method: 'POST' }),
+  session: () => request<SessionUser>('/auth/session'),
+  resendVerification: (email: string) =>
+    request<{ status: string }>('/auth/resend-verification', {
+      method: 'POST',
+      body: JSON.stringify({ email }),
+    }),
+  forgotPassword: (email: string) =>
+    request<{ status: string }>('/auth/forgot', { method: 'POST', body: JSON.stringify({ email }) }),
+  resetPassword: (token: string, password: string) =>
+    request<SessionUser>('/auth/reset', { method: 'POST', body: JSON.stringify({ token, password }) }),
+  telegramLogin: (payload: Record<string, unknown>) =>
+    request<SessionUser>('/auth/telegram', { method: 'POST', body: JSON.stringify(payload) }),
+
+  getMe: () => request<Me>('/me'),
+  patchMe: (name: string) => request<SessionUser>('/me', { method: 'PATCH', body: JSON.stringify({ name }) }),
+  setPassword: (payload: { current?: string; new: string; email?: string }) =>
+    request<{ status: string }>('/me/password', { method: 'POST', body: JSON.stringify(payload) }),
+  linkTelegram: (payload: Record<string, unknown>) =>
+    request<SessionUser>('/me/link/telegram', { method: 'POST', body: JSON.stringify(payload) }),
+  unlinkTelegram: () => request<void>('/me/telegram', { method: 'DELETE' }),
+  deleteSession: (id: string) => request<void>(`/me/sessions/${id}`, { method: 'DELETE' }),
+  deleteMe: (password?: string) =>
+    request<void>('/me', { method: 'DELETE', body: JSON.stringify({ password }) }),
+
   course: () => request<Course>('/course'),
   lesson: (id: string) => request<Lesson>(`/lessons/${id}`),
   exercises: (id: string) => request<ExerciseBlock[]>(`/lessons/${id}/exercises`),
@@ -78,8 +119,7 @@ export const api = {
       method: 'POST',
       body: JSON.stringify({ status }),
     }),
-  completeLesson: (id: string) =>
-    request<void>(`/lessons/${id}/complete`, { method: 'POST' }),
+  completeLesson: (id: string) => request<void>(`/lessons/${id}/complete`, { method: 'POST' }),
   resetLesson: (id: string) => request<void>(`/lessons/${id}/reset`, { method: 'POST' }),
   resetExercises: () => request<void>('/reset-exercises', { method: 'POST' }),
   vocab: (params?: { lesson?: string; tag?: string; q?: string }) =>

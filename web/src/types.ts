@@ -232,3 +232,22 @@ export interface Progress {
   activity: DayActivity[]
   daily_goal: number
 }
+
+export interface SessionUser {
+  id: string
+  name: string
+  email: string
+  email_verified: boolean
+  telegram: { linked: boolean; username: string }
+}
+
+export interface SessionDevice {
+  id: string
+  user_agent: string
+  last_seen_at: string
+  current: boolean
+}
+
+export interface Me extends SessionUser {
+  sessions: SessionDevice[]
+}

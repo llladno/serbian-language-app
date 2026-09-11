@@ -1,14 +1,9 @@
-import { describe, it, expect, vi, afterEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { setActivePinia, createPinia } from 'pinia'
 import { api, ApiError } from './api'
 
-afterEach(() => {
-  vi.unstubAllGlobals()
-  try {
-    localStorage.clear()
-  } catch {
-    /* ignore */
-  }
-})
+beforeEach(() => setActivePinia(createPinia()))
+afterEach(() => vi.unstubAllGlobals())
 
 describe('api', () => {
   it('parses JSON on 200', async () => {
@@ -54,12 +49,49 @@ describe('api', () => {
     })
   })
 
-  it('attaches the X-User header from the stored account', async () => {
-    localStorage.setItem('srpski.account', 'Гриша')
+  it('sends same-origin credentials and no X-User header', async () => {
     const fetchMock = vi.fn().mockResolvedValue(new Response('{"phases":[]}', { status: 200 }))
     vi.stubGlobal('fetch', fetchMock)
     await api.progress()
-    const sent = fetchMock.mock.calls[0][1].headers['X-User']
-    expect(decodeURIComponent(sent)).toBe('Гриша')
+    const [url, init] = fetchMock.mock.calls[0]
+    expect(url).toBe('/api/progress')
+    expect(init.credentials).toBe('same-origin')
+    expect(init.headers['X-User']).toBeUndefined()
+  })
+
+  it('on a 401 from a non-auth path, clears the session and redirects to /login', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(new Response(JSON.stringify({ error: 'no session' }), { status: 401 })),
+    )
+    const { useSessionStore } = await import('./stores/session')
+    const { default: router } = await import('./router')
+    const session = useSessionStore()
+    session.user = {
+      id: '1',
+      name: 'Х',
+      email: '',
+      email_verified: false,
+      telegram: { linked: false, username: '' },
+    }
+    const pushSpy = vi.spyOn(router, 'push')
+
+    await expect(api.progress()).rejects.toBeInstanceOf(ApiError)
+    expect(session.user).toBeNull()
+    expect(pushSpy).toHaveBeenCalledWith(expect.objectContaining({ path: '/login' }))
+  })
+
+  it('does not redirect on a 401 from an /auth/ path (e.g. wrong-password login)', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(
+        new Response(JSON.stringify({ error: 'неверная почта или пароль' }), { status: 401 }),
+      ),
+    )
+    const { default: router } = await import('./router')
+    const pushSpy = vi.spyOn(router, 'push')
+
+    await expect(api.login('a@b.com', 'wrong')).rejects.toMatchObject({ status: 401 })
+    expect(pushSpy).not.toHaveBeenCalled()
   })
 })
