@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"io/fs"
 	"log"
@@ -11,7 +12,10 @@ import (
 	"time"
 
 	"github.com/grisha/serbian-app/server/internal/api"
+	"github.com/grisha/serbian-app/server/internal/config"
 	"github.com/grisha/serbian-app/server/internal/content"
+	"github.com/grisha/serbian-app/server/internal/mail"
+	"github.com/grisha/serbian-app/server/internal/ratelimit"
 	"github.com/grisha/serbian-app/server/internal/store"
 	"github.com/grisha/serbian-app/server/web"
 )
@@ -56,12 +60,58 @@ func main() {
 		log.Printf("imported %d rows from %s", n, *importSQLite)
 	}
 
+	cfg := config.Load()
+
+	var mailer mail.Mailer
+	if cfg.SMTPEnabled() {
+		mailer = mail.NewSMTPMailer(cfg.SMTP)
+	} else {
+		mailer = mail.LogMailer{}
+	}
+
+	sendMail := func(to, subject, text, html string) {
+		// Runs inside an Async goroutine already — synchronous here.
+		ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+		defer cancel()
+		if err := mailer.Send(ctx, to, subject, text, html); err != nil {
+			ctx2, cancel2 := context.WithTimeout(context.Background(), 15*time.Second)
+			defer cancel2()
+			if err2 := mailer.Send(ctx2, to, subject, text, html); err2 != nil {
+				log.Printf("mail send failed after retry: %v", err2)
+			}
+		}
+	}
+	async := func(f func()) { go f() }
+
+	login := ratelimit.NewLimiter(5.0/60, 5)          // 5/min per IP
+	loginEmail := ratelimit.NewLimiter(10.0/3600, 10) // 10/hour per email
+	slow := ratelimit.NewLimiter(3.0/3600, 3)         // register/resend/forgot: 3/hour
+	fails := ratelimit.NewFailCounter(10, 15*time.Minute)
+
+	// Housekeeping: sweep expired sessions hourly.
+	go func() {
+		t := time.NewTicker(time.Hour)
+		defer t.Stop()
+		for range t.C {
+			if _, err := st.DeleteExpiredSessions(time.Now()); err != nil {
+				log.Printf("session sweep: %v", err)
+			}
+		}
+	}()
+
 	mux := http.NewServeMux()
 	mux.Handle("/api/", api.Handler(api.Deps{
-		Course: getCourse,
-		Store:  st,
-		Now:    time.Now,
-		Stale:  stale,
+		Course:     getCourse,
+		Store:      st,
+		Now:        time.Now,
+		Stale:      stale,
+		Config:     cfg,
+		SendMail:   sendMail,
+		Async:      async,
+		Login:      login,
+		LoginEmail: loginEmail,
+		Slow:       slow,
+		Fails:      fails,
 	}))
 	imgDir := filepath.Join(*contentDir, "images")
 	mux.Handle("/img/", cacheControl(http.StripPrefix("/img/", http.FileServer(http.Dir(imgDir)))))
