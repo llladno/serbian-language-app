@@ -217,7 +217,7 @@ func TestMiddlewareWiring(t *testing.T) {
 		t.Errorf("GET /api/auth/session unauthenticated = %d, want 401", rr.Code)
 	}
 
-	// A cookie session flows through securityHeaders -> checkOrigin -> requireAuth.
+	// A cookie session flows through SecurityHeaders -> checkOrigin -> requireAuth.
 	c := authed(t, st, tester.ID)
 	if rr := doCookie(h, c, "GET", "/api/progress", ""); rr.Code != http.StatusOK {
 		t.Errorf("GET /api/progress with cookie = %d, want 200", rr.Code)

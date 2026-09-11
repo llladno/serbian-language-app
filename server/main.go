@@ -120,7 +120,14 @@ func main() {
 	mux.Handle("/", spaHandler(web.FS()))
 
 	log.Printf("listening on %s", *addr)
-	log.Fatal(http.ListenAndServe(*addr, mux))
+	// The security headers wrap EVERYTHING, not just /api/: the SPA HTML and the
+	// static trees need the CSP too — frame-ancestors is the only clickjacking
+	// guard here (there is deliberately no X-Frame-Options, for the Telegram Mini
+	// App iframe). api.Handler applies them again inside /api/, which is a
+	// harmless no-op overwrite. The origin (CSRF) guard stays scoped to /api/:
+	// the SPA and static routes are GET-only, so checking their Origin would buy
+	// nothing and could break ordinary cross-site navigation into the app.
+	log.Fatal(http.ListenAndServe(*addr, api.SecurityHeaders(cfg, mux)))
 }
 
 func cacheControl(h http.Handler) http.Handler {

@@ -13,6 +13,7 @@ import (
 	netmail "net/mail"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/grisha/serbian-app/server/internal/auth"
@@ -36,6 +37,37 @@ const resetTTL = time.Hour
 // failure (unknown email, wrong password, soft lock) so the response never
 // tells an attacker which accounts exist.
 const badCredentials = "неверная почта или пароль"
+
+// dummyPasswordHash backs the timing-equalization verify in login's
+// unknown-email branch. A bcrypt verify costs ~150-200ms; returning early when
+// the identity does not exist made "unknown address" answer ~400x faster than
+// "known address, wrong password", which is a trivially measurable enumeration
+// oracle over the network — and it undermines the uniform 200s that register /
+// resend / forgot go out of their way to produce. Built lazily and once, so
+// process start pays nothing and every caller shares the same cost.
+var (
+	dummyHashOnce sync.Once
+	dummyHash     string
+)
+
+// equalizeLoginTiming burns roughly one bcrypt verify. It is called on the
+// branches that have no stored hash to check, so every login failure costs the
+// same wall-clock time regardless of whether the address exists.
+func equalizeLoginTiming(password string) {
+	dummyHashOnce.Do(func() {
+		// The only way this fails is bcrypt rejecting the cost, which the
+		// package's own constant cannot do. Log it if the impossible happens:
+		// an empty hash makes CompareHashAndPassword bail early and the
+		// equalization silently stops working, which is worth a line.
+		h, err := auth.HashPassword("dummy-password-for-timing-equalization")
+		if err != nil {
+			log.Printf("login: build timing-equalization hash: %v", err)
+			return
+		}
+		dummyHash = h
+	})
+	_ = auth.VerifyPassword(dummyHash, password)
+}
 
 // issueSession mints a fresh session for userID: a new opaque token, a
 // sessions row keyed by its hash, and the session cookie carrying the raw
@@ -133,9 +165,18 @@ func (h handlers) register(w http.ResponseWriter, r *http.Request) {
 		if !slowOK {
 			return
 		}
-		switch _, err := h.Store.IdentityByProviderUID("password", uid); {
+		switch existing, err := h.Store.IdentityByProviderUID("password", uid); {
 		case err == nil:
-			subject, text, html := mail.RenderAlreadyRegistered(h.Config.AppBaseURL, name)
+			// This mail goes to a THIRD PARTY's inbox — the address already has
+			// an account, and whoever posted this form is not necessarily its
+			// owner. Greet them by their own stored name, never by the name from
+			// the request body: that would let anyone inject ~40 characters of
+			// chosen text into someone else's mailbox.
+			holder := ""
+			if row, err := h.Store.UserByID(existing.UserID); err == nil {
+				holder = row.Name
+			}
+			subject, text, html := mail.RenderAlreadyRegistered(h.Config.AppBaseURL, holder)
 			h.SendMail(email, subject, text, html)
 			return
 		case !errors.Is(err, sql.ErrNoRows):
@@ -217,6 +258,9 @@ func (h handlers) login(w http.ResponseWriter, r *http.Request) {
 	id, err := h.Store.IdentityByProviderUID("password", uid)
 	switch {
 	case errors.Is(err, sql.ErrNoRows):
+		// Spend a bcrypt verify we will throw away, so an unknown address costs
+		// the same wall-clock time as a known one with a wrong password.
+		equalizeLoginTiming(req.Password)
 		noteFail(h.Fails, uid)
 		fail(w, http.StatusUnauthorized, badCredentials)
 		return
@@ -637,11 +681,17 @@ func (h handlers) telegramLogin(w http.ResponseWriter, r *http.Request) {
 	// Telegram usernames are case-insensitive and the migration-003 seed keys
 	// (pending:llladnooo, pending:alinsssk) are lowercase, but a verified
 	// payload may carry any case — lowercase the lookup key so the claim hits.
-	matched, err := h.Store.AttachPendingTelegram(strings.ToLower(u.Username), tgID)
-	if err != nil {
-		log.Printf("telegram login: attach pending: %v", err)
-		fail(w, http.StatusInternalServerError, "internal error")
-		return
+	// An account with no username at all must skip this entirely: the lookup key
+	// would be a bare "pending:" prefix, which matches nothing today but is a
+	// claim attempt that should never be made.
+	matched := false
+	if u.Username != "" {
+		matched, err = h.Store.AttachPendingTelegram(strings.ToLower(u.Username), tgID)
+		if err != nil {
+			log.Printf("telegram login: attach pending: %v", err)
+			fail(w, http.StatusInternalServerError, "internal error")
+			return
+		}
 	}
 	if matched {
 		id, err := h.Store.IdentityByProviderUID("telegram", tgID)

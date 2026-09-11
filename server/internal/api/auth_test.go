@@ -201,6 +201,37 @@ func TestRegisterExistingEmailGenericAndAlreadyMail(t *testing.T) {
 	}
 }
 
+// TestRegisterAlreadyMailUsesStoredName pins that the "already registered"
+// notice greets the ACCOUNT HOLDER by their stored name, never by the name the
+// requester typed. That mail lands in a third party's inbox, so echoing the
+// request body would be a ~40-character text-injection channel into it.
+func TestRegisterAlreadyMailUsesStoredName(t *testing.T) {
+	h, _, sink := newAuthAPI(t, nil)
+
+	if rr := anon(h, "POST", "/api/auth/register",
+		registerBody("bob@example.com", "password123", "Bob")); rr.Code != http.StatusOK {
+		t.Fatalf("first register = %d", rr.Code)
+	}
+
+	const injected = "ВАШ АККАУНТ ВЗЛОМАН, ЗВОНИТЕ"
+	if rr := anon(h, "POST", "/api/auth/register",
+		registerBody("bob@example.com", "password123", injected)); rr.Code != http.StatusOK {
+		t.Fatalf("second register = %d", rr.Code)
+	}
+
+	msgs := sink.all()
+	if len(msgs) != 2 {
+		t.Fatalf("sent %d mails, want 2: %+v", len(msgs), msgs)
+	}
+	last := msgs[1]
+	if strings.Contains(last.Text, injected) || strings.Contains(last.HTML, injected) {
+		t.Fatalf("already-registered mail echoed the requester's name: %q / %q", last.Text, last.HTML)
+	}
+	if !strings.Contains(last.Text, "Bob") {
+		t.Errorf("already-registered mail should greet the stored name %q, got %q", "Bob", last.Text)
+	}
+}
+
 func TestRegisterBadInput(t *testing.T) {
 	h, _, sink := newAuthAPI(t, nil)
 	for _, tc := range []struct {
@@ -255,6 +286,55 @@ func TestLoginWrongPassword401Generic(t *testing.T) {
 	}
 	if got := decodeBody[map[string]string](t, rr); got["error"] != "неверная почта или пароль" {
 		t.Errorf("error = %q", got["error"])
+	}
+}
+
+// TestLoginTimingEqualized pins the enumeration fix: an unknown address must
+// not answer measurably faster than a known one with a wrong password. The
+// early return used to make it ~400x faster (~0.5ms vs ~190ms); now both
+// branches spend one bcrypt verify.
+//
+// The assertion is deliberately coarse — a ratio bound, plus a floor proving
+// the unknown-address branch really did bcrypt work rather than returning
+// instantly. A strict absolute timing assertion would be flaky under CI load.
+func TestLoginTimingEqualized(t *testing.T) {
+	h, st, _ := newAuthAPI(t, nil)
+	registerAndVerify(t, h, st, "known@example.com", "password123", "Known")
+
+	// Warm the lazily-built dummy hash and bcrypt's code paths so the first
+	// measured call is not paying one-time costs.
+	anon(h, "POST", "/api/auth/login", loginBody("warmup@example.com", "password123"))
+	anon(h, "POST", "/api/auth/login", loginBody("known@example.com", "WRONGpass1"))
+
+	measure := func(email string) time.Duration {
+		best := time.Duration(1<<62 - 1)
+		for i := 0; i < 3; i++ {
+			start := time.Now()
+			rr := anon(h, "POST", "/api/auth/login", loginBody(email, "WRONGpass1"))
+			if d := time.Since(start); d < best {
+				best = d
+			}
+			if rr.Code != http.StatusUnauthorized {
+				t.Fatalf("login %s = %d, want 401", email, rr.Code)
+			}
+		}
+		return best
+	}
+
+	unknown := measure("nobody-at-all@example.com")
+	wrong := measure("known@example.com")
+
+	// bcrypt at the configured cost is milliseconds, not microseconds. Without
+	// the dummy verify the unknown branch lands around 0.5ms.
+	const floor = 10 * time.Millisecond
+	if unknown < floor {
+		t.Fatalf("unknown-address login took %v (< %v): the dummy bcrypt verify did not run", unknown, floor)
+	}
+	// Same order of magnitude. A 4x band absorbs scheduler noise while still
+	// catching the 400x gap the oracle produced.
+	ratio := float64(wrong) / float64(unknown)
+	if ratio < 0.25 || ratio > 4 {
+		t.Fatalf("timing ratio wrong-password/unknown-email = %.2f (%v vs %v), want within 4x", ratio, wrong, unknown)
 	}
 }
 
@@ -890,6 +970,55 @@ func TestTelegramClaimsPending(t *testing.T) {
 	}
 	if users, _ := st.ListUsers(); len(users) != 2 { // "tester" + "Гриша"
 		t.Errorf("user count = %d, want 2 (claim must not create a new user)", len(users))
+	}
+}
+
+// TestTelegramNoUsernameSkipsPendingClaim: a payload with no username must not
+// attempt a pending claim at all. The lookup key would be a bare "pending:"
+// prefix; a row keyed exactly that would be hijacked by the first usernameless
+// Telegram account to sign in. Inert today (no such row exists), but the claim
+// should never be attempted.
+func TestTelegramNoUsernameSkipsPendingClaim(t *testing.T) {
+	h, st := newTelegramAPI(t)
+
+	// A decoy row keyed exactly "pending:" — what a bare-prefix claim would hit.
+	victim, err := st.CreateUser("Жертва")
+	if err != nil {
+		t.Fatalf("CreateUser: %v", err)
+	}
+	if err := st.CreateIdentity(store.Identity{
+		ID:          auth.NewIdentityID(),
+		UserID:      victim,
+		Provider:    "telegram",
+		ProviderUID: "pending:",
+	}); err != nil {
+		t.Fatalf("CreateIdentity pending: %v", err)
+	}
+
+	initData := signTelegramInitData(map[string]string{
+		"auth_date": strconv.FormatInt(fixedNow.Add(-time.Minute).Unix(), 10),
+		"query_id":  "AAHtest",
+		"user":      `{"id":4242,"first_name":"Аноним"}`, // no username at all
+	}, tgTestToken)
+
+	rr := anon(h, "POST", "/api/auth/telegram", tgBody(initData))
+	if rr.Code != http.StatusOK {
+		t.Fatalf("telegram login = %d %s, want 200", rr.Code, rr.Body)
+	}
+	user := decodeBody[sessionUserDTO](t, rr)
+	if user.ID == victim {
+		t.Fatal("a usernameless sign-in claimed the bare \"pending:\" row")
+	}
+
+	// The decoy row is untouched: still pending, still owned by the victim.
+	if id, err := st.IdentityByProviderUID("telegram", "pending:"); err != nil {
+		t.Fatalf("decoy row gone: %v", err)
+	} else if id.UserID != victim {
+		t.Fatalf("decoy row owner = %q, want %q", id.UserID, victim)
+	}
+	// And a fresh account was created for the new tg id instead.
+	if _, err := st.IdentityByProviderUID("telegram", "4242"); err != nil {
+		t.Fatalf("no fresh identity for tg id 4242: %v", err)
 	}
 }
 

@@ -1,13 +1,18 @@
 package mail
 
 import (
+	"bufio"
+	"context"
+	"fmt"
 	"io"
 	"mime"
 	"mime/multipart"
 	"mime/quotedprintable"
+	"net"
 	netmail "net/mail"
 	"strings"
 	"testing"
+	"time"
 )
 
 // qpEncode mirrors buildMessage's part-body encoding so tests can assert on
@@ -165,6 +170,82 @@ func TestBuildMessageRejectsHeaderInjection(t *testing.T) {
 	if _, err := buildMessage("a@b.example", "Team", "c@d.example", "Hi\nplain-lf", "t", "h"); err == nil {
 		t.Error("buildMessage accepted a bare LF in the subject")
 	}
+}
+
+// TestErrorsCarryNoRecipient pins spec §2.8: no error a mail send can return
+// may name the recipient. These strings travel up into main.go's
+// "mail send failed after retry: %v", which renders the whole wrapped chain
+// into the process log.
+func TestErrorsCarryNoRecipient(t *testing.T) {
+	const victim = "victim@example.com"
+
+	_, err := buildMessage("a@b.example", "Team", victim+"\r\nBcc: evil@x.io", "Hi", "t", "h")
+	if err == nil {
+		t.Fatal("buildMessage accepted a CRLF in the recipient")
+	}
+	if strings.Contains(err.Error(), victim) || strings.Contains(err.Error(), "@") {
+		t.Errorf("newline-guard error leaks the recipient: %q", err)
+	}
+
+	// Force the SMTP dialog to fail at RCPT TO and check the same of that path.
+	addr := startRejectingSMTP(t)
+	host, port, _ := net.SplitHostPort(addr)
+	m := NewSMTPMailer(SMTPConfig{Host: host, Port: port, From: "noreply@x.io"})
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	err = m.Send(ctx, victim, "Hi", "t", "<p>h</p>")
+	if err == nil {
+		t.Fatal("Send against a rejecting server returned nil")
+	}
+	if !strings.Contains(err.Error(), "RCPT TO") {
+		t.Fatalf("expected the RCPT TO branch, got %q", err)
+	}
+	if strings.Contains(err.Error(), victim) {
+		t.Errorf("RCPT TO error leaks the recipient: %q", err)
+	}
+}
+
+// startRejectingSMTP runs a throwaway SMTP server that completes the greeting,
+// EHLO and MAIL FROM, then 550s the RCPT TO — driving Send straight to the
+// error branch that used to interpolate the recipient. Returns its address.
+func startRejectingSMTP(t *testing.T) string {
+	t.Helper()
+	ln, err := net.Listen("tcp", "127.0.0.1:0")
+	if err != nil {
+		t.Fatalf("listen: %v", err)
+	}
+	t.Cleanup(func() { ln.Close() })
+	go func() {
+		for {
+			c, err := ln.Accept()
+			if err != nil {
+				return
+			}
+			go func(c net.Conn) {
+				defer c.Close()
+				fmt.Fprint(c, "220 test ESMTP\r\n")
+				br := bufio.NewReader(c)
+				for {
+					line, err := br.ReadString('\n')
+					if err != nil {
+						return
+					}
+					switch {
+					case strings.HasPrefix(strings.ToUpper(line), "EHLO"),
+						strings.HasPrefix(strings.ToUpper(line), "HELO"),
+						strings.HasPrefix(strings.ToUpper(line), "MAIL FROM"):
+						fmt.Fprint(c, "250 ok\r\n")
+					case strings.HasPrefix(strings.ToUpper(line), "QUIT"):
+						fmt.Fprint(c, "221 bye\r\n")
+						return
+					default:
+						fmt.Fprint(c, "550 no\r\n")
+					}
+				}
+			}(c)
+		}
+	}()
+	return ln.Addr().String()
 }
 
 func TestFormatAddress(t *testing.T) {

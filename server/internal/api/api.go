@@ -68,9 +68,11 @@ func clearFails(f *ratelimit.FailCounter, key string) {
 	}
 }
 
-// Handler builds the /api router. Exact auth paths are public; every other
-// /api/ route sits behind requireAuth (a session cookie, or the legacy X-User
-// bridge). The whole tree is wrapped in the security-header and origin guards.
+// Handler builds the /api router. Exact auth paths are public; account-scoped
+// paths (/api/me*, logout-all, session) sit behind requireSession (cookie
+// only); every other /api/ route sits behind requireAuth (a session cookie, or
+// the legacy X-User bridge). The whole tree is wrapped in the security-header
+// and origin guards.
 func Handler(deps Deps) http.Handler {
 	if deps.Now == nil {
 		deps.Now = time.Now
@@ -100,21 +102,29 @@ func Handler(deps Deps) http.Handler {
 	root.HandleFunc("POST /api/auth/reset", h.resetPassword)
 	root.HandleFunc("POST /api/auth/telegram", h.telegramLogin)
 
-	// Everything else under /api/ requires a resolved caller.
-	protected := http.NewServeMux()
-	protected.HandleFunc("POST /api/auth/logout-all", h.logoutAll)
+	// Account-scoped endpoints. These are registered on root as exact
+	// method+path patterns (the same precedence trick as the public auth routes
+	// above) so Go 1.22+ ServeMux picks them over the "/api/" catch-all, and
+	// they sit behind requireSession — NOT plain requireAuth: the legacy X-User
+	// bridge must never reach anything that reads or mutates the account, since
+	// a display name is public knowledge (/api/leaderboard) and most of these
+	// accounts are Telegram-only (no password to check).
+	root.HandleFunc("POST /api/auth/logout-all", h.requireSession(h.logoutAll))
 	// Session inspection needs a resolved caller: 401 (not an empty body)
-	// when logged out, so requireAuth must run first.
-	protected.HandleFunc("GET /api/auth/session", h.currentSession)
-	protected.HandleFunc("GET /api/me", h.getMe)
-	protected.HandleFunc("PATCH /api/me", h.patchMe)
-	protected.HandleFunc("POST /api/me/password", h.changePassword)
-	protected.HandleFunc("POST /api/me/link/telegram", h.linkTelegram)
-	protected.HandleFunc("DELETE /api/me/telegram", h.unlinkTelegram)
-	protected.HandleFunc("DELETE /api/me/sessions/{id}", h.deleteSession)
-	protected.HandleFunc("DELETE /api/me", h.deleteMe)
+	// when logged out, so the auth middleware must run first.
+	root.HandleFunc("GET /api/auth/session", h.requireSession(h.currentSession))
+	root.HandleFunc("GET /api/me", h.requireSession(h.getMe))
+	root.HandleFunc("PATCH /api/me", h.requireSession(h.patchMe))
+	root.HandleFunc("POST /api/me/password", h.requireSession(h.changePassword))
+	root.HandleFunc("POST /api/me/link/telegram", h.requireSession(h.linkTelegram))
+	root.HandleFunc("DELETE /api/me/telegram", h.requireSession(h.unlinkTelegram))
+	root.HandleFunc("DELETE /api/me/sessions/{id}", h.requireSession(h.deleteSession))
+	root.HandleFunc("DELETE /api/me", h.requireSession(h.deleteMe))
 
-	// Existing content/lesson/review/progress routes, moved verbatim.
+	// Everything else under /api/ requires a resolved caller, and only these
+	// legacy content routes still honour the X-User bridge (the pre-session
+	// front-end talks to them during the transition).
+	protected := http.NewServeMux()
 	protected.HandleFunc("GET /api/course", h.getCourse)
 	protected.HandleFunc("GET /api/lessons/{id}", h.getLesson)
 	protected.HandleFunc("GET /api/lessons/{id}/exercises", h.getExercises)
@@ -135,7 +145,7 @@ func Handler(deps Deps) http.Handler {
 
 	root.Handle("/api/", h.requireAuth(protected))
 
-	return securityHeaders(deps.Config, checkOrigin(deps.Config, root))
+	return SecurityHeaders(deps.Config, checkOrigin(deps.Config, root))
 }
 
 // ---- helpers ----
@@ -181,35 +191,6 @@ func (h handlers) user(w http.ResponseWriter, r *http.Request) (*store.UserStore
 
 func (h handlers) health(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, map[string]any{"status": "ok", "content_stale": h.Stale()})
-}
-
-func (h handlers) listUsers(w http.ResponseWriter, r *http.Request) {
-	rows, err := h.Store.ListUsers()
-	if err != nil {
-		fail(w, 500, err.Error())
-		return
-	}
-	names := make([]string, 0, len(rows))
-	for _, u := range rows {
-		names = append(names, u.Name)
-	}
-	writeJSON(w, 200, map[string]any{"users": names})
-}
-
-func (h handlers) createUser(w http.ResponseWriter, r *http.Request) {
-	var req struct {
-		Name string `json:"name"`
-	}
-	if err := decode(r, &req); err != nil {
-		fail(w, 400, "bad request body")
-		return
-	}
-	row, err := h.Store.EnsureUserByName(req.Name)
-	if err != nil {
-		fail(w, 400, err.Error())
-		return
-	}
-	writeJSON(w, 200, map[string]string{"name": row.Name})
 }
 
 func (h handlers) getCourse(w http.ResponseWriter, r *http.Request) {

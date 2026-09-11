@@ -79,11 +79,15 @@ func (m *SMTPMailer) Send(ctx context.Context, to, subject, text, html string) e
 		}
 	}
 
+	// Neither of these errors names an address. They travel up through Send's
+	// return value into a caller's log line (main.go logs the whole chain with
+	// %v), and spec §2.8 forbids an email address at any log level. The caller
+	// already knows which send failed — it holds `to` in its own scope.
 	if err := c.Mail(m.cfg.From); err != nil {
-		return fmt.Errorf("mail: MAIL FROM %s: %w", m.cfg.From, err)
+		return fmt.Errorf("mail: MAIL FROM: %w", err)
 	}
 	if err := c.Rcpt(to); err != nil {
-		return fmt.Errorf("mail: RCPT TO %s: %w", to, err)
+		return fmt.Errorf("mail: RCPT TO: %w", err)
 	}
 
 	msg, err := buildMessage(m.cfg.From, m.cfg.FromName, to, subject, text, html)
@@ -113,8 +117,10 @@ func (m *SMTPMailer) Send(ctx context.Context, to, subject, text, html string) e
 // Send also calls c.Rcpt first, so this is defence in depth). This is the
 // unit-tested seam; the SMTP wire dialog in Send is not exercised by tests.
 func buildMessage(from, fromName, to, subject, text, html string) ([]byte, error) {
+	// The offending value is deliberately NOT echoed: this error reaches a log
+	// through Send's caller, and it carries a recipient address.
 	if strings.ContainsAny(to, "\r\n") {
-		return nil, fmt.Errorf("mail: recipient %q contains a newline", to)
+		return nil, fmt.Errorf("mail: recipient address contains invalid characters")
 	}
 	if strings.ContainsAny(subject, "\r\n") {
 		return nil, fmt.Errorf("mail: subject %q contains a newline", subject)

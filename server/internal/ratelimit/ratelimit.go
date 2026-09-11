@@ -4,26 +4,33 @@
 package ratelimit
 
 import (
+	"math"
 	"sync"
 	"time"
 
 	"golang.org/x/time/rate"
 )
 
-// idleTTL is how long a key may go untouched before Limiter drops its bucket.
-// Eviction is lazy: a full sweep runs on each Allow call.
-const idleTTL = 10 * time.Minute
+// minIdleTTL is the floor on how long a key may go untouched before Limiter
+// drops its bucket. Eviction is lazy: a full sweep runs on each Allow call.
+// The effective TTL is per-Limiter — see NewLimiter.
+const minIdleTTL = 10 * time.Minute
+
+// maxIdleTTL caps the derived TTL so a very slow (or misconfigured, zero-rate)
+// limiter cannot pin buckets in memory forever.
+const maxIdleTTL = 24 * time.Hour
 
 // Limiter is a keyed set of token buckets: each key gets an independent
 // golang.org/x/time/rate.Limiter with the same rate and burst. Buckets for
 // keys untouched for longer than idleTTL are evicted lazily so the map cannot
 // grow without bound.
 type Limiter struct {
-	mu    sync.Mutex
-	limit rate.Limit
-	burst int
-	now   func() time.Time
-	seen  map[string]*bucket
+	mu      sync.Mutex
+	limit   rate.Limit
+	burst   int
+	idleTTL time.Duration
+	now     func() time.Time
+	seen    map[string]*bucket
 }
 
 // bucket pairs a per-key rate limiter with the last time it was used.
@@ -34,13 +41,47 @@ type bucket struct {
 
 // NewLimiter returns a Limiter that admits perSecond events per key on average
 // with room for short bursts of burst events.
+//
+// The idle-eviction TTL is derived from the rate, never fixed. Eviction hands a
+// returning key a FRESH, FULL bucket, so an eviction TTL shorter than the time
+// a legitimate bucket needs to refill from empty to burst silently multiplies
+// the limit: an attacker paces requests just over the TTL apart and collects a
+// whole new burst each time. A "3 per hour" limiter evicted after 10 minutes
+// admits ~18 per hour. So the TTL is at least the natural refill time
+// (burst / perSecond), floored at minIdleTTL so fast limiters still drop cold
+// keys promptly.
 func NewLimiter(perSecond float64, burst int) *Limiter {
-	return &Limiter{
-		limit: rate.Limit(perSecond),
-		burst: burst,
-		now:   time.Now,
-		seen:  make(map[string]*bucket),
+	ttl := refillTime(perSecond, burst)
+	if ttl < minIdleTTL {
+		ttl = minIdleTTL
 	}
+	if ttl > maxIdleTTL {
+		ttl = maxIdleTTL
+	}
+	return &Limiter{
+		limit:   rate.Limit(perSecond),
+		burst:   burst,
+		idleTTL: ttl,
+		now:     time.Now,
+		seen:    make(map[string]*bucket),
+	}
+}
+
+// refillTime is how long a bucket needs to go from empty back to a full burst
+// at perSecond. It rounds UP to a whole second so binary rounding in a rate
+// written as a fraction (3.0/3600) cannot land a nanosecond short of the real
+// hour, and saturates at maxIdleTTL for a non-positive rate — a bucket that
+// never refills, which would otherwise divide to +Inf and overflow the
+// conversion to time.Duration.
+func refillTime(perSecond float64, burst int) time.Duration {
+	if perSecond <= 0 || burst <= 0 {
+		return maxIdleTTL
+	}
+	secs := math.Ceil(float64(burst) / perSecond)
+	if secs >= maxIdleTTL.Seconds() {
+		return maxIdleTTL
+	}
+	return time.Duration(secs) * time.Second
 }
 
 // Allow reports whether an event for key may proceed now, consuming one token
@@ -69,11 +110,11 @@ func (l *Limiter) SetNow(fn func() time.Time) {
 	l.now = fn
 }
 
-// evictLocked drops every bucket untouched for longer than idleTTL. The caller
-// must hold l.mu.
+// evictLocked drops every bucket untouched for longer than l.idleTTL. The
+// caller must hold l.mu.
 func (l *Limiter) evictLocked(now time.Time) {
 	for k, b := range l.seen {
-		if now.Sub(b.last) > idleTTL {
+		if now.Sub(b.last) > l.idleTTL {
 			delete(l.seen, k)
 		}
 	}

@@ -94,6 +94,78 @@ func TestLimiterEvictsIdle(t *testing.T) {
 	}
 }
 
+// TestLimiterTTLCoversRefillTime is the regression for the eviction hole: when
+// the TTL is shorter than the time a bucket needs to refill from empty, an
+// attacker pacing requests just over the TTL apart collects a whole fresh burst
+// each cycle. The "3 per hour" register/resend/forgot limiter used to admit
+// ~18/hour that way (evicted at 10 minutes, refilled at 60).
+func TestLimiterTTLCoversRefillTime(t *testing.T) {
+	clk := newClock()
+	l := NewLimiter(3.0/3600, 3) // matches main.go's `slow` limiter
+	l.SetNow(clk.now)
+
+	if want := time.Hour; l.idleTTL != want {
+		t.Fatalf("idleTTL = %v, want %v (burst/rate)", l.idleTTL, want)
+	}
+
+	for i := 0; i < 3; i++ {
+		if !l.Allow("email:victim") {
+			t.Fatalf("Allow #%d: got false, want true (burst)", i+1)
+		}
+	}
+	if l.Allow("email:victim") {
+		t.Fatal("Allow #4: got true, want false (burst spent)")
+	}
+
+	// Idle past the OLD 10-minute constant, but short of the 20 minutes one
+	// token legitimately takes to trickle back. The bucket must survive the
+	// sweep: under the old fixed TTL it was evicted here and the key came back
+	// with a full burst of 3 — the whole bug.
+	clk.advance(11 * time.Minute)
+	l.Allow("other") // another key, to trigger the lazy sweep
+	if l.Allow("email:victim") {
+		t.Fatal("Allow after 11m idle: got true, want false (bucket was evicted -> fresh burst)")
+	}
+	if l.size() != 2 {
+		t.Fatalf("tracked keys = %d, want 2 (neither bucket evicted yet)", l.size())
+	}
+
+	// 22 minutes in, exactly one token has trickled back — one, not a burst.
+	clk.advance(11 * time.Minute)
+	if !l.Allow("email:victim") {
+		t.Fatal("Allow at 22m: got false, want true (one token refills every 20m)")
+	}
+	if l.Allow("email:victim") {
+		t.Fatal("second Allow at 22m: got true, want false (only one token had refilled)")
+	}
+
+	// Past the full refill time the bucket is legitimately back to its burst of
+	// 3 — and no more.
+	clk.advance(time.Hour + time.Minute)
+	for i := 0; i < 3; i++ {
+		if !l.Allow("email:victim") {
+			t.Fatalf("Allow #%d after a full refill: got false, want true", i+1)
+		}
+	}
+	if l.Allow("email:victim") {
+		t.Fatal("Allow #4 after a full refill: got true, want false (burst is 3)")
+	}
+}
+
+// TestLimiterTTLFloor keeps the fast per-IP login limiter on the 10-minute
+// floor: its natural refill time is only a minute, and cold keys should still
+// be dropped promptly.
+func TestLimiterTTLFloor(t *testing.T) {
+	l := NewLimiter(5.0/60, 5) // matches main.go's per-IP `login` limiter
+	if l.idleTTL != minIdleTTL {
+		t.Fatalf("idleTTL = %v, want the %v floor", l.idleTTL, minIdleTTL)
+	}
+	// A degenerate zero rate must not overflow the duration conversion.
+	if got := NewLimiter(0, 3).idleTTL; got != maxIdleTTL {
+		t.Fatalf("idleTTL for a zero-rate limiter = %v, want %v", got, maxIdleTTL)
+	}
+}
+
 func TestFailCounterLocksAfterThreshold(t *testing.T) {
 	clk := newClock()
 	f := NewFailCounter(3, 15*time.Minute)

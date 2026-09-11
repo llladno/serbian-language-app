@@ -174,6 +174,156 @@ func TestRequireAuthBridgeXUser(t *testing.T) {
 	}
 }
 
+// TestRequireSessionRejectsBridge pins the unit-level contract: requireSession
+// lets a real cookie session through and 401s a bridge-resolved caller, even
+// though requireAuth beneath it happily resolves one.
+func TestRequireSessionRejectsBridge(t *testing.T) {
+	h, st := mwHandlers(t, "http://localhost:8080")
+	uid, cookie := liveSession(t, st, "Ковачевић")
+
+	t.Run("cookie passes", func(t *testing.T) {
+		var gotUID, gotHash string
+		term := func(w http.ResponseWriter, r *http.Request) {
+			ac, _ := authFrom(r)
+			gotUID, gotHash = ac.UserID, ac.SessionHash
+			w.WriteHeader(http.StatusOK)
+		}
+		r := httptest.NewRequest(http.MethodGet, "/api/me", nil)
+		r.AddCookie(cookie)
+		w := httptest.NewRecorder()
+		h.requireSession(term).ServeHTTP(w, r)
+		if w.Code != http.StatusOK {
+			t.Fatalf("status = %d, want 200", w.Code)
+		}
+		if gotUID != uid || gotHash == "" {
+			t.Fatalf("authFrom = (uid %q, hash %q), want (%q, non-empty)", gotUID, gotHash, uid)
+		}
+	})
+
+	t.Run("X-User bridge rejected", func(t *testing.T) {
+		reached := false
+		term := func(w http.ResponseWriter, r *http.Request) {
+			reached = true
+			w.WriteHeader(http.StatusOK)
+		}
+		r := httptest.NewRequest(http.MethodGet, "/api/me", nil)
+		r.Header.Set("X-User", "Ковачевић")
+		w := httptest.NewRecorder()
+		h.requireSession(term).ServeHTTP(w, r)
+		if w.Code != http.StatusUnauthorized {
+			t.Fatalf("status = %d, want 401 (bridge must not authenticate here)", w.Code)
+		}
+		if reached {
+			t.Fatal("handler ran for a bridge-resolved caller")
+		}
+	})
+
+	t.Run("no credentials rejected", func(t *testing.T) {
+		r := httptest.NewRequest(http.MethodGet, "/api/me", nil)
+		w := httptest.NewRecorder()
+		h.requireSession(okHandler.ServeHTTP).ServeHTTP(w, r)
+		if w.Code != http.StatusUnauthorized {
+			t.Fatalf("status = %d, want 401", w.Code)
+		}
+	})
+}
+
+// TestXUserBridgeCannotReachAccountRoutes is the end-to-end regression for the
+// account-takeover hole: every /api/me* and account-scoped auth route must 401
+// an X-User-only caller, while the legacy content routes still honour the
+// bridge. The seeded accounts here are Telegram-only — exactly the shape that
+// POST /api/me/password would have taken over with no credential at all.
+func TestXUserBridgeCannotReachAccountRoutes(t *testing.T) {
+	h, st := newTestAPI(t)
+	uid, err := st.CreateUser("Гриша")
+	if err != nil {
+		t.Fatalf("CreateUser: %v", err)
+	}
+	if err := st.CreateIdentity(store.Identity{
+		ID:          auth.NewIdentityID(),
+		UserID:      uid,
+		Provider:    "telegram",
+		ProviderUID: "555001",
+		TgUsername:  "grisha_tg",
+	}); err != nil {
+		t.Fatalf("CreateIdentity telegram: %v", err)
+	}
+
+	sealed := []struct{ method, path, body string }{
+		{"GET", "/api/me", ""},
+		{"PATCH", "/api/me", `{"name":"Взломан"}`},
+		{"POST", "/api/me/password", `{"new":"attacker-password","email":"attacker@example.com"}`},
+		{"POST", "/api/me/link/telegram", `{"id":1}`},
+		{"DELETE", "/api/me/telegram", ""},
+		{"DELETE", "/api/me/sessions/abcdef012345", ""},
+		{"DELETE", "/api/me", `{"password":"x"}`},
+		{"POST", "/api/auth/logout-all", ""},
+		{"GET", "/api/auth/session", ""},
+	}
+	for _, tc := range sealed {
+		t.Run(tc.method+" "+tc.path, func(t *testing.T) {
+			rr := doAs(h, "Гриша", tc.method, tc.path, tc.body)
+			if rr.Code != http.StatusUnauthorized {
+				t.Fatalf("status = %d, want 401 (X-User must not authenticate here); body %s", rr.Code, rr.Body)
+			}
+		})
+	}
+
+	// Nothing was mutated by any of the above.
+	if ids, err := st.IdentitiesForUser(uid); err != nil {
+		t.Fatalf("IdentitiesForUser: %v", err)
+	} else if len(ids) != 1 || ids[0].Provider != "telegram" {
+		t.Fatalf("identities = %+v, want the single telegram identity untouched", ids)
+	}
+	if row, err := st.UserByID(uid); err != nil {
+		t.Fatalf("UserByID: %v", err)
+	} else if row.Name != "Гриша" {
+		t.Fatalf("name = %q, want %q (PATCH /api/me must not have landed)", row.Name, "Гриша")
+	}
+
+	// The bridge still works for the legacy content routes the old front-end
+	// actually needs.
+	for _, path := range []string{"/api/progress", "/api/course", "/api/leaderboard", "/api/vocab"} {
+		if rr := doAs(h, "Гриша", "GET", path, ""); rr.Code != http.StatusOK {
+			t.Fatalf("GET %s with X-User = %d, want 200 (bridge must keep working here); body %s",
+				path, rr.Code, rr.Body)
+		}
+	}
+}
+
+// TestSessionCookieStillReachesAccountRoutes confirms moving the nine routes
+// onto the root mux did not break ServeMux precedence: a real cookie still
+// resolves them (not a 404 from the "/api/" catch-all).
+func TestSessionCookieStillReachesAccountRoutes(t *testing.T) {
+	h, st := newTestAPI(t)
+	uid, err := st.CreateUser("Алина")
+	if err != nil {
+		t.Fatalf("CreateUser: %v", err)
+	}
+	c := authed(t, st, uid)
+
+	for _, tc := range []struct {
+		method, path, body string
+		want               int
+	}{
+		{"GET", "/api/me", "", http.StatusOK},
+		{"GET", "/api/auth/session", "", http.StatusOK},
+		{"PATCH", "/api/me", `{"name":"Алина Н"}`, http.StatusOK},
+		// Telegram-only account with no telegram identity: the handler's own
+		// 404 proves routing reached it.
+		{"DELETE", "/api/me/telegram", "", http.StatusNotFound},
+		{"DELETE", "/api/me/sessions/000000000000", "", http.StatusNotFound},
+		{"POST", "/api/auth/logout-all", "", http.StatusNoContent},
+	} {
+		t.Run(tc.method+" "+tc.path, func(t *testing.T) {
+			rr := doCookie(h, c, tc.method, tc.path, tc.body)
+			if rr.Code != tc.want {
+				t.Fatalf("status = %d, want %d; body %s", rr.Code, tc.want, rr.Body)
+			}
+		})
+	}
+}
+
 func TestCheckOriginRejectsCrossOrigin(t *testing.T) {
 	h, _ := mwHandlers(t, "http://localhost:8080")
 	mw := checkOrigin(h.Config, okHandler)
@@ -202,6 +352,27 @@ func TestCheckOriginRejectsCrossOrigin(t *testing.T) {
 	}
 }
 
+// TestSameOriginHostCaseInsensitive pins RFC 3986 §3.2.2: the host half of an
+// origin is case-insensitive, the scheme comparison stays exact.
+func TestSameOriginHostCaseInsensitive(t *testing.T) {
+	cases := []struct {
+		a, b string
+		want bool
+	}{
+		{"https://App.Example.COM", "https://app.example.com", true},
+		{"https://app.example.com", "https://APP.EXAMPLE.COM", true},
+		{"http://app.example.com", "https://app.example.com", false},
+		{"https://evil.com", "https://app.example.com", false},
+		{"https://app.example.com:8443", "https://app.example.com", false},
+		{"not a url", "https://app.example.com", false},
+	}
+	for _, tc := range cases {
+		if got := sameOrigin(tc.a, tc.b); got != tc.want {
+			t.Errorf("sameOrigin(%q, %q) = %v, want %v", tc.a, tc.b, got, tc.want)
+		}
+	}
+}
+
 func TestCheckOriginRefererFallback(t *testing.T) {
 	h, _ := mwHandlers(t, "http://localhost:8080")
 	mw := checkOrigin(h.Config, okHandler)
@@ -220,7 +391,7 @@ func TestSecurityHeadersPresent(t *testing.T) {
 		cfg := config.Config{AppBaseURL: "http://localhost:8080"}
 		r := httptest.NewRequest(http.MethodGet, "/api/health", nil)
 		w := httptest.NewRecorder()
-		securityHeaders(cfg, okHandler).ServeHTTP(w, r)
+		SecurityHeaders(cfg, okHandler).ServeHTTP(w, r)
 
 		if got := w.Header().Get("X-Content-Type-Options"); got != "nosniff" {
 			t.Errorf("X-Content-Type-Options = %q", got)
@@ -243,7 +414,7 @@ func TestSecurityHeadersPresent(t *testing.T) {
 		cfg := config.Config{AppBaseURL: "https://app.example.com"}
 		r := httptest.NewRequest(http.MethodGet, "/api/health", nil)
 		w := httptest.NewRecorder()
-		securityHeaders(cfg, okHandler).ServeHTTP(w, r)
+		SecurityHeaders(cfg, okHandler).ServeHTTP(w, r)
 		if got := w.Header().Get("Strict-Transport-Security"); got == "" {
 			t.Errorf("HSTS should be present on https base")
 		}

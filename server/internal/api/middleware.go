@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"strings"
 	"time"
 
 	"github.com/grisha/serbian-app/server/internal/auth"
@@ -36,11 +37,15 @@ const csp = "default-src 'self'; " +
 	"form-action 'self'; " +
 	"frame-ancestors 'self' https://web.telegram.org https://*.telegram.org"
 
-// securityHeaders stamps the static security headers on every response. HSTS
+// SecurityHeaders stamps the static security headers on every response. HSTS
 // is only meaningful (and only sent) when the app is served over HTTPS. There
 // is deliberately no X-Frame-Options: the Telegram Mini App needs the iframe,
 // and the CSP frame-ancestors directive already scopes who may embed us.
-func securityHeaders(cfg config.Config, next http.Handler) http.Handler {
+//
+// It is exported so main.go can wrap the WHOLE server with it — the SPA HTML
+// and the /img//audio static trees need the CSP (frame-ancestors is the only
+// clickjacking guard here) just as much as the JSON API does.
+func SecurityHeaders(cfg config.Config, next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		h := w.Header()
 		if cfg.Secure() {
@@ -77,7 +82,9 @@ func checkOrigin(cfg config.Config, next http.Handler) http.Handler {
 }
 
 // sameOrigin reports whether two URLs share a scheme and host. A URL that
-// fails to parse, or lacks either component, never matches.
+// fails to parse, or lacks either component, never matches. Hosts are compared
+// case-insensitively (RFC 3986 §3.2.2 — a host is case-insensitive), the
+// scheme exactly.
 func sameOrigin(a, b string) bool {
 	ua, err := url.Parse(a)
 	if err != nil {
@@ -90,7 +97,7 @@ func sameOrigin(a, b string) bool {
 	if ua.Scheme == "" || ua.Host == "" || ub.Scheme == "" || ub.Host == "" {
 		return false
 	}
-	return ua.Scheme == ub.Scheme && ua.Host == ub.Host
+	return ua.Scheme == ub.Scheme && strings.EqualFold(ua.Host, ub.Host)
 }
 
 // userSummary is the denormalized view of an account attached to an
@@ -181,6 +188,25 @@ func (h handlers) requireAuth(next http.Handler) http.Handler {
 		// 3. Nothing resolved.
 		fail(w, http.StatusUnauthorized, "no session")
 	})
+}
+
+// requireSession is requireAuth minus the legacy X-User bridge: only a real
+// session cookie gets through. It guards /api/me*, POST /api/auth/logout-all
+// and GET /api/auth/session — endpoints that read or mutate the account itself,
+// where the bridge would let anyone who merely knows a display name act as that
+// account (display names are public via /api/leaderboard). A bridge-resolved
+// authCtx has an empty SessionHash, which is exactly the discriminator here.
+func (h handlers) requireSession(next http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		h.requireAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			ac, ok := authFrom(r)
+			if !ok || ac.SessionHash == "" {
+				fail(w, http.StatusUnauthorized, "session required")
+				return
+			}
+			next(w, r)
+		})).ServeHTTP(w, r)
+	}
 }
 
 // slideSession pushes the session's expiry forward via store.TouchSession, but
