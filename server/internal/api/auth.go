@@ -20,9 +20,10 @@ import (
 	"github.com/grisha/serbian-app/server/internal/store"
 )
 
-// This file holds the /api/auth/* handlers. register / login / logout /
-// logout-all / session are implemented here (Task 12); the remaining bodies
-// are 501 stubs replaced by Tasks 13-16.
+// This file holds the /api/auth/* handlers: register / login / logout /
+// logout-all / session (Task 12), verify / resend / forgot / reset (Tasks
+// 13-14) and the Telegram sign-in (Task 15). verifyTelegramPayload is also
+// reused by linkTelegram in me.go (Task 16).
 
 // verifyTTL is how long an email-verification token stays usable.
 const verifyTTL = 24 * time.Hour
@@ -538,31 +539,14 @@ func (h handlers) resetPassword(w http.ResponseWriter, r *http.Request) {
 // rejected as stale. Telegram's own guidance for Mini Apps is 24h.
 const telegramMaxAge = 24 * time.Hour
 
-// telegramLogin handles POST /api/auth/telegram. It accepts either a Mini App
-// payload — {"init_data": "<query string>"} — or a flat Login Widget object
-// {id, first_name, username, auth_date, hash}; the presence of a non-empty
-// string "init_data" selects the Mini App path. After the signature verifies it
-// resolves the account three ways, in order: an existing telegram identity for
-// this tg id logs straight in; a "pending:<username>" row seeded by a migration
-// is rewritten to the real id and claimed; otherwise a brand-new account is
-// created. Every success mints a session and returns the account view.
-//
-// The bot token and the raw initData/hash are never logged.
-func (h handlers) telegramLogin(w http.ResponseWriter, r *http.Request) {
-	if !h.Config.TelegramEnabled() {
-		fail(w, http.StatusServiceUnavailable, "telegram_disabled")
-		return
-	}
-
-	// decode consumes r.Body and the two payload shapes are mutually exclusive,
-	// so read the body once and try each shape against the bytes.
-	body, err := io.ReadAll(r.Body)
-	if err != nil {
-		fail(w, http.StatusBadRequest, "bad request body")
-		return
-	}
-	token := h.Config.TelegramBotToken
-
+// verifyTelegramPayload verifies a raw Telegram auth request body — either a
+// Mini App envelope ({"init_data": "<query string>"}) or a flat Login Widget
+// object {id, first_name, username, auth_date, hash} — and returns the
+// authenticated Telegram user. The presence of a non-empty string "init_data"
+// selects the Mini App path. Shared by telegramLogin (sign-in) and
+// linkTelegram (linking an existing account to a Telegram id); the bot token
+// and the raw initData/hash are never logged.
+func verifyTelegramPayload(body []byte, botToken string, now time.Time) (auth.TelegramUser, error) {
 	var envelope struct {
 		InitData string `json:"init_data"`
 	}
@@ -571,49 +555,66 @@ func (h handlers) telegramLogin(w http.ResponseWriter, r *http.Request) {
 	// the widget branch below.
 	_ = json.Unmarshal(body, &envelope)
 
-	var u auth.TelegramUser
 	if strings.TrimSpace(envelope.InitData) != "" {
-		u, err = auth.VerifyInitData(envelope.InitData, token, h.Now(), telegramMaxAge)
-	} else {
-		// A real Telegram Login Widget posts id and auth_date as JSON numbers,
-		// so decoding straight into map[string]string would fail. Unmarshal into
-		// map[string]any and coerce each value to the string form the data-check
-		// hash is computed over.
-		var raw map[string]any
-		if jErr := json.Unmarshal(body, &raw); jErr != nil {
-			fail(w, http.StatusUnauthorized, "bad_telegram_auth")
-			return
-		}
-		fields := make(map[string]string, len(raw))
-		for k, v := range raw {
-			switch val := v.(type) {
-			case nil:
-				// omit — a null field is not part of the check string
-			case string:
-				fields[k] = val
-			case bool:
-				fields[k] = strconv.FormatBool(val)
-			case float64:
-				if !math.IsInf(val, 0) && val == math.Trunc(val) {
-					fields[k] = strconv.FormatInt(int64(val), 10)
-				} else {
-					fields[k] = strconv.FormatFloat(val, 'f', -1, 64)
-				}
-			default:
-				// arrays/objects have no place in a widget payload; stringify so
-				// the hash check simply fails rather than panicking.
-				fields[k] = fmt.Sprintf("%v", val)
-			}
-		}
-		u, err = auth.VerifyWidget(fields, token, h.Now(), telegramMaxAge)
+		return auth.VerifyInitData(envelope.InitData, botToken, now, telegramMaxAge)
 	}
-	if err != nil {
-		if errors.Is(err, auth.ErrBadHash) || errors.Is(err, auth.ErrStale) || errors.Is(err, auth.ErrMalformed) {
-			fail(w, http.StatusUnauthorized, "bad_telegram_auth")
-			return
+
+	// A real Telegram Login Widget posts id and auth_date as JSON numbers, so
+	// decoding straight into map[string]string would fail. Unmarshal into
+	// map[string]any and coerce each value to the string form the data-check
+	// hash is computed over.
+	var raw map[string]any
+	if err := json.Unmarshal(body, &raw); err != nil {
+		return auth.TelegramUser{}, auth.ErrMalformed
+	}
+	fields := make(map[string]string, len(raw))
+	for k, v := range raw {
+		switch val := v.(type) {
+		case nil:
+			// omit — a null field is not part of the check string
+		case string:
+			fields[k] = val
+		case bool:
+			fields[k] = strconv.FormatBool(val)
+		case float64:
+			if !math.IsInf(val, 0) && val == math.Trunc(val) {
+				fields[k] = strconv.FormatInt(int64(val), 10)
+			} else {
+				fields[k] = strconv.FormatFloat(val, 'f', -1, 64)
+			}
+		default:
+			// arrays/objects have no place in a widget payload; stringify so
+			// the hash check simply fails rather than panicking.
+			fields[k] = fmt.Sprintf("%v", val)
 		}
-		// VerifyInitData/VerifyWidget only ever return the sentinels above; a
-		// different error would be a contract break — fail closed.
+	}
+	return auth.VerifyWidget(fields, botToken, now, telegramMaxAge)
+}
+
+// telegramLogin handles POST /api/auth/telegram. After the signature verifies
+// (via verifyTelegramPayload) it resolves the account three ways, in order: an
+// existing telegram identity for this tg id logs straight in; a
+// "pending:<username>" row seeded by a migration is rewritten to the real id
+// and claimed; otherwise a brand-new account is created. Every success mints a
+// session and returns the account view.
+func (h handlers) telegramLogin(w http.ResponseWriter, r *http.Request) {
+	if !h.Config.TelegramEnabled() {
+		fail(w, http.StatusServiceUnavailable, "telegram_disabled")
+		return
+	}
+
+	// decode consumes r.Body and the two payload shapes are mutually exclusive,
+	// so read the body once and pass the raw bytes to verifyTelegramPayload.
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		fail(w, http.StatusBadRequest, "bad request body")
+		return
+	}
+
+	u, err := verifyTelegramPayload(body, h.Config.TelegramBotToken, h.Now())
+	if err != nil {
+		// verifyTelegramPayload only ever returns auth's sentinel errors; every
+		// one of them means the same thing to the caller — fail closed.
 		fail(w, http.StatusUnauthorized, "bad_telegram_auth")
 		return
 	}

@@ -192,8 +192,8 @@ func TestStateEndpointsRequireAccount(t *testing.T) {
 	}
 }
 
-// TestMiddlewareWiring pins the router precedence: exact auth paths reach their
-// (stub) handler without requireAuth, while any other /api/ route is gated.
+// TestMiddlewareWiring pins the router precedence: exact auth paths reach
+// their handler without requireAuth, while any other /api/ route is gated.
 func TestMiddlewareWiring(t *testing.T) {
 	h, st := newTestAPI(t)
 	tester, _ := st.UserByName("tester")
@@ -222,9 +222,10 @@ func TestMiddlewareWiring(t *testing.T) {
 	if rr := doCookie(h, c, "GET", "/api/progress", ""); rr.Code != http.StatusOK {
 		t.Errorf("GET /api/progress with cookie = %d, want 200", rr.Code)
 	}
-	// requireAuth resolved the caller, so a protected stub is now reachable (501).
-	if rr := doCookie(h, c, "GET", "/api/me", ""); rr.Code != http.StatusNotImplemented {
-		t.Errorf("GET /api/me with cookie = %d, want 501", rr.Code)
+	// requireAuth resolved the caller, so the protected route is now reachable
+	// (Task 16 implemented /api/me; it no longer 501s).
+	if rr := doCookie(h, c, "GET", "/api/me", ""); rr.Code != http.StatusOK {
+		t.Errorf("GET /api/me with cookie = %d, want 200", rr.Code)
 	}
 	// ...and GET /api/auth/session, now protected, returns the account (200).
 	if rr := doCookie(h, c, "GET", "/api/auth/session", ""); rr.Code != http.StatusOK {
