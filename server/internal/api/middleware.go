@@ -29,8 +29,9 @@ const sessionTTL = 30 * 24 * time.Hour
 // minimum that lets the Vite build run (inline styles for Tailwind, data:
 // fonts and images) while allowing the Telegram Mini App to frame the page.
 const csp = "default-src 'self'; " +
-	"style-src 'self' 'unsafe-inline'; " +
-	"font-src 'self' data:; " +
+	"script-src 'self' https://telegram.org; " +
+	"style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
+	"font-src 'self' data: https://fonts.gstatic.com; " +
 	"img-src 'self' data:; " +
 	"connect-src 'self'; " +
 	"base-uri 'self'; " +
