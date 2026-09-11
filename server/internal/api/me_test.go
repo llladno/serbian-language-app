@@ -204,6 +204,30 @@ func TestChangePasswordTgOnlyRequiresEmail(t *testing.T) {
 	}
 }
 
+func TestChangePasswordTgOnlyInvalidEmail400(t *testing.T) {
+	h, st, sink := newAuthAPI(t, func(d *Deps) {
+		d.Config.TelegramBotToken = tgTestToken
+	})
+
+	rr := anon(h, "POST", "/api/auth/telegram", tgBody(tgInitData(4242, "tgonly")))
+	if rr.Code != http.StatusOK {
+		t.Fatalf("telegram login = %d %s", rr.Code, rr.Body)
+	}
+	uid := decodeBody[sessionUserDTO](t, rr).ID
+	c := authed(t, st, uid)
+
+	rr = doCookie(h, c, "POST", "/api/me/password", `{"new":"newpass456","email":"not-an-email"}`)
+	if rr.Code != http.StatusBadRequest {
+		t.Fatalf("invalid email = %d %s, want 400", rr.Code, rr.Body)
+	}
+	if _, err := st.IdentityForUser(uid, "password"); !errors.Is(err, sql.ErrNoRows) {
+		t.Errorf("a password identity was created despite the 400: err = %v", err)
+	}
+	if n := len(sink.all()); n != 0 {
+		t.Errorf("mail sent despite invalid email: %d", n)
+	}
+}
+
 // ---- POST /me/link/telegram ----
 
 func TestLinkTelegramConflict409(t *testing.T) {

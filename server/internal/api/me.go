@@ -6,6 +6,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	netmail "net/mail"
 	"strconv"
 	"strings"
 	"time"
@@ -86,14 +87,17 @@ func (h handlers) patchMe(w http.ResponseWriter, r *http.Request) {
 }
 
 // changePassword handles POST /api/me/password, {current, new, email}. Two
-// shapes:
-//   - the caller already has a password identity: current must verify, new
-//     replaces the hash, every other session is killed, and a
+// shapes, and in both every other session is purged FIRST — before any
+// mutation — and fails closed: a failed purge is a 500 with nothing changed
+// yet, since a surviving (possibly hijacked) session would defeat the point
+// of a password change (mirrors resetPassword's DeleteUserSessions).
+//   - the caller already has a password identity: current must verify, then
+//     sessions are purged, then new replaces the hash, and a
 //     password-changed notice is mailed.
 //   - a Telegram-only account (no password identity yet): email is required
-//     to create one; a verify link is mailed rather than the account being
-//     usable by password right away, and every other session is killed too
-//     (the same "this changes how you log in" guarantee).
+//     (and validated like register's) to create one; the identity and its
+//     verify token are created, sessions are purged, then a verify link is
+//     mailed rather than the account being usable by password right away.
 func (h handlers) changePassword(w http.ResponseWriter, r *http.Request) {
 	ac, ok := authFrom(r)
 	if !ok {
@@ -121,6 +125,15 @@ func (h handlers) changePassword(w http.ResponseWriter, r *http.Request) {
 			fail(w, http.StatusForbidden, "wrong_password")
 			return
 		}
+		// Kill every other session before touching the password: a failed
+		// purge must not be swallowed — a surviving (possibly hijacked)
+		// session defeats the point of a password change, so a failure here
+		// is a 500, not a 200, and nothing is mutated yet.
+		if err := h.Store.DeleteUserSessionsExcept(ac.UserID, ac.SessionHash); err != nil {
+			log.Printf("change password: purge sessions: %v", err)
+			fail(w, http.StatusInternalServerError, "internal error")
+			return
+		}
 		hash, err := auth.HashPassword(req.New)
 		if err != nil {
 			log.Printf("change password: hash: %v", err)
@@ -131,11 +144,6 @@ func (h handlers) changePassword(w http.ResponseWriter, r *http.Request) {
 			log.Printf("change password: set hash: %v", err)
 			fail(w, http.StatusInternalServerError, "internal error")
 			return
-		}
-		if err := h.Store.DeleteUserSessionsExcept(ac.UserID, ac.SessionHash); err != nil {
-			// Best-effort: the password is already changed, so a failed purge
-			// here is not worth failing the whole request over.
-			log.Printf("change password: delete other sessions: %v", err)
 		}
 		name := ""
 		if row, err := h.Store.UserByID(ac.UserID); err == nil {
@@ -152,6 +160,10 @@ func (h handlers) changePassword(w http.ResponseWriter, r *http.Request) {
 	case errors.Is(err, sql.ErrNoRows):
 		if req.Email == "" {
 			fail(w, http.StatusBadRequest, "email_required")
+			return
+		}
+		if _, err := netmail.ParseAddress(req.Email); err != nil {
+			fail(w, http.StatusBadRequest, "invalid email")
 			return
 		}
 		hash, err := auth.HashPassword(req.New)
@@ -179,8 +191,21 @@ func (h handlers) changePassword(w http.ResponseWriter, r *http.Request) {
 		raw, tokenHash, err := auth.NewToken()
 		if err != nil {
 			log.Printf("change password: new verify token: %v", err)
-		} else if err := h.Store.CreateEmailToken(tokenHash, identityID, "verify", h.Now(), h.Now().Add(verifyTTL)); err != nil {
+			fail(w, http.StatusInternalServerError, "internal error")
+			return
+		}
+		if err := h.Store.CreateEmailToken(tokenHash, identityID, "verify", h.Now(), h.Now().Add(verifyTTL)); err != nil {
 			log.Printf("change password: create verify token: %v", err)
+			fail(w, http.StatusInternalServerError, "internal error")
+			return
+		}
+		// Same fail-closed guarantee as the has-password branch above: purge
+		// other sessions before claiming success, since setting a password
+		// here changes how this account logs in.
+		if err := h.Store.DeleteUserSessionsExcept(ac.UserID, ac.SessionHash); err != nil {
+			log.Printf("change password: purge sessions: %v", err)
+			fail(w, http.StatusInternalServerError, "internal error")
+			return
 		}
 		name := ""
 		if row, err := h.Store.UserByID(ac.UserID); err == nil {
@@ -191,9 +216,6 @@ func (h handlers) changePassword(w http.ResponseWriter, r *http.Request) {
 			subject, text, html := mail.RenderVerify(h.Config.AppBaseURL, raw, name)
 			h.SendMail(to, subject, text, html)
 		})
-		if err := h.Store.DeleteUserSessionsExcept(ac.UserID, ac.SessionHash); err != nil {
-			log.Printf("change password: delete other sessions: %v", err)
-		}
 		writeJSON(w, http.StatusOK, map[string]string{"status": "verify_sent"})
 		return
 
