@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { api } from '../api'
 import type { SessionUser } from '../types'
+import { isTelegram, initData } from '../telegram'
 
 export const useSessionStore = defineStore('session', () => {
   const user = ref<SessionUser | null>(null)
@@ -13,6 +14,13 @@ export const useSessionStore = defineStore('session', () => {
       user.value = await api.session()
     } catch {
       user.value = null
+      if (isTelegram() && initData()) {
+        try {
+          user.value = await api.telegramLogin({ init_data: initData() })
+        } catch {
+          user.value = null
+        }
+      }
     } finally {
       loading.value = false
     }

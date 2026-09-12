@@ -4,6 +4,8 @@ import { RouterLink, useRoute, useRouter } from 'vue-router'
 import AuthShell from './AuthShell.vue'
 import { useSessionStore } from '../stores/session'
 import { authErrorMessage, isEmailUnverified } from '../lib/authErrors'
+import { api } from '../api'
+import TelegramLoginButton from '../components/TelegramLoginButton.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -14,9 +16,22 @@ const password = ref('')
 const busy = ref(false)
 const error = ref<string | null>(null)
 
+const botId = ref('')
+api.health().then((h) => (botId.value = h.telegram_bot_id)).catch(() => {})
+
 function goNext() {
   const next = typeof route.query.next === 'string' ? route.query.next : '/profile'
   router.push(next)
+}
+
+async function onTelegramAuth(payload: Record<string, unknown>) {
+  error.value = null
+  try {
+    session.user = await api.telegramLogin(payload)
+    goNext()
+  } catch (e) {
+    error.value = authErrorMessage(e)
+  }
 }
 
 async function submit() {
@@ -54,6 +69,7 @@ async function submit() {
       <button class="btn btn-primary w-full" :disabled="busy">Войти</button>
     </form>
     <p v-if="error" class="mt-2 text-sm text-[var(--bad)]">{{ error }}</p>
+    <TelegramLoginButton v-if="botId" class="mt-3" :bot-id="botId" @auth="onTelegramAuth" />
 
     <div class="mt-4 flex justify-between text-sm">
       <RouterLink to="/forgot" class="text-[var(--accent)]">забыли пароль?</RouterLink>

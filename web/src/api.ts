@@ -14,6 +14,7 @@ import type {
   LeaderRow,
   SessionUser,
   Me,
+  Health,
 } from './types'
 
 export class ApiError extends Error {
@@ -72,6 +73,7 @@ function qs(params?: Record<string, string | undefined>): string {
 }
 
 export const api = {
+  health: () => request<Health>('/health'),
   register: (email: string, password: string, name: string) =>
     request<{ status: string }>('/auth/register', {
       method: 'POST',

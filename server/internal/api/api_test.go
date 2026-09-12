@@ -138,6 +138,20 @@ func TestHealth(t *testing.T) {
 	}
 }
 
+func TestHealthExposesTelegramBotID(t *testing.T) {
+	h, _ := newTestAPIWith(t, func(d *Deps) {
+		d.Config = config.Config{AppBaseURL: testBaseURL, TelegramBotToken: "42:secret"}
+	})
+	rr := do(h, "GET", "/api/health", "")
+	if rr.Code != 200 {
+		t.Fatal(rr.Code)
+	}
+	got := decodeBody[map[string]any](t, rr)
+	if got["telegram_bot_id"] != "42" {
+		t.Fatalf("telegram_bot_id = %v, want 42", got["telegram_bot_id"])
+	}
+}
+
 func TestGetCourseHasStatuses(t *testing.T) {
 	h, _ := newTestAPI(t)
 	rr := do(h, "GET", "/api/course", "")

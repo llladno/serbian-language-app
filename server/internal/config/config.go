@@ -72,6 +72,20 @@ func (c Config) TelegramEnabled() bool {
 	return c.TelegramBotToken != ""
 }
 
+// TelegramBotID returns the bot's numeric id — the segment before ":" in
+// TELEGRAM_BOT_TOKEN — for the client-side Telegram Login Widget, which opens
+// its auth popup with this id (not the token). Not a secret: once a bot
+// exists, its id is public (part of the bot's own API surface, same as its
+// t.me link). Empty when Telegram sign-in is not configured or the token is
+// malformed.
+func (c Config) TelegramBotID() string {
+	id, _, ok := strings.Cut(c.TelegramBotToken, ":")
+	if !ok || id == "" {
+		return ""
+	}
+	return id
+}
+
 // SMTPEnabled reports whether outbound SMTP mail is configured.
 func (c Config) SMTPEnabled() bool {
 	return c.SMTP.Host != ""

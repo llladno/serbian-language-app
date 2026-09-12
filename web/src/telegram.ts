@@ -8,6 +8,7 @@ interface TgWebApp {
   ready: () => void
   expand: () => void
   colorScheme: 'light' | 'dark'
+  initData: string
   setHeaderColor?: (c: string) => void
   setBackgroundColor?: (c: string) => void
   onEvent?: (e: string, cb: () => void) => void
@@ -19,6 +20,12 @@ function tg(): TgWebApp | undefined {
 
 export function isTelegram() {
   return !!tg()
+}
+
+// The raw, HMAC-signed query string the backend's VerifyInitData checks.
+// Empty outside Telegram or before the SDK has populated it.
+export function initData(): string {
+  return tg()?.initData ?? ''
 }
 
 function bgColor() {

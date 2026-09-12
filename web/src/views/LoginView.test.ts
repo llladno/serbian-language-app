@@ -3,7 +3,7 @@ import { mount, flushPromises } from '@vue/test-utils'
 import { setActivePinia, createPinia } from 'pinia'
 import LoginView from './LoginView.vue'
 import { useSessionStore } from '../stores/session'
-import { ApiError } from '../api'
+import { api, ApiError } from '../api'
 
 const push = vi.fn()
 vi.mock('vue-router', () => ({
@@ -51,5 +51,24 @@ describe('LoginView', () => {
     await w.find('form').trigger('submit.prevent')
     await flushPromises()
     expect(push).toHaveBeenCalledWith({ path: '/verify', query: { email: 'g@example.com' } })
+  })
+
+  it('shows the Telegram button once health reports a bot id, and logs in on auth', async () => {
+    vi.spyOn(api, 'health').mockResolvedValue({ status: 'ok', content_stale: false, telegram_bot_id: '42' })
+    vi.spyOn(api, 'telegramLogin').mockResolvedValue({
+      id: '1',
+      name: 'Г',
+      email: '',
+      email_verified: false,
+      telegram: { linked: true, username: 'g' },
+    })
+    const w = mount(LoginView)
+    await flushPromises()
+    const btn = w.findComponent({ name: 'TelegramLoginButton' })
+    expect(btn.exists()).toBe(true)
+    await btn.vm.$emit('auth', { id: 1 })
+    await flushPromises()
+    expect(api.telegramLogin).toHaveBeenCalledWith({ id: 1 })
+    expect(push).toHaveBeenCalledWith('/profile')
   })
 })

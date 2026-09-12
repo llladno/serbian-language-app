@@ -190,7 +190,11 @@ func (h handlers) user(w http.ResponseWriter, r *http.Request) (*store.UserStore
 // ---- handlers ----
 
 func (h handlers) health(w http.ResponseWriter, r *http.Request) {
-	writeJSON(w, http.StatusOK, map[string]any{"status": "ok", "content_stale": h.Stale()})
+	writeJSON(w, http.StatusOK, map[string]any{
+		"status":          "ok",
+		"content_stale":   h.Stale(),
+		"telegram_bot_id": h.Config.TelegramBotID(),
+	})
 }
 
 func (h handlers) getCourse(w http.ResponseWriter, r *http.Request) {

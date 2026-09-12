@@ -104,3 +104,22 @@ func TestTelegramEnabled(t *testing.T) {
 		t.Errorf("TelegramBotToken: got %q, want %q", c.TelegramBotToken, "123456:abcdef")
 	}
 }
+
+func TestTelegramBotID(t *testing.T) {
+	clearEnv(t)
+	if got := Load().TelegramBotID(); got != "" {
+		t.Fatalf("TelegramBotID() with no token: got %q, want empty", got)
+	}
+
+	clearEnv(t)
+	t.Setenv("TELEGRAM_BOT_TOKEN", "123456:abcdef-secret")
+	if got := Load().TelegramBotID(); got != "123456" {
+		t.Fatalf("TelegramBotID(): got %q, want %q", got, "123456")
+	}
+
+	clearEnv(t)
+	t.Setenv("TELEGRAM_BOT_TOKEN", "malformed-no-colon")
+	if got := Load().TelegramBotID(); got != "" {
+		t.Fatalf("TelegramBotID() on malformed token: got %q, want empty", got)
+	}
+}

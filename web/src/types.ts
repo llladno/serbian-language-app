@@ -251,3 +251,9 @@ export interface SessionDevice {
 export interface Me extends SessionUser {
   sessions: SessionDevice[]
 }
+
+export interface Health {
+  status: string
+  content_stale: boolean
+  telegram_bot_id: string
+}
