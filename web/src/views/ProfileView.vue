@@ -86,26 +86,49 @@ async function submitPassword() {
 }
 
 // -- devices --
+const devicesError = ref<string | null>(null)
 async function revokeSession(id: string) {
   if (!confirm('Выйти на этом устройстве?')) return
-  await api.deleteSession(id)
-  await loadMe()
+  devicesError.value = null
+  try {
+    await api.deleteSession(id)
+    await loadMe()
+  } catch (e) {
+    devicesError.value = authErrorMessage(e)
+  }
 }
 
+const sessionActionError = ref<string | null>(null)
 async function logout() {
-  await session.logout()
-  router.push('/login')
+  sessionActionError.value = null
+  try {
+    await session.logout()
+    router.push('/login')
+  } catch (e) {
+    sessionActionError.value = authErrorMessage(e)
+  }
 }
 async function logoutAll() {
-  await session.logoutAll()
-  router.push('/login')
+  sessionActionError.value = null
+  try {
+    await session.logoutAll()
+    router.push('/login')
+  } catch (e) {
+    sessionActionError.value = authErrorMessage(e)
+  }
 }
 
 // -- danger zone --
+const resetError = ref<string | null>(null)
 async function resetExercises() {
   if (!confirm('Сбросить весь прогресс по заданиям (ответы и отметки уроков)? Карточки слов останутся.')) return
-  await api.resetExercises()
-  location.reload()
+  resetError.value = null
+  try {
+    await api.resetExercises()
+    location.reload()
+  } catch (e) {
+    resetError.value = authErrorMessage(e)
+  }
 }
 
 const deletePassword = ref('')
@@ -215,12 +238,14 @@ async function deleteAccount() {
             <button class="shrink-0 text-xs text-[var(--bad)]" @click="revokeSession(d.id)">выйти</button>
           </li>
         </ul>
+        <p v-if="devicesError" class="mt-1 text-sm text-[var(--bad)]">{{ devicesError }}</p>
       </div>
 
       <div class="flex flex-wrap gap-2 border-t border-[var(--border)] pt-3">
         <button class="btn btn-ghost" @click="logout">Выйти</button>
         <button class="btn btn-ghost" @click="logoutAll">Выйти везде</button>
       </div>
+      <p v-if="sessionActionError" class="text-sm text-[var(--bad)]">{{ sessionActionError }}</p>
     </div>
 
     <ProgressDashboard v-if="me" :name="me.name" />
@@ -230,6 +255,7 @@ async function deleteAccount() {
       <button class="text-sm text-[var(--muted)] hover:text-[var(--bad)]" @click="resetExercises">
         сбросить прогресс по заданиям
       </button>
+      <p v-if="resetError" class="text-sm text-[var(--bad)]">{{ resetError }}</p>
       <div class="space-y-2 border-t border-[var(--border)] pt-3">
         <input
           v-if="hasPassword"

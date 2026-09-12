@@ -2,7 +2,8 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { mount, flushPromises } from '@vue/test-utils'
 import { setActivePinia, createPinia } from 'pinia'
 import ProfileView from './ProfileView.vue'
-import { api } from '../api'
+import { api, ApiError } from '../api'
+import { useSessionStore } from '../stores/session'
 import type { Me } from '../types'
 
 vi.mock('vue-router', () => ({
@@ -79,5 +80,43 @@ describe('ProfileView', () => {
     await buttons[buttons.length - 1].trigger('click')
     await flushPromises()
     expect(del).toHaveBeenCalledWith('secret123')
+  })
+
+  it('shows an error when revoking a session fails', async () => {
+    vi.spyOn(api, 'getMe').mockResolvedValue(me())
+    vi.spyOn(api, 'progress').mockRejectedValue(new Error('n/a'))
+    vi.spyOn(api, 'deleteSession').mockRejectedValue(new ApiError(400, 'no session'))
+    const w = mount(ProfileView)
+    await flushPromises()
+    const revoke = w.findAll('button').find((b) => b.text() === 'выйти')
+    await revoke!.trigger('click')
+    await flushPromises()
+    expect(w.text()).toContain('Сессия истекла — войдите снова')
+  })
+
+  it('shows an error when logout fails', async () => {
+    vi.spyOn(api, 'getMe').mockResolvedValue(me())
+    vi.spyOn(api, 'progress').mockRejectedValue(new Error('n/a'))
+    // ProfileView calls session.logout() (the store method), not api.logout() directly.
+    const session = useSessionStore()
+    vi.spyOn(session, 'logout').mockRejectedValue(new ApiError(400, 'no session'))
+    const w = mount(ProfileView)
+    await flushPromises()
+    const logoutBtn = w.findAll('button').find((b) => b.text() === 'Выйти')
+    await logoutBtn!.trigger('click')
+    await flushPromises()
+    expect(w.text()).toContain('Сессия истекла — войдите снова')
+  })
+
+  it('shows an error when resetting exercise progress fails', async () => {
+    vi.spyOn(api, 'getMe').mockResolvedValue(me())
+    vi.spyOn(api, 'progress').mockRejectedValue(new Error('n/a'))
+    vi.spyOn(api, 'resetExercises').mockRejectedValue(new ApiError(400, 'internal error'))
+    const w = mount(ProfileView)
+    await flushPromises()
+    const resetBtn = w.findAll('button').find((b) => b.text().includes('сбросить прогресс'))
+    await resetBtn!.trigger('click')
+    await flushPromises()
+    expect(w.text()).toContain('Что-то пошло не так, попробуйте ещё раз')
   })
 })
