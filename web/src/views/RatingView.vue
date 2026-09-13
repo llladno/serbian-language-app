@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import { api } from '../api'
-import { getAccount } from '../account'
+import { useSessionStore } from '../stores/session'
 import type { LeaderRow } from '../types'
 
 const rows = ref<LeaderRow[]>([])
 const error = ref<string | null>(null)
-const me = getAccount()
+const session = useSessionStore()
 
 onMounted(async () => {
   try {
@@ -27,7 +27,7 @@ function activeLabel(d: string) {
 </script>
 
 <template>
-  <h1 class="mb-1 text-2xl font-extrabold">Люди</h1>
+  <h1 class="mb-1 text-2xl font-extrabold">Рейтинг</h1>
   <p class="mb-4 text-sm text-[var(--muted)]">Прогресс всех, кто занимается по этому курсу.</p>
 
   <p v-if="error" class="card p-4 text-[var(--bad)]">{{ error }}</p>
@@ -37,13 +37,13 @@ function activeLabel(d: string) {
       v-for="(r, i) in rows"
       :key="r.name"
       class="card flex items-center gap-3 p-4"
-      :class="r.name === me ? 'ring-2 ring-[var(--accent)]' : ''"
+      :class="r.name === session.user?.name ? 'ring-2 ring-[var(--accent)]' : ''"
     >
       <span class="w-5 shrink-0 text-center font-mono text-sm text-[var(--muted)]">{{ i + 1 }}</span>
       <div class="min-w-0 flex-1">
         <p class="font-bold">
           {{ r.name }}
-          <span v-if="r.name === me" class="text-xs font-normal text-[var(--accent)]">— это ты</span>
+          <span v-if="r.name === session.user?.name" class="text-xs font-normal text-[var(--accent)]">— это ты</span>
         </p>
         <p class="text-sm text-[var(--muted)]">
           {{ r.lessons_done }}/{{ r.lessons_total }} уроков · {{ r.cards_known }} слов ·

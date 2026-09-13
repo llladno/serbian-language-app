@@ -130,9 +130,9 @@ const dueTotal = computed(() =>
       </div>
     </div>
 
-    <RouterLink v-if="leaders.length > 1" to="/people" class="card block p-5 transition hover:-translate-y-0.5">
+    <RouterLink v-if="leaders.length > 1" to="/rating" class="card block p-5 transition hover:-translate-y-0.5">
       <div class="mb-2 flex items-baseline justify-between">
-        <p class="font-bold">Люди</p>
+        <p class="font-bold">Рейтинг</p>
         <span class="text-sm text-[var(--accent)]">все →</span>
       </div>
       <ul class="space-y-1.5 text-sm">

@@ -1,22 +1,76 @@
-import { createRouter, createWebHistory } from 'vue-router'
-import DashboardView from './views/DashboardView.vue'
+import { createRouter, createWebHistory, type RouteLocationNormalized } from 'vue-router'
+import { watch } from 'vue'
+import LoginView from './views/LoginView.vue'
+import RegisterView from './views/RegisterView.vue'
+import VerifyView from './views/VerifyView.vue'
+import ForgotView from './views/ForgotView.vue'
+import ResetView from './views/ResetView.vue'
+import ProfileView from './views/ProfileView.vue'
 import CourseView from './views/CourseView.vue'
 import LessonView from './views/LessonView.vue'
 import ReviewView from './views/ReviewView.vue'
 import VocabView from './views/VocabView.vue'
 import FalseFriendsView from './views/FalseFriendsView.vue'
-import PeopleView from './views/PeopleView.vue'
+import RatingView from './views/RatingView.vue'
+import { useSessionStore } from './stores/session'
 
-export default createRouter({
+const PUBLIC_AUTH_ROUTES = new Set(['login', 'register', 'verify', 'forgot', 'reset'])
+
+// Exported standalone (not folded into beforeEach) so it can be unit tested as
+// a pure function against a session store, without a real router/navigation.
+export function resolveGuard(to: RouteLocationNormalized, session: ReturnType<typeof useSessionStore>) {
+  const name = to.name as string
+  if (!session.user) {
+    return PUBLIC_AUTH_ROUTES.has(name) ? true : { path: '/login', query: { next: to.fullPath } }
+  }
+  if (name === 'verify') return true
+  if (PUBLIC_AUTH_ROUTES.has(name)) return { path: '/profile' }
+  if (!session.user.email_verified) return { path: '/verify' }
+  return true
+}
+
+// Blocks the FIRST navigation until App.vue's onMounted fetchSession() (kicked
+// off before the router resolves the initial route) has settled, so the guard
+// above never runs against the store's transient loading=true default.
+function waitForSession(session: ReturnType<typeof useSessionStore>): Promise<void> {
+  if (!session.loading) return Promise.resolve()
+  return new Promise((resolve) => {
+    const unwatch = watch(
+      () => session.loading,
+      (loading) => {
+        if (!loading) {
+          unwatch()
+          resolve()
+        }
+      },
+    )
+  })
+}
+
+const router = createRouter({
   history: createWebHistory(),
   scrollBehavior: () => ({ top: 0 }),
   routes: [
-    { path: '/', name: 'dashboard', component: DashboardView },
+    { path: '/login', name: 'login', component: LoginView },
+    { path: '/register', name: 'register', component: RegisterView },
+    { path: '/verify', name: 'verify', component: VerifyView },
+    { path: '/forgot', name: 'forgot', component: ForgotView },
+    { path: '/reset', name: 'reset', component: ResetView },
+    { path: '/', redirect: '/profile' },
+    { path: '/profile', name: 'profile', component: ProfileView },
     { path: '/course', name: 'course', component: CourseView },
     { path: '/lesson/:id', name: 'lesson', component: LessonView },
     { path: '/review', name: 'review', component: ReviewView },
     { path: '/vocab', name: 'vocab', component: VocabView },
     { path: '/false-friends', name: 'false-friends', component: FalseFriendsView },
-    { path: '/people', name: 'people', component: PeopleView },
+    { path: '/rating', name: 'rating', component: RatingView },
   ],
 })
+
+router.beforeEach(async (to) => {
+  const session = useSessionStore()
+  await waitForSession(session)
+  return resolveGuard(to, session)
+})
+
+export default router

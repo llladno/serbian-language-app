@@ -66,7 +66,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKey))
     </div>
     <div class="mt-6 flex justify-center gap-2">
       <button class="btn btn-ghost" @click="store.load()">Ещё раз</button>
-      <RouterLink to="/" class="btn btn-primary">На главную</RouterLink>
+      <RouterLink to="/profile" class="btn btn-primary">В профиль</RouterLink>
     </div>
   </div>
 
@@ -75,7 +75,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKey))
     <p class="text-3xl">✨</p>
     <p class="mt-2 text-lg font-bold">На сегодня всё</p>
     <p class="mt-1 text-[var(--muted)]">Новые карточки и повторения появятся завтра.</p>
-    <RouterLink to="/" class="btn btn-primary mt-5">На главную</RouterLink>
+    <RouterLink to="/profile" class="btn btn-primary mt-5">В профиль</RouterLink>
   </div>
 
   <!-- card -->
