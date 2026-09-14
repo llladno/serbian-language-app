@@ -1,0 +1,125 @@
+lesson: "00"
+title: "Писмо и изговор"
+subtitle: "латиница и ћирилица, особые буквы, произношение"
+teaches: [cokolada, cevapi, sesir, zaba, djak, dzem, ljubav, konj]
+
+steps:
+  - id: "00.1"
+    kind: teach
+    title: "Два писма"
+    md: "00/1-pisma.md"
+
+  - id: "00.2"
+    kind: practice
+    title: "Исто слово, два писма"
+    also_ok: ["auto", "banka", "telefon", "sport"]
+    exercises:
+      - id: "00.2.1"
+        type: choice
+        prompt: "«Машина» — по-сербски это слово, узнаваемое сразу:"
+        options: ["auto", "banka", "telefon"]
+        answer: "auto"
+      - id: "00.2.2"
+        type: match
+        prompt: "Соедини одно и то же слово в двух алфавитах"
+        pairs:
+          - ["auto", "ауто"]
+          - ["banka", "банка"]
+          - ["telefon", "телефон"]
+          - ["sport", "спорт"]
+
+  - id: "00.3"
+    kind: teach
+    title: "Особые буквы"
+    md: "00/3-slova.md"
+
+  - id: "00.4"
+    kind: practice
+    title: "Читаем и слышим"
+    exercises:
+      - id: "00.4.1"
+        type: choice
+        prompt: "«Шоколад» по-сербски —"
+        options: ["čokolada", "ćevapi", "konj"]
+        answer: "čokolada"
+      - id: "00.4.2"
+        type: choice
+        prompt: "Слово, которое значит «школьник», —"
+        options: ["đak", "žaba", "konj"]
+        answer: "đak"
+      - id: "00.4.3"
+        type: match
+        prompt: "Соедини слово и перевод"
+        pairs:
+          - ["čokolada", "шоколад"]
+          - ["ćevapi", "чевапи"]
+          - ["šešir", "шляпа"]
+          - ["žaba", "лягушка"]
+          - ["đak", "школьник"]
+          - ["džem", "варенье"]
+      - id: "00.4.4"
+        type: fill_blank
+        prompt: "Лошадь по-сербски — ___"
+        accept: ["konj"]
+      - id: "00.4.5"
+        type: fill_blank
+        prompt: "Любовь по-сербски — ___"
+        accept: ["ljubav"]
+      - id: "00.4.6"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "konj"
+        accept: ["konj"]
+      - id: "00.4.7"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "čokolada"
+        accept: ["čokolada"]
+      - id: "00.4.8"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "ljubav"
+        accept: ["ljubav"]
+      - id: "00.4.9"
+        type: translate
+        prompt: "Как по-сербски «варенье»?"
+        accept: ["džem"]
+      - id: "00.4.10"
+        type: translate
+        prompt: "Как по-сербски «шляпа»?"
+        accept: ["šešir"]
+      - id: "00.4.11"
+        type: free
+        prompt: "Прочитай вслух все слова урока — проверь č, ć, š, ž, đ, dž, lj, nj."
+        sample: "čokolada, ćevapi, šešir, žaba, đak, džem, ljubav, konj"
+
+  - id: "00.5"
+    kind: checkpoint
+    title: "Проверка"
+    exercises:
+      - id: "00.5.1"
+        type: choice
+        prompt: "«Лягушка» по-сербски —"
+        options: ["žaba", "šešir", "konj"]
+        answer: "žaba"
+      - id: "00.5.2"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["šešir", "шляпа"]
+          - ["đak", "школьник"]
+          - ["ljubav", "любовь"]
+          - ["konj", "лошадь"]
+      - id: "00.5.3"
+        type: fill_blank
+        prompt: "Шоколад по-сербски — ___"
+        accept: ["čokolada"]
+      - id: "00.5.4"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "žaba"
+        accept: ["žaba"]
+      - id: "00.5.5"
+        type: translate
+        prompt: "Как по-сербски «школьник»?"
+        accept: ["đak"]

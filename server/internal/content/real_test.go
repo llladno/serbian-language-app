@@ -197,10 +197,10 @@ func TestRealContentLoads(t *testing.T) {
 	if len(c.Phases) != 5 {
 		t.Errorf("phases = %d, want 5", len(c.Phases))
 	}
-	if len(c.Lessons) < 28 {
-		t.Errorf("lessons = %d, want >= 28", len(c.Lessons))
+	if len(c.Lessons) < 40 {
+		t.Errorf("lessons = %d, want >= 40", len(c.Lessons))
 	}
-	for _, id := range []string{"18", "24", "30"} {
+	for _, id := range []string{"22", "32", "41"} {
 		if !c.Lessons[id].Planned {
 			t.Errorf("checkpoint lesson %s should be planned", id)
 		}

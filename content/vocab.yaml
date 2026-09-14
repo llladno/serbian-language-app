@@ -1,6 +1,89 @@
 # Речник — накопительный словарь.
 # gender: m|f|n ; aspect: sv|nesv ; pos: verb|noun|adv|phrase|interj|...
 
+# ---- Урок 00 — Pismo i izgovor ----
+
+- id: "cokolada"
+  emoji: "🍫"
+  latin: "čokolada"
+  cyrillic: "чоколада"
+  ru: "шоколад"
+  note: "č — твёрдое «ч», как в русском «чай»"
+  lesson: "00"
+  pos: "noun"
+  gender: "f"
+  tags: ["azbuka"]
+- id: "cevapi"
+  emoji: "🍢"
+  latin: "ćevapi"
+  cyrillic: "ћевапи"
+  ru: "чевапи — сербское блюдо из мяса"
+  note: "ć — мягче, чем č, среднее между «ч» и «ть»"
+  lesson: "00"
+  pos: "noun"
+  gender: "m"
+  tags: ["azbuka"]
+- id: "sesir"
+  emoji: "🎩"
+  latin: "šešir"
+  cyrillic: "шешир"
+  ru: "шляпа"
+  note: "š — как русское «ш»"
+  lesson: "00"
+  pos: "noun"
+  gender: "m"
+  tags: ["azbuka"]
+- id: "zaba"
+  emoji: "🐸"
+  latin: "žaba"
+  cyrillic: "жаба"
+  ru: "лягушка"
+  note: "ž — как русское «ж»"
+  lesson: "00"
+  pos: "noun"
+  gender: "f"
+  tags: ["azbuka"]
+- id: "djak"
+  emoji: "🎒"
+  latin: "đak"
+  cyrillic: "ђак"
+  ru: "школьник, ученик"
+  note: "đ — мягкое «дь», как в слове «дядя»"
+  lesson: "00"
+  pos: "noun"
+  gender: "m"
+  tags: ["azbuka"]
+- id: "dzem"
+  emoji: "🍯"
+  latin: "džem"
+  cyrillic: "џем"
+  ru: "варенье, джем"
+  note: "dž — твёрдое «дж», как в слове «джем»"
+  lesson: "00"
+  pos: "noun"
+  gender: "m"
+  tags: ["azbuka"]
+- id: "ljubav"
+  emoji: "❤️"
+  latin: "ljubav"
+  cyrillic: "љубав"
+  ru: "любовь"
+  note: "lj — мягкое «ль», как в слове «пальто»"
+  lesson: "00"
+  pos: "noun"
+  gender: "f"
+  tags: ["azbuka"]
+- id: "konj"
+  emoji: "🐴"
+  latin: "konj"
+  cyrillic: "коњ"
+  ru: "лошадь"
+  note: "nj — мягкое «нь»; похоже на русское «конь»"
+  lesson: "00"
+  pos: "noun"
+  gender: "m"
+  tags: ["azbuka"]
+
 # ---- Урок 01 — Pozdravi i upoznavanje ----
 
 - id: "zdravo"
@@ -12,6 +95,8 @@
   lesson: "01"
   pos: "interj"
   tags: ["greetings"]
+  example_sr: "Zdravo, kako si?"
+  example_ru: "Привет, как дела?"
 - id: "cao"
   emoji: "👋"
   latin: "ćao"
@@ -21,6 +106,8 @@
   lesson: "01"
   pos: "interj"
   tags: ["greetings"]
+  example_sr: "Ćao, vidimo se sutra!"
+  example_ru: "Пока, увидимся завтра!"
 - id: "dobar-dan"
   emoji: "🌞"
   latin: "dobar dan"
@@ -29,6 +116,8 @@
   lesson: "01"
   pos: "phrase"
   tags: ["greetings"]
+  example_sr: "Dobar dan, gospođo!"
+  example_ru: "Добрый день, госпожа!"
 - id: "dobro-jutro"
   emoji: "🌅"
   latin: "dobro jutro"
@@ -37,6 +126,8 @@
   lesson: "01"
   pos: "phrase"
   tags: ["greetings"]
+  example_sr: "Dobro jutro! Kako si spavao?"
+  example_ru: "Доброе утро! Как спалось?"
 - id: "dobro-vece"
   emoji: "🌆"
   latin: "dobro veče"
@@ -45,6 +136,8 @@
   lesson: "01"
   pos: "phrase"
   tags: ["greetings"]
+  example_sr: "Dobro veče, drago mi je."
+  example_ru: "Добрый вечер, приятно познакомиться."
 - id: "laku-noc"
   emoji: "🌙"
   latin: "laku noć"
@@ -53,6 +146,8 @@
   lesson: "01"
   pos: "phrase"
   tags: ["greetings"]
+  example_sr: "Laku noć, vidimo se sutra."
+  example_ru: "Спокойной ночи, увидимся завтра."
 - id: "dovidjenja"
   emoji: "👋"
   latin: "doviđenja"
@@ -61,6 +156,8 @@
   lesson: "01"
   pos: "phrase"
   tags: ["greetings"]
+  example_sr: "Doviđenja, hvala na svemu!"
+  example_ru: "До свидания, спасибо за всё!"
 - id: "prijatno"
   emoji: "🙂"
   latin: "prijatno"
@@ -70,6 +167,8 @@
   lesson: "01"
   pos: "interj"
   tags: ["greetings"]
+  example_sr: "Hvala! — Prijatno!"
+  example_ru: "Спасибо! — И вам того же!"
 - id: "vidimo-se"
   emoji: "👀"
   latin: "vidimo se"
@@ -78,6 +177,8 @@
   lesson: "01"
   pos: "phrase"
   tags: ["greetings"]
+  example_sr: "Vidimo se večeras u sedam."
+  example_ru: "Увидимся вечером в семь."
 - id: "cujemo-se"
   emoji: "📞"
   latin: "čujemo se"
@@ -86,6 +187,8 @@
   lesson: "01"
   pos: "phrase"
   tags: ["greetings"]
+  example_sr: "Čujemo se sutra, važi?"
+  example_ru: "Созвонимся завтра, договорились?"
 - id: "molim"
   emoji: "🙏"
   latin: "molim"
@@ -94,6 +197,8 @@
   lesson: "01"
   pos: "phrase"
   tags: ["politeness"]
+  example_sr: "Izvini, molim? Nisam razumeo."
+  example_ru: "Извини, что? Я не понял."
 - id: "molim-vas"
   emoji: "🙏"
   latin: "molim vas"
@@ -102,6 +207,8 @@
   lesson: "01"
   pos: "phrase"
   tags: ["politeness"]
+  example_sr: "Kafu, molim vas."
+  example_ru: "Кофе, пожалуйста."
 - id: "hvala"
   emoji: "🙏"
   latin: "hvala (lepo)"
@@ -111,6 +218,8 @@
   lesson: "01"
   pos: "phrase"
   tags: ["politeness"]
+  example_sr: "Hvala lepo za pomoć!"
+  example_ru: "Спасибо большое за помощь!"
 - id: "nema-na-cemu"
   emoji: "😊"
   latin: "nema na čemu"
@@ -119,6 +228,8 @@
   lesson: "01"
   pos: "phrase"
   tags: ["politeness"]
+  example_sr: "Hvala puno! — Nema na čemu."
+  example_ru: "Огромное спасибо! — Не за что."
 - id: "izvini"
   emoji: "🙇"
   latin: "izvini / izvinite"
@@ -127,6 +238,8 @@
   lesson: "01"
   pos: "phrase"
   tags: ["politeness"]
+  example_sr: "Izvini, kasnim malo."
+  example_ru: "Извини, я немного опаздываю."
 - id: "oprosti"
   emoji: "🙇"
   latin: "oprosti / oprostite"
@@ -135,6 +248,8 @@
   lesson: "01"
   pos: "phrase"
   tags: ["politeness"]
+  example_sr: "Oprosti, nisam te video."
+  example_ru: "Прости, я тебя не заметил."
 - id: "izvolite"
   emoji: "🤲"
   latin: "izvolite"
@@ -143,6 +258,8 @@
   lesson: "01"
   pos: "phrase"
   tags: ["politeness"]
+  example_sr: "Izvolite, sedite ovde."
+  example_ru: "Прошу, садитесь здесь."
 - id: "nema-problema"
   emoji: "👌"
   latin: "nema problema"
@@ -151,6 +268,8 @@
   lesson: "01"
   pos: "phrase"
   tags: ["politeness"]
+  example_sr: "Nema problema, imamo vremena."
+  example_ru: "Без проблем, у нас есть время."
 - id: "kako-se-zoves"
   emoji: "❓"
   latin: "kako se zoveš? / zovete?"
@@ -159,6 +278,8 @@
   lesson: "01"
   pos: "phrase"
   tags: ["intro"]
+  example_sr: "Kako se zoveš?"
+  example_ru: "Как тебя зовут?"
 - id: "zovem-se"
   emoji: "🪪"
   latin: "zovem se…"
@@ -167,6 +288,8 @@
   lesson: "01"
   pos: "phrase"
   tags: ["intro"]
+  example_sr: "Zovem se Griša."
+  example_ru: "Меня зовут Гриша."
 - id: "ja-sam"
   emoji: "🙋"
   latin: "ja sam…"
@@ -175,6 +298,8 @@
   lesson: "01"
   pos: "phrase"
   tags: ["intro"]
+  example_sr: "Ja sam Griša, iz Rusije."
+  example_ru: "Я Гриша, из России."
 - id: "drago-mi-je"
   emoji: "🤝"
   latin: "drago mi je"
@@ -183,6 +308,8 @@
   lesson: "01"
   pos: "phrase"
   tags: ["intro"]
+  example_sr: "Drago mi je, ja sam Ana."
+  example_ru: "Приятно познакомиться, я Ана."
 - id: "takodje"
   emoji: "🔁"
   latin: "takođe"
@@ -191,6 +318,8 @@
   lesson: "01"
   pos: "adv"
   tags: ["intro"]
+  example_sr: "Drago mi je. — Takođe!"
+  example_ru: "Приятно познакомиться. — Взаимно!"
 - id: "odakle-si"
   emoji: "🌍"
   latin: "odakle si? / ste?"
@@ -199,6 +328,8 @@
   lesson: "01"
   pos: "phrase"
   tags: ["intro"]
+  example_sr: "Odakle si?"
+  example_ru: "Откуда ты?"
 - id: "iz-rusije"
   emoji: "🇷🇺"
   latin: "iz Rusije"
@@ -208,6 +339,8 @@
   lesson: "01"
   pos: "phrase"
   tags: ["intro"]
+  example_sr: "Ja sam iz Rusije, iz Moskve."
+  example_ru: "Я из России, из Москвы."
 - id: "zivim-u-novom-sadu"
   emoji: "🏙️"
   latin: "živim u Novom Sadu"
@@ -216,6 +349,8 @@
   lesson: "01"
   pos: "phrase"
   tags: ["intro"]
+  example_sr: "Živim u Novom Sadu već godinu dana."
+  example_ru: "Я живу в Нови-Саде уже год."
 - id: "radim-kao"
   emoji: "💼"
   latin: "radim kao…"
@@ -224,6 +359,8 @@
   lesson: "01"
   pos: "phrase"
   tags: ["intro"]
+  example_sr: "Radim kao programer."
+  example_ru: "Я работаю программистом."
 - id: "kako-si"
   emoji: "🙂"
   latin: "kako si? / ste?"
@@ -232,6 +369,8 @@
   lesson: "01"
   pos: "phrase"
   tags: ["intro"]
+  example_sr: "Kako si? Dugo se nismo videli!"
+  example_ru: "Как дела? Давно не виделись!"
 - id: "kako-ide"
   emoji: "🤷"
   latin: "kako ide?"
@@ -240,6 +379,8 @@
   lesson: "01"
   pos: "phrase"
   tags: ["intro"]
+  example_sr: "Kako ide posao ovih dana?"
+  example_ru: "Как продвигается работа в эти дни?"
 - id: "dobro-hvala"
   emoji: "👍"
   latin: "dobro, hvala"
@@ -248,6 +389,8 @@
   lesson: "01"
   pos: "phrase"
   tags: ["intro"]
+  example_sr: "Kako si? — Dobro, hvala."
+  example_ru: "Как дела? — Хорошо, спасибо."
 - id: "moze"
   emoji: "👌"
   latin: "može"
@@ -256,6 +399,8 @@
   lesson: "01"
   pos: "phrase"
   tags: ["intro"]
+  example_sr: "Može kafa za pola sata?"
+  example_ru: "Кофе через полчаса пойдёт?"
 - id: "ne-zalim-se"
   emoji: "😌"
   latin: "ne žalim se"
@@ -264,6 +409,8 @@
   lesson: "01"
   pos: "phrase"
   tags: ["intro"]
+  example_sr: "Kako si? — Ne žalim se."
+  example_ru: "Как дела? — Не жалуюсь."
 - id: "biti"
   emoji: "🟰"
   latin: "biti (jesam / sam / nisam)"
@@ -274,6 +421,8 @@
   pos: "verb"
   aspect: "nesv"
   tags: ["verbs", "irregular"]
+  example_sr: "Ja sam programer, a ona je doktorka."
+  example_ru: "Я программист, а она — врач."
 - id: "umoran"
   emoji: "😩"
   latin: "umoran"
@@ -283,6 +432,8 @@
   lesson: "01"
   pos: "adj"
   tags: ["adjectives"]
+  example_sr: "Veoma sam umoran posle posla."
+  example_ru: "Я очень устал после работы."
 
 # ---- Урок 02 — Zamenice i prezent ----
 
