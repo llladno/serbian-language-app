@@ -8,7 +8,7 @@ TEST_DATABASE_URL ?= postgres://localhost/srpski_test?sslmode=disable
 dev:
 	@echo "frontend: http://localhost:5173  (proxies /api to :8080)"
 	@( cd web && npm run dev ) & \
-	 $(GO) run ./server -addr :8080 ; \
+	 APP_BASE_URL=http://localhost:5173 $(GO) run ./server -addr :8080 ; \
 	 kill %1 2>/dev/null || true
 
 build:
