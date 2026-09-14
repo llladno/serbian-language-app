@@ -25,7 +25,10 @@ export function resolveGuard(to: RouteLocationNormalized, session: ReturnType<ty
   }
   if (name === 'verify') return true
   if (PUBLIC_AUTH_ROUTES.has(name)) return { path: '/profile' }
-  if (!session.user.email_verified) return { path: '/verify' }
+  // A Telegram-only account has no email at all, so email_verified is false
+  // by construction (nothing to verify) - only force the gate when there is
+  // an actual unverified email on the account, never merely "not true".
+  if (session.user.email && !session.user.email_verified) return { path: '/verify' }
   return true
 }
 

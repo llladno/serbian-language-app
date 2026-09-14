@@ -64,4 +64,15 @@ describe('resolveGuard', () => {
     session.user = verifiedUser()
     expect(resolveGuard(route('profile'), session)).toBe(true)
   })
+
+  it('lets a Telegram-only visitor (no email at all) through without forcing /verify', () => {
+    // A Telegram-only account has email: '' and email_verified: false by
+    // construction (there is no email to verify) - the gate must only fire
+    // for an account that actually HAS an unconfirmed email, never merely
+    // because email_verified isn't true. Regression: this account was being
+    // bounced to /verify and shown a confusing "enter your email" form.
+    const session = useSessionStore()
+    session.user = verifiedUser({ email: '', email_verified: false, telegram: { linked: true, username: 'g' } })
+    expect(resolveGuard(route('profile'), session)).toBe(true)
+  })
 })
