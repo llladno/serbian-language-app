@@ -15,6 +15,8 @@ import type {
   SessionUser,
   Me,
   Health,
+  TelegramStart,
+  TelegramPoll,
 } from './types'
 
 export class ApiError extends Error {
@@ -95,6 +97,8 @@ export const api = {
     request<SessionUser>('/auth/reset', { method: 'POST', body: JSON.stringify({ token, password }) }),
   telegramLogin: (payload: Record<string, unknown>) =>
     request<SessionUser>('/auth/telegram', { method: 'POST', body: JSON.stringify(payload) }),
+  telegramLoginStart: () => request<TelegramStart>('/auth/telegram/start', { method: 'POST' }),
+  telegramPoll: (token: string) => request<TelegramPoll>('/auth/telegram/poll?token=' + encodeURIComponent(token)),
 
   getMe: () => request<Me>('/me'),
   patchMe: (name: string) => request<SessionUser>('/me', { method: 'PATCH', body: JSON.stringify({ name }) }),
@@ -102,6 +106,7 @@ export const api = {
     request<{ status: string }>('/me/password', { method: 'POST', body: JSON.stringify(payload) }),
   linkTelegram: (payload: Record<string, unknown>) =>
     request<SessionUser>('/me/link/telegram', { method: 'POST', body: JSON.stringify(payload) }),
+  telegramLinkStart: () => request<TelegramStart>('/me/telegram/start', { method: 'POST' }),
   unlinkTelegram: () => request<void>('/me/telegram', { method: 'DELETE' }),
   deleteSession: (id: string) => request<void>(`/me/sessions/${id}`, { method: 'DELETE' }),
   deleteMe: (password?: string) =>

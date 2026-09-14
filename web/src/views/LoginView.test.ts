@@ -53,22 +53,49 @@ describe('LoginView', () => {
     expect(push).toHaveBeenCalledWith({ path: '/verify', query: { email: 'g@example.com' } })
   })
 
-  it('shows the Telegram button once health reports a bot id, and logs in on auth', async () => {
+  it('shows the Telegram button once health reports a bot id', async () => {
     vi.spyOn(api, 'health').mockResolvedValue({ status: 'ok', content_stale: false, telegram_bot_id: '42' })
-    vi.spyOn(api, 'telegramLogin').mockResolvedValue({
-      id: '1',
-      name: 'Г',
-      email: '',
-      email_verified: false,
-      telegram: { linked: true, username: 'g' },
-    })
     const w = mount(LoginView)
     await flushPromises()
-    const btn = w.findComponent({ name: 'TelegramLoginButton' })
-    expect(btn.exists()).toBe(true)
-    await btn.vm.$emit('auth', { id: 1 })
+    expect(w.text()).toContain('Войти через Telegram')
+  })
+
+  it('hides the Telegram button when health reports no bot id', async () => {
+    vi.spyOn(api, 'health').mockResolvedValue({ status: 'ok', content_stale: false, telegram_bot_id: '' })
+    const w = mount(LoginView)
     await flushPromises()
-    expect(api.telegramLogin).toHaveBeenCalledWith({ id: 1 })
+    expect(w.text()).not.toContain('Войти через Telegram')
+  })
+
+  it('opens the bot chat, polls, and logs in once the webhook resolves the token', async () => {
+    vi.useFakeTimers()
+    vi.spyOn(api, 'health').mockResolvedValue({ status: 'ok', content_stale: false, telegram_bot_id: '42' })
+    vi.spyOn(api, 'telegramLoginStart').mockResolvedValue({
+      url: 'https://t.me/ucimoappbot?start=tok123',
+      token: 'tok123',
+    })
+    const openSpy = vi.spyOn(window, 'open').mockReturnValue(null)
+    const poll = vi
+      .spyOn(api, 'telegramPoll')
+      .mockResolvedValueOnce({ status: 'pending' })
+      .mockResolvedValueOnce({
+        status: 'ok',
+        user: { id: '1', name: 'Г', email: '', email_verified: false, telegram: { linked: true, username: 'g' } },
+      })
+
+    const w = mount(LoginView)
+    await flushPromises()
+    await w.find('button.btn-ghost').trigger('click')
+    await flushPromises()
+    expect(openSpy).toHaveBeenCalledWith('https://t.me/ucimoappbot?start=tok123', '_blank')
+
+    await vi.advanceTimersByTimeAsync(1500)
+    expect(poll).toHaveBeenCalledTimes(1)
+    await vi.advanceTimersByTimeAsync(1500)
+    expect(poll).toHaveBeenCalledTimes(2)
+    await flushPromises()
+
     expect(push).toHaveBeenCalledWith('/profile')
+    vi.useRealTimers()
   })
 })

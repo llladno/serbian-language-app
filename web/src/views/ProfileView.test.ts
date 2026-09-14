@@ -108,6 +108,41 @@ describe('ProfileView', () => {
     expect(w.text()).toContain('Сессия истекла — войдите снова')
   })
 
+  it('links Telegram via the /start flow and refreshes the profile', async () => {
+    vi.useFakeTimers()
+    vi.spyOn(api, 'getMe')
+      .mockResolvedValueOnce(me({ telegram: { linked: false, username: '' } }))
+      .mockResolvedValueOnce(me({ telegram: { linked: true, username: 'newlink' } }))
+    vi.spyOn(api, 'progress').mockRejectedValue(new Error('n/a'))
+    vi.spyOn(api, 'telegramLinkStart').mockResolvedValue({
+      url: 'https://t.me/ucimoappbot?start=linktok',
+      token: 'linktok',
+    })
+    const openSpy = vi.spyOn(window, 'open').mockReturnValue(null)
+    const poll = vi
+      .spyOn(api, 'telegramPoll')
+      .mockResolvedValueOnce({ status: 'pending' })
+      .mockResolvedValueOnce({ status: 'ok' })
+
+    const w = mount(ProfileView)
+    await flushPromises()
+    expect(w.text()).toContain('привязать')
+
+    const linkBtn = w.findAll('button').find((b) => b.text() === 'привязать')
+    await linkBtn!.trigger('click')
+    await flushPromises()
+    expect(openSpy).toHaveBeenCalledWith('https://t.me/ucimoappbot?start=linktok', '_blank')
+
+    await vi.advanceTimersByTimeAsync(1500)
+    expect(poll).toHaveBeenCalledTimes(1)
+    await vi.advanceTimersByTimeAsync(1500)
+    await flushPromises()
+
+    expect(api.getMe).toHaveBeenCalledTimes(2) // initial load + refresh after link
+    expect(w.text()).toContain('newlink')
+    vi.useRealTimers()
+  })
+
   it('shows an error when resetting exercise progress fails', async () => {
     vi.spyOn(api, 'getMe').mockResolvedValue(me())
     vi.spyOn(api, 'progress').mockRejectedValue(new Error('n/a'))

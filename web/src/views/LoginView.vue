@@ -5,7 +5,8 @@ import AuthShell from './AuthShell.vue'
 import { useSessionStore } from '../stores/session'
 import { authErrorMessage, isEmailUnverified } from '../lib/authErrors'
 import { api } from '../api'
-import TelegramLoginButton from '../components/TelegramLoginButton.vue'
+import { useTelegramStart } from '../lib/telegramStart'
+import type { SessionUser } from '../types'
 
 const route = useRoute()
 const router = useRouter()
@@ -16,22 +17,21 @@ const password = ref('')
 const busy = ref(false)
 const error = ref<string | null>(null)
 
-const botId = ref('')
-api.health().then((h) => (botId.value = h.telegram_bot_id)).catch(() => {})
+const telegramEnabled = ref(false)
+api.health().then((h) => (telegramEnabled.value = !!h.telegram_bot_id)).catch(() => {})
+
+const tg = useTelegramStart('login')
 
 function goNext() {
   const next = typeof route.query.next === 'string' ? route.query.next : '/profile'
   router.push(next)
 }
 
-async function onTelegramAuth(payload: Record<string, unknown>) {
-  error.value = null
-  try {
-    session.user = await api.telegramLogin(payload)
+function loginViaTelegram() {
+  tg.start((user?: SessionUser) => {
+    if (user) session.user = user
     goNext()
-  } catch (e) {
-    error.value = authErrorMessage(e)
-  }
+  })
 }
 
 async function submit() {
@@ -69,7 +69,17 @@ async function submit() {
       <button class="btn btn-primary w-full" :disabled="busy">Войти</button>
     </form>
     <p v-if="error" class="mt-2 text-sm text-[var(--bad)]">{{ error }}</p>
-    <TelegramLoginButton v-if="botId" class="mt-3" :bot-id="botId" @auth="onTelegramAuth" />
+
+    <button
+      v-if="telegramEnabled"
+      type="button"
+      class="btn btn-ghost mt-3 w-full"
+      :disabled="tg.busy.value"
+      @click="loginViaTelegram"
+    >
+      {{ tg.busy.value ? 'Ждём подтверждения в Telegram…' : 'Войти через Telegram' }}
+    </button>
+    <p v-if="tg.error.value" class="mt-2 text-sm text-[var(--bad)]">{{ tg.error.value }}</p>
 
     <div class="mt-4 flex justify-between text-sm">
       <RouterLink to="/forgot" class="text-[var(--accent)]">забыли пароль?</RouterLink>

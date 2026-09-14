@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router'
 import { api } from '../api'
 import { useSessionStore } from '../stores/session'
 import { authErrorMessage } from '../lib/authErrors'
+import { useTelegramStart } from '../lib/telegramStart'
 import ProgressDashboard from '../components/ProgressDashboard.vue'
 import type { Me } from '../types'
 
@@ -83,6 +84,14 @@ async function submitPassword() {
   } finally {
     pwBusy.value = false
   }
+}
+
+// -- telegram --
+const tg = useTelegramStart('link')
+function linkTelegram() {
+  tg.start(() => {
+    loadMe()
+  })
 }
 
 // -- devices --
@@ -185,10 +194,15 @@ async function deleteAccount() {
         </span>
       </div>
 
-      <div class="flex items-center gap-2 text-sm">
-        <span class="text-[var(--muted)]">Telegram:</span>
-        <span v-if="me.telegram.linked">@{{ me.telegram.username || '—' }}</span>
-        <span v-else class="text-[var(--muted)]">не привязан</span>
+      <div>
+        <div class="flex items-center gap-2 text-sm">
+          <span class="text-[var(--muted)]">Telegram:</span>
+          <span v-if="me.telegram.linked">@{{ me.telegram.username || '—' }}</span>
+          <button v-else class="text-[var(--accent)]" :disabled="tg.busy.value" @click="linkTelegram">
+            {{ tg.busy.value ? 'ждём подтверждения в Telegram…' : 'привязать' }}
+          </button>
+        </div>
+        <p v-if="tg.error.value" class="mt-1 text-sm text-[var(--bad)]">{{ tg.error.value }}</p>
       </div>
 
       <div>

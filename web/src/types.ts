@@ -257,3 +257,13 @@ export interface Health {
   content_stale: boolean
   telegram_bot_id: string
 }
+
+export interface TelegramStart {
+  url: string
+  token: string
+}
+
+export type TelegramPoll =
+  | { status: 'pending' }
+  | { status: 'ok'; user?: SessionUser }
+  | { status: 'error'; error: string }
