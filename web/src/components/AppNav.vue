@@ -59,7 +59,7 @@ const themeIcon = computed(() => THEME_ICON[theme.value])
         </RouterLink>
       </nav>
 
-      <span class="serbian text-lg font-semibold sm:hidden">Српски</span>
+      <span class="serbian text-lg font-semibold sm:hidden">ucimo</span>
 
       <button
         class="ml-auto flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-[var(--muted)] transition hover:bg-[var(--bg-soft)] hover:text-[var(--fg)]"
