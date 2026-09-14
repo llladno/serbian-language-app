@@ -21,6 +21,8 @@ import (
 )
 
 func main() {
+	loadDotEnv(".env")
+
 	addr := flag.String("addr", ":8080", "listen address")
 	contentDir := flag.String("content", "./content", "content directory")
 	dbPath := flag.String("db", "./data/app.db", "SQLite path (used when DATABASE_URL is unset)")
