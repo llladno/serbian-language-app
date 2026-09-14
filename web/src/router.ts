@@ -1,5 +1,13 @@
 import { createRouter, createWebHistory, type RouteLocationNormalized } from 'vue-router'
 import { watch } from 'vue'
+
+declare module 'vue-router' {
+  interface RouteMeta {
+    // Wider main-content column (see App.vue) — for dashboard-like views
+    // that benefit from more horizontal space than the reading-width default.
+    wide?: boolean
+  }
+}
 import LoginView from './views/LoginView.vue'
 import RegisterView from './views/RegisterView.vue'
 import VerifyView from './views/VerifyView.vue'
@@ -60,7 +68,7 @@ const router = createRouter({
     { path: '/forgot', name: 'forgot', component: ForgotView },
     { path: '/reset', name: 'reset', component: ResetView },
     { path: '/', redirect: '/profile' },
-    { path: '/profile', name: 'profile', component: ProfileView },
+    { path: '/profile', name: 'profile', component: ProfileView, meta: { wide: true } },
     { path: '/course', name: 'course', component: CourseView },
     { path: '/lesson/:id', name: 'lesson', component: LessonView },
     { path: '/review', name: 'review', component: ReviewView },

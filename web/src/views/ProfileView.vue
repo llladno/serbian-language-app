@@ -1,11 +1,14 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { Settings, X } from 'lucide-vue-next'
 import { api } from '../api'
 import { useSessionStore } from '../stores/session'
 import { authErrorMessage } from '../lib/authErrors'
 import { useTelegramStart } from '../lib/telegramStart'
 import ProgressDashboard from '../components/ProgressDashboard.vue'
+import PhaseProgressCard from '../components/PhaseProgressCard.vue'
+import LeaderboardCard from '../components/LeaderboardCard.vue'
 import type { Me } from '../types'
 
 const router = useRouter()
@@ -24,6 +27,8 @@ async function loadMe() {
 onMounted(loadMe)
 
 const hasPassword = computed(() => !!me.value?.email)
+
+const showSettings = ref(false)
 
 // -- rename --
 const editingName = ref(false)
@@ -94,19 +99,6 @@ function linkTelegram() {
   })
 }
 
-// -- devices --
-const devicesError = ref<string | null>(null)
-async function revokeSession(id: string) {
-  if (!confirm('Выйти на этом устройстве?')) return
-  devicesError.value = null
-  try {
-    await api.deleteSession(id)
-    await loadMe()
-  } catch (e) {
-    devicesError.value = authErrorMessage(e)
-  }
-}
-
 const sessionActionError = ref<string | null>(null)
 async function logout() {
   sessionActionError.value = null
@@ -163,131 +155,181 @@ async function deleteAccount() {
   <div class="space-y-4">
     <p v-if="loadError" class="card p-4 text-[var(--bad)]">{{ loadError }}</p>
 
-    <div v-else-if="me" class="card space-y-4 p-5">
-      <div class="flex items-center justify-between gap-2">
-        <template v-if="!editingName">
+    <div v-else-if="me" class="grid grid-cols-1 items-start gap-4 lg:grid-cols-3">
+    <div class="space-y-4 lg:col-span-2 lg:order-1">
+      <ProgressDashboard v-if="me" />
+      <PhaseProgressCard />
+    </div>
+
+    <div class="space-y-4 lg:sticky lg:top-20 lg:order-2 lg:col-span-1">
+      <div class="card space-y-3 p-5">
+        <div class="flex items-center justify-between gap-2">
           <p class="text-xl font-extrabold">{{ me.name }}</p>
-          <button class="text-sm text-[var(--accent)]" @click="startEditName">изменить</button>
-        </template>
-        <form v-else class="flex flex-1 gap-2" @submit.prevent="saveName">
-          <input v-model="nameDraft" class="field flex-1" maxlength="40" autofocus />
-          <button class="btn btn-primary" :disabled="nameBusy">Сохранить</button>
-          <button type="button" class="btn btn-ghost" @click="editingName = false">Отмена</button>
-        </form>
-      </div>
-      <p v-if="nameError" class="text-sm text-[var(--bad)]">{{ nameError }}</p>
-
-      <div class="flex items-center gap-2 text-sm">
-        <span class="text-[var(--muted)]">Почта:</span>
-        <span v-if="me.email">{{ me.email }}</span>
-        <span v-else class="text-[var(--muted)]">не указана</span>
-        <span
-          v-if="me.email"
-          class="rounded-full px-2 py-0.5 text-xs font-semibold"
-          :style="
-            me.email_verified
-              ? { background: 'color-mix(in srgb, var(--good) 16%, transparent)', color: 'var(--good)' }
-              : { background: 'var(--bg-soft)', color: 'var(--muted)' }
-          "
-        >
-          {{ me.email_verified ? 'подтверждена' : 'не подтверждена' }}
-        </span>
-      </div>
-
-      <div>
-        <div class="flex items-center gap-2 text-sm">
-          <span class="text-[var(--muted)]">Telegram:</span>
-          <span v-if="me.telegram.linked">@{{ me.telegram.username || '—' }}</span>
-          <button v-else class="text-[var(--accent)]" :disabled="tg.busy.value" @click="linkTelegram">
-            {{ tg.busy.value ? 'ждём подтверждения в Telegram…' : 'привязать' }}
+          <button class="icon-btn shrink-0" title="Настройки" aria-label="Настройки" @click="showSettings = true">
+            <Settings :size="19" :stroke-width="2.25" />
           </button>
         </div>
-        <p v-if="tg.error.value" class="mt-1 text-sm text-[var(--bad)]">{{ tg.error.value }}</p>
-      </div>
 
-      <div>
-        <button v-if="!showPasswordForm" class="btn btn-ghost" @click="showPasswordForm = true">
-          {{ hasPassword ? 'Сменить пароль' : 'Задать пароль' }}
-        </button>
-        <form v-else class="mt-2 space-y-2" @submit.prevent="submitPassword">
-          <input
-            v-if="hasPassword"
-            v-model="currentPassword"
-            type="password"
-            class="field w-full"
-            placeholder="текущий пароль"
-          />
-          <input
-            v-if="!hasPassword"
-            v-model="pwEmail"
-            type="email"
-            class="field w-full"
-            placeholder="email для входа по паролю"
-          />
-          <input
-            v-model="newPassword"
-            type="password"
-            class="field w-full"
-            placeholder="новый пароль"
-            minlength="8"
-            maxlength="128"
-          />
-          <div class="flex gap-2">
-            <button class="btn btn-primary" :disabled="pwBusy">Сохранить</button>
-            <button type="button" class="btn btn-ghost" @click="showPasswordForm = false">Отмена</button>
+        <div class="space-y-1.5 text-sm">
+          <div class="flex items-center gap-2">
+            <span class="text-[var(--muted)]">Telegram:</span>
+            <span v-if="me.telegram.linked">@{{ me.telegram.username || '—' }}</span>
+            <span v-else class="text-[var(--muted)]">не привязан</span>
           </div>
-        </form>
-        <p v-if="pwError" class="mt-1 text-sm text-[var(--bad)]">{{ pwError }}</p>
-        <p v-if="pwStatus" class="mt-1 text-sm text-[var(--good)]">{{ pwStatus }}</p>
-      </div>
-
-      <div>
-        <p class="mb-2 text-sm font-bold">Устройства</p>
-        <ul class="space-y-1.5">
-          <li v-for="d in me.sessions" :key="d.id" class="flex items-center justify-between gap-2 text-sm">
-            <span class="min-w-0 truncate text-[var(--muted)]">
-              {{ d.user_agent || 'неизвестное устройство' }}
-              <span v-if="d.current" class="text-[var(--accent)]">— это устройство</span>
+          <div class="flex items-center gap-2">
+            <span class="text-[var(--muted)]">Почта:</span>
+            <span v-if="me.email">{{ me.email }}</span>
+            <span v-else class="text-[var(--muted)]">не указана</span>
+            <span
+              v-if="me.email"
+              class="rounded-full px-2 py-0.5 text-xs font-semibold"
+              :style="
+                me.email_verified
+                  ? { background: 'color-mix(in srgb, var(--good) 16%, transparent)', color: 'var(--good)' }
+                  : { background: 'var(--bg-soft)', color: 'var(--muted)' }
+              "
+            >
+              {{ me.email_verified ? 'подтверждена' : 'не подтверждена' }}
             </span>
-            <button class="shrink-0 text-xs text-[var(--bad)]" @click="revokeSession(d.id)">выйти</button>
-          </li>
-        </ul>
-        <p v-if="devicesError" class="mt-1 text-sm text-[var(--bad)]">{{ devicesError }}</p>
+          </div>
+        </div>
       </div>
 
-      <div class="flex flex-wrap gap-2 border-t border-[var(--border)] pt-3">
-        <button class="btn btn-ghost" @click="logout">Выйти</button>
-        <button class="btn btn-ghost" @click="logoutAll">Выйти везде</button>
-      </div>
-      <p v-if="sessionActionError" class="text-sm text-[var(--bad)]">{{ sessionActionError }}</p>
+      <LeaderboardCard :name="me.name" />
+    </div>
     </div>
 
-    <ProgressDashboard v-if="me" :name="me.name" />
-
-    <div v-if="me" class="card space-y-3 p-5">
-      <p class="font-bold text-[var(--bad)]">Опасная зона</p>
-      <button class="text-sm text-[var(--muted)] hover:text-[var(--bad)]" @click="resetExercises">
-        сбросить прогресс по заданиям
-      </button>
-      <p v-if="resetError" class="text-sm text-[var(--bad)]">{{ resetError }}</p>
-      <div class="space-y-2 border-t border-[var(--border)] pt-3">
-        <input
-          v-if="hasPassword"
-          v-model="deletePassword"
-          type="password"
-          class="field w-full"
-          placeholder="пароль для подтверждения"
-        />
-        <button
-          class="btn"
-          style="background: var(--bad); color: #fff"
-          :disabled="deleteBusy"
-          @click="deleteAccount"
+    <Teleport to="body">
+      <Transition name="modal-overlay">
+        <div
+          v-if="me && showSettings"
+          class="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto p-4 sm:items-center"
         >
-          Удалить аккаунт
-        </button>
-        <p v-if="deleteError" class="text-sm text-[var(--bad)]">{{ deleteError }}</p>
-      </div>
-    </div>
+        <div class="fixed inset-0 bg-black/40" @click="showSettings = false" />
+        <div class="card modal-panel relative z-10 w-full max-w-md space-y-4 p-5">
+          <div class="flex items-center justify-between">
+            <p class="text-lg font-extrabold">Настройки</p>
+            <button class="icon-btn" title="Закрыть" aria-label="Закрыть" @click="showSettings = false">
+              <X :size="19" :stroke-width="2.25" />
+            </button>
+          </div>
+
+          <div>
+            <div class="flex items-center justify-between gap-2">
+              <template v-if="!editingName">
+                <p class="font-semibold">{{ me.name }}</p>
+                <button class="text-sm text-[var(--accent)]" @click="startEditName">изменить имя</button>
+              </template>
+              <form v-else class="flex flex-1 gap-2" @submit.prevent="saveName">
+                <input v-model="nameDraft" class="field flex-1" maxlength="40" autofocus />
+                <button class="btn btn-primary" :disabled="nameBusy">Сохранить</button>
+                <button type="button" class="btn btn-ghost" @click="editingName = false">Отмена</button>
+              </form>
+            </div>
+            <p v-if="nameError" class="mt-1 text-sm text-[var(--bad)]">{{ nameError }}</p>
+          </div>
+
+          <div class="border-t border-[var(--border)] pt-3">
+            <div class="flex items-center gap-2 text-sm">
+              <span class="text-[var(--muted)]">Telegram:</span>
+              <span v-if="me.telegram.linked">@{{ me.telegram.username || '—' }}</span>
+              <button v-else class="text-[var(--accent)]" :disabled="tg.busy.value" @click="linkTelegram">
+                {{ tg.busy.value ? 'ждём подтверждения в Telegram…' : 'привязать' }}
+              </button>
+            </div>
+            <p v-if="tg.error.value" class="mt-1 text-sm text-[var(--bad)]">{{ tg.error.value }}</p>
+          </div>
+
+          <div class="border-t border-[var(--border)] pt-3">
+            <button v-if="!showPasswordForm" class="btn btn-ghost" @click="showPasswordForm = true">
+              {{ hasPassword ? 'Сменить пароль' : 'Задать пароль' }}
+            </button>
+            <form v-else class="mt-2 space-y-2" @submit.prevent="submitPassword">
+              <input
+                v-if="hasPassword"
+                v-model="currentPassword"
+                type="password"
+                class="field w-full"
+                placeholder="текущий пароль"
+              />
+              <input
+                v-if="!hasPassword"
+                v-model="pwEmail"
+                type="email"
+                class="field w-full"
+                placeholder="email для входа по паролю"
+              />
+              <input
+                v-model="newPassword"
+                type="password"
+                class="field w-full"
+                placeholder="новый пароль"
+                minlength="8"
+                maxlength="128"
+              />
+              <div class="flex gap-2">
+                <button class="btn btn-primary" :disabled="pwBusy">Сохранить</button>
+                <button type="button" class="btn btn-ghost" @click="showPasswordForm = false">Отмена</button>
+              </div>
+            </form>
+            <p v-if="pwError" class="mt-1 text-sm text-[var(--bad)]">{{ pwError }}</p>
+            <p v-if="pwStatus" class="mt-1 text-sm text-[var(--good)]">{{ pwStatus }}</p>
+          </div>
+
+          <div class="flex flex-wrap gap-2 border-t border-[var(--border)] pt-3">
+            <button class="btn btn-ghost" @click="logout">Выйти</button>
+            <button class="btn btn-ghost" @click="logoutAll">Выйти везде</button>
+          </div>
+          <p v-if="sessionActionError" class="text-sm text-[var(--bad)]">{{ sessionActionError }}</p>
+
+          <div class="space-y-3 border-t border-[var(--border)] pt-3">
+            <p class="font-bold text-[var(--bad)]">Опасная зона</p>
+            <button class="text-sm text-[var(--muted)] hover:text-[var(--bad)]" @click="resetExercises">
+              сбросить прогресс по заданиям
+            </button>
+            <p v-if="resetError" class="text-sm text-[var(--bad)]">{{ resetError }}</p>
+            <div class="space-y-2 border-t border-[var(--border)] pt-3">
+              <input
+                v-if="hasPassword"
+                v-model="deletePassword"
+                type="password"
+                class="field w-full"
+                placeholder="пароль для подтверждения"
+              />
+              <button
+                class="btn"
+                style="background: var(--bad); color: #fff"
+                :disabled="deleteBusy"
+                @click="deleteAccount"
+              >
+                Удалить аккаунт
+              </button>
+              <p v-if="deleteError" class="text-sm text-[var(--bad)]">{{ deleteError }}</p>
+            </div>
+          </div>
+        </div>
+        </div>
+      </Transition>
+    </Teleport>
   </div>
 </template>
+
+<style scoped>
+.modal-overlay-enter-active,
+.modal-overlay-leave-active {
+  transition: opacity 0.18s ease;
+}
+.modal-overlay-enter-from,
+.modal-overlay-leave-to {
+  opacity: 0;
+}
+.modal-overlay-enter-active .modal-panel,
+.modal-overlay-leave-active .modal-panel {
+  transition: transform 0.18s ease, opacity 0.18s ease;
+}
+.modal-overlay-enter-from .modal-panel,
+.modal-overlay-leave-to .modal-panel {
+  opacity: 0;
+  transform: scale(0.95) translateY(6px);
+}
+</style>

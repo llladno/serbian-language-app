@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { mount, flushPromises } from '@vue/test-utils'
+import { mount, flushPromises, type VueWrapper } from '@vue/test-utils'
 import { setActivePinia, createPinia } from 'pinia'
 import ProfileView from './ProfileView.vue'
 import { api, ApiError } from '../api'
@@ -24,6 +24,17 @@ function me(overrides: Partial<Me> = {}): Me {
   }
 }
 
+function mountProfile() {
+  // Teleport's real target (document.body) is outside the wrapper's DOM tree;
+  // stubbing it keeps the settings modal inline so it can be found/asserted on.
+  return mount(ProfileView, { global: { stubs: { teleport: true } } })
+}
+
+async function openSettings(w: VueWrapper) {
+  await w.find('[aria-label="Настройки"]').trigger('click')
+  await flushPromises()
+}
+
 beforeEach(() => setActivePinia(createPinia()))
 afterEach(() => vi.restoreAllMocks())
 
@@ -31,9 +42,10 @@ describe('ProfileView', () => {
   it('renders the account and offers to set a password for a Telegram-only account', async () => {
     vi.spyOn(api, 'getMe').mockResolvedValue(me())
     vi.spyOn(api, 'progress').mockRejectedValue(new Error('n/a')) // ProgressDashboard's own fetch; irrelevant here
-    const w = mount(ProfileView)
+    const w = mountProfile()
     await flushPromises()
     expect(w.text()).toContain('Гриша')
+    await openSettings(w)
     expect(w.text()).toContain('Задать пароль')
   })
 
@@ -47,9 +59,11 @@ describe('ProfileView', () => {
       email_verified: false,
       telegram: { linked: true, username: 'llladnooo' },
     })
-    const w = mount(ProfileView)
+    const w = mountProfile()
     await flushPromises()
-    await w.find('button').trigger('click') // "изменить"
+    await openSettings(w)
+    const renameBtn = w.findAll('button').find((b) => b.text() === 'изменить имя')
+    await renameBtn!.trigger('click')
     await w.find('input.field').setValue('Новое имя')
     await w.find('form').trigger('submit.prevent')
     await flushPromises()
@@ -57,41 +71,18 @@ describe('ProfileView', () => {
     expect(w.text()).toContain('Новое имя')
   })
 
-  it('revokes a device session', async () => {
-    vi.spyOn(api, 'getMe').mockResolvedValue(me())
-    vi.spyOn(api, 'progress').mockRejectedValue(new Error('n/a'))
-    const del = vi.spyOn(api, 'deleteSession').mockResolvedValue(undefined)
-    const w = mount(ProfileView)
-    await flushPromises()
-    const revoke = w.findAll('button').find((b) => b.text() === 'выйти')
-    await revoke!.trigger('click')
-    await flushPromises()
-    expect(del).toHaveBeenCalledWith('abc123456789')
-  })
-
   it('deletes the account and clears the session', async () => {
     vi.spyOn(api, 'getMe').mockResolvedValue(me({ email: 'g@example.com', email_verified: true }))
     vi.spyOn(api, 'progress').mockRejectedValue(new Error('n/a'))
     const del = vi.spyOn(api, 'deleteMe').mockResolvedValue(undefined)
-    const w = mount(ProfileView)
+    const w = mountProfile()
     await flushPromises()
+    await openSettings(w)
     await w.find('input[placeholder="пароль для подтверждения"]').setValue('secret123')
     const buttons = w.findAll('button')
     await buttons[buttons.length - 1].trigger('click')
     await flushPromises()
     expect(del).toHaveBeenCalledWith('secret123')
-  })
-
-  it('shows an error when revoking a session fails', async () => {
-    vi.spyOn(api, 'getMe').mockResolvedValue(me())
-    vi.spyOn(api, 'progress').mockRejectedValue(new Error('n/a'))
-    vi.spyOn(api, 'deleteSession').mockRejectedValue(new ApiError(400, 'no session'))
-    const w = mount(ProfileView)
-    await flushPromises()
-    const revoke = w.findAll('button').find((b) => b.text() === 'выйти')
-    await revoke!.trigger('click')
-    await flushPromises()
-    expect(w.text()).toContain('Сессия истекла — войдите снова')
   })
 
   it('shows an error when logout fails', async () => {
@@ -100,8 +91,9 @@ describe('ProfileView', () => {
     // ProfileView calls session.logout() (the store method), not api.logout() directly.
     const session = useSessionStore()
     vi.spyOn(session, 'logout').mockRejectedValue(new ApiError(400, 'no session'))
-    const w = mount(ProfileView)
+    const w = mountProfile()
     await flushPromises()
+    await openSettings(w)
     const logoutBtn = w.findAll('button').find((b) => b.text() === 'Выйти')
     await logoutBtn!.trigger('click')
     await flushPromises()
@@ -124,8 +116,9 @@ describe('ProfileView', () => {
       .mockResolvedValueOnce({ status: 'pending' })
       .mockResolvedValueOnce({ status: 'ok' })
 
-    const w = mount(ProfileView)
+    const w = mountProfile()
     await flushPromises()
+    await openSettings(w)
     expect(w.text()).toContain('привязать')
 
     const linkBtn = w.findAll('button').find((b) => b.text() === 'привязать')
@@ -147,8 +140,9 @@ describe('ProfileView', () => {
     vi.spyOn(api, 'getMe').mockResolvedValue(me())
     vi.spyOn(api, 'progress').mockRejectedValue(new Error('n/a'))
     vi.spyOn(api, 'resetExercises').mockRejectedValue(new ApiError(400, 'internal error'))
-    const w = mount(ProfileView)
+    const w = mountProfile()
     await flushPromises()
+    await openSettings(w)
     const resetBtn = w.findAll('button').find((b) => b.text().includes('сбросить прогресс'))
     await resetBtn!.trigger('click')
     await flushPromises()
