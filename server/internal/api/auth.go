@@ -884,7 +884,7 @@ func (h handlers) telegramWebhook(w http.ResponseWriter, r *http.Request) {
 		userID, err := h.resolveTelegramLogin(u)
 		if err != nil {
 			log.Printf("telegram webhook: resolve login: %v", err)
-			h.TelegramPending.Fail(token, "internal_error")
+			h.TelegramPending.Fail(token, "internal error")
 			h.SendTelegramMessage(chatID, "Что-то пошло не так, попробуйте войти ещё раз с сайта.")
 			return
 		}
@@ -900,7 +900,7 @@ func (h handlers) telegramWebhook(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		log.Printf("telegram webhook: resolve link: %v", err)
-		h.TelegramPending.Fail(token, "internal_error")
+		h.TelegramPending.Fail(token, "internal error")
 		h.SendTelegramMessage(chatID, "Что-то пошло не так, попробуйте ещё раз с сайта.")
 		return
 	}
