@@ -2,7 +2,7 @@
 import { onMounted, ref } from 'vue'
 
 const pieces = ref<{ x: number; delay: number; rot: number; color: string; dur: number }[]>([])
-const COLORS = ['#d6457d', '#f472b6', '#f9a8d4', '#fbbf24', '#8b6ff0', '#34d399']
+const COLORS = ['#176B68', '#5CB3AD', '#8CCBC6', '#E3B04B', '#2E9B4F', '#F5F7F3']
 
 onMounted(() => {
   pieces.value = Array.from({ length: 90 }, () => ({

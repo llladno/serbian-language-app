@@ -62,18 +62,20 @@ type exerciseYAML struct {
 }
 
 type vocabFile []struct {
-	ID       string   `yaml:"id"`
-	Latin    string   `yaml:"latin"`
-	Cyrillic string   `yaml:"cyrillic"`
-	RU       string   `yaml:"ru"`
-	Note     string   `yaml:"note"`
-	Lesson   string   `yaml:"lesson"`
-	POS      string   `yaml:"pos"`
-	Gender   string   `yaml:"gender"`
-	Aspect   string   `yaml:"aspect"`
-	Tags     []string `yaml:"tags"`
-	Emoji    string   `yaml:"emoji"`
-	Image    string   `yaml:"image"`
+	ID        string   `yaml:"id"`
+	Latin     string   `yaml:"latin"`
+	Cyrillic  string   `yaml:"cyrillic"`
+	RU        string   `yaml:"ru"`
+	Note      string   `yaml:"note"`
+	Lesson    string   `yaml:"lesson"`
+	POS       string   `yaml:"pos"`
+	Gender    string   `yaml:"gender"`
+	Aspect    string   `yaml:"aspect"`
+	Tags      []string `yaml:"tags"`
+	Emoji     string   `yaml:"emoji"`
+	Image     string   `yaml:"image"`
+	ExampleSR string   `yaml:"example_sr"`
+	ExampleRU string   `yaml:"example_ru"`
 }
 
 type falseFriendFile []struct {
@@ -259,6 +261,7 @@ func Load(dir string) (*Course, error) {
 			ID: v.ID, Latin: v.Latin, Cyrillic: v.Cyrillic, RU: v.RU, Note: v.Note,
 			Lesson: v.Lesson, POS: v.POS, Gender: v.Gender, Aspect: v.Aspect, Tags: v.Tags,
 			Emoji: v.Emoji, Image: v.Image, Audio: audio,
+			ExampleSR: v.ExampleSR, ExampleRU: v.ExampleRU,
 		})
 	}
 

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
+import { RefreshCw } from 'lucide-vue-next'
 import { api } from '../../api'
 import type { CheckResult, LessonAttempt } from '../../types'
 import SerbianKeys from '../SerbianKeys.vue'
@@ -48,12 +49,21 @@ function retry() {
 </script>
 
 <template>
-  <div class="card p-3.5">
-    <div v-if="type === 'listen'" class="mb-3 flex items-center gap-3">
+  <div class="card relative p-3.5">
+    <button
+      v-if="fromPrior || result"
+      class="icon-btn absolute right-2.5 top-2.5"
+      title="Переделать"
+      @click="retry"
+    >
+      <RefreshCw :size="15" :stroke-width="2.25" />
+    </button>
+
+    <div v-if="type === 'listen'" class="mb-3 flex items-center gap-3 pr-8">
       <SpeakButton :src="audio" :size="44" />
       <span class="text-sm text-[var(--muted)]">{{ prompt || 'Напиши, что слышишь' }}</span>
     </div>
-    <p v-else class="mb-2 whitespace-pre-wrap">
+    <p v-else class="mb-2 whitespace-pre-wrap pr-8">
       <GlossedText v-if="glossPrompt" :text="prompt" />
       <template v-else>{{ prompt }}</template>
     </p>
@@ -65,7 +75,6 @@ function retry() {
         <span>{{ prior!.correct ? 'Отвечено верно' : 'Был ответ с ошибкой' }}</span>
       </p>
       <p class="text-[var(--muted)]">ты писал: <span class="serbian text-[var(--fg)]">{{ prior!.answer }}</span></p>
-      <button class="mt-1.5 font-medium text-[var(--accent)]" @click="retry">Переделать</button>
     </div>
 
     <form v-else-if="!result" @submit.prevent="submit">
@@ -101,7 +110,6 @@ function retry() {
         Правильно: <span class="serbian font-semibold">{{ result.expected }}</span>
       </p>
       <p v-if="result.explain" class="mt-1 text-sm text-[var(--muted)]">{{ result.explain }}</p>
-      <button class="mt-2 text-sm font-medium text-[var(--accent)]" @click="retry">Ещё раз</button>
     </div>
   </div>
 </template>

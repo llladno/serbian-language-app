@@ -147,6 +147,8 @@ export interface Vocab {
   emoji?: string
   image?: string
   audio?: string
+  example_sr?: string
+  example_ru?: string
 }
 
 export interface FalseFriend {
@@ -171,6 +173,11 @@ export interface ReviewCard {
   emoji?: string
   image?: string
   audio?: string
+  example_sr?: string
+  example_ru?: string
+  // 4 shuffled candidate translations (one of them === back), sent only for
+  // a first-encounter ("new") card — see ReviewView's recognition quiz.
+  options?: string[]
   preview: Record<'again' | 'hard' | 'good' | 'easy', number>
 }
 

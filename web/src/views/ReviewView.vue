@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { storeToRefs } from 'pinia'
+import { CircleQuestionMark } from 'lucide-vue-next'
 import { useReviewStore } from '../stores/review'
 import WordMedia from '../components/WordMedia.vue'
 import SpeakButton from '../components/SpeakButton.vue'
@@ -8,14 +9,19 @@ import SpeakButton from '../components/SpeakButton.vue'
 const store = useReviewStore()
 const { current, remaining, total, sessionCount, tally, loading, error } = storeToRefs(store)
 const revealed = ref(false)
+const showHelp = ref(false)
+
+// Quiz state for a first-encounter ("new") card: null until the learner
+// taps an option, then holds the picked text so the UI can highlight it.
+const quizPicked = ref<string | null>(null)
 
 onMounted(() => store.load())
 
 const GRADES = [
   { g: 0, label: 'Опять', key: 'again', cls: 'bg-[var(--bad)]' },
-  { g: 1, label: 'Трудно', key: 'hard', cls: 'bg-[#e08a1e]' },
+  { g: 1, label: 'Трудно', key: 'hard', cls: 'bg-[var(--warning)]' },
   { g: 2, label: 'Хорошо', key: 'good', cls: 'bg-[var(--good)]' },
-  { g: 3, label: 'Легко', key: 'easy', cls: 'bg-[#8b6ff0]' },
+  { g: 3, label: 'Легко', key: 'easy', cls: 'bg-[var(--info)]' },
 ]
 
 function fmtInterval(days: number) {
@@ -27,17 +33,40 @@ function fmtInterval(days: number) {
 }
 
 const done = computed(() => total.value > 0 && !current.value)
+const isQuiz = computed(() => current.value?.state === 'new' && !!current.value?.options?.length)
 const progressPct = computed(() =>
   total.value ? Math.round((sessionCount.value / total.value) * 100) : 0,
 )
 
+// Reset local reveal/quiz state BEFORE the store advances to the next card
+// (store.grade awaits a network round-trip, so the ref flip must happen
+// first — otherwise the next card briefly mounts with the previous card's
+// "revealed" state still true, flashing its answer during the pop-in
+// animation).
 async function grade(g: number) {
-  await store.grade(g)
   revealed.value = false
+  await store.grade(g)
+}
+
+function pickOption(opt: string) {
+  if (quizPicked.value || !current.value) return
+  quizPicked.value = opt
+}
+
+// Same ordering discipline as grade(): resolve correctness and reset local
+// state before the store advances the queue, so the next card never mounts
+// with this card's picked/correct highlighting still showing.
+async function confirmQuiz() {
+  const card = current.value
+  const picked = quizPicked.value
+  if (!card || !picked) return
+  const ok = picked === card.back
+  quizPicked.value = null
+  await store.grade(ok ? 2 : 0)
 }
 
 function onKey(e: KeyboardEvent) {
-  if (!current.value) return
+  if (!current.value || isQuiz.value) return
   if (e.code === 'Space' || e.code === 'Enter') {
     e.preventDefault()
     if (!revealed.value) revealed.value = true
@@ -50,6 +79,31 @@ onUnmounted(() => window.removeEventListener('keydown', onKey))
 </script>
 
 <template>
+  <div class="mb-4 flex items-center justify-between">
+    <h1 class="text-2xl font-extrabold">Слова</h1>
+    <div class="relative">
+      <button class="icon-btn" title="Как это работает" @click="showHelp = !showHelp">
+        <CircleQuestionMark :size="19" :stroke-width="2.25" />
+      </button>
+      <template v-if="showHelp">
+        <div class="fixed inset-0 z-10" @click="showHelp = false" />
+        <div class="card absolute right-0 top-9 z-20 w-72 p-3.5 text-sm leading-relaxed text-[var(--muted)]">
+          <p class="mb-1.5 font-semibold text-[var(--fg)]">Как это работает</p>
+          <p>
+            Новые слова открываются по одному, по порядку уроков — следующее
+            появится только после того, как текущее отвечено на «Хорошо» или
+            «Легко».
+          </p>
+          <p class="mt-1.5">
+            Первое знакомство со словом — тест на 4 варианта перевода. Дальше
+            слово уходит в обычное повторение: интервал до следующего показа
+            растёт при верных ответах и сбрасывается при «Опять».
+          </p>
+        </div>
+      </template>
+    </div>
+  </div>
+
   <p v-if="loading" class="text-[var(--muted)]">Загрузка…</p>
   <p v-else-if="error" class="card p-4 text-[var(--bad)]">{{ error }}</p>
 
@@ -85,40 +139,84 @@ onUnmounted(() => window.removeEventListener('keydown', onKey))
     </div>
     <p class="text-center text-xs text-[var(--muted)]">осталось {{ remaining }}</p>
 
-    <div
-      class="card flex min-h-[13rem] cursor-pointer flex-col items-center justify-center p-8 text-center pop"
-      :key="current.card_id"
-      @click="revealed = true"
-    >
-      <p v-if="current.kind === 'ff'" class="mb-2 text-[10px] uppercase tracking-widest text-[var(--accent)]">ложный друг</p>
+    <!-- first encounter: pick 1 of 4 translations to learn the word -->
+    <div v-if="isQuiz" class="card flex min-h-[13rem] flex-col items-center p-8 text-center pop" :key="current.card_id">
+      <p class="mb-2 text-[10px] uppercase tracking-widest text-[var(--accent)]">новое слово</p>
       <div class="flex items-center gap-2">
         <p class="serbian text-4xl font-semibold">{{ current.front }}</p>
         <SpeakButton :src="current.audio" :size="36" />
       </div>
       <p v-if="current.cyrillic" class="mt-1 text-sm text-[var(--muted)]">{{ current.cyrillic }}</p>
 
+      <div class="mt-5 grid w-full max-w-sm grid-cols-1 gap-2 sm:grid-cols-2">
+        <button
+          v-for="opt in current.options"
+          :key="opt"
+          class="btn btn-ghost justify-center"
+          :class="{
+            'ring-2 ring-[var(--good)]': quizPicked && opt === current.back,
+            'ring-2 ring-[var(--bad)]': quizPicked && opt === quizPicked && opt !== current.back,
+          }"
+          :disabled="!!quizPicked"
+          @click="pickOption(opt)"
+        >
+          {{ opt }}
+        </button>
+      </div>
+
       <Transition name="fade">
-        <div v-if="revealed" class="mt-4 flex flex-col items-center border-t border-[var(--border)] pt-4">
-          <WordMedia :image="current.image" :emoji="current.emoji" :alt="current.back" :size="112" />
-          <p class="mt-3 text-xl">{{ current.back }}</p>
-          <p v-if="current.note" class="mt-1 text-sm text-[var(--muted)]">{{ current.note }}</p>
+        <div v-if="quizPicked" class="mt-4 flex flex-col items-center border-t border-[var(--border)] pt-4">
+          <WordMedia :image="current.image" :emoji="current.emoji" :alt="current.back" :size="96" />
+          <p class="mt-2 font-semibold" :class="quizPicked === current.back ? 'text-[var(--good)]' : 'text-[var(--bad)]'">
+            {{ quizPicked === current.back ? '✓ Верно' : '✗ Не то — правильно: ' + current.back }}
+          </p>
+          <p v-if="current.example_sr" class="serbian mt-2 text-[var(--fg)]">{{ current.example_sr }}</p>
+          <p v-if="current.example_ru" class="text-sm text-[var(--muted)]">{{ current.example_ru }}</p>
         </div>
       </Transition>
-      <p v-if="!revealed" class="mt-5 text-xs text-[var(--muted)]">нажми или пробел</p>
+      <p v-if="!quizPicked" class="mt-5 text-xs text-[var(--muted)]">выбери перевод</p>
+      <button v-else class="btn btn-primary mt-4 w-full max-w-sm" @click="confirmQuiz">Дальше</button>
     </div>
 
-    <div v-if="revealed" class="grid grid-cols-4 gap-2 pop">
-      <button
-        v-for="b in GRADES"
-        :key="b.g"
-        class="flex flex-col items-center rounded-xl py-2 text-white transition active:scale-95"
-        :class="b.cls"
-        @click="grade(b.g)"
+    <!-- already-known card: flip and self-grade -->
+    <template v-else>
+      <div
+        class="card flex min-h-[13rem] cursor-pointer flex-col items-center justify-center p-8 text-center pop"
+        :key="current.card_id"
+        @click="revealed = true"
       >
-        <span class="text-sm font-semibold">{{ b.label }}</span>
-        <span class="text-[11px] opacity-80">{{ fmtInterval(current.preview[b.key as 'again']) }}</span>
-      </button>
-    </div>
-    <button v-else class="btn btn-primary w-full" @click="revealed = true">Показать</button>
+        <p v-if="current.kind === 'ff'" class="mb-2 text-[10px] uppercase tracking-widest text-[var(--accent)]">ложный друг</p>
+        <div class="flex items-center gap-2">
+          <p class="serbian text-4xl font-semibold">{{ current.front }}</p>
+          <SpeakButton :src="current.audio" :size="36" />
+        </div>
+        <p v-if="current.cyrillic" class="mt-1 text-sm text-[var(--muted)]">{{ current.cyrillic }}</p>
+
+        <Transition name="fade">
+          <div v-if="revealed" class="mt-4 flex flex-col items-center border-t border-[var(--border)] pt-4">
+            <WordMedia :image="current.image" :emoji="current.emoji" :alt="current.back" :size="112" />
+            <p class="mt-3 text-xl">{{ current.back }}</p>
+            <p v-if="current.note" class="mt-1 text-sm text-[var(--muted)]">{{ current.note }}</p>
+            <p v-if="current.example_sr" class="serbian mt-2.5 text-[var(--fg)]">{{ current.example_sr }}</p>
+            <p v-if="current.example_ru" class="text-sm text-[var(--muted)]">{{ current.example_ru }}</p>
+          </div>
+        </Transition>
+        <p v-if="!revealed" class="mt-5 text-xs text-[var(--muted)]">нажми или пробел</p>
+      </div>
+
+      <div v-if="revealed" class="grid grid-cols-4 gap-2 pop">
+        <button
+          v-for="b in GRADES"
+          :key="b.g"
+          class="flex flex-col items-center rounded-xl py-2 text-white transition active:scale-95"
+          :class="b.cls"
+          @click="grade(b.g)"
+        >
+          <span class="text-sm font-semibold">{{ b.label }}</span>
+          <span class="text-[11px] opacity-80">{{ fmtInterval(current.preview[b.key as 'again']) }}</span>
+        </button>
+      </div>
+      <button v-else class="btn btn-primary w-full" @click="revealed = true">Показать</button>
+    </template>
   </div>
 </template>

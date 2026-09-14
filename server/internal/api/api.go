@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
+	"math/rand"
 	"net/http"
 	"sort"
 	"strings"
@@ -577,6 +578,7 @@ func (h handlers) getVocab(w http.ResponseWriter, r *http.Request) {
 			ID: v.ID, Latin: v.Latin, Cyrillic: v.Cyrillic, RU: v.RU, Note: v.Note,
 			Lesson: v.Lesson, POS: v.POS, Gender: v.Gender, Aspect: v.Aspect, Tags: v.Tags,
 			Emoji: v.Emoji, Image: v.Image, Audio: v.Audio,
+			ExampleSR: v.ExampleSR, ExampleRU: v.ExampleRU,
 		})
 	}
 	writeJSON(w, 200, out)
@@ -602,6 +604,10 @@ func (h handlers) getFalseFriends(w http.ResponseWriter, r *http.Request) {
 }
 
 const (
+	// newPerDay caps new false-friend cards per queue fetch, and (loosely,
+	// for the profile dashboard's "new available" stat) new cards overall.
+	// Vocab words are no longer drawn by count — see nextNewVocabCardID —
+	// they're gated one at a time, in lesson order.
 	newPerDay = 15
 	dailyGoal = 20 // reviews + attempts that count as "a day done"
 )
@@ -618,6 +624,70 @@ func (h handlers) cardSeeds() []store.CardSeed {
 	return seeds
 }
 
+// orderedVocab returns the course vocabulary sorted by lesson ("01", "02", …
+// — zero-padded, so lexical order is numeric order) so word introduction can
+// follow course order instead of file order. Ties (same lesson) keep their
+// original relative order (stable sort).
+func orderedVocab(vocab []content.Vocab) []content.Vocab {
+	out := make([]content.Vocab, len(vocab))
+	copy(out, vocab)
+	sort.SliceStable(out, func(i, j int) bool { return out[i].Lesson < out[j].Lesson })
+	return out
+}
+
+// beginnerWordCount is how many vocab words make up the "just the basics"
+// on-ramp: while the learner has passed fewer than this many, every new-card
+// slot goes to vocab (in lesson order) and false friends are held back
+// entirely, so a brand-new learner's first sessions are nothing but plain
+// lesson-one words — not a random hard false friend like "trudna"
+// (беременная) sitting next to "zdravo".
+const beginnerWordCount = 15
+
+// nextNewVocabCardIDs walks the course vocabulary in lesson order and
+// returns up to limit card ids the learner hasn't yet "passed" (graded Good
+// or Easy at least once) — always the *earliest* unpassed ones, so a harder
+// word from a later lesson never jumps ahead of one the learner hasn't
+// remembered yet, even though (unlike a single-word gate) several can be
+// introduced in the same session. A word already graded Again/Hard (state
+// moved to "learning") is due for review through the normal due-queue
+// instead, not reintroduced here.
+func nextNewVocabCardIDs(vocab []content.Vocab, passed map[string]bool, limit int) []string {
+	out := make([]string, 0, limit)
+	for _, v := range orderedVocab(vocab) {
+		if len(out) >= limit {
+			break
+		}
+		id := "vocab:" + v.ID
+		if !passed[id] {
+			out = append(out, id)
+		}
+	}
+	return out
+}
+
+// buildOptions returns 4 shuffled candidate answers for a first-encounter
+// recognition quiz: the correct one plus up to 3 distinct distractors drawn
+// from the other items' Back text (of the same kind — vocab translations
+// aren't mixed with false-friend ones).
+func buildOptions(correct string, pool []string) []string {
+	distractors := make([]string, 0, len(pool))
+	seen := map[string]bool{correct: true}
+	for _, p := range pool {
+		if seen[p] {
+			continue
+		}
+		seen[p] = true
+		distractors = append(distractors, p)
+	}
+	rand.Shuffle(len(distractors), func(i, j int) { distractors[i], distractors[j] = distractors[j], distractors[i] })
+	if len(distractors) > 3 {
+		distractors = distractors[:3]
+	}
+	out := append([]string{correct}, distractors...)
+	rand.Shuffle(len(out), func(i, j int) { out[i], out[j] = out[j], out[i] })
+	return out
+}
+
 func (h handlers) reviewQueue(w http.ResponseWriter, r *http.Request) {
 	us, ok := h.user(w, r)
 	if !ok {
@@ -627,19 +697,46 @@ func (h handlers) reviewQueue(w http.ResponseWriter, r *http.Request) {
 		fail(w, 500, err.Error())
 		return
 	}
-	rows, err := us.DueQueue(h.Now(), newPerDay)
+	c := h.Course()
+
+	passedVocab, err := us.PassedCardIDs("vocab:")
 	if err != nil {
 		fail(w, 500, err.Error())
 		return
 	}
-	c := h.Course()
+	// Split the newPerDay budget between vocab and false friends. Below
+	// beginnerWordCount passed words, vocab gets the whole budget (in
+	// lesson order) and false friends are held back entirely — a pure
+	// "just the basics" on-ramp. Past that, vocab keeps half the budget
+	// (still lesson-ordered, so a later lesson still can't leapfrog an
+	// earlier one) and false friends fill the rest — back to the usual mix.
+	vocabBudget := newPerDay
+	beginner := len(passedVocab) < beginnerWordCount
+	if !beginner {
+		vocabBudget = newPerDay / 2
+	}
+	allowedNewVocab := nextNewVocabCardIDs(c.Vocab, passedVocab, vocabBudget)
+
+	ffNewLimit := 0
+	if !beginner {
+		ffNewLimit = newPerDay - len(allowedNewVocab)
+	}
+	rows, err := us.DueQueue(h.Now(), allowedNewVocab, ffNewLimit)
+	if err != nil {
+		fail(w, 500, err.Error())
+		return
+	}
 	vocab := map[string]content.Vocab{}
+	vocabBacks := make([]string, 0, len(c.Vocab))
 	for _, v := range c.Vocab {
 		vocab[v.ID] = v
+		vocabBacks = append(vocabBacks, v.RU)
 	}
 	ff := map[string]content.FalseFriend{}
+	ffBacks := make([]string, 0, len(c.FalseFriends))
 	for _, f := range c.FalseFriends {
 		ff[f.ID] = f
+		ffBacks = append(ffBacks, f.Means)
 	}
 
 	now := h.Now()
@@ -658,6 +755,10 @@ func (h handlers) reviewQueue(w http.ResponseWriter, r *http.Request) {
 			}
 			d.Front, d.Cyrillic, d.Back, d.Note = v.Latin, v.Cyrillic, v.RU, v.Note
 			d.Emoji, d.Image, d.Audio = v.Emoji, v.Image, v.Audio
+			d.ExampleSR, d.ExampleRU = v.ExampleSR, v.ExampleRU
+			if row.State == srs.New {
+				d.Options = buildOptions(v.RU, vocabBacks)
+			}
 		case "ff":
 			f, ok := ff[row.RefID]
 			if !ok {
@@ -676,6 +777,9 @@ func (h handlers) reviewQueue(w http.ResponseWriter, r *http.Request) {
 				note += "верно: " + f.Correct
 			}
 			d.Note = note
+			if row.State == srs.New {
+				d.Options = buildOptions(f.Means, ffBacks)
+			}
 		}
 		out = append(out, d)
 	}

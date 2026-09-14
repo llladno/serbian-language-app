@@ -590,8 +590,13 @@ func scanCard(row interface {
 
 const cardCols = `card_id, kind, ref_id, ease, interval_days, reps, lapses, state, due`
 
-// DueQueue returns due learning/review cards plus up to newLimit new cards.
-func (u *UserStore) DueQueue(today time.Time, newLimit int) ([]CardRow, error) {
+// DueQueue returns due learning/review cards, plus the vocab cards the
+// caller has decided are next in line (in the given order — the gated,
+// lesson-ordered "new word" introduction lives in the api layer, see
+// orderedVocab/PassedCardIDs, since it needs course content, not just
+// stored state), plus up to ffNewLimit new false-friend cards (picked at
+// random: false friends carry no lesson order to gate on).
+func (u *UserStore) DueQueue(today time.Time, allowedNewVocabIDs []string, ffNewLimit int) ([]CardRow, error) {
 	todayStr := today.Format(dateFmt)
 	var out []CardRow
 
@@ -611,9 +616,40 @@ func (u *UserStore) DueQueue(today time.Time, newLimit int) ([]CardRow, error) {
 	}
 	rows.Close()
 
-	if newLimit > 0 {
+	if len(allowedNewVocabIDs) > 0 {
+		placeholders := strings.TrimSuffix(strings.Repeat("?,", len(allowedNewVocabIDs)), ",")
+		args := make([]any, 0, len(allowedNewVocabIDs)+1)
+		args = append(args, u.user)
+		for _, id := range allowedNewVocabIDs {
+			args = append(args, id)
+		}
+		vrows, err := u.db.Query(`SELECT `+cardCols+` FROM srs_cards
+			WHERE user_id = ? AND card_id IN (`+placeholders+`) AND state = 'new'`, args...)
+		if err != nil {
+			return nil, err
+		}
+		byID := map[string]CardRow{}
+		for vrows.Next() {
+			c, err := scanCard(vrows)
+			if err != nil {
+				vrows.Close()
+				return nil, err
+			}
+			byID[c.CardID] = c
+		}
+		vrows.Close()
+		// Preserve the caller's lesson order, not whatever order SQLite
+		// returns IN(...) matches in.
+		for _, id := range allowedNewVocabIDs {
+			if c, ok := byID[id]; ok {
+				out = append(out, c)
+			}
+		}
+	}
+
+	if ffNewLimit > 0 {
 		nrows, err := u.db.Query(`SELECT `+cardCols+` FROM srs_cards
-			WHERE user_id = ? AND state = 'new' ORDER BY RANDOM() LIMIT ?`, u.user, newLimit)
+			WHERE user_id = ? AND kind = 'ff' AND state = 'new' ORDER BY RANDOM() LIMIT ?`, u.user, ffNewLimit)
 		if err != nil {
 			return nil, err
 		}
@@ -627,6 +663,27 @@ func (u *UserStore) DueQueue(today time.Time, newLimit int) ([]CardRow, error) {
 		}
 	}
 	return out, nil
+}
+
+// PassedCardIDs returns the set of card ids (with the given prefix, e.g.
+// "vocab:") the learner has graded Good or Easy at least once — the signal
+// that a word has actually been remembered, not just attempted.
+func (u *UserStore) PassedCardIDs(prefix string) (map[string]bool, error) {
+	rows, err := u.db.Query(`SELECT DISTINCT card_id FROM reviews
+		WHERE user_id = ? AND grade IN (2, 3) AND card_id LIKE ?`, u.user, prefix+"%")
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	out := map[string]bool{}
+	for rows.Next() {
+		var id string
+		if err := rows.Scan(&id); err != nil {
+			return nil, err
+		}
+		out[id] = true
+	}
+	return out, rows.Err()
 }
 
 // GradeCard applies srs.Schedule to the card, persists it, and logs a review.

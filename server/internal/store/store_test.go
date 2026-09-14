@@ -234,18 +234,18 @@ func TestDueQueueLimitsNewAndOrdersOverdueFirst(t *testing.T) {
 	if _, err := u.db.Exec(`UPDATE srs_cards SET state='review', interval_days=3, due='2026-09-01' WHERE card_id='vocab:a'`); err != nil {
 		t.Fatal(err)
 	}
-	q, err := u.DueQueue(day0, 1)
+	q, err := u.DueQueue(day0, []string{"vocab:b"}, 0)
 	if err != nil {
 		t.Fatal(err)
 	}
 	if len(q) != 2 {
-		t.Fatalf("queue len = %d, want 2 (1 overdue + 1 new)", len(q))
+		t.Fatalf("queue len = %d, want 2 (1 overdue + 1 allowed new)", len(q))
 	}
 	if q[0].CardID != "vocab:a" {
 		t.Errorf("first card = %s, want overdue vocab:a", q[0].CardID)
 	}
-	if q[1].State != srs.New {
-		t.Errorf("second card state = %s, want new", q[1].State)
+	if q[1].CardID != "vocab:b" || q[1].State != srs.New {
+		t.Errorf("second card = %+v, want new vocab:b (not vocab:c)", q[1])
 	}
 }
 
@@ -261,7 +261,7 @@ func TestActivateCardMovesNewCardToLearningDueToday(t *testing.T) {
 	if !activated {
 		t.Fatal("want activated=true for a fresh card")
 	}
-	q, _ := u.DueQueue(day0, 0) // no new cards, only due learning/review
+	q, _ := u.DueQueue(day0, nil, 0) // no new cards, only due learning/review
 	if len(q) != 1 || q[0].CardID != "vocab:zdravo" || q[0].State != srs.Learning {
 		t.Fatalf("due queue = %+v", q)
 	}
@@ -280,7 +280,7 @@ func TestActivateCardLeavesStartedCardAlone(t *testing.T) {
 	if activated {
 		t.Error("want activated=false for a card already in review")
 	}
-	q, _ := u.DueQueue(day0, 0)
+	q, _ := u.DueQueue(day0, nil, 0)
 	if len(q) != 0 {
 		t.Errorf("review card pulled forward: %+v", q)
 	}
@@ -303,7 +303,7 @@ func TestGradeCardPersistsAndLogsReview(t *testing.T) {
 	if n != 1 {
 		t.Errorf("reviewed today = %d, want 1", n)
 	}
-	q, _ := u.DueQueue(day0, 0)
+	q, _ := u.DueQueue(day0, nil, 0)
 	if len(q) != 0 {
 		t.Errorf("expected empty due queue, got %d", len(q))
 	}

@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ---- soft-pink palette ---------------------------------------------------
+/* ---- ucimo deep-teal palette ---------------------------------------------
    :root            = light (default)
    prefers-dark + not forced-light  -> dark
    [data-theme=dark]                -> dark (manual)
@@ -10,51 +10,60 @@
 ------------------------------------------------------------------------- */
 :root {
   color-scheme: light;
-  --bg: #fdf4f7;
-  --bg-soft: #f9e7ee;
-  --fg: #40222f;
-  --muted: #9c7c89;
-  --card: #fffbfd;
-  --border: #f3dde6;
-  --accent: #d6457d;
-  --accent-soft: #fce7ef;
-  --good: #15803d;
-  --bad: #e11d48;
-  --ring-track: #f0dbe4;
-  --shadow: 0 1px 2px rgba(64, 34, 47, 0.05), 0 6px 20px rgba(214, 69, 125, 0.08);
+  --bg: #f7f9f7;
+  --bg-soft: #ecf7f5;
+  --fg: #172326;
+  --muted: #687477;
+  --card: #ffffff;
+  --border: #cfe0dc;
+  --accent: #176b68;
+  --accent-soft: #d8eeeb;
+  --good: #2e9b4f;
+  --bad: #d95555;
+  --warning: #db7b2b;
+  --info: #4287a8;
+  --gold: #e3b04b;
+  --ring-track: #b8dfdb;
+  --shadow: 0 1px 2px rgba(11, 63, 61, 0.05), 0 6px 20px rgba(23, 107, 104, 0.08);
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) {
     color-scheme: dark;
-    --bg: #1b131a;
-    --bg-soft: #241a22;
-    --fg: #f1e2ea;
-    --muted: #ab8b99;
-    --card: #261b23;
-    --border: #3e2b37;
-    --accent: #f472b6;
-    --accent-soft: #3a2030;
-    --good: #4ade80;
-    --bad: #fb7185;
-    --ring-track: #3e2b37;
+    --bg: #0f1b1a;
+    --bg-soft: #16221f;
+    --fg: #e7f2f0;
+    --muted: #8fa6a3;
+    --card: #1c2b29;
+    --border: #3a4c47;
+    --accent: #5cb3ad;
+    --accent-soft: #1e3230;
+    --good: #4cbe72;
+    --bad: #f0777a;
+    --warning: #e2954f;
+    --info: #6fb0d1;
+    --gold: #e8bc63;
+    --ring-track: #34443f;
     --shadow: 0 1px 2px rgba(0, 0, 0, 0.35), 0 8px 24px rgba(0, 0, 0, 0.4);
   }
 }
 
 :root[data-theme='dark'] {
   color-scheme: dark;
-  --bg: #1b131a;
-  --bg-soft: #241a22;
-  --fg: #f1e2ea;
-  --muted: #ab8b99;
-  --card: #261b23;
-  --border: #3e2b37;
-  --accent: #f472b6;
-  --accent-soft: #3a2030;
-  --good: #4ade80;
-  --bad: #fb7185;
-  --ring-track: #3e2b37;
+  --bg: #0f1b1a;
+  --bg-soft: #16221f;
+  --fg: #e7f2f0;
+  --muted: #8fa6a3;
+  --card: #1c2b29;
+  --border: #3a4c47;
+  --accent: #5cb3ad;
+  --accent-soft: #1e3230;
+  --good: #4cbe72;
+  --bad: #f0777a;
+  --warning: #e2954f;
+  --info: #6fb0d1;
+  --gold: #e8bc63;
+  --ring-track: #34443f;
   --shadow: 0 1px 2px rgba(0, 0, 0, 0.35), 0 8px 24px rgba(0, 0, 0, 0.4);
 }
 
@@ -87,8 +96,19 @@ body {
     color: #fff;
   }
   .btn-ghost {
+    background: var(--bg-soft);
     border: 1px solid var(--border);
     color: var(--fg);
+  }
+  .btn-ghost:not(:disabled):hover {
+    border-color: var(--accent);
+  }
+  .icon-btn {
+    @apply flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[var(--muted)] transition;
+  }
+  .icon-btn:hover {
+    background: var(--accent-soft);
+    color: var(--accent);
   }
   .field {
     background: transparent;

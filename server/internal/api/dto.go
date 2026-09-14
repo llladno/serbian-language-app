@@ -141,19 +141,21 @@ type meDTO struct {
 // ---- vocab / false friends ----
 
 type vocabDTO struct {
-	ID       string   `json:"id"`
-	Latin    string   `json:"latin"`
-	Cyrillic string   `json:"cyrillic"`
-	RU       string   `json:"ru"`
-	Note     string   `json:"note,omitempty"`
-	Lesson   string   `json:"lesson,omitempty"`
-	POS      string   `json:"pos,omitempty"`
-	Gender   string   `json:"gender,omitempty"`
-	Aspect   string   `json:"aspect,omitempty"`
-	Tags     []string `json:"tags,omitempty"`
-	Emoji    string   `json:"emoji,omitempty"`
-	Image    string   `json:"image,omitempty"`
-	Audio    string   `json:"audio,omitempty"`
+	ID        string   `json:"id"`
+	Latin     string   `json:"latin"`
+	Cyrillic  string   `json:"cyrillic"`
+	RU        string   `json:"ru"`
+	Note      string   `json:"note,omitempty"`
+	Lesson    string   `json:"lesson,omitempty"`
+	POS       string   `json:"pos,omitempty"`
+	Gender    string   `json:"gender,omitempty"`
+	Aspect    string   `json:"aspect,omitempty"`
+	Tags      []string `json:"tags,omitempty"`
+	Emoji     string   `json:"emoji,omitempty"`
+	Image     string   `json:"image,omitempty"`
+	Audio     string   `json:"audio,omitempty"`
+	ExampleSR string   `json:"example_sr,omitempty"`
+	ExampleRU string   `json:"example_ru,omitempty"`
 }
 
 type falseFriendDTO struct {
@@ -170,17 +172,23 @@ type falseFriendDTO struct {
 // ---- review ----
 
 type reviewCardDTO struct {
-	CardID   string         `json:"card_id"`
-	Kind     string         `json:"kind"` // vocab | ff
-	Front    string         `json:"front"`
-	Cyrillic string         `json:"cyrillic,omitempty"`
-	Back     string         `json:"back"`
-	Note     string         `json:"note,omitempty"`
-	State    string         `json:"state"`
-	Emoji    string         `json:"emoji,omitempty"`
-	Image    string         `json:"image,omitempty"`
-	Audio    string         `json:"audio,omitempty"`
-	Preview  map[string]int `json:"preview"` // grade name -> next interval in days
+	CardID    string         `json:"card_id"`
+	Kind      string         `json:"kind"` // vocab | ff
+	Front     string         `json:"front"`
+	Cyrillic  string         `json:"cyrillic,omitempty"`
+	Back      string         `json:"back"`
+	Note      string         `json:"note,omitempty"`
+	State     string         `json:"state"`
+	Emoji     string         `json:"emoji,omitempty"`
+	Image     string         `json:"image,omitempty"`
+	Audio     string         `json:"audio,omitempty"`
+	ExampleSR string         `json:"example_sr,omitempty"`
+	ExampleRU string         `json:"example_ru,omitempty"`
+	// Options carries 4 shuffled candidate translations (Back values, one of
+	// them correct) for a first-encounter recognition quiz. Only set for
+	// state == "new" — an already-started card uses the plain flip+grade UI.
+	Options []string       `json:"options,omitempty"`
+	Preview map[string]int `json:"preview"` // grade name -> next interval in days
 }
 
 type gradeResultDTO struct {

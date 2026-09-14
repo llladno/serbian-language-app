@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
+import { RefreshCw } from 'lucide-vue-next'
 import { api } from '../../api'
 import type { CheckResult, LessonAttempt } from '../../types'
 import AppSelect from '../AppSelect.vue'
@@ -42,14 +43,22 @@ function retry() {
 </script>
 
 <template>
-  <div class="card p-3.5">
-    <p class="mb-2.5 whitespace-pre-wrap">{{ prompt }}</p>
+  <div class="card relative p-3.5">
+    <button
+      v-if="fromPrior || result"
+      class="icon-btn absolute right-2.5 top-2.5"
+      title="Переделать"
+      @click="retry"
+    >
+      <RefreshCw :size="15" :stroke-width="2.25" />
+    </button>
+
+    <p class="mb-2.5 whitespace-pre-wrap pr-8">{{ prompt }}</p>
 
     <div v-if="fromPrior" class="text-sm">
       <p class="mb-1 font-semibold" :class="prior!.correct ? 'text-[var(--good)]' : 'text-[var(--bad)]'">
         {{ prior!.correct ? '✓ Отвечено верно' : '✗ Был неверный ответ' }}
       </p>
-      <button class="mt-1 font-medium text-[var(--accent)]" @click="retry">Переделать</button>
     </div>
 
     <template v-else>
@@ -76,7 +85,6 @@ function retry() {
         <p class="font-semibold" :class="result.ok ? 'text-[var(--good)]' : 'text-[var(--bad)]'">
           {{ result.ok ? '✓ Верно' : '✗ Есть ошибки' }}
         </p>
-        <button class="mt-1 font-medium text-[var(--accent)]" @click="retry">Ещё раз</button>
       </div>
     </template>
   </div>

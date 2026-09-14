@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import { RefreshCw } from 'lucide-vue-next'
 import { api } from '../../api'
 import type { CheckResult, LessonAttempt } from '../../types'
 import SerbianKeys from '../SerbianKeys.vue'
@@ -41,8 +42,17 @@ function retry() {
 </script>
 
 <template>
-  <div class="card p-3.5">
-    <p class="mb-2.5">
+  <div class="card relative p-3.5">
+    <button
+      v-if="fromPrior || result"
+      class="icon-btn absolute right-2.5 top-2.5"
+      title="Переделать"
+      @click="retry"
+    >
+      <RefreshCw :size="15" :stroke-width="2.25" />
+    </button>
+
+    <p class="mb-2.5 pr-8">
       <span class="serbian font-semibold">{{ prompt }}</span>
       <span v-if="meta" class="ml-2 rounded bg-[var(--bg-soft)] px-1.5 py-0.5 text-xs text-[var(--muted)]">{{ meta }}</span>
     </p>
@@ -52,7 +62,6 @@ function retry() {
         {{ prior!.correct ? '✓ Отвечено верно' : '✗ Был ответ с ошибкой' }}
       </p>
       <p class="serbian text-[var(--muted)]">{{ answers.filter(Boolean).join(', ') }}</p>
-      <button class="mt-1.5 font-medium text-[var(--accent)]" @click="retry">Переделать</button>
     </div>
 
     <form v-else class="grid grid-cols-1 gap-2 sm:grid-cols-2" @submit.prevent="submit">
@@ -92,7 +101,6 @@ function retry() {
       <p v-for="(r, i) in result.forms" :key="i" v-show="!r.ok" class="text-[var(--muted)]">
         {{ forms[i] }} → <span class="serbian font-semibold text-[var(--fg)]">{{ r.expected }}</span>
       </p>
-      <button class="mt-1 font-medium text-[var(--accent)]" @click="retry">Ещё раз</button>
     </div>
   </div>
 </template>

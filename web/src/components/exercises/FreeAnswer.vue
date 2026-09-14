@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import { RefreshCw } from 'lucide-vue-next'
 import { api } from '../../api'
 import type { LessonAttempt } from '../../types'
 import SerbianKeys from '../SerbianKeys.vue'
@@ -37,8 +38,17 @@ function retry() {
 </script>
 
 <template>
-  <div class="card p-3.5">
-    <p class="mb-2 whitespace-pre-wrap">{{ prompt }}</p>
+  <div class="card relative p-3.5">
+    <button
+      v-if="fromPrior"
+      class="icon-btn absolute right-2.5 top-2.5"
+      title="Переделать"
+      @click="retry"
+    >
+      <RefreshCw :size="15" :stroke-width="2.25" />
+    </button>
+
+    <p class="mb-2 whitespace-pre-wrap pr-8">{{ prompt }}</p>
 
     <div v-if="fromPrior" class="text-sm">
       <p class="mb-1 font-semibold" :class="prior!.correct ? 'text-[var(--good)]' : 'text-[var(--bad)]'">
@@ -47,7 +57,6 @@ function retry() {
       <p v-if="prior!.answer" class="text-[var(--muted)]">
         твой вариант: <span class="serbian text-[var(--fg)]">{{ prior!.answer }}</span>
       </p>
-      <button class="mt-1.5 font-medium text-[var(--accent)]" @click="retry">Переделать</button>
     </div>
 
     <template v-else>

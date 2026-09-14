@@ -29,7 +29,7 @@ export function initData(): string {
 }
 
 function bgColor() {
-  return getComputedStyle(document.documentElement).getPropertyValue('--bg').trim() || '#fdf4f7'
+  return getComputedStyle(document.documentElement).getPropertyValue('--bg').trim() || '#f7f9f7'
 }
 
 export function initTelegram() {
