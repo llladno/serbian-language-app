@@ -12,11 +12,13 @@ import (
 	"time"
 
 	"github.com/grisha/serbian-app/server/internal/api"
+	"github.com/grisha/serbian-app/server/internal/auth"
 	"github.com/grisha/serbian-app/server/internal/config"
 	"github.com/grisha/serbian-app/server/internal/content"
 	"github.com/grisha/serbian-app/server/internal/mail"
 	"github.com/grisha/serbian-app/server/internal/ratelimit"
 	"github.com/grisha/serbian-app/server/internal/store"
+	"github.com/grisha/serbian-app/server/internal/telegram"
 	"github.com/grisha/serbian-app/server/web"
 )
 
@@ -64,6 +66,43 @@ func main() {
 
 	cfg := config.Load()
 
+	// Bot /start login/link needs the bot's own @username (not derivable from
+	// the token — see Config.TelegramBotID, which only gives the numeric id)
+	// and a registered webhook, both fetched from the Bot API once here. A
+	// failure disables just this one login path (telegram_disabled), the same
+	// as an unset TELEGRAM_BOT_TOKEN — never fatal, the way an unreachable
+	// SMTP server doesn't stop the process either.
+	var telegramBotUsername, telegramWebhookSecret string
+	switch {
+	case !cfg.TelegramEnabled():
+		// disabled entirely — nothing to do
+	case !strings.HasPrefix(cfg.AppBaseURL, "https://"):
+		log.Printf("telegram: APP_BASE_URL is not https (%s) — webhook needs a public https URL, bot /start login disabled", cfg.AppBaseURL)
+	default:
+		username, err := telegram.GetMe(cfg.TelegramBotToken)
+		if err != nil {
+			log.Printf("telegram: getMe: %v", err)
+			break
+		}
+		secret, _, err := auth.NewToken()
+		if err != nil {
+			log.Printf("telegram: generate webhook secret: %v", err)
+			break
+		}
+		webhookURL := cfg.AppBaseURL + "/api/telegram/webhook"
+		if err := telegram.SetWebhook(cfg.TelegramBotToken, webhookURL, secret); err != nil {
+			log.Printf("telegram: setWebhook: %v", err)
+			break
+		}
+		telegramBotUsername = username
+		telegramWebhookSecret = secret
+	}
+	sendTelegramMessage := func(chatID int64, text string) {
+		if err := telegram.SendMessage(cfg.TelegramBotToken, chatID, text); err != nil {
+			log.Printf("telegram: send message: %v", err)
+		}
+	}
+
 	var mailer mail.Mailer
 	if cfg.SMTPEnabled() {
 		mailer = mail.NewSMTPMailer(cfg.SMTP)
@@ -103,17 +142,20 @@ func main() {
 
 	mux := http.NewServeMux()
 	mux.Handle("/api/", api.Handler(api.Deps{
-		Course:     getCourse,
-		Store:      st,
-		Now:        time.Now,
-		Stale:      stale,
-		Config:     cfg,
-		SendMail:   sendMail,
-		Async:      async,
-		Login:      login,
-		LoginEmail: loginEmail,
-		Slow:       slow,
-		Fails:      fails,
+		Course:                getCourse,
+		Store:                 st,
+		Now:                   time.Now,
+		Stale:                 stale,
+		Config:                cfg,
+		SendMail:              sendMail,
+		Async:                 async,
+		Login:                 login,
+		LoginEmail:            loginEmail,
+		Slow:                  slow,
+		Fails:                 fails,
+		TelegramBotUsername:   telegramBotUsername,
+		TelegramWebhookSecret: telegramWebhookSecret,
+		SendTelegramMessage:   sendTelegramMessage,
 	}))
 	imgDir := filepath.Join(*contentDir, "images")
 	mux.Handle("/img/", cacheControl(http.StripPrefix("/img/", http.FileServer(http.Dir(imgDir)))))

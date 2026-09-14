@@ -7,7 +7,6 @@ import (
 	"log"
 	"net/http"
 	netmail "net/mail"
-	"strconv"
 	"strings"
 	"time"
 
@@ -229,11 +228,10 @@ func (h handlers) changePassword(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// linkTelegram handles POST /api/me/link/telegram. It verifies the payload the
-// same way telegramLogin does (via verifyTelegramPayload), then attaches the
-// telegram id to the CALLING account rather than logging in as whoever already
-// owns it: already-linked-to-me is a no-op 200, linked to someone else is a
-// 409, and unlinked creates the identity.
+// linkTelegram handles POST /api/me/link/telegram (Mini App initData). It
+// verifies the payload the same way telegramLogin does, then resolves via the
+// shared resolveTelegramLink (already-linked-to-me is a no-op, linked to
+// someone else is a 409, unlinked creates the identity).
 func (h handlers) linkTelegram(w http.ResponseWriter, r *http.Request) {
 	if !h.Config.TelegramEnabled() {
 		fail(w, http.StatusServiceUnavailable, "telegram_disabled")
@@ -254,29 +252,13 @@ func (h handlers) linkTelegram(w http.ResponseWriter, r *http.Request) {
 		fail(w, http.StatusUnauthorized, "bad_telegram_auth")
 		return
 	}
-	tgID := strconv.FormatInt(u.ID, 10)
 
-	existing, err := h.Store.IdentityByProviderUID("telegram", tgID)
-	switch {
-	case err == nil && existing.UserID == ac.UserID:
-		// Already linked to this same account — nothing to do.
-	case err == nil:
-		fail(w, http.StatusConflict, "telegram_taken")
-		return
-	case errors.Is(err, sql.ErrNoRows):
-		if err := h.Store.CreateIdentity(store.Identity{
-			ID:          auth.NewIdentityID(),
-			UserID:      ac.UserID,
-			Provider:    "telegram",
-			ProviderUID: tgID,
-			TgUsername:  u.Username,
-		}); err != nil {
-			log.Printf("link telegram: create identity: %v", err)
-			fail(w, http.StatusInternalServerError, "internal error")
+	if err := h.resolveTelegramLink(ac.UserID, u); err != nil {
+		if errors.Is(err, errTelegramTaken) {
+			fail(w, http.StatusConflict, "telegram_taken")
 			return
 		}
-	default:
-		log.Printf("link telegram: lookup identity: %v", err)
+		log.Printf("link telegram: %v", err)
 		fail(w, http.StatusInternalServerError, "internal error")
 		return
 	}
@@ -288,6 +270,19 @@ func (h handlers) linkTelegram(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	writeJSON(w, http.StatusOK, summaryToDTO(ac.UserID, sum))
+}
+
+// telegramLinkStart handles POST /api/me/telegram/start (requireSession). It
+// generates a /start deep-link token bound to the caller's own account, so
+// the webhook resolves it via resolveTelegramLink rather than logging in as a
+// new/different account.
+func (h handlers) telegramLinkStart(w http.ResponseWriter, r *http.Request) {
+	ac, ok := authFrom(r)
+	if !ok {
+		fail(w, http.StatusUnauthorized, "no session")
+		return
+	}
+	h.telegramStartFor(w, ac.UserID)
 }
 
 // unlinkTelegram handles DELETE /api/me/telegram. Refuses to remove the

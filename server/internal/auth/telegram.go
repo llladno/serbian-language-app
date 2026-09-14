@@ -77,41 +77,6 @@ func VerifyInitData(initData, botToken string, now time.Time, maxAge time.Durati
 	}, nil
 }
 
-// VerifyWidget verifies Telegram Login Widget params. The check string has the
-// same shape as VerifyInitData, but the secret is SHA256(botToken) and the
-// identity comes from flat id/username/first_name fields.
-func VerifyWidget(params map[string]string, botToken string, now time.Time, maxAge time.Duration) (TelegramUser, error) {
-	sum := sha256.Sum256([]byte(botToken))
-	if err := verifyHash(params, sum[:]); err != nil {
-		return TelegramUser{}, err
-	}
-
-	var id int64
-	if raw, ok := params["id"]; ok {
-		n, err := strconv.ParseInt(raw, 10, 64)
-		if err != nil {
-			return TelegramUser{}, ErrMalformed
-		}
-		id = n
-	} else {
-		return TelegramUser{}, ErrMalformed
-	}
-	if id == 0 {
-		return TelegramUser{}, ErrMalformed
-	}
-
-	authDate, err := parseAuthDate(params, now, maxAge)
-	if err != nil {
-		return TelegramUser{}, err
-	}
-	return TelegramUser{
-		ID:        id,
-		Username:  params["username"],
-		FirstName: params["first_name"],
-		AuthDate:  authDate,
-	}, nil
-}
-
 // checkHash recomputes the Telegram data-check hash over fields (every key
 // except "hash") with secret and reports whether it matches. The returned hash
 // is the raw value from fields, empty when absent.

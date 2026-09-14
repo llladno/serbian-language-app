@@ -52,23 +52,6 @@ func signInitData(fields map[string]string, botToken string) string {
 	return q.Encode()
 }
 
-// signWidget builds a valid Login Widget param map, computing hash with
-// secret = SHA256(botToken).
-func signWidget(fields map[string]string, botToken string) map[string]string {
-	sum := sha256.Sum256([]byte(botToken))
-
-	h := hmac.New(sha256.New, sum[:])
-	h.Write([]byte(checkString(fields)))
-	sig := hex.EncodeToString(h.Sum(nil))
-
-	out := make(map[string]string, len(fields)+1)
-	for k, v := range fields {
-		out[k] = v
-	}
-	out["hash"] = sig
-	return out
-}
-
 // flipHex returns a different valid hex digit, so a mutated hash stays
 // well-formed hex and the failure is a mismatch, not a parse error.
 func flipHex(c byte) byte {
@@ -153,46 +136,6 @@ func TestVerifyInitDataMalformed(t *testing.T) {
 	initData := signInitData(bad, testBotToken)
 	if _, err := VerifyInitData(initData, testBotToken, now, 24*time.Hour); err != ErrMalformed {
 		t.Fatalf("broken user JSON: want ErrMalformed, got %v", err)
-	}
-}
-
-func TestVerifyWidgetValid(t *testing.T) {
-	now := time.Unix(1_700_000_000, 0)
-	authDate := now.Add(-time.Minute)
-	fields := map[string]string{
-		"id":         "42",
-		"first_name": "Grisha",
-		"username":   "grisha",
-		"auth_date":  strconv.FormatInt(authDate.Unix(), 10),
-	}
-	params := signWidget(fields, testBotToken)
-
-	u, err := VerifyWidget(params, testBotToken, now, 24*time.Hour)
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	if u.ID != 42 || u.Username != "grisha" || u.FirstName != "Grisha" {
-		t.Fatalf("bad TelegramUser: %+v", u)
-	}
-	if !u.AuthDate.Equal(time.Unix(authDate.Unix(), 0)) {
-		t.Fatalf("bad AuthDate: got %v want %v", u.AuthDate, authDate)
-	}
-}
-
-func TestVerifyWidgetBadHash(t *testing.T) {
-	now := time.Unix(1_700_000_000, 0)
-	fields := map[string]string{
-		"id":        "42",
-		"username":  "grisha",
-		"auth_date": strconv.FormatInt(now.Unix(), 10),
-	}
-	params := signWidget(fields, testBotToken)
-	h := []byte(params["hash"])
-	h[0] = flipHex(h[0])
-	params["hash"] = string(h)
-
-	if _, err := VerifyWidget(params, testBotToken, now, 24*time.Hour); err != ErrBadHash {
-		t.Fatalf("want ErrBadHash, got %v", err)
 	}
 }
 
@@ -309,42 +252,4 @@ func mutateHash(t *testing.T, initData string) string {
 	h[0] = flipHex(h[0])
 	values.Set("hash", string(h))
 	return values.Encode()
-}
-
-// TestVerifyWidgetMalformed covers the negative paths of the widget surface.
-func TestVerifyWidgetMalformed(t *testing.T) {
-	now := time.Unix(1_700_000_000, 0)
-	authDate := strconv.FormatInt(now.Add(-time.Minute).Unix(), 10)
-
-	t.Run("non-numeric id", func(t *testing.T) {
-		params := signWidget(map[string]string{"id": "abc", "auth_date": authDate}, testBotToken)
-		if _, err := VerifyWidget(params, testBotToken, now, 24*time.Hour); err != ErrMalformed {
-			t.Fatalf("want ErrMalformed, got %v", err)
-		}
-	})
-	t.Run("id 0", func(t *testing.T) {
-		params := signWidget(map[string]string{"id": "0", "auth_date": authDate}, testBotToken)
-		if _, err := VerifyWidget(params, testBotToken, now, 24*time.Hour); err != ErrMalformed {
-			t.Fatalf("want ErrMalformed, got %v", err)
-		}
-	})
-	t.Run("id missing", func(t *testing.T) {
-		params := signWidget(map[string]string{"auth_date": authDate}, testBotToken)
-		if _, err := VerifyWidget(params, testBotToken, now, 24*time.Hour); err != ErrMalformed {
-			t.Fatalf("want ErrMalformed, got %v", err)
-		}
-	})
-	t.Run("missing auth_date", func(t *testing.T) {
-		params := signWidget(map[string]string{"id": "42", "username": "grisha"}, testBotToken)
-		if _, err := VerifyWidget(params, testBotToken, now, 24*time.Hour); err != ErrMalformed {
-			t.Fatalf("want ErrMalformed, got %v", err)
-		}
-	})
-	t.Run("non-hex hash", func(t *testing.T) {
-		params := signWidget(map[string]string{"id": "42", "auth_date": authDate}, testBotToken)
-		params["hash"] = "zzzz" + params["hash"][4:]
-		if _, err := VerifyWidget(params, testBotToken, now, 24*time.Hour); err != ErrMalformed {
-			t.Fatalf("want ErrMalformed, got %v", err)
-		}
-	})
 }

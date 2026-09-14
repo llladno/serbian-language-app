@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"io"
 	"log"
-	"math"
 	"net"
 	"net/http"
 	netmail "net/mail"
@@ -19,6 +18,7 @@ import (
 	"github.com/grisha/serbian-app/server/internal/auth"
 	"github.com/grisha/serbian-app/server/internal/mail"
 	"github.com/grisha/serbian-app/server/internal/store"
+	"github.com/grisha/serbian-app/server/internal/telegram"
 )
 
 // This file holds the /api/auth/* handlers: register / login / logout /
@@ -583,72 +583,137 @@ func (h handlers) resetPassword(w http.ResponseWriter, r *http.Request) {
 // rejected as stale. Telegram's own guidance for Mini Apps is 24h.
 const telegramMaxAge = 24 * time.Hour
 
-// verifyTelegramPayload verifies a raw Telegram auth request body — either a
-// Mini App envelope ({"init_data": "<query string>"}) or a flat Login Widget
-// object {id, first_name, username, auth_date, hash} — and returns the
-// authenticated Telegram user. The presence of a non-empty string "init_data"
-// selects the Mini App path. Shared by telegramLogin (sign-in) and
-// linkTelegram (linking an existing account to a Telegram id); the bot token
-// and the raw initData/hash are never logged.
+// verifyTelegramPayload verifies a raw Telegram Mini App envelope
+// ({"init_data": "<query string>"}) and returns the authenticated Telegram
+// user. Shared by telegramLogin (sign-in) and linkTelegram (linking an
+// existing account to a Telegram id); the bot token and the raw initData are
+// never logged.
+//
+// The Login Widget payload shape this used to also accept is gone: the
+// widget button itself was replaced by the /start deep-link flow (see
+// telegramLoginStart/telegramWebhook), so nothing sends that shape anymore.
 func verifyTelegramPayload(body []byte, botToken string, now time.Time) (auth.TelegramUser, error) {
 	var envelope struct {
 		InitData string `json:"init_data"`
 	}
-	// A flat widget object has no "init_data" key, so this leaves InitData empty
-	// and the unmarshal error (if the body is not an object at all) is caught by
-	// the widget branch below.
-	_ = json.Unmarshal(body, &envelope)
-
-	if strings.TrimSpace(envelope.InitData) != "" {
-		return auth.VerifyInitData(envelope.InitData, botToken, now, telegramMaxAge)
-	}
-
-	// A real Telegram Login Widget posts id and auth_date as JSON numbers, so
-	// decoding straight into map[string]string would fail. Unmarshal into
-	// map[string]any and coerce each value to the string form the data-check
-	// hash is computed over.
-	var raw map[string]any
-	if err := json.Unmarshal(body, &raw); err != nil {
+	if err := json.Unmarshal(body, &envelope); err != nil || strings.TrimSpace(envelope.InitData) == "" {
 		return auth.TelegramUser{}, auth.ErrMalformed
 	}
-	fields := make(map[string]string, len(raw))
-	for k, v := range raw {
-		switch val := v.(type) {
-		case nil:
-			// omit — a null field is not part of the check string
-		case string:
-			fields[k] = val
-		case bool:
-			fields[k] = strconv.FormatBool(val)
-		case float64:
-			if !math.IsInf(val, 0) && val == math.Trunc(val) {
-				fields[k] = strconv.FormatInt(int64(val), 10)
-			} else {
-				fields[k] = strconv.FormatFloat(val, 'f', -1, 64)
-			}
-		default:
-			// arrays/objects have no place in a widget payload; stringify so
-			// the hash check simply fails rather than panicking.
-			fields[k] = fmt.Sprintf("%v", val)
-		}
-	}
-	return auth.VerifyWidget(fields, botToken, now, telegramMaxAge)
+	return auth.VerifyInitData(envelope.InitData, botToken, now, telegramMaxAge)
 }
 
-// telegramLogin handles POST /api/auth/telegram. After the signature verifies
-// (via verifyTelegramPayload) it resolves the account three ways, in order: an
-// existing telegram identity for this tg id logs straight in; a
-// "pending:<username>" row seeded by a migration is rewritten to the real id
-// and claimed; otherwise a brand-new account is created. Every success mints a
-// session and returns the account view.
+// resolveTelegramLogin finds or creates the account a verified Telegram
+// identity belongs to, in order: an existing telegram identity for this tg id
+// logs straight in; a "pending:<username>" row seeded by a migration is
+// rewritten to the real id and claimed; otherwise a brand-new account is
+// created. Shared by telegramLogin (Mini App, HTTP-synchronous) and the
+// /start webhook flow (telegramWebhook, resolved out-of-band and picked up by
+// a poll) — this function only resolves the account, it never touches the
+// response writer or issues a session.
+func (h handlers) resolveTelegramLogin(u auth.TelegramUser) (userID string, err error) {
+	tgID := strconv.FormatInt(u.ID, 10)
+
+	// 1. Known telegram identity — straight login.
+	id, err := h.Store.IdentityByProviderUID("telegram", tgID)
+	switch {
+	case err == nil:
+		return id.UserID, nil
+	case !errors.Is(err, sql.ErrNoRows):
+		return "", fmt.Errorf("lookup identity: %w", err)
+	}
+
+	// 2. A pending row seeded for this username — rewrite it to the real id.
+	// Telegram usernames are case-insensitive and the migration-003 seed keys
+	// (pending:llladnooo, pending:alinsssk) are lowercase, but a verified
+	// payload may carry any case — lowercase the lookup key so the claim hits.
+	// An account with no username at all must skip this entirely: the lookup key
+	// would be a bare "pending:" prefix, which matches nothing today but is a
+	// claim attempt that should never be made.
+	matched := false
+	if u.Username != "" {
+		matched, err = h.Store.AttachPendingTelegram(strings.ToLower(u.Username), tgID)
+		if err != nil {
+			return "", fmt.Errorf("attach pending: %w", err)
+		}
+	}
+	if matched {
+		id, err := h.Store.IdentityByProviderUID("telegram", tgID)
+		if err != nil {
+			return "", fmt.Errorf("identity after claim: %w", err)
+		}
+		return id.UserID, nil
+	}
+
+	// 3. First contact — create the account and its telegram identity.
+	name := u.Username
+	if name == "" {
+		name = u.FirstName
+	}
+	if name == "" {
+		name = "tg" + tgID
+	}
+	name = store.NormalizeName(name)
+	// NormalizeName can still leave a name store.CreateUser rejects (empty after
+	// trimming a whitespace-only first_name, or >40 runes) — that would be an
+	// unrecoverable failure on every future login. Fall back to the stable tg id.
+	if name == "" || len([]rune(name)) > 40 {
+		name = "tg" + tgID
+	}
+
+	uid, err := h.Store.CreateUser(name)
+	if err != nil {
+		return "", fmt.Errorf("create user: %w", err)
+	}
+	if err := h.Store.CreateIdentity(store.Identity{
+		ID:          auth.NewIdentityID(),
+		UserID:      uid,
+		Provider:    "telegram",
+		ProviderUID: tgID,
+		TgUsername:  u.Username,
+	}); err != nil {
+		return "", fmt.Errorf("create identity: %w", err)
+	}
+	return uid, nil
+}
+
+// errTelegramTaken is resolveTelegramLink's sentinel for "this Telegram
+// account already belongs to a different user" — distinct from a plain store
+// error so callers can map it to 409 instead of 500.
+var errTelegramTaken = errors.New("telegram_taken")
+
+// resolveTelegramLink attaches u's telegram identity to callerUserID: a no-op
+// if already linked to that same caller, errTelegramTaken if linked to
+// someone else, otherwise creates the identity. Shared by linkTelegram (Mini
+// App, HTTP-synchronous) and the /start webhook flow.
+func (h handlers) resolveTelegramLink(callerUserID string, u auth.TelegramUser) error {
+	tgID := strconv.FormatInt(u.ID, 10)
+	existing, err := h.Store.IdentityByProviderUID("telegram", tgID)
+	switch {
+	case err == nil && existing.UserID == callerUserID:
+		return nil
+	case err == nil:
+		return errTelegramTaken
+	case errors.Is(err, sql.ErrNoRows):
+		return h.Store.CreateIdentity(store.Identity{
+			ID:          auth.NewIdentityID(),
+			UserID:      callerUserID,
+			Provider:    "telegram",
+			ProviderUID: tgID,
+			TgUsername:  u.Username,
+		})
+	default:
+		return fmt.Errorf("lookup identity: %w", err)
+	}
+}
+
+// telegramLogin handles POST /api/auth/telegram (Mini App initData). Every
+// success mints a session and returns the account view.
 func (h handlers) telegramLogin(w http.ResponseWriter, r *http.Request) {
 	if !h.Config.TelegramEnabled() {
 		fail(w, http.StatusServiceUnavailable, "telegram_disabled")
 		return
 	}
 
-	// decode consumes r.Body and the two payload shapes are mutually exclusive,
-	// so read the body once and pass the raw bytes to verifyTelegramPayload.
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		fail(w, http.StatusBadRequest, "bad request body")
@@ -663,81 +728,13 @@ func (h handlers) telegramLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	tgID := strconv.FormatInt(u.ID, 10)
-
-	// 1. Known telegram identity — straight login.
-	id, err := h.Store.IdentityByProviderUID("telegram", tgID)
-	switch {
-	case err == nil:
-		h.finishTelegramLogin(w, r, id.UserID)
-		return
-	case !errors.Is(err, sql.ErrNoRows):
-		log.Printf("telegram login: lookup identity: %v", err)
-		fail(w, http.StatusInternalServerError, "internal error")
-		return
-	}
-
-	// 2. A pending row seeded for this username — rewrite it to the real id.
-	// Telegram usernames are case-insensitive and the migration-003 seed keys
-	// (pending:llladnooo, pending:alinsssk) are lowercase, but a verified
-	// payload may carry any case — lowercase the lookup key so the claim hits.
-	// An account with no username at all must skip this entirely: the lookup key
-	// would be a bare "pending:" prefix, which matches nothing today but is a
-	// claim attempt that should never be made.
-	matched := false
-	if u.Username != "" {
-		matched, err = h.Store.AttachPendingTelegram(strings.ToLower(u.Username), tgID)
-		if err != nil {
-			log.Printf("telegram login: attach pending: %v", err)
-			fail(w, http.StatusInternalServerError, "internal error")
-			return
-		}
-	}
-	if matched {
-		id, err := h.Store.IdentityByProviderUID("telegram", tgID)
-		if err != nil {
-			log.Printf("telegram login: identity after claim: %v", err)
-			fail(w, http.StatusInternalServerError, "internal error")
-			return
-		}
-		h.finishTelegramLogin(w, r, id.UserID)
-		return
-	}
-
-	// 3. First contact — create the account and its telegram identity.
-	name := u.Username
-	if name == "" {
-		name = u.FirstName
-	}
-	if name == "" {
-		name = "tg" + tgID
-	}
-	name = store.NormalizeName(name)
-	// NormalizeName can still leave a name store.CreateUser rejects (empty after
-	// trimming a whitespace-only first_name, or >40 runes) — that would be an
-	// unrecoverable 500 on every future login. Fall back to the stable tg id.
-	if name == "" || len([]rune(name)) > 40 {
-		name = "tg" + tgID
-	}
-
-	uid, err := h.Store.CreateUser(name)
+	userID, err := h.resolveTelegramLogin(u)
 	if err != nil {
-		log.Printf("telegram login: create user: %v", err)
+		log.Printf("telegram login: %v", err)
 		fail(w, http.StatusInternalServerError, "internal error")
 		return
 	}
-	if err := h.Store.CreateIdentity(store.Identity{
-		ID:          auth.NewIdentityID(),
-		UserID:      uid,
-		Provider:    "telegram",
-		ProviderUID: tgID,
-		TgUsername:  u.Username,
-	}); err != nil {
-		log.Printf("telegram login: create identity: %v", err)
-		fail(w, http.StatusInternalServerError, "internal error")
-		return
-	}
-	h.finishTelegramLogin(w, r, uid)
+	h.finishTelegramLogin(w, r, userID)
 }
 
 // finishTelegramLogin mints a session for userID and writes the 200 account
@@ -755,4 +752,158 @@ func (h handlers) finishTelegramLogin(w http.ResponseWriter, r *http.Request, us
 		return
 	}
 	writeJSON(w, http.StatusOK, summaryToDTO(userID, sum))
+}
+
+// telegramStartFor generates a one-time /start deep-link token bound to
+// callerUserID ("" for a login attempt from telegramLoginStart, an
+// authenticated user's own id for a link attempt from telegramLinkStart in
+// me.go) and returns the t.me URL the frontend opens in a new tab.
+func (h handlers) telegramStartFor(w http.ResponseWriter, callerUserID string) {
+	if !h.Config.TelegramEnabled() || h.TelegramBotUsername == "" {
+		fail(w, http.StatusServiceUnavailable, "telegram_disabled")
+		return
+	}
+	raw, err := h.TelegramPending.Create(callerUserID)
+	if err != nil {
+		log.Printf("telegram start: %v", err)
+		fail(w, http.StatusInternalServerError, "internal error")
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]string{
+		"url":   "https://t.me/" + h.TelegramBotUsername + "?start=" + raw,
+		"token": raw,
+	})
+}
+
+// telegramLoginStart handles POST /api/auth/telegram/start (public — this is
+// how a caller gets a login token in the first place, so it cannot itself
+// require a session).
+func (h handlers) telegramLoginStart(w http.ResponseWriter, r *http.Request) {
+	h.telegramStartFor(w, "")
+}
+
+// telegramPoll handles GET /api/auth/telegram/poll?token=... (public — the
+// token itself is the credential, the same trust model as an email verify
+// link). A PendingDone result for a *login* token issues the session right
+// here, on this response: this is an ordinary request from the waiting
+// browser tab, not the webhook, so it is the one place in the whole flow that
+// can actually set a cookie for that tab. A PendingDone result for a *link*
+// token does not touch the session — the caller already has one, and this
+// just confirms the link went through.
+func (h handlers) telegramPoll(w http.ResponseWriter, r *http.Request) {
+	token := r.URL.Query().Get("token")
+	if token == "" {
+		fail(w, http.StatusBadRequest, "missing token")
+		return
+	}
+	res := h.TelegramPending.Poll(token)
+	switch res.Status {
+	case auth.PendingWaiting:
+		writeJSON(w, http.StatusOK, map[string]string{"status": "pending"})
+	case auth.PendingError:
+		writeJSON(w, http.StatusOK, map[string]string{"status": "error", "error": res.Error})
+	case auth.PendingDone:
+		if res.CallerUserID != "" {
+			writeJSON(w, http.StatusOK, map[string]string{"status": "ok"})
+			return
+		}
+		if err := h.issueSession(w, r, res.ResolvedUserID); err != nil {
+			log.Printf("telegram poll: %v", err)
+			fail(w, http.StatusInternalServerError, "internal error")
+			return
+		}
+		sum, err := h.summaryFor(res.ResolvedUserID)
+		if err != nil {
+			fail(w, http.StatusInternalServerError, "internal error")
+			return
+		}
+		writeJSON(w, http.StatusOK, map[string]any{
+			"status": "ok",
+			"user":   summaryToDTO(res.ResolvedUserID, sum),
+		})
+	}
+}
+
+// telegramWebhook handles POST /api/telegram/webhook — Telegram's own call to
+// us, never a browser, so it sits outside requireAuth/requireSession
+// entirely. Verifies the shared secret Telegram echoes back on every request
+// (set once at startup via telegram.SetWebhook) before parsing anything, so a
+// forged POST to this public URL cannot resolve someone else's pending token.
+//
+// Always answers 200 once the secret checks out: Telegram retries on
+// anything else, and a message that isn't "/start <token>", or a token that's
+// unknown/expired, is not an error — just nothing to act on. message.from is
+// Telegram's own attestation of who sent it (this is a server-to-server call
+// from Telegram itself), so it needs no additional signature check the way
+// browser-supplied initData does.
+func (h handlers) telegramWebhook(w http.ResponseWriter, r *http.Request) {
+	if !h.Config.TelegramEnabled() || h.TelegramWebhookSecret == "" {
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+	if r.Header.Get("X-Telegram-Bot-Api-Secret-Token") != h.TelegramWebhookSecret {
+		fail(w, http.StatusUnauthorized, "bad secret")
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+
+	var update struct {
+		Message *struct {
+			Chat struct {
+				ID int64 `json:"id"`
+			} `json:"chat"`
+			Text string `json:"text"`
+			From struct {
+				ID        int64  `json:"id"`
+				Username  string `json:"username"`
+				FirstName string `json:"first_name"`
+			} `json:"from"`
+		} `json:"message"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&update); err != nil || update.Message == nil {
+		return
+	}
+	token, ok := telegram.ParseStartToken(update.Message.Text)
+	if !ok {
+		return
+	}
+	callerUserID, ok := h.TelegramPending.Lookup(token)
+	if !ok {
+		return // expired or unknown — nothing sensible to say back in-chat
+	}
+
+	u := auth.TelegramUser{
+		ID:        update.Message.From.ID,
+		Username:  update.Message.From.Username,
+		FirstName: update.Message.From.FirstName,
+		AuthDate:  h.Now(),
+	}
+	chatID := update.Message.Chat.ID
+
+	if callerUserID == "" {
+		userID, err := h.resolveTelegramLogin(u)
+		if err != nil {
+			log.Printf("telegram webhook: resolve login: %v", err)
+			h.TelegramPending.Fail(token, "internal_error")
+			h.SendTelegramMessage(chatID, "Что-то пошло не так, попробуйте войти ещё раз с сайта.")
+			return
+		}
+		h.TelegramPending.Resolve(token, userID)
+		h.SendTelegramMessage(chatID, "Готово! Вернитесь на сайт.")
+		return
+	}
+
+	if err := h.resolveTelegramLink(callerUserID, u); err != nil {
+		if errors.Is(err, errTelegramTaken) {
+			h.TelegramPending.Fail(token, "telegram_taken")
+			h.SendTelegramMessage(chatID, "Этот Telegram уже привязан к другому аккаунту.")
+			return
+		}
+		log.Printf("telegram webhook: resolve link: %v", err)
+		h.TelegramPending.Fail(token, "internal_error")
+		h.SendTelegramMessage(chatID, "Что-то пошло не так, попробуйте ещё раз с сайта.")
+		return
+	}
+	h.TelegramPending.Resolve(token, callerUserID)
+	h.SendTelegramMessage(chatID, "Готово! Telegram привязан, вернитесь на сайт.")
 }

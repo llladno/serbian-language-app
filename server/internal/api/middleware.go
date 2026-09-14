@@ -63,10 +63,21 @@ func SecurityHeaders(cfg config.Config, next http.Handler) http.Handler {
 // other than GET/HEAD/OPTIONS the Origin header (or Referer, when Origin is
 // absent) must resolve to the same scheme+host as cfg.AppBaseURL. A non-GET
 // request with neither header, or with a mismatched one, is rejected 403.
+//
+// The Telegram webhook is exempt: it is a server-to-server POST from
+// Telegram's own infrastructure, which never sends an Origin/Referer header
+// at all — CSRF is a browser-borne-credential problem and doesn't apply here.
+// It has its own, unrelated authentication (a shared secret header, checked
+// in telegramWebhook itself), so being unauthenticated with respect to origin
+// checking is not a gap.
 func checkOrigin(cfg config.Config, next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case http.MethodGet, http.MethodHead, http.MethodOptions:
+			next.ServeHTTP(w, r)
+			return
+		}
+		if r.URL.Path == "/api/telegram/webhook" {
 			next.ServeHTTP(w, r)
 			return
 		}

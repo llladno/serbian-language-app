@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/grisha/serbian-app/server/internal/auth"
 	"github.com/grisha/serbian-app/server/internal/checker"
 	"github.com/grisha/serbian-app/server/internal/config"
 	"github.com/grisha/serbian-app/server/internal/content"
@@ -41,6 +42,23 @@ type Deps struct {
 	Slow *ratelimit.Limiter
 	// Fails is the soft account lock keyed by email (nil = never locks).
 	Fails *ratelimit.FailCounter
+	// TelegramPending tracks outstanding /start login and link tokens. A nil
+	// value is replaced by a fresh auth.NewPendingStore() in Handler.
+	TelegramPending *auth.PendingStore
+	// TelegramBotUsername is the bot's own @username (no "@"), resolved once
+	// at startup via telegram.GetMe. Empty disables /start login/link (the
+	// t.me deep link cannot be built without it) — it does not affect the
+	// still-independent Mini App initData path.
+	TelegramBotUsername string
+	// TelegramWebhookSecret is the value Telegram echoes back on every
+	// webhook call (X-Telegram-Bot-Api-Secret-Token), set once at startup
+	// via telegram.SetWebhook. Empty makes the webhook handler a no-op 200
+	// for every request — never authenticate against an empty secret.
+	TelegramWebhookSecret string
+	// SendTelegramMessage sends a chat message from the bot. Production
+	// calls the real Bot API; tests capture it. A nil value is replaced by a
+	// no-op in Handler.
+	SendTelegramMessage func(chatID int64, text string)
 }
 
 type handlers struct{ Deps }
@@ -86,6 +104,12 @@ func Handler(deps Deps) http.Handler {
 	if deps.Async == nil {
 		deps.Async = func(f func()) { go f() }
 	}
+	if deps.TelegramPending == nil {
+		deps.TelegramPending = auth.NewPendingStore()
+	}
+	if deps.SendTelegramMessage == nil {
+		deps.SendTelegramMessage = func(chatID int64, text string) {}
+	}
 	h := handlers{deps}
 
 	root := http.NewServeMux()
@@ -101,6 +125,12 @@ func Handler(deps Deps) http.Handler {
 	root.HandleFunc("POST /api/auth/forgot", h.forgotPassword)
 	root.HandleFunc("POST /api/auth/reset", h.resetPassword)
 	root.HandleFunc("POST /api/auth/telegram", h.telegramLogin)
+	root.HandleFunc("POST /api/auth/telegram/start", h.telegramLoginStart)
+	root.HandleFunc("GET /api/auth/telegram/poll", h.telegramPoll)
+	// The webhook is Telegram calling US, never a browser — no session guard
+	// of any kind, authenticated instead by the shared secret header (see
+	// telegramWebhook's own doc comment).
+	root.HandleFunc("POST /api/telegram/webhook", h.telegramWebhook)
 
 	// Account-scoped endpoints. These are registered on root as exact
 	// method+path patterns (the same precedence trick as the public auth routes
@@ -117,6 +147,7 @@ func Handler(deps Deps) http.Handler {
 	root.HandleFunc("PATCH /api/me", h.requireSession(h.patchMe))
 	root.HandleFunc("POST /api/me/password", h.requireSession(h.changePassword))
 	root.HandleFunc("POST /api/me/link/telegram", h.requireSession(h.linkTelegram))
+	root.HandleFunc("POST /api/me/telegram/start", h.requireSession(h.telegramLinkStart))
 	root.HandleFunc("DELETE /api/me/telegram", h.requireSession(h.unlinkTelegram))
 	root.HandleFunc("DELETE /api/me/sessions/{id}", h.requireSession(h.deleteSession))
 	root.HandleFunc("DELETE /api/me", h.requireSession(h.deleteMe))
