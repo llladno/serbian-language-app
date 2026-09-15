@@ -3,6 +3,7 @@ import { computed, ref } from 'vue'
 import { RefreshCw } from 'lucide-vue-next'
 import { api } from '../../api'
 import type { CheckResult, LessonAttempt } from '../../types'
+import BottomBar from '../BottomBar.vue'
 
 const props = defineProps<{
   lesson: string
@@ -55,17 +56,17 @@ function retry() {
 </script>
 
 <template>
-  <div class="card relative p-3.5">
+  <div class="relative text-center">
     <button
       v-if="fromPrior || result"
-      class="icon-btn absolute right-2.5 top-2.5"
+      class="icon-btn absolute right-0 top-0"
       title="Переделать"
       @click="retry"
     >
       <RefreshCw :size="15" :stroke-width="2.25" />
     </button>
 
-    <p class="mb-2.5 whitespace-pre-wrap pr-8">{{ prompt }}</p>
+    <p class="mb-5 whitespace-pre-wrap px-8 text-xl font-medium">{{ prompt }}</p>
 
     <div v-if="fromPrior" class="text-sm">
       <p class="mb-1 font-semibold" :class="prior!.correct ? 'text-[var(--good)]' : 'text-[var(--bad)]'">
@@ -75,11 +76,11 @@ function retry() {
     </div>
 
     <template v-else>
-      <div class="mb-2 flex min-h-11 flex-wrap items-center gap-1.5 rounded-lg border border-dashed border-[var(--border)] p-2">
+      <div class="mb-3 flex min-h-14 flex-wrap items-center justify-center gap-2 rounded-2xl bg-[var(--bg-soft)] p-3">
         <button
           v-for="(id, i) in picked"
           :key="id"
-          class="rounded-md bg-[var(--accent-soft)] px-2 py-1 text-sm serbian text-[var(--fg)]"
+          class="min-h-9 rounded-xl bg-[var(--card)] px-3.5 py-1.5 text-sm serbian text-[var(--fg)] shadow-[var(--shadow)]"
           :disabled="!!result"
           @click="removeAt(i)"
         >
@@ -88,11 +89,11 @@ function retry() {
         <span v-if="!picked.length" class="text-sm text-[var(--muted)]">нажимай слова по порядку</span>
       </div>
 
-      <div class="flex flex-wrap gap-1.5">
+      <div class="flex flex-wrap justify-center gap-2.5">
         <button
           v-for="c in available"
           :key="c.id"
-          class="btn btn-ghost serbian !py-1"
+          class="btn btn-ghost serbian"
           :disabled="!!result"
           @click="add(c.id)"
         >
@@ -100,13 +101,13 @@ function retry() {
         </button>
       </div>
 
-      <div v-if="!result" class="mt-2.5">
-        <button class="btn btn-primary disabled:opacity-50" :disabled="pending || !picked.length" @click="submit">
+      <BottomBar v-if="!result">
+        <button class="btn btn-primary w-full disabled:opacity-50" :disabled="pending || !picked.length" @click="submit">
           Проверить
         </button>
-      </div>
+      </BottomBar>
 
-      <div v-else class="pop mt-2 text-sm">
+      <div v-else class="pop mt-4 text-sm">
         <p class="mb-1 font-semibold" :class="result.ok ? 'text-[var(--good)]' : 'text-[var(--bad)]'">
           {{ result.ok ? '✓ Верно' : result.near_miss ? 'Почти — опечатка?' : '✗ Не совсем' }}
         </p>

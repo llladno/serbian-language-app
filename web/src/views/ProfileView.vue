@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { Settings, X } from 'lucide-vue-next'
+import { Check, Settings, X } from 'lucide-vue-next'
 import { api } from '../api'
+import { palette, setPalette, PALETTE_META, type Palette } from '../palette'
 import { useSessionStore } from '../stores/session'
 import { authErrorMessage } from '../lib/authErrors'
 import { useTelegramStart } from '../lib/telegramStart'
@@ -227,6 +228,28 @@ async function deleteAccount() {
               </form>
             </div>
             <p v-if="nameError" class="mt-1 text-sm text-[var(--bad)]">{{ nameError }}</p>
+          </div>
+
+          <div class="border-t border-[var(--border)] pt-3">
+            <p class="mb-2 text-sm text-[var(--muted)]">Цвет темы</p>
+            <div class="flex gap-3">
+              <button
+                v-for="(meta, key) in PALETTE_META"
+                :key="key"
+                type="button"
+                class="flex h-9 w-9 items-center justify-center rounded-full border-2 transition"
+                :style="{
+                  background: meta.swatch,
+                  borderColor: palette === key ? meta.swatch : 'transparent',
+                  boxShadow: palette === key ? `0 0 0 2px var(--card), 0 0 0 4px ${meta.swatch}` : 'none',
+                }"
+                :title="meta.label"
+                :aria-label="meta.label"
+                @click="setPalette(key as Palette)"
+              >
+                <Check v-if="palette === key" :size="16" :stroke-width="3" color="#fff" />
+              </button>
+            </div>
           </div>
 
           <div class="border-t border-[var(--border)] pt-3">

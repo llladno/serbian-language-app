@@ -39,19 +39,19 @@ function retry() {
 </script>
 
 <template>
-  <div class="card relative p-3.5">
+  <div class="relative text-center">
     <button
       v-if="fromPrior || result"
-      class="icon-btn absolute right-2.5 top-2.5"
+      class="icon-btn absolute right-0 top-0"
       title="Переделать"
       @click="retry"
     >
       <RefreshCw :size="15" :stroke-width="2.25" />
     </button>
 
-    <p class="mb-2.5 whitespace-pre-wrap pr-8">{{ prompt }}</p>
+    <p class="mb-5 whitespace-pre-wrap px-8 text-xl font-medium">{{ prompt }}</p>
 
-    <div class="flex flex-wrap gap-2">
+    <div class="flex flex-wrap justify-center gap-2.5">
       <button
         v-for="o in shuffled"
         :key="o"
@@ -67,13 +67,13 @@ function retry() {
       </button>
     </div>
 
-    <div v-if="fromPrior" class="mt-2 text-sm">
+    <div v-if="fromPrior" class="mt-4 text-sm">
       <p class="font-semibold" :class="prior!.correct ? 'text-[var(--good)]' : 'text-[var(--bad)]'">
         {{ prior!.correct ? '✓ Отвечено верно' : '✗ Был неверный ответ' }}
       </p>
     </div>
 
-    <div v-else-if="result" class="pop mt-2 text-sm">
+    <div v-else-if="result" class="pop mt-4 text-sm">
       <p class="font-semibold" :class="result.ok ? 'text-[var(--good)]' : 'text-[var(--bad)]'">
         {{ result.ok ? '✓ Верно' : '✗ Не то' }}
       </p>

@@ -14,7 +14,7 @@ import {
 } from 'lucide-vue-next'
 import { theme, cycleTheme, THEME_META } from '../theme'
 
-defineProps<{ name: string }>()
+defineProps<{ name: string; hideTabBar?: boolean }>()
 
 const route = useRoute()
 
@@ -62,7 +62,7 @@ const themeIcon = computed(() => THEME_ICON[theme.value])
       <span class="serbian text-lg font-semibold sm:hidden">ucimo</span>
 
       <button
-        class="ml-auto flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-[var(--muted)] transition hover:bg-[var(--bg-soft)] hover:text-[var(--fg)]"
+        class="ml-auto flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-[var(--muted)] transition hover:bg-[var(--bg-soft)] hover:text-[var(--fg)]"
         :title="`Тема: ${themeMeta.label}`"
         @click="cycleTheme()"
       >
@@ -80,6 +80,7 @@ const themeIcon = computed(() => THEME_ICON[theme.value])
   </header>
 
   <nav
+    v-if="!hideTabBar"
     class="fixed inset-x-0 bottom-0 z-20 grid grid-cols-6 border-t border-[var(--border)] bg-[var(--bg)]/95 backdrop-blur sm:hidden"
     style="padding-bottom: env(safe-area-inset-bottom)"
   >

@@ -16,10 +16,15 @@ onMounted(() => {
     Загрузка…
   </div>
   <template v-else-if="session.user">
-    <AppNav :name="session.user.name" />
+    <AppNav :name="session.user.name" :hide-tab-bar="!!route.meta?.hideTabBar" />
     <main
-      class="mx-auto px-4 pt-5 pb-[calc(5rem+env(safe-area-inset-bottom))] transition-[max-width] sm:pb-16"
-      :class="route.meta?.wide ? 'max-w-5xl' : 'max-w-3xl'"
+      class="mx-auto px-4 pt-5 transition-[max-width]"
+      :class="[
+        route.meta?.wide ? 'max-w-5xl' : 'max-w-3xl',
+        route.meta?.hideTabBar
+          ? 'pb-[calc(6rem+env(safe-area-inset-bottom))]'
+          : 'pb-[calc(5rem+env(safe-area-inset-bottom))] sm:pb-16',
+      ]"
     >
       <RouterView v-slot="{ Component, route }">
         <div

@@ -6,6 +6,10 @@ declare module 'vue-router' {
     // Wider main-content column (see App.vue) — for dashboard-like views
     // that benefit from more horizontal space than the reading-width default.
     wide?: boolean
+    // Hides AppNav's mobile bottom tab bar — for full-screen views (the
+    // lesson player) that draw their own header/back-navigation and want
+    // the extra vertical room.
+    hideTabBar?: boolean
   }
 }
 import LoginView from './views/LoginView.vue'
@@ -70,7 +74,7 @@ const router = createRouter({
     { path: '/', redirect: '/profile' },
     { path: '/profile', name: 'profile', component: ProfileView, meta: { wide: true } },
     { path: '/course', name: 'course', component: CourseView },
-    { path: '/lesson/:id', name: 'lesson', component: LessonView },
+    { path: '/lesson/:id', name: 'lesson', component: LessonView, meta: { hideTabBar: true } },
     { path: '/review', name: 'review', component: ReviewView },
     { path: '/vocab', name: 'vocab', component: VocabView },
     { path: '/false-friends', name: 'false-friends', component: FalseFriendsView },

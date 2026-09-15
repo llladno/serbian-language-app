@@ -4,9 +4,11 @@ import './style.css'
 import App from './App.vue'
 import router from './router'
 import { applyTheme } from './theme'
+import { applyPalette } from './palette'
 import { initTelegram } from './telegram'
 
 applyTheme()
+applyPalette()
 initTelegram()
 
 createApp(App).use(createPinia()).use(router).mount('#app')

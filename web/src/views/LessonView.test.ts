@@ -7,6 +7,7 @@ import type { Lesson, ExerciseBlock } from '../types'
 
 vi.mock('vue-router', () => ({
   useRoute: () => ({ params: { id: '01' }, query: {} }),
+  useRouter: () => ({ push: vi.fn() }),
   RouterLink: { template: '<a><slot /></a>' },
 }))
 
@@ -49,6 +50,65 @@ describe('LessonView step player', () => {
 
     expect(setStep).toHaveBeenCalledWith('01', '01.1', 'done')
     expect(w.findComponent({ name: 'ExerciseBlock' }).exists()).toBe(true)
+  })
+
+  it('shows one exercise at a time inside a practice block and pages through them', async () => {
+    const twoEx = structuredClone(lesson)
+    twoEx.steps![1].exercise_ids = ['01.2.1', '01.2.2']
+    const twoBlocks: ExerciseBlock[] = [
+      {
+        id: '01.2',
+        title: 'Практика',
+        exercises: [
+          { id: '01.2.1', type: 'translate', prompt: 'Первое' },
+          { id: '01.2.2', type: 'translate', prompt: 'Второе' },
+        ],
+      },
+    ]
+    vi.spyOn(api, 'lesson').mockResolvedValue(twoEx)
+    vi.spyOn(api, 'exercises').mockResolvedValue(twoBlocks)
+    vi.spyOn(api, 'lessonAttempts').mockResolvedValue({})
+    vi.spyOn(api, 'setStepStatus').mockResolvedValue(undefined)
+    vi.spyOn(api, 'check').mockResolvedValue({ ok: true })
+
+    // The lesson's own Далее/Завершить bar only exists while no exercise owns
+    // the bottom slot itself (translate-type exercises get their own pinned
+    // "Проверить" — see TextAnswer.vue — so only one bottom action shows at once).
+    const lessonNavBtn = () => w.findAll('button').find((b) => /Дальше|Завершить/.test(b.text()))
+    // jsdom has no layout, so vue-test-utils' isVisible() (which consults
+    // bounding boxes) can't be trusted here — check the v-show style directly.
+    const hidden = (sel: string) => w.find(sel).attributes('style')?.includes('display: none')
+
+    const w = mount(LessonView)
+    await flushPromises()
+    await lessonNavBtn()!.trigger('click') // teach -> practice
+    await flushPromises()
+
+    // both exercises are mounted (so answered state survives paging back and
+    // forth), but only the first one is visible
+    expect(hidden('[data-ex="01.2.1"]')).toBeFalsy()
+    expect(hidden('[data-ex="01.2.2"]')).toBe(true)
+    // ungraded translate exercise owns the bottom slot — the lesson bar steps aside
+    expect(lessonNavBtn()).toBeUndefined()
+
+    // answer it via the exercise's own pinned "Проверить", then the lesson bar
+    // takes the slot back with "Дальше", which should reveal exercise 2
+    await w.find('[data-ex="01.2.1"] input[type="text"]').setValue('Zdravo')
+    await w.find('[data-ex="01.2.1"] form').trigger('submit')
+    await flushPromises()
+    expect(lessonNavBtn()).toBeDefined()
+    await lessonNavBtn()!.trigger('click')
+    await flushPromises()
+
+    expect(hidden('[data-ex="01.2.1"]')).toBe(true)
+    expect(hidden('[data-ex="01.2.2"]')).toBeFalsy()
+
+    // the back arrow should return to the first exercise (still showing its
+    // answer, since it stayed mounted) instead of leaving the step
+    await w.find('button[aria-label="Назад"]').trigger('click')
+    await flushPromises()
+    expect(hidden('[data-ex="01.2.1"]')).toBeFalsy()
+    expect(w.find('[data-ex="01.2.1"]').text()).toContain('Верно')
   })
 
   it('resumes at the first unfinished step', async () => {

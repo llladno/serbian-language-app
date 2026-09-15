@@ -4,6 +4,7 @@ import { RefreshCw } from 'lucide-vue-next'
 import { api } from '../../api'
 import type { CheckResult, LessonAttempt } from '../../types'
 import SerbianKeys from '../SerbianKeys.vue'
+import BottomBar from '../BottomBar.vue'
 
 const props = defineProps<{
   lesson: string
@@ -42,29 +43,29 @@ function retry() {
 </script>
 
 <template>
-  <div class="card relative p-3.5">
+  <div class="relative">
     <button
       v-if="fromPrior || result"
-      class="icon-btn absolute right-2.5 top-2.5"
+      class="icon-btn absolute right-0 top-0"
       title="Переделать"
       @click="retry"
     >
       <RefreshCw :size="15" :stroke-width="2.25" />
     </button>
 
-    <p class="mb-2.5 pr-8">
-      <span class="serbian font-semibold">{{ prompt }}</span>
+    <p class="mb-5 px-8 text-center">
+      <span class="serbian text-xl font-semibold">{{ prompt }}</span>
       <span v-if="meta" class="ml-2 rounded bg-[var(--bg-soft)] px-1.5 py-0.5 text-xs text-[var(--muted)]">{{ meta }}</span>
     </p>
 
-    <div v-if="fromPrior" class="text-sm">
+    <div v-if="fromPrior" class="text-center text-sm">
       <p class="mb-1 font-semibold" :class="prior!.correct ? 'text-[var(--good)]' : 'text-[var(--bad)]'">
         {{ prior!.correct ? '✓ Отвечено верно' : '✗ Был ответ с ошибкой' }}
       </p>
       <p class="serbian text-[var(--muted)]">{{ answers.filter(Boolean).join(', ') }}</p>
     </div>
 
-    <form v-else class="grid grid-cols-1 gap-2 sm:grid-cols-2" @submit.prevent="submit">
+    <form v-else class="mx-auto grid max-w-sm grid-cols-1 gap-2" @submit.prevent="submit">
       <label v-for="(f, i) in forms" :key="f" class="flex items-center gap-2 text-sm">
         <span class="w-24 shrink-0 text-[var(--muted)]">{{ f }}</span>
         <input
@@ -85,19 +86,15 @@ function retry() {
         <span v-if="result?.forms?.[i]" class="w-4">{{ result.forms[i].ok ? '✓' : '✗' }}</span>
       </label>
 
-      <SerbianKeys v-if="!result" class="col-span-full" />
-
-      <button
-        v-if="!result"
-        type="submit"
-        :disabled="pending"
-        class="btn btn-primary col-span-full mt-1 justify-self-start disabled:opacity-50"
-      >
+      <SerbianKeys v-if="!result" class="col-span-full justify-center" />
+    </form>
+    <BottomBar v-if="!fromPrior && !result">
+      <button class="btn btn-primary w-full disabled:opacity-50" :disabled="pending" @click="submit">
         Проверить
       </button>
-    </form>
+    </BottomBar>
 
-    <div v-if="result" class="mt-2 text-sm pop">
+    <div v-if="result" class="mx-auto mt-4 max-w-sm text-sm pop">
       <p v-for="(r, i) in result.forms" :key="i" v-show="!r.ok" class="text-[var(--muted)]">
         {{ forms[i] }} → <span class="serbian font-semibold text-[var(--fg)]">{{ r.expected }}</span>
       </p>

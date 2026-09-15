@@ -38,17 +38,17 @@ function retry() {
 </script>
 
 <template>
-  <div class="card relative p-3.5">
+  <div class="relative text-center">
     <button
       v-if="fromPrior"
-      class="icon-btn absolute right-2.5 top-2.5"
+      class="icon-btn absolute right-0 top-0"
       title="Переделать"
       @click="retry"
     >
       <RefreshCw :size="15" :stroke-width="2.25" />
     </button>
 
-    <p class="mb-2 whitespace-pre-wrap pr-8">{{ prompt }}</p>
+    <p class="mb-5 whitespace-pre-wrap px-8 text-xl font-medium">{{ prompt }}</p>
 
     <div v-if="fromPrior" class="text-sm">
       <p class="mb-1 font-semibold" :class="prior!.correct ? 'text-[var(--good)]' : 'text-[var(--bad)]'">
@@ -60,30 +60,32 @@ function retry() {
     </div>
 
     <template v-else>
-      <textarea
-        v-model="answer"
-        rows="2"
-        :disabled="done"
-        class="field w-full serbian"
-        placeholder="твой вариант…"
-      />
-      <SerbianKeys v-if="!done" class="mt-1.5" />
+      <div class="mx-auto max-w-sm text-left">
+        <textarea
+          v-model="answer"
+          rows="2"
+          :disabled="done"
+          class="field w-full serbian"
+          placeholder="твой вариант…"
+        />
+        <SerbianKeys v-if="!done" class="mt-1.5" />
+      </div>
 
-      <div v-if="sample === null" class="mt-2">
+      <div v-if="sample === null" class="mt-4">
         <button class="btn btn-primary" @click="reveal">Показать образец</button>
       </div>
 
-      <div v-else-if="!done" class="mt-2 pop">
-        <p class="mb-2 rounded-lg bg-[var(--bg-soft)] p-2.5 text-sm">
+      <div v-else-if="!done" class="mx-auto mt-4 max-w-sm pop">
+        <p class="mb-2 rounded-lg bg-[var(--bg-soft)] p-2.5 text-left text-sm">
           <span class="text-[var(--muted)]">образец: </span><span class="serbian">{{ sample }}</span>
         </p>
-        <div class="flex gap-2">
+        <div class="flex justify-center gap-2">
           <button class="btn text-white" style="background: var(--good)" @click="selfGrade(true)">Справился</button>
           <button class="btn text-white" style="background: var(--bad)" @click="selfGrade(false)">Не справился</button>
         </div>
       </div>
 
-      <p v-else class="mt-2 text-sm text-[var(--muted)]">Отмечено.</p>
+      <p v-else class="mt-4 text-sm text-[var(--muted)]">Отмечено.</p>
     </template>
   </div>
 </template>
