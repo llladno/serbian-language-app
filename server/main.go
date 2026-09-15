@@ -68,10 +68,15 @@ func main() {
 
 	// Bot /start login/link needs the bot's own @username (not derivable from
 	// the token — see Config.TelegramBotID, which only gives the numeric id)
-	// and a registered webhook, both fetched from the Bot API once here. A
-	// failure disables just this one login path (telegram_disabled), the same
-	// as an unset TELEGRAM_BOT_TOKEN — never fatal, the way an unreachable
-	// SMTP server doesn't stop the process either.
+	// and a registered webhook. Both are normally discovered/generated here
+	// via a live call to the Bot API — but neither GetMe nor SetWebhook is
+	// required to succeed when TELEGRAM_BOT_USERNAME / TELEGRAM_WEBHOOK_SECRET
+	// pin them instead (see Config field docs): that lets the feature work
+	// even when this host's outbound access to api.telegram.org is blocked,
+	// as long as the webhook was registered once from a network that isn't.
+	// A failure disables just this one login path (telegram_disabled), the
+	// same as an unset TELEGRAM_BOT_TOKEN — never fatal, the way an
+	// unreachable SMTP server doesn't stop the process either.
 	var telegramBotUsername, telegramWebhookSecret string
 	switch {
 	case !cfg.TelegramEnabled():
@@ -79,20 +84,30 @@ func main() {
 	case !strings.HasPrefix(cfg.AppBaseURL, "https://"):
 		log.Printf("telegram: APP_BASE_URL is not https (%s) — webhook needs a public https URL, bot /start login disabled", cfg.AppBaseURL)
 	default:
-		username, err := telegram.GetMe(cfg.TelegramBotToken)
-		if err != nil {
-			log.Printf("telegram: getMe: %v", err)
-			break
+		username := cfg.TelegramBotUsername
+		if username == "" {
+			u, err := telegram.GetMe(cfg.TelegramBotToken)
+			if err != nil {
+				log.Printf("telegram: getMe: %v", err)
+			} else {
+				username = u
+			}
 		}
-		secret, _, err := auth.NewToken()
-		if err != nil {
-			log.Printf("telegram: generate webhook secret: %v", err)
-			break
+		secret := cfg.TelegramWebhookSecret
+		if secret == "" {
+			s, _, err := auth.NewToken()
+			if err != nil {
+				log.Printf("telegram: generate webhook secret: %v", err)
+			} else {
+				secret = s
+			}
+		}
+		if username == "" || secret == "" {
+			break // neither discovered nor configured — nothing usable
 		}
 		webhookURL := cfg.AppBaseURL + "/api/telegram/webhook"
 		if err := telegram.SetWebhook(cfg.TelegramBotToken, webhookURL, secret); err != nil {
-			log.Printf("telegram: setWebhook: %v", err)
-			break
+			log.Printf("telegram: setWebhook: %v (harmless if the webhook was already registered externally)", err)
 		}
 		telegramBotUsername = username
 		telegramWebhookSecret = secret

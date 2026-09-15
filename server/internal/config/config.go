@@ -25,6 +25,18 @@ type Config struct {
 	// TelegramBotToken enables Telegram sign-in when non-empty. From
 	// TELEGRAM_BOT_TOKEN.
 	TelegramBotToken string
+	// TelegramBotUsername and TelegramWebhookSecret pin the bot's @username
+	// and the webhook secret instead of discovering/generating them via a
+	// live call to api.telegram.org at startup (see main.go). Both are
+	// static once chosen — the username doesn't change, and the secret is
+	// only ever compared against what was registered with Telegram's
+	// setWebhook — so when a host's outbound access to api.telegram.org is
+	// unreliable (e.g. blocked, as happens for some Russian hosts), set
+	// these from TELEGRAM_BOT_USERNAME / TELEGRAM_WEBHOOK_SECRET and
+	// register the webhook once from a network that can reach Telegram;
+	// the app no longer needs its own boot-time call to succeed.
+	TelegramBotUsername   string
+	TelegramWebhookSecret string
 }
 
 // Load reads the configuration from the environment. Missing variables take
@@ -47,7 +59,9 @@ func Load() Config {
 			From:     os.Getenv("SMTP_FROM"),
 			FromName: os.Getenv("SMTP_FROM_NAME"),
 		},
-		TelegramBotToken: os.Getenv("TELEGRAM_BOT_TOKEN"),
+		TelegramBotToken:      os.Getenv("TELEGRAM_BOT_TOKEN"),
+		TelegramBotUsername:   os.Getenv("TELEGRAM_BOT_USERNAME"),
+		TelegramWebhookSecret: os.Getenv("TELEGRAM_WEBHOOK_SECRET"),
 	}
 }
 
