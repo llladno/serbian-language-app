@@ -14,6 +14,8 @@ dev:
 build:
 	cd web && npm ci && npm run build
 	rm -rf server/web/dist && cp -r web/dist server/web/dist
+	cd landing && npm ci && npm run generate
+	rm -rf server/landing/dist && cp -r landing/.output/public server/landing/dist
 	$(GO) build -o serbian-app ./server
 
 test:

@@ -25,15 +25,20 @@ const lastSeenThrottle = time.Hour
 // together.
 const sessionTTL = 30 * 24 * time.Hour
 
-// csp is the Content-Security-Policy sent on every API response. It is the
+// csp is the Content-Security-Policy sent on every response. It is the
 // minimum that lets the Vite build run (inline styles for Tailwind, data:
 // fonts and images) while allowing the Telegram Mini App to frame the page.
+// https://mc.yandex.ru and https://mc.yandex.com are allowlisted for the
+// landing page's Yandex.Metrika counter (script-src, connect-src for
+// hit/webvisor data, img-src for the noscript pixel and cookie-sync calls —
+// Metrika uses both domains) — the counter's own init call is a same-origin
+// file (landing/public/metrika-init.js), so no 'unsafe-inline' is needed.
 const csp = "default-src 'self'; " +
-	"script-src 'self' https://telegram.org; " +
+	"script-src 'self' https://telegram.org https://mc.yandex.ru https://mc.yandex.com; " +
 	"style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
 	"font-src 'self' data: https://fonts.gstatic.com; " +
-	"img-src 'self' data:; " +
-	"connect-src 'self'; " +
+	"img-src 'self' data: https://mc.yandex.ru https://mc.yandex.com; " +
+	"connect-src 'self' https://mc.yandex.ru https://mc.yandex.com; " +
 	"base-uri 'self'; " +
 	"form-action 'self'; " +
 	"frame-ancestors 'self' https://web.telegram.org https://*.telegram.org"

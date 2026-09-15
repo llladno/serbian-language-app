@@ -19,6 +19,7 @@ import (
 	"github.com/grisha/serbian-app/server/internal/ratelimit"
 	"github.com/grisha/serbian-app/server/internal/store"
 	"github.com/grisha/serbian-app/server/internal/telegram"
+	"github.com/grisha/serbian-app/server/landing"
 	"github.com/grisha/serbian-app/server/web"
 )
 
@@ -176,7 +177,10 @@ func main() {
 	mux.Handle("/img/", cacheControl(http.StripPrefix("/img/", http.FileServer(http.Dir(imgDir)))))
 	audioDir := filepath.Join(*contentDir, "audio")
 	mux.Handle("/audio/", cacheControl(http.StripPrefix("/audio/", http.FileServer(http.Dir(audioDir)))))
-	mux.Handle("/", spaHandler(web.FS()))
+	// No StripPrefix: landing.FS() is rooted at dist/, which already
+	// contains _nuxt/... at that same relative path.
+	mux.Handle("/_nuxt/", cacheControl(http.FileServer(http.FS(landing.FS()))))
+	mux.Handle("/", landingHandler(landing.FS(), spaHandler(web.FS())))
 
 	log.Printf("listening on %s", *addr)
 	// The security headers wrap EVERYTHING, not just /api/: the SPA HTML and the
@@ -193,6 +197,32 @@ func cacheControl(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Cache-Control", "public, max-age=604800")
 		h.ServeHTTP(w, r)
+	})
+}
+
+// landingHandler serves the public Nuxt-built landing page: its own
+// top-level static files (index.html at "/", robots.txt, the Nuxt hydration
+// payload, ...) — whatever Nuxt actually generated. Any path that isn't one
+// of those files falls through to appHandler unchanged — that covers every
+// one of the app's own client-side routes.
+func landingHandler(files fs.FS, appHandler http.Handler) http.Handler {
+	fileServer := http.FileServer(http.FS(files))
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		p := strings.TrimPrefix(r.URL.Path, "/")
+		if p == "" {
+			p = "index.html"
+		} else {
+			// fs.Stat rejects a trailing slash (invalid per io/fs path
+			// rules) — trim it so a directory route like "privacy/" (which
+			// http.FileServer produces via its own redirect-to-slash for
+			// "privacy") still resolves to the "privacy" directory below.
+			p = strings.TrimSuffix(p, "/")
+		}
+		if _, err := fs.Stat(files, p); err != nil {
+			appHandler.ServeHTTP(w, r)
+			return
+		}
+		fileServer.ServeHTTP(w, r)
 	})
 }
 

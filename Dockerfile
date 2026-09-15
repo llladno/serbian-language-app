@@ -8,16 +8,25 @@ RUN npm ci
 COPY web/ ./
 RUN npm run build          # -> /web/dist
 
-# ---- 2. build the Go server (embeds /web/dist) ----
+# ---- 2. build the Nuxt landing page ----
+FROM node:22-alpine AS landing
+WORKDIR /landing
+COPY landing/package.json landing/package-lock.json ./
+RUN npm ci
+COPY landing/ ./
+RUN npm run generate        # -> /landing/.output/public
+
+# ---- 3. build the Go server (embeds /web/dist and /landing/.output/public) ----
 FROM golang:1.25-alpine AS server
 WORKDIR /src
 COPY go.mod go.sum ./
 RUN go mod download
 COPY server/ ./server/
 COPY --from=web /web/dist ./server/web/dist
+COPY --from=landing /landing/.output/public ./server/landing/dist
 RUN CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-s -w" -o /out/serbian-app ./server
 
-# ---- 3. runtime ----
+# ---- 4. runtime ----
 FROM alpine:3.20
 RUN apk add --no-cache ca-certificates tzdata && adduser -D -u 10001 app
 WORKDIR /app
