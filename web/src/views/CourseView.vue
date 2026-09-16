@@ -40,7 +40,6 @@ function badgeClass(lesson?: LessonRef) {
           :key="lid"
           :to="`/lesson/${lid}`"
           class="card flex items-center gap-3.5 p-4 transition active:scale-[0.99] hover:-translate-y-0.5"
-          :class="byId.get(lid)?.status === 'in_progress' ? 'ring-2 ring-[var(--accent)]' : ''"
         >
           <span
             class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-sm font-bold tabular-nums"

@@ -41,7 +41,7 @@
 :root {
   color-scheme: light;
   --bg: #f7f9f7;
-  --bg-soft: #ecf7f5;
+  --bg-soft: #e2f1ed;
   --fg: #172326;
   --muted: #546063;
   --card: #ffffff;
@@ -86,7 +86,7 @@
 [data-palette='pink'] {
   color-scheme: light;
   --bg: #fdf4f7;
-  --bg-soft: #f9e7ee;
+  --bg-soft: #f5dce6;
   --fg: #40222f;
   --muted: #7a5866;
   --card: #fffbfd;
@@ -131,7 +131,7 @@
 [data-palette='blue'] {
   color-scheme: light;
   --bg: #f5f8fc;
-  --bg-soft: #e8f1fa;
+  --bg-soft: #dceaf8;
   --fg: #16232f;
   --muted: #4d6272;
   --card: #ffffff;
@@ -189,7 +189,6 @@ body {
 @layer components {
   .card {
     background: var(--card);
-    border: 1px solid var(--border);
     border-radius: 20px;
     box-shadow: var(--shadow);
   }
@@ -202,11 +201,11 @@ body {
   }
   .btn-ghost {
     background: var(--bg-soft);
-    border: 1px solid var(--border);
     color: var(--fg);
   }
   .btn-ghost:not(:disabled):hover {
-    border-color: var(--accent);
+    background: var(--accent-soft);
+    color: var(--accent);
   }
   .icon-btn {
     @apply flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-[var(--muted)] transition;
@@ -216,8 +215,8 @@ body {
     color: var(--accent);
   }
   .field {
-    background: transparent;
-    border: 1px solid var(--border);
+    background: var(--bg-soft);
+    border: 1px solid transparent;
     border-radius: 14px;
     padding: 0.5rem 0.75rem;
     outline: none;

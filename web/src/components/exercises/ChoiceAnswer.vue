@@ -11,7 +11,7 @@ const props = defineProps<{
   options: string[]
   prior?: LessonAttempt
 }>()
-const emit = defineEmits<{ graded: [ok: boolean, result: CheckResult] }>()
+const emit = defineEmits<{ graded: [ok: boolean, result: CheckResult]; ungraded: [] }>()
 
 const shuffled = ref([...props.options].sort(() => Math.random() - 0.5))
 const picked = ref<string | null>(props.prior?.answer ?? null)
@@ -35,6 +35,7 @@ function retry() {
   result.value = null
   fromPrior.value = false
   picked.value = null
+  emit('ungraded')
 }
 </script>
 

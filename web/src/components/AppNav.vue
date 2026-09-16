@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { RouterLink, useRoute } from 'vue-router'
-import { computed } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import {
   GraduationCap,
   Languages,
@@ -8,7 +8,6 @@ import {
   Moon,
   Repeat,
   SunMedium,
-  TriangleAlert,
   Trophy,
   User,
 } from 'lucide-vue-next'
@@ -18,12 +17,36 @@ defineProps<{ name: string; hideTabBar?: boolean }>()
 
 const route = useRoute()
 
+// iOS Safari's collapsing address bar leaves window.innerHeight taller than
+// what's actually on screen (visualViewport.height) while it's animating -
+// a `position: fixed; bottom: 0` element resolves against the former, so it
+// visibly floats below the real viewport edge until the two resync. Track
+// the gap and cancel it out with a transform tied to the real visual
+// viewport instead.
+const tabBar = ref<HTMLElement | null>(null)
+
+function syncTabBarOffset() {
+  const vv = window.visualViewport
+  if (!vv || !tabBar.value) return
+  const offset = Math.max(0, window.innerHeight - vv.height - vv.offsetTop)
+  tabBar.value.style.transform = offset ? `translateY(-${offset}px)` : ''
+}
+
+onMounted(() => {
+  syncTabBarOffset()
+  window.visualViewport?.addEventListener('resize', syncTabBarOffset)
+  window.visualViewport?.addEventListener('scroll', syncTabBarOffset)
+})
+onBeforeUnmount(() => {
+  window.visualViewport?.removeEventListener('resize', syncTabBarOffset)
+  window.visualViewport?.removeEventListener('scroll', syncTabBarOffset)
+})
+
 const links = [
   { to: '/profile', label: 'Профиль', icon: User },
   { to: '/course', label: 'Курс', icon: GraduationCap },
   { to: '/review', label: 'Слова', icon: Repeat },
   { to: '/vocab', label: 'Словарь', icon: Languages },
-  { to: '/false-friends', label: 'Ловушки', icon: TriangleAlert },
   { to: '/rating', label: 'Рейтинг', icon: Trophy },
 ]
 
@@ -38,21 +61,18 @@ const themeIcon = computed(() => THEME_ICON[theme.value])
 </script>
 
 <template>
-  <header
-    class="sticky top-0 z-20 border-b border-[var(--border)] bg-[var(--bg)]/85 backdrop-blur"
-    style="padding-top: env(safe-area-inset-top)"
-  >
+  <header class="sticky top-0 z-20 bg-[var(--bg)]" style="padding-top: env(safe-area-inset-top)">
     <div class="mx-auto flex max-w-3xl items-center gap-1 px-3 py-2">
       <nav class="hidden gap-1 sm:flex">
         <RouterLink
           v-for="l in links"
           :key="l.to"
           :to="l.to"
-          class="flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-semibold transition"
+          class="flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-semibold transition"
           :class="
             isActive(l.to)
-              ? 'bg-[var(--accent-soft)] text-[var(--accent)]'
-              : 'text-[var(--muted)] hover:text-[var(--fg)]'
+              ? 'bg-[var(--accent)] text-white'
+              : 'text-[var(--muted)] hover:bg-[var(--bg-soft)] hover:text-[var(--fg)]'
           "
         >
           <component :is="l.icon" :size="15" :stroke-width="2.25" />{{ l.label }}
@@ -62,7 +82,7 @@ const themeIcon = computed(() => THEME_ICON[theme.value])
       <span class="serbian text-lg font-semibold sm:hidden">ucimo</span>
 
       <button
-        class="ml-auto flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-[var(--muted)] transition hover:bg-[var(--bg-soft)] hover:text-[var(--fg)]"
+        class="ml-auto flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-[var(--muted)] transition hover:bg-[var(--bg-soft)] hover:text-[var(--fg)]"
         :title="`Тема: ${themeMeta.label}`"
         @click="cycleTheme()"
       >
@@ -71,7 +91,7 @@ const themeIcon = computed(() => THEME_ICON[theme.value])
 
       <RouterLink
         to="/profile"
-        class="flex h-9 shrink-0 items-center gap-1.5 rounded-lg px-2.5 text-sm text-[var(--muted)] transition hover:text-[var(--fg)]"
+        class="flex h-9 shrink-0 items-center gap-1.5 rounded-full px-2.5 text-sm text-[var(--muted)] transition hover:bg-[var(--bg-soft)] hover:text-[var(--fg)]"
         title="Профиль"
       >
         <span class="max-w-[7rem] truncate font-semibold text-[var(--fg)]">{{ name }}</span>
@@ -81,17 +101,18 @@ const themeIcon = computed(() => THEME_ICON[theme.value])
 
   <nav
     v-if="!hideTabBar"
-    class="fixed inset-x-0 bottom-0 z-20 grid grid-cols-6 border-t border-[var(--border)] bg-[var(--bg)]/95 backdrop-blur sm:hidden"
-    style="padding-bottom: env(safe-area-inset-bottom)"
+    ref="tabBar"
+    class="fixed inset-x-3 z-20 flex justify-between gap-0.5 rounded-[28px] bg-[var(--card)] p-1.5 shadow-[var(--shadow)] transition-transform duration-150 ease-out sm:hidden"
+    style="bottom: max(0.75rem, env(safe-area-inset-bottom))"
   >
     <RouterLink
       v-for="l in links"
       :key="l.to"
       :to="l.to"
-      class="flex flex-col items-center gap-1 py-2 text-[10px] font-medium transition"
-      :class="isActive(l.to) ? 'text-[var(--accent)]' : 'text-[var(--muted)]'"
+      class="flex flex-1 flex-col items-center gap-0.5 rounded-3xl py-2 text-[10px] font-medium transition"
+      :class="isActive(l.to) ? 'bg-[var(--accent)] text-white' : 'text-[var(--muted)]'"
     >
-      <component :is="l.icon" :size="19" :stroke-width="2.25" />{{ l.label }}
+      <component :is="l.icon" :size="18" :stroke-width="2.25" />{{ l.label }}
     </RouterLink>
   </nav>
 </template>

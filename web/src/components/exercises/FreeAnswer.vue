@@ -12,7 +12,7 @@ const props = defineProps<{
   prior?: LessonAttempt
 }>()
 
-const emit = defineEmits<{ graded: [ok: boolean] }>()
+const emit = defineEmits<{ graded: [ok: boolean]; ungraded: [] }>()
 
 const answer = ref(props.prior?.answer ?? '')
 const sample = ref<string | null>(null)
@@ -34,6 +34,7 @@ function retry() {
   fromPrior.value = false
   sample.value = null
   done.value = false
+  emit('ungraded')
 }
 </script>
 

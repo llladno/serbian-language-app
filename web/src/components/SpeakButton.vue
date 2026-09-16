@@ -27,8 +27,8 @@ function play(e: Event) {
   <button
     v-if="src"
     type="button"
-    class="inline-grid shrink-0 place-items-center rounded-full border border-[var(--border)] text-[var(--muted)] transition hover:border-[var(--accent)] hover:bg-[var(--accent-soft)] hover:text-[var(--accent)] active:scale-90"
-    :class="{ 'border-[var(--accent)] bg-[var(--accent-soft)] text-[var(--accent)]': playing }"
+    class="inline-grid shrink-0 place-items-center rounded-full text-[var(--muted)] transition hover:bg-[var(--accent-soft)] hover:text-[var(--accent)] active:scale-90"
+    :class="{ 'bg-[var(--accent-soft)] text-[var(--accent)]': playing }"
     :style="{ width: size + 'px', height: size + 'px' }"
     :aria-label="playing ? 'играет' : 'озвучить'"
     :title="playing ? 'играет…' : 'озвучить'"

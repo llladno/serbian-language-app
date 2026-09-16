@@ -39,8 +39,8 @@ const translated = computed(() => props.showTranslation || open.value)
           v-if="ru"
           type="button"
           data-test="translate"
-          class="mt-0.5 inline-grid h-[26px] w-[26px] shrink-0 place-items-center rounded-full border border-[var(--border)] text-[var(--muted)] transition hover:border-[var(--accent)] hover:text-[var(--accent)]"
-          :class="{ 'border-[var(--accent)] text-[var(--accent)]': translated }"
+          class="mt-0.5 inline-grid h-[26px] w-[26px] shrink-0 place-items-center rounded-full text-[var(--muted)] transition hover:bg-[var(--accent-soft)] hover:text-[var(--accent)]"
+          :class="{ 'bg-[var(--accent-soft)] text-[var(--accent)]': translated }"
           :aria-label="translated ? 'скрыть перевод' : 'перевести реплику'"
           @click="open = !open"
         >

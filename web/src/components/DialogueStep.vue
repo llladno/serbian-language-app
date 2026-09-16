@@ -15,7 +15,7 @@ const props = defineProps<{
   exercises: Exercise[]
   priors: Record<string, LessonAttempt>
 }>()
-const emit = defineEmits<{ graded: [exerciseId: string, ok: boolean] }>()
+const emit = defineEmits<{ graded: [exerciseId: string, ok: boolean]; ungraded: [exerciseId: string] }>()
 
 const showTranslations = ref(localStorage.getItem('dialogue.translations') === '1')
 function toggleTranslations() {
@@ -64,6 +64,28 @@ function onGraded(exerciseId: string, ok: boolean, result: CheckResult) {
   emit('graded', exerciseId, ok)
 }
 
+// The lesson's back button steps a dialogue one turn at a time rather than
+// leaving the whole step in one click: it undoes the last turn answered
+// *this session* (an id in `answered`), reopening its exercise. A turn
+// already recorded in an earlier session (`priors`, no local `answered`
+// entry) can't be un-asked, so once undoing runs out of local answers —
+// including when the dialogue was already fully done before this visit —
+// stepBack reports false and the lesson moves to the previous step instead.
+function stepBack(): boolean {
+  for (let i = turns.value.length - 1; i >= 0; i--) {
+    const t = turns.value[i]
+    if (t.who === 'me' && t.exercise_id && t.exercise_id in answered) {
+      const exId = t.exercise_id
+      delete answered[exId]
+      emit('ungraded', exId)
+      return true
+    }
+  }
+  return false
+}
+
+defineExpose({ stepBack })
+
 // A settled "me" turn: the canonical line, plus — when the answer was wrong —
 // the miss marker and its explanation, so a mistake is never silently swallowed
 // by the conversation moving on.
@@ -91,8 +113,8 @@ function lineOf(t: { exercise_id?: string; sr?: string; ru?: string; audio?: str
         <button
           type="button"
           data-test="toggle-translations"
-          class="rounded-full border border-[var(--border)] px-3 py-1.5 text-xs text-[var(--muted)] transition hover:border-[var(--accent)] hover:text-[var(--accent)]"
-          :class="{ 'border-[var(--accent)] text-[var(--accent)]': showTranslations }"
+          class="rounded-full bg-[var(--bg-soft)] px-3 py-1.5 text-xs text-[var(--muted)] transition hover:text-[var(--accent)]"
+          :class="{ 'bg-[var(--accent-soft)] text-[var(--accent)]': showTranslations }"
           @click="toggleTranslations"
         >
           переводы
@@ -100,8 +122,8 @@ function lineOf(t: { exercise_id?: string; sr?: string; ru?: string; audio?: str
         <button
           type="button"
           data-test="toggle-autoplay"
-          class="rounded-full border border-[var(--border)] px-3 py-1.5 text-xs text-[var(--muted)] transition hover:border-[var(--accent)] hover:text-[var(--accent)]"
-          :class="{ 'border-[var(--accent)] text-[var(--accent)]': autoplay }"
+          class="rounded-full bg-[var(--bg-soft)] px-3 py-1.5 text-xs text-[var(--muted)] transition hover:text-[var(--accent)]"
+          :class="{ 'bg-[var(--accent-soft)] text-[var(--accent)]': autoplay }"
           @click="toggleAutoplay"
         >
           звук

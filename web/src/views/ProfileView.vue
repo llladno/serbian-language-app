@@ -110,46 +110,6 @@ async function logout() {
     sessionActionError.value = authErrorMessage(e)
   }
 }
-async function logoutAll() {
-  sessionActionError.value = null
-  try {
-    await session.logoutAll()
-    router.push('/login')
-  } catch (e) {
-    sessionActionError.value = authErrorMessage(e)
-  }
-}
-
-// -- danger zone --
-const resetError = ref<string | null>(null)
-async function resetExercises() {
-  if (!confirm('Сбросить весь прогресс по заданиям (ответы и отметки уроков)? Карточки слов останутся.')) return
-  resetError.value = null
-  try {
-    await api.resetExercises()
-    location.reload()
-  } catch (e) {
-    resetError.value = authErrorMessage(e)
-  }
-}
-
-const deletePassword = ref('')
-const deleteBusy = ref(false)
-const deleteError = ref<string | null>(null)
-async function deleteAccount() {
-  if (!confirm('Удалить аккаунт безвозвратно? Это нельзя отменить.')) return
-  deleteBusy.value = true
-  deleteError.value = null
-  try {
-    await api.deleteMe(deletePassword.value || undefined)
-    session.user = null
-    router.push('/login')
-  } catch (e) {
-    deleteError.value = authErrorMessage(e)
-  } finally {
-    deleteBusy.value = false
-  }
-}
 </script>
 
 <template>
@@ -301,35 +261,8 @@ async function deleteAccount() {
 
           <div class="flex flex-wrap gap-2 border-t border-[var(--border)] pt-3">
             <button class="btn btn-ghost" @click="logout">Выйти</button>
-            <button class="btn btn-ghost" @click="logoutAll">Выйти везде</button>
           </div>
           <p v-if="sessionActionError" class="text-sm text-[var(--bad)]">{{ sessionActionError }}</p>
-
-          <div class="space-y-3 border-t border-[var(--border)] pt-3">
-            <p class="font-bold text-[var(--bad)]">Опасная зона</p>
-            <button class="text-sm text-[var(--muted)] hover:text-[var(--bad)]" @click="resetExercises">
-              сбросить прогресс по заданиям
-            </button>
-            <p v-if="resetError" class="text-sm text-[var(--bad)]">{{ resetError }}</p>
-            <div class="space-y-2 border-t border-[var(--border)] pt-3">
-              <input
-                v-if="hasPassword"
-                v-model="deletePassword"
-                type="password"
-                class="field w-full"
-                placeholder="пароль для подтверждения"
-              />
-              <button
-                class="btn"
-                style="background: var(--bad); color: #fff"
-                :disabled="deleteBusy"
-                @click="deleteAccount"
-              >
-                Удалить аккаунт
-              </button>
-              <p v-if="deleteError" class="text-sm text-[var(--bad)]">{{ deleteError }}</p>
-            </div>
-          </div>
         </div>
         </div>
       </Transition>

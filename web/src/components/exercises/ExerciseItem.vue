@@ -8,7 +8,7 @@ import WordBankAnswer from './WordBankAnswer.vue'
 import MatchAnswer from './MatchAnswer.vue'
 
 defineProps<{ lesson: string; exercise: Exercise; prior?: LessonAttempt }>()
-defineEmits<{ graded: [ok: boolean] }>()
+defineEmits<{ graded: [ok: boolean]; ungraded: [] }>()
 
 const textTypes = ['translate', 'fill_blank', 'fix_error', 'listen']
 </script>
@@ -23,6 +23,7 @@ const textTypes = ['translate', 'fill_blank', 'fix_error', 'listen']
     :meta="exercise.meta"
     :prior="prior"
     @graded="$emit('graded', $event)"
+    @ungraded="$emit('ungraded')"
   />
   <FreeAnswer
     v-else-if="exercise.type === 'free'"
@@ -31,6 +32,7 @@ const textTypes = ['translate', 'fill_blank', 'fix_error', 'listen']
     :prompt="exercise.prompt"
     :prior="prior"
     @graded="$emit('graded', $event)"
+    @ungraded="$emit('ungraded')"
   />
   <ChoiceAnswer
     v-else-if="exercise.type === 'choice'"
@@ -40,6 +42,7 @@ const textTypes = ['translate', 'fill_blank', 'fix_error', 'listen']
     :options="exercise.options ?? []"
     :prior="prior"
     @graded="$emit('graded', $event)"
+    @ungraded="$emit('ungraded')"
   />
   <WordBankAnswer
     v-else-if="exercise.type === 'word_bank'"
@@ -49,6 +52,7 @@ const textTypes = ['translate', 'fill_blank', 'fix_error', 'listen']
     :bank="exercise.bank ?? []"
     :prior="prior"
     @graded="$emit('graded', $event)"
+    @ungraded="$emit('ungraded')"
   />
   <MatchAnswer
     v-else-if="exercise.type === 'match'"
@@ -59,6 +63,7 @@ const textTypes = ['translate', 'fill_blank', 'fix_error', 'listen']
     :right="exercise.right ?? []"
     :prior="prior"
     @graded="$emit('graded', $event)"
+    @ungraded="$emit('ungraded')"
   />
   <TextAnswer
     v-else-if="textTypes.includes(exercise.type)"
@@ -69,5 +74,6 @@ const textTypes = ['translate', 'fill_blank', 'fix_error', 'listen']
     :audio="exercise.audio"
     :prior="prior"
     @graded="$emit('graded', $event)"
+    @ungraded="$emit('ungraded')"
   />
 </template>

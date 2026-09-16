@@ -15,7 +15,7 @@ const props = defineProps<{
   right: string[]
   prior?: LessonAttempt
 }>()
-const emit = defineEmits<{ graded: [ok: boolean] }>()
+const emit = defineEmits<{ graded: [ok: boolean]; ungraded: [] }>()
 
 const choices = ref([...props.right].sort(() => Math.random() - 0.5))
 // sparse: only left words that are currently paired have an entry
@@ -100,6 +100,7 @@ function retry() {
   for (const k of Object.keys(picks)) delete picks[k]
   selectedLeft.value = null
   selectedRight.value = null
+  emit('ungraded')
 }
 </script>
 

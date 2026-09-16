@@ -11,7 +11,7 @@ import StepProgress from '../components/StepProgress.vue'
 import BottomBar from '../components/BottomBar.vue'
 import ExerciseBlockView from '../components/exercises/ExerciseBlock.vue'
 import Confetti from '../components/Confetti.vue'
-import { ArrowLeft, ArrowRight, CircleCheckBig, RotateCcw } from 'lucide-vue-next'
+import { ArrowLeft, ArrowRight, CircleCheckBig, X } from 'lucide-vue-next'
 
 const route = useRoute()
 const router = useRouter()
@@ -49,7 +49,7 @@ const isFinalAction = computed(() => atLast.value && (!paginatesExercises.value 
 // How far into the current step's block we are — feeds the single unified
 // progress bar (StepProgress fills the current segment by this fraction).
 const currentFraction = computed(() => {
-  if (!paginatesExercises.value) return 0
+  if (!paginatesExercises.value) return cur.value?.status === 'done' ? 1 : 0
   const len = blockExercises.value.length
   return len ? exIdx.value / len : 0
 })
@@ -83,8 +83,22 @@ const TYPES_WITH_OWN_ACTION = new Set([
   'conjugate',
   'match',
 ])
+// A dialogue step never paginates (it grows in place, see paginatesExercises
+// below), so it falls outside the block/exIdx machinery above — but its
+// active turn can still be a translate/fill_blank exercise with its own
+// pinned "Проверить", which needs the same one-bar-at-a-time treatment.
+const activeDialogueExercise = computed(() => {
+  const s = cur.value
+  if (!s || s.kind !== 'dialogue') return undefined
+  const turn = (s.turns ?? []).find((t) => t.who === 'me' && t.exercise_id && !(t.exercise_id in graded))
+  return blockExercises.value.find((e) => e.id === turn?.exercise_id)
+})
 const showOwnBottomButton = computed(() => {
   const s = cur.value
+  if (s?.kind === 'dialogue') {
+    const ex = activeDialogueExercise.value
+    return !!ex && TYPES_WITH_OWN_ACTION.has(ex.type)
+  }
   const ex = curExercise.value
   if (!s || !ex || !paginatesExercises.value) return false
   if (s.kind === 'reading') return false // optional — keep the shared Далее reachable to skip
@@ -143,6 +157,12 @@ function onGraded(exId: string, ok: boolean) {
   graded[exId] = ok
 }
 
+function onUngraded(exId: string) {
+  delete graded[exId]
+}
+
+const dialogueRef = ref<InstanceType<typeof DialogueStep> | null>(null)
+
 async function next() {
   const s = cur.value
   if (!lesson.value || !s) return
@@ -175,6 +195,10 @@ async function next() {
 // exercises, then steps, and only leaves for the course list once there's
 // nowhere left inside the lesson to go back to.
 function goBack() {
+  if (cur.value?.kind === 'dialogue' && dialogueRef.value?.stepBack()) {
+    window.scrollTo(0, 0)
+    return
+  }
   if (paginatesExercises.value && exIdx.value > 0) {
     exIdx.value--
     window.scrollTo(0, 0)
@@ -199,12 +223,11 @@ async function finish() {
   setTimeout(() => (celebrate.value = false), 3500)
 }
 
-async function resetLesson() {
-  if (!lesson.value) return
-  if (!confirm('Сбросить весь прогресс по уроку и пройти заново?')) return
-  await api.resetLesson(lesson.value.id)
-  store.setStatus(lesson.value.id, 'not_started')
-  await loadLesson(lesson.value.id)
+// Progress is already saved step by step as the learner goes (each answered
+// exercise and completed step is posted to the API), so closing the lesson
+// needs nothing beyond leaving — there is no unsaved state to confirm away.
+function closeLesson() {
+  router.push('/course')
 }
 </script>
 
@@ -238,13 +261,12 @@ async function resetLesson() {
               </p>
             </div>
             <button
-                v-if="Object.keys(priors).length"
                 class="icon-btn shrink-0 ml-auto"
-                title="Сбросить и пройти заново"
-                aria-label="заново"
-                @click="resetLesson"
+                title="Закрыть урок"
+                aria-label="Закрыть урок"
+                @click="closeLesson"
             >
-              <RotateCcw :size="18" :stroke-width="2.25" />
+              <X :size="20" :stroke-width="2.25" />
             </button>
           </div>
           <div class="flex items-center gap-3">
@@ -268,24 +290,40 @@ async function resetLesson() {
                   <ReadingText v-else :serbian="cur.markdown ?? ''" :translation="cur.markdown_ru" />
                 </section>
                 <div v-if="curBlock" class="space-y-4">
-                  <ExerciseBlockView :lesson="lesson.id" :block="curBlock" :ex-idx="exIdx" :priors="priors" @graded="onGraded" />
+                  <ExerciseBlockView
+                    :lesson="lesson.id"
+                    :block="curBlock"
+                    :ex-idx="exIdx"
+                    :priors="priors"
+                    @graded="onGraded"
+                    @ungraded="onUngraded"
+                  />
                 </div>
               </template>
 
               <DialogueStep
                 v-else-if="cur.kind === 'dialogue'"
+                ref="dialogueRef"
                 :lesson="lesson.id"
                 :step="cur"
                 :exercises="curBlock?.exercises ?? []"
                 :priors="priors"
                 @graded="onGraded"
+                @ungraded="onUngraded"
               />
 
               <div v-else-if="curBlock" class="space-y-4">
                 <p v-if="cur.markdown" class="rounded-xl bg-[var(--bg-soft)] px-4 py-2.5 text-sm text-[var(--muted)]">
                   {{ cur.markdown }}
                 </p>
-                <ExerciseBlockView :lesson="lesson.id" :block="curBlock" :ex-idx="exIdx" :priors="priors" @graded="onGraded" />
+                <ExerciseBlockView
+                  :lesson="lesson.id"
+                  :block="curBlock"
+                  :ex-idx="exIdx"
+                  :priors="priors"
+                  @graded="onGraded"
+                  @ungraded="onUngraded"
+                />
               </div>
             </div>
           </Transition>
@@ -293,9 +331,6 @@ async function resetLesson() {
       </div>
 
       <BottomBar v-if="!showOwnBottomButton">
-        <span v-if="!canAdvance" class="mb-2 block text-center text-xs text-[var(--muted)]">
-          ответь на все задания
-        </span>
         <button class="btn btn-primary w-full disabled:opacity-40" :disabled="!canAdvance" @click="next">
           <template v-if="isFinalAction">
             <CircleCheckBig :size="16" :stroke-width="2.5" />
@@ -309,16 +344,17 @@ async function resetLesson() {
 </template>
 
 <style scoped>
+/* Opacity only, deliberately no transform: a `transform` here — even a
+   brief one during enter/leave — gives any `position: fixed` descendant
+   (the own/shared BottomBar rendered inside this transition) a new
+   containing block, so it would pin to this wrapper instead of the
+   viewport and visibly float mid-page for the transition's duration. */
 .step-enter-active,
 .step-leave-active {
-  transition: opacity 0.18s ease, transform 0.18s ease;
+  transition: opacity 0.18s ease;
 }
-.step-enter-from {
-  opacity: 0;
-  transform: translateX(12px);
-}
+.step-enter-from,
 .step-leave-to {
   opacity: 0;
-  transform: translateX(-12px);
 }
 </style>

@@ -15,7 +15,7 @@ const props = defineProps<{
   prior?: LessonAttempt
 }>()
 
-const emit = defineEmits<{ graded: [ok: boolean] }>()
+const emit = defineEmits<{ graded: [ok: boolean]; ungraded: [] }>()
 
 const priorAnswers = props.prior ? props.prior.answer.split(' | ') : []
 const answers = ref<string[]>(props.forms.map((_, i) => priorAnswers[i] ?? ''))
@@ -39,6 +39,7 @@ function retry() {
   result.value = null
   fromPrior.value = false
   answers.value = props.forms.map(() => '')
+  emit('ungraded')
 }
 </script>
 

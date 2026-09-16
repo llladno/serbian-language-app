@@ -12,7 +12,7 @@ const props = defineProps<{
   bank: string[]
   prior?: LessonAttempt
 }>()
-const emit = defineEmits<{ graded: [ok: boolean] }>()
+const emit = defineEmits<{ graded: [ok: boolean]; ungraded: [] }>()
 
 // chips carry a stable index so duplicates ("se", "se") stay distinct
 const chips = ref(
@@ -52,6 +52,7 @@ function retry() {
   result.value = null
   fromPrior.value = false
   picked.value = []
+  emit('ungraded')
 }
 </script>
 

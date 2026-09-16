@@ -26,7 +26,7 @@ function insert(ch: string) {
       :key="ch"
       type="button"
       tabindex="-1"
-      class="serbian min-w-[2rem] rounded-md border border-[var(--border)] px-2 py-1 text-sm leading-none text-[var(--muted)] transition hover:border-[var(--accent)] hover:text-[var(--accent)] active:scale-90"
+      class="serbian min-w-[2rem] rounded-md bg-[var(--bg-soft)] px-2 py-1 text-sm leading-none text-[var(--muted)] transition hover:bg-[var(--accent-soft)] hover:text-[var(--accent)] active:scale-90"
       @pointerdown.prevent="insert(ch)"
     >
       {{ ch }}

@@ -71,20 +71,6 @@ describe('ProfileView', () => {
     expect(w.text()).toContain('Новое имя')
   })
 
-  it('deletes the account and clears the session', async () => {
-    vi.spyOn(api, 'getMe').mockResolvedValue(me({ email: 'g@example.com', email_verified: true }))
-    vi.spyOn(api, 'progress').mockRejectedValue(new Error('n/a'))
-    const del = vi.spyOn(api, 'deleteMe').mockResolvedValue(undefined)
-    const w = mountProfile()
-    await flushPromises()
-    await openSettings(w)
-    await w.find('input[placeholder="пароль для подтверждения"]').setValue('secret123')
-    const buttons = w.findAll('button')
-    await buttons[buttons.length - 1].trigger('click')
-    await flushPromises()
-    expect(del).toHaveBeenCalledWith('secret123')
-  })
-
   it('shows an error when logout fails', async () => {
     vi.spyOn(api, 'getMe').mockResolvedValue(me())
     vi.spyOn(api, 'progress').mockRejectedValue(new Error('n/a'))
@@ -134,18 +120,5 @@ describe('ProfileView', () => {
     expect(api.getMe).toHaveBeenCalledTimes(2) // initial load + refresh after link
     expect(w.text()).toContain('newlink')
     vi.useRealTimers()
-  })
-
-  it('shows an error when resetting exercise progress fails', async () => {
-    vi.spyOn(api, 'getMe').mockResolvedValue(me())
-    vi.spyOn(api, 'progress').mockRejectedValue(new Error('n/a'))
-    vi.spyOn(api, 'resetExercises').mockRejectedValue(new ApiError(400, 'internal error'))
-    const w = mountProfile()
-    await flushPromises()
-    await openSettings(w)
-    const resetBtn = w.findAll('button').find((b) => b.text().includes('сбросить прогресс'))
-    await resetBtn!.trigger('click')
-    await flushPromises()
-    expect(w.text()).toContain('Что-то пошло не так, попробуйте ещё раз')
   })
 })

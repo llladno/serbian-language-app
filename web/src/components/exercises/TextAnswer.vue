@@ -23,7 +23,7 @@ const props = defineProps<{
 // sentence to transcribe lives only in the audio.
 const glossPrompt = computed(() => props.type === 'fill_blank' || props.type === 'fix_error')
 
-const emit = defineEmits<{ graded: [ok: boolean, result: CheckResult] }>()
+const emit = defineEmits<{ graded: [ok: boolean, result: CheckResult]; ungraded: [] }>()
 
 const answer = ref(props.prior?.answer ?? '')
 const result = ref<CheckResult | null>(null)
@@ -46,6 +46,7 @@ function retry() {
   result.value = null
   fromPrior.value = false
   answer.value = ''
+  emit('ungraded')
 }
 </script>
 
@@ -99,7 +100,7 @@ function retry() {
 
     <div v-if="result" class="pop mt-4">
       <p
-        class="mb-1 flex items-center gap-1.5 font-semibold"
+        class="mb-1 flex items-center justify-center gap-1.5 font-semibold"
         :class="result.ok ? 'text-[var(--good)]' : 'text-[var(--bad)]'"
       >
         <span>{{ result.ok ? '✓' : '✗' }}</span>

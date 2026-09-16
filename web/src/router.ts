@@ -22,7 +22,6 @@ import CourseView from './views/CourseView.vue'
 import LessonView from './views/LessonView.vue'
 import ReviewView from './views/ReviewView.vue'
 import VocabView from './views/VocabView.vue'
-import FalseFriendsView from './views/FalseFriendsView.vue'
 import RatingView from './views/RatingView.vue'
 import { useSessionStore } from './stores/session'
 
@@ -77,7 +76,7 @@ const router = createRouter({
     { path: '/lesson/:id', name: 'lesson', component: LessonView, meta: { hideTabBar: true } },
     { path: '/review', name: 'review', component: ReviewView },
     { path: '/vocab', name: 'vocab', component: VocabView },
-    { path: '/false-friends', name: 'false-friends', component: FalseFriendsView },
+    { path: '/false-friends', redirect: { path: '/vocab', query: { tab: 'traps' } } },
     { path: '/rating', name: 'rating', component: RatingView },
   ],
 })

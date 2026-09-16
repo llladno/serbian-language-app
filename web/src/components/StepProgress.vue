@@ -8,12 +8,18 @@ import type { Step } from '../types'
 const props = defineProps<{ steps: Step[]; current: number; currentFraction?: number }>()
 
 function segmentStyle(i: number) {
-  if (i < props.current || props.steps[i].status === 'done') {
-    return { background: 'var(--accent)' }
-  }
   if (i > props.current) {
     return {}
   }
+  if (i < props.current) {
+    // A past step always reads as fully done, even if it technically isn't
+    // (planned/unreachable segments never get here) — no fraction to show.
+    return { background: 'var(--accent)' }
+  }
+  // The current segment always reflects currentFraction, even when this
+  // step's own status is already "done" (reviewing a finished lesson) — so
+  // paging back within it visibly un-fills the bar instead of staying
+  // pinned at 100% just because the step was completed before.
   const pct = Math.max(0, Math.min(1, props.currentFraction ?? 0)) * 100
   const soft = 'color-mix(in srgb, var(--accent) 45%, transparent)'
   return { background: `linear-gradient(to right, var(--accent) ${pct}%, ${soft} ${pct}%)` }
