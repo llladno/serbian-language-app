@@ -25,9 +25,9 @@ afterEach(() => {
 })
 
 describe('useTelegramStart', () => {
-  it('opens the returned URL and polls until done, then closes the tab', async () => {
+  it('opens a blank tab synchronously, points it at the URL, and closes it when done', async () => {
     vi.spyOn(api, 'telegramLoginStart').mockResolvedValue({ url: 'https://t.me/bot?start=tok', token: 'tok' })
-    const popup = { close: vi.fn() } as unknown as Window
+    const popup = { close: vi.fn(), location: { href: '' } } as unknown as Window
     const openSpy = vi.spyOn(window, 'open').mockReturnValue(popup)
     const poll = vi
       .spyOn(api, 'telegramPoll')
@@ -41,7 +41,12 @@ describe('useTelegramStart', () => {
     const onSuccess = vi.fn()
     await tg.start(onSuccess)
     expect(tg.busy.value).toBe(true)
-    expect(openSpy).toHaveBeenCalledWith('https://t.me/bot?start=tok', '_blank')
+    // The blank tab must open before the await, so it stays a trusted popup
+    // in Safari — never with the real URL directly (that would arrive too
+    // late, after the click's user-gesture window has already closed).
+    expect(openSpy).toHaveBeenCalledWith('', '_blank')
+    expect(openSpy).toHaveBeenCalledTimes(1)
+    expect(popup.location.href).toBe('https://t.me/bot?start=tok')
 
     await vi.advanceTimersByTimeAsync(1500)
     expect(poll).toHaveBeenCalledTimes(1)
@@ -77,14 +82,17 @@ describe('useTelegramStart', () => {
     expect(tg.error.value).toBe('Этот Telegram уже привязан к другому аккаунту')
   })
 
-  it('surfaces an error and never opens a tab if the start call itself fails', async () => {
+  it('closes the blank tab and surfaces an error if the start call itself fails', async () => {
     vi.spyOn(api, 'telegramLoginStart').mockRejectedValue(new ApiError(503, 'telegram_disabled'))
-    const openSpy = vi.spyOn(window, 'open')
+    const popup = { close: vi.fn(), location: { href: '' } } as unknown as Window
+    vi.spyOn(window, 'open').mockReturnValue(popup)
 
     const tg = mountHarness('login')
     await tg.start(vi.fn())
 
-    expect(openSpy).not.toHaveBeenCalled()
+    // The blank tab already opened (before the failing request) — it must
+    // not be left dangling once the request errors out.
+    expect(popup.close).toHaveBeenCalledTimes(1)
     expect(tg.busy.value).toBe(false)
     expect(tg.error.value).toBe('Вход через Telegram пока не настроен')
   })

@@ -26,13 +26,20 @@ export function useTelegramStart(kind: 'login' | 'link') {
     busy.value = true
     error.value = null
 
+    // Safari only treats window.open() as a trusted, un-blockable popup when
+    // it runs synchronously inside the click handler — any await first (even
+    // a fast API call) and WebKit silently blocks it. Open a blank tab right
+    // here, before the request, then point it at the real URL once we have it.
+    const popup = window.open('', '_blank')
+
     let token: string
-    let popup: Window | null = null
     try {
       const res = kind === 'login' ? await api.telegramLoginStart() : await api.telegramLinkStart()
       token = res.token
-      popup = window.open(res.url, '_blank')
+      if (popup) popup.location.href = res.url
+      else window.open(res.url, '_blank')
     } catch (e) {
+      popup?.close()
       busy.value = false
       error.value = authErrorMessage(e)
       return
