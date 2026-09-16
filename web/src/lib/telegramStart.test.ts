@@ -25,9 +25,10 @@ afterEach(() => {
 })
 
 describe('useTelegramStart', () => {
-  it('opens the returned URL and polls until done', async () => {
+  it('opens the returned URL and polls until done, then closes the tab', async () => {
     vi.spyOn(api, 'telegramLoginStart').mockResolvedValue({ url: 'https://t.me/bot?start=tok', token: 'tok' })
-    const openSpy = vi.spyOn(window, 'open').mockReturnValue(null)
+    const popup = { close: vi.fn() } as unknown as Window
+    const openSpy = vi.spyOn(window, 'open').mockReturnValue(popup)
     const poll = vi
       .spyOn(api, 'telegramPoll')
       .mockResolvedValueOnce({ status: 'pending' })
@@ -46,10 +47,12 @@ describe('useTelegramStart', () => {
     expect(poll).toHaveBeenCalledTimes(1)
     expect(tg.busy.value).toBe(true) // still pending, keep polling
     expect(onSuccess).not.toHaveBeenCalled()
+    expect(popup.close).not.toHaveBeenCalled()
 
     await vi.advanceTimersByTimeAsync(1500)
     expect(poll).toHaveBeenCalledTimes(2)
     expect(tg.busy.value).toBe(false)
+    expect(popup.close).toHaveBeenCalledTimes(1)
     expect(onSuccess).toHaveBeenCalledWith({
       id: '1',
       name: 'Г',

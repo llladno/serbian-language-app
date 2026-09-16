@@ -27,10 +27,11 @@ export function useTelegramStart(kind: 'login' | 'link') {
     error.value = null
 
     let token: string
+    let popup: Window | null = null
     try {
       const res = kind === 'login' ? await api.telegramLoginStart() : await api.telegramLinkStart()
       token = res.token
-      window.open(res.url, '_blank')
+      popup = window.open(res.url, '_blank')
     } catch (e) {
       busy.value = false
       error.value = authErrorMessage(e)
@@ -42,6 +43,7 @@ export function useTelegramStart(kind: 'login' | 'link') {
         const res = await api.telegramPoll(token)
         if (res.status === 'pending') return
         stop()
+        popup?.close()
         if (res.status === 'ok') {
           onSuccess(res.user)
         } else {
