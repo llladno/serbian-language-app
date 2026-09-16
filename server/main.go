@@ -110,6 +110,16 @@ func main() {
 		if err := telegram.SetWebhook(cfg.TelegramBotToken, webhookURL, secret); err != nil {
 			log.Printf("telegram: setWebhook: %v (harmless if the webhook was already registered externally)", err)
 		}
+		// The chat menu button is how a user actually opens the Mini App
+		// (initData auto-login in stores/session.ts, then straight to
+		// /profile — there is no other in-Telegram entry point). Points at
+		// /profile, not the bare origin: "/" is claimed by the Nuxt landing
+		// page, which has no session store and would never run the
+		// auto-login at all. Same fire-and-forget failure handling as
+		// SetWebhook above.
+		if err := telegram.SetChatMenuButton(cfg.TelegramBotToken, cfg.AppBaseURL+"/profile", "Открыть ucimo"); err != nil {
+			log.Printf("telegram: setChatMenuButton: %v (harmless if it was already set externally)", err)
+		}
 		telegramBotUsername = username
 		telegramWebhookSecret = secret
 	}

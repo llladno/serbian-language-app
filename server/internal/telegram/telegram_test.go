@@ -1,6 +1,7 @@
 package telegram
 
 import (
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -95,6 +96,43 @@ func TestSendMessageSendsChatIDAndText(t *testing.T) {
 	}
 	if form.Get("text") != "Готово!" {
 		t.Errorf("text = %q", form.Get("text"))
+	}
+}
+
+func TestSetChatMenuButtonSendsWebAppButton(t *testing.T) {
+	var gotBody string
+	withTestServer(t, func(w http.ResponseWriter, r *http.Request) {
+		r.ParseForm()
+		gotBody = r.Form.Encode()
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte(`{"ok":true,"result":true}`))
+	})
+
+	if err := SetChatMenuButton("tok", "https://ucimo.ru/profile", "Открыть ucimo"); err != nil {
+		t.Fatalf("SetChatMenuButton: %v", err)
+	}
+	form, err := url.ParseQuery(gotBody)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var button struct {
+		Type   string `json:"type"`
+		Text   string `json:"text"`
+		WebApp struct {
+			URL string `json:"url"`
+		} `json:"web_app"`
+	}
+	if err := json.Unmarshal([]byte(form.Get("menu_button")), &button); err != nil {
+		t.Fatalf("unmarshal menu_button: %v", err)
+	}
+	if button.Type != "web_app" {
+		t.Errorf("type = %q, want web_app", button.Type)
+	}
+	if button.Text != "Открыть ucimo" {
+		t.Errorf("text = %q", button.Text)
+	}
+	if button.WebApp.URL != "https://ucimo.ru/profile" {
+		t.Errorf("web_app.url = %q", button.WebApp.URL)
 	}
 }
 

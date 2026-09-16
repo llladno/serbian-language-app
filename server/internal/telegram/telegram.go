@@ -1,8 +1,9 @@
 // Package telegram is a thin client for the Telegram Bot API — just the
-// three calls the bot-login flow needs (GetMe, SetWebhook, SendMessage). It
-// does not touch signature verification (initData/widget HMAC checks live in
-// internal/auth) or webhook update parsing (that's api-layer concern, since
-// only a couple of fields off the update actually matter).
+// calls the bot-login flow needs (GetMe, SetWebhook, SendMessage,
+// SetChatMenuButton). It does not touch signature verification
+// (initData/widget HMAC checks live in internal/auth) or webhook update
+// parsing (that's api-layer concern, since only a couple of fields off the
+// update actually matter).
 package telegram
 
 import (
@@ -98,6 +99,22 @@ func SendMessage(botToken string, chatID int64, text string) error {
 		"text":    {text},
 	}
 	return call(botToken, "sendMessage", params, nil)
+}
+
+// SetChatMenuButton sets the bot's default menu button — shown to every user
+// in their private chat with the bot — to open webAppURL as a Telegram Mini
+// App. text is the button label (Telegram caps it at 64 characters).
+func SetChatMenuButton(botToken, webAppURL, text string) error {
+	button, err := json.Marshal(map[string]any{
+		"type":    "web_app",
+		"text":    text,
+		"web_app": map[string]string{"url": webAppURL},
+	})
+	if err != nil {
+		return fmt.Errorf("telegram setChatMenuButton: marshal menu_button: %w", err)
+	}
+	params := url.Values{"menu_button": {string(button)}}
+	return call(botToken, "setChatMenuButton", params, nil)
 }
 
 // ParseStartToken extracts the token from a "/start <token>" command message,
