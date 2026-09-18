@@ -11,7 +11,8 @@ const session = useSessionStore()
 const name = ref('')
 const email = ref('')
 const password = ref('')
-const consent = ref(false)
+const consentPrivacy = ref(false)
+const consentTerms = ref(false)
 const busy = ref(false)
 const error = ref<string | null>(null)
 
@@ -56,13 +57,18 @@ async function submit() {
         <p v-if="strength" class="mt-1 text-xs" :style="{ color: strength.color }">{{ strength.label }}</p>
       </div>
       <label class="flex items-start gap-2 text-xs text-[var(--muted)]">
-        <input v-model="consent" type="checkbox" required class="mt-0.5" />
+        <input v-model="consentPrivacy" type="checkbox" required class="mt-0.5" />
+        <span>
+          Я даю согласие на обработку персональных данных в соответствии с
+          <a href="/privacy" target="_blank" rel="noopener" class="text-[var(--accent)]"
+            >Политикой конфиденциальности</a
+          >
+        </span>
+      </label>
+      <label class="flex items-start gap-2 text-xs text-[var(--muted)]">
+        <input v-model="consentTerms" type="checkbox" required class="mt-0.5" />
         <span>
           Я принимаю
-          <a href="/privacy" target="_blank" rel="noopener" class="text-[var(--accent)]"
-            >Политику конфиденциальности</a
-          >
-          и
           <a href="/terms" target="_blank" rel="noopener" class="text-[var(--accent)]"
             >Условия использования</a
           >

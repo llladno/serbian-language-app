@@ -41,22 +41,15 @@ export default defineNuxtConfig({
         { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: '' },
         {
           rel: 'stylesheet',
-          href: 'https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Lora:ital,wght@0,500;0,600;1,500&display=swap',
+          href: 'https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap',
         },
       ],
-      // Yandex.Metrika — served as a same-origin file (public/metrika-init.js)
-      // rather than inlined, so the app's CSP doesn't need 'unsafe-inline' for
-      // script-src; only https://mc.yandex.ru needs allowlisting (see
-      // server/internal/api/middleware.go). Hand-rolled rather than a
-      // third-party Nuxt module (those are mostly unmaintained / Nuxt 2-era).
-      script: [{ key: 'yandex-metrika', src: '/metrika-init.js' }],
-      noscript: [
-        {
-          key: 'yandex-metrika-noscript',
-          innerHTML:
-            '<div><img src="https://mc.yandex.ru/watch/112668663" style="position:absolute; left:-9999px;" alt="" /></div>',
-        },
-      ],
+      // Yandex.Metrika (public/metrika-init.js) is NOT loaded here — it's
+      // injected by public/cookie-consent.js (registered in app.vue) only
+      // after the visitor accepts the cookie banner. No consent, no
+      // tracking — including for no-JS visitors, so there's no noscript
+      // fallback pixel either (152-FZ requires real, revocable consent,
+      // not a passive mention in the privacy policy).
     },
   },
 })

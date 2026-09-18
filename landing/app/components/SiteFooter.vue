@@ -5,6 +5,7 @@
       <nav class="footer__links">
         <NuxtLink to="/privacy">Политика конфиденциальности</NuxtLink>
         <NuxtLink to="/terms">Условия использования</NuxtLink>
+        <a id="cookie-settings" href="#">Настройки cookie</a>
       </nav>
     </div>
   </footer>
