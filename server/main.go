@@ -166,8 +166,7 @@ func main() {
 		}
 	}()
 
-	mux := http.NewServeMux()
-	mux.Handle("/api/", api.Handler(api.Deps{
+	apiDeps := api.Deps{
 		Course:                getCourse,
 		Store:                 st,
 		Now:                   time.Now,
@@ -182,7 +181,25 @@ func main() {
 		TelegramBotUsername:   telegramBotUsername,
 		TelegramWebhookSecret: telegramWebhookSecret,
 		SendTelegramMessage:   sendTelegramMessage,
-	}))
+	}
+
+	// Bot reminders: nudge Telegram-linked accounts that just cleared
+	// today's review queue, or that have gone quiet for 24h+. No-op without
+	// a bot to send through.
+	if cfg.TelegramEnabled() {
+		go func() {
+			t := time.NewTicker(20 * time.Minute)
+			defer t.Stop()
+			for range t.C {
+				if err := api.RunReminderSweep(apiDeps, time.Now()); err != nil {
+					log.Printf("reminder sweep: %v", err)
+				}
+			}
+		}()
+	}
+
+	mux := http.NewServeMux()
+	mux.Handle("/api/", api.Handler(apiDeps))
 	imgDir := filepath.Join(*contentDir, "images")
 	mux.Handle("/img/", cacheControl(http.StripPrefix("/img/", http.FileServer(http.Dir(imgDir)))))
 	audioDir := filepath.Join(*contentDir, "audio")

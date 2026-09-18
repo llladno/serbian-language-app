@@ -32,7 +32,7 @@ func newStore(t *testing.T) *Store {
 	}
 	if IsPostgresDSN(dsn) {
 		truncate := func() {
-			s.db.Exec(`TRUNCATE users, identities, sessions, email_tokens, srs_cards, reviews, attempts, lesson_progress, lesson_step_progress`)
+			s.db.Exec(`TRUNCATE users, identities, sessions, email_tokens, srs_cards, reviews, attempts, lesson_progress, lesson_step_progress, bot_reminders`)
 		}
 		truncate()
 		t.Cleanup(func() { truncate(); s.Close() })

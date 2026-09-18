@@ -688,21 +688,20 @@ func buildOptions(correct string, pool []string) []string {
 	return out
 }
 
-func (h handlers) reviewQueue(w http.ResponseWriter, r *http.Request) {
-	us, ok := h.user(w, r)
-	if !ok {
-		return
-	}
+// dueQueueRows computes today's review queue for us — due learning/review
+// cards plus the gated batch of new vocab/false-friend cards — the same
+// selection reviewQueue turns into response DTOs. Split out so the reminder
+// sweep (RunReminderSweep) can ask "is there anything left to do today?"
+// without duplicating the new-card budget logic.
+func (h handlers) dueQueueRows(us *store.UserStore, now time.Time) ([]store.CardRow, error) {
 	if err := us.EnsureCards(h.cardSeeds()); err != nil {
-		fail(w, 500, err.Error())
-		return
+		return nil, err
 	}
 	c := h.Course()
 
 	passedVocab, err := us.PassedCardIDs("vocab:")
 	if err != nil {
-		fail(w, 500, err.Error())
-		return
+		return nil, err
 	}
 	// Split the newPerDay budget between vocab and false friends. Below
 	// beginnerWordCount passed words, vocab gets the whole budget (in
@@ -721,11 +720,20 @@ func (h handlers) reviewQueue(w http.ResponseWriter, r *http.Request) {
 	if !beginner {
 		ffNewLimit = newPerDay - len(allowedNewVocab)
 	}
-	rows, err := us.DueQueue(h.Now(), allowedNewVocab, ffNewLimit)
+	return us.DueQueue(now, allowedNewVocab, ffNewLimit)
+}
+
+func (h handlers) reviewQueue(w http.ResponseWriter, r *http.Request) {
+	us, ok := h.user(w, r)
+	if !ok {
+		return
+	}
+	rows, err := h.dueQueueRows(us, h.Now())
 	if err != nil {
 		fail(w, 500, err.Error())
 		return
 	}
+	c := h.Course()
 	vocab := map[string]content.Vocab{}
 	vocabBacks := make([]string, 0, len(c.Vocab))
 	for _, v := range c.Vocab {
