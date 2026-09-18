@@ -2,6 +2,11 @@
   <header class="header">
     <div class="header__inner">
       <NuxtLink to="/" class="wordmark">ucimo</NuxtLink>
+      <nav class="header__nav" aria-label="Разделы страницы">
+        <a href="/#how">Как это работает</a>
+        <a href="/#roadmap">Программа курса</a>
+        <a href="/#faq">Вопросы</a>
+      </nav>
       <a class="btn btn--ghost" href="/login">Войти</a>
     </div>
   </header>
@@ -14,12 +19,37 @@
 }
 
 .header__inner {
-  max-width: 960px;
+  max-width: 1080px;
   margin: 0 auto;
   padding: 16px 20px;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 16px;
+}
+
+.header__nav {
+  display: flex;
+  gap: 24px;
+  flex: 1;
+  justify-content: center;
+}
+
+.header__nav a {
+  color: var(--color-text);
+  text-decoration: none;
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.header__nav a:hover {
+  color: var(--color-primary);
+}
+
+@media (max-width: 760px) {
+  .header__nav {
+    display: none;
+  }
 }
 
 .wordmark {
