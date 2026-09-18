@@ -331,7 +331,7 @@ steps:
         exercise:
           id: "09.16.3"
           type: fill_blank
-          prompt: "Jedan ___, molim."
+          prompt: "«Один сок, пожалуйста» → Jedan ___, molim."
           accept: ["sok"]
 
       - who: npc

@@ -328,7 +328,7 @@ steps:
         exercise:
           id: "05.18.2"
           type: fill_blank
-          prompt: "___ komada, molim."
+          prompt: "«Две штуки, пожалуйста» → ___ komada, molim."
           accept: ["Dva"]
           explain: "«komad» — счётное слово: dva komada, tri komada."
 

@@ -229,7 +229,7 @@ steps:
         exercise:
           id: "02.10.3"
           type: fill_blank
-          prompt: "Malo. ___ srpski."
+          prompt: "«Немного. Учу сербский» → Malo. ___ srpski."
           accept: ["Učim"]
           explain: "učiti → ja učim. «Учу сербский» — про процесс, поэтому настоящее время."
 
