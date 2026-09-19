@@ -11,6 +11,10 @@ RUN npm run build          # -> /web/dist
 # ---- 2. build the Nuxt landing page ----
 FROM node:22-alpine AS landing
 WORKDIR /landing
+# better-sqlite3 (via @nuxt/content) compiles a native addon at install time
+# (node-gyp) — needs a C++ toolchain + Python, absent from bare Alpine.
+# Discarded with this whole stage once .output/public is copied out below.
+RUN apk add --no-cache python3 make g++
 COPY landing/package.json landing/package-lock.json ./
 RUN npm ci
 COPY landing/ ./
