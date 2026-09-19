@@ -26,3 +26,11 @@
 - [Регистрация](https://ucimo.ru/register): создать аккаунт и начать
   первый урок
 - [Войти](https://ucimo.ru/login): вход в приложение
+
+## Блог
+
+- [Сербский язык с нуля самостоятельно: пошаговый план](https://ucimo.ru/blog/kak-vyuchit-serbskiy-yazyk-samostoyatelno-s-nulya)
+- [Ложные друзья переводчика в сербском языке](https://ucimo.ru/blog/lozhnye-druzya-perevodchika-serbskiy-yazyk)
+- [Кириллица или латиница: на каком алфавите учить сербский язык](https://ucimo.ru/blog/kirillitsa-ili-latinitsa-serbskiy-yazyk)
+- [Сербский язык похож на русский или нет? Сходства и различия](https://ucimo.ru/blog/serbskiy-yazyk-pohozh-na-russkiy)
+- [Какой сербский язык нужен для переезда в Сербию](https://ucimo.ru/blog/serbskiy-yazyk-dlya-pereezda-v-serbiyu)

@@ -5,11 +5,14 @@
   "scripts": {
     "build": "nuxt build",
     "dev": "nuxt dev",
-    "generate": "nuxt generate",
+    "generate": "nuxt generate && npm run strip-content-client-db",
+    "strip-content-client-db": "rm -rf .output/public/__nuxt_content && rm -f .output/public/_nuxt/sqlite3*.wasm",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare"
   },
   "dependencies": {
+    "@nuxt/content": "^3.16.0",
+    "better-sqlite3": "^13.0.3",
     "nuxt": "^4.5.2",
     "vue": "^3.5.42",
     "vue-router": "^5.3.1"

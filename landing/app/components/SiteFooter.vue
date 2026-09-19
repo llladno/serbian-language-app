@@ -3,6 +3,7 @@
     <div class="footer__inner">
       <span>ucimo</span>
       <nav class="footer__links">
+        <NuxtLink to="/blog">Блог</NuxtLink>
         <NuxtLink to="/privacy">Политика конфиденциальности</NuxtLink>
         <NuxtLink to="/terms">Условия использования</NuxtLink>
         <a id="cookie-settings" href="#">Настройки cookie</a>

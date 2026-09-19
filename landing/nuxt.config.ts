@@ -1,14 +1,33 @@
+import { readdirSync } from 'node:fs'
+import { fileURLToPath } from 'node:url'
+
+// Blog post routes are derived from the files on disk rather than hardcoded,
+// so a new post under content/blog/ automatically gets prerendered and
+// picked up by sitemap.xml/rss.xml without editing this list by hand.
+const blogPostRoutes = readdirSync(
+  fileURLToPath(new URL('./content/blog', import.meta.url)),
+)
+  .filter((file) => file.endsWith('.md'))
+  .map((file) => `/blog/${file.replace(/\.md$/, '')}`)
+
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
   css: ['~/assets/css/main.css'],
+  modules: ['@nuxt/content'],
 
   // Purely static content, zero interactivity (just <a href> links) — skip
   // shipping Nuxt's own JS/hydration bundle in the generated output. Also
   // sidesteps a real conflict: Nuxt's inline hydration bootstrap script
   // would otherwise be blocked by the app's CSP, which has no 'unsafe-inline'
   // for script-src (see server/internal/api/middleware.go).
+  //
+  // Because of this, @nuxt/content's client-side SQLite (WASM + SQL dump,
+  // for browser-side content queries after hydration) never gets fetched —
+  // there's no client JS left to run it. `npm run generate` strips both
+  // from the output afterwards (see package.json) so they don't add dead
+  // weight to the embedded Go binary.
   features: {
     noScripts: 'production',
   },
@@ -18,7 +37,15 @@ export default defineNuxtConfig({
   nitro: {
     prerender: {
       crawlLinks: false,
-      routes: ['/', '/privacy', '/terms'],
+      routes: [
+        '/',
+        '/privacy',
+        '/terms',
+        '/blog',
+        '/sitemap.xml',
+        '/rss.xml',
+        ...blogPostRoutes,
+      ],
     },
   },
 
@@ -42,6 +69,12 @@ export default defineNuxtConfig({
         {
           rel: 'stylesheet',
           href: 'https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap',
+        },
+        {
+          rel: 'alternate',
+          type: 'application/rss+xml',
+          title: 'ucimo — блог о сербском языке',
+          href: '/rss.xml',
         },
       ],
       // Yandex.Metrika (public/metrika-init.js) is NOT loaded here — it's

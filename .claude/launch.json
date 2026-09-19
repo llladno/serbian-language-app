@@ -6,6 +6,12 @@
       "runtimeExecutable": "make",
       "runtimeArgs": ["dev"],
       "port": 5173
+    },
+    {
+      "name": "landing",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "landing", "run", "dev"],
+      "port": 3000
     }
   ]
 }

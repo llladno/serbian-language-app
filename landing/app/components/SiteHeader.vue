@@ -6,6 +6,7 @@
         <a href="/#how">Как это работает</a>
         <a href="/#roadmap">Программа курса</a>
         <a href="/#faq">Вопросы</a>
+        <NuxtLink to="/blog">Блог</NuxtLink>
       </nav>
       <a class="btn btn--ghost" href="/login">Войти</a>
     </div>
