@@ -54,6 +54,35 @@ const dueTotal = computed(() =>
 <template>
   <p v-if="error" class="card p-4 text-[var(--bad)]">{{ error }}</p>
 
+  <div v-else-if="!progress" class="space-y-4">
+    <div class="grid grid-cols-1 gap-4 xl:grid-cols-2">
+      <div class="card flex items-center gap-4 p-5">
+        <div class="skel h-20 w-20 shrink-0 rounded-full"></div>
+        <div class="min-w-0 flex-1 space-y-2">
+          <div class="skel h-5 w-3/5"></div>
+          <div class="skel h-3.5 w-4/5"></div>
+        </div>
+      </div>
+      <div class="card p-5">
+        <div class="skel mb-3 h-4 w-32"></div>
+        <div class="skel h-16 w-full"></div>
+      </div>
+    </div>
+    <div class="grid grid-cols-1 gap-4 xl:grid-cols-2">
+      <div class="card space-y-2 p-4">
+        <div class="skel h-3 w-24"></div>
+        <div class="skel h-5 w-3/5"></div>
+      </div>
+      <div class="card flex gap-4 p-4">
+        <div class="skel h-[72px] w-[72px] shrink-0 rounded-xl"></div>
+        <div class="min-w-0 flex-1 space-y-2">
+          <div class="skel h-3 w-20"></div>
+          <div class="skel h-6 w-2/5"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div v-else-if="progress" class="space-y-4">
     <div class="grid grid-cols-1 gap-4 xl:grid-cols-2">
       <RouterLink

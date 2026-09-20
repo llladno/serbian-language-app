@@ -235,7 +235,28 @@ function closeLesson() {
   <Confetti v-if="celebrate" />
   <p v-if="error" class="card p-4 text-[var(--bad)]">{{ error }}</p>
 
-  <template v-else-if="lesson">
+  <div v-else-if="!lesson" class="flex min-h-[calc(100dvh-11rem)] flex-col">
+    <header class="shrink-0 pb-4">
+      <div class="flex items-center w-full gap-3">
+        <div class="skel h-11 w-11 shrink-0 rounded-full"></div>
+        <div class="flex-1 space-y-1.5">
+          <div class="skel h-3.5 w-2/5"></div>
+          <div class="skel h-2.5 w-1/4"></div>
+        </div>
+      </div>
+      <div class="skel mt-3 h-1.5 w-full rounded-full"></div>
+    </header>
+    <div class="flex flex-1 flex-col justify-center">
+      <div class="card space-y-3 p-5 sm:p-6">
+        <div class="skel h-5 w-1/3"></div>
+        <div class="skel h-3.5 w-full"></div>
+        <div class="skel h-3.5 w-full"></div>
+        <div class="skel h-3.5 w-4/5"></div>
+      </div>
+    </div>
+  </div>
+
+  <template v-else>
     <div v-if="lesson.planned">
       <RouterLink to="/course" class="text-sm text-[var(--muted)] hover:text-[var(--fg)]">← к курсу</RouterLink>
       <div class="card mt-4 border-dashed p-8 text-center">

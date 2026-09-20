@@ -5,11 +5,14 @@ import type { Progress } from '../types'
 import ProgressRing from './ProgressRing.vue'
 
 const progress = ref<Progress | null>(null)
+const loading = ref(true)
 onMounted(async () => {
   try {
     progress.value = await api.progress()
   } catch {
     // silent — this is a secondary widget, ProgressDashboard already surfaces load errors
+  } finally {
+    loading.value = false
   }
 })
 
@@ -18,7 +21,17 @@ const totalLessons = computed(() => (progress.value ? progress.value.phases.redu
 </script>
 
 <template>
-  <div v-if="progress" class="card p-5">
+  <div v-if="loading" class="card p-5">
+    <div class="skel mb-3 h-4 w-40"></div>
+    <div class="flex flex-wrap justify-around gap-4">
+      <div v-for="i in 3" :key="i" class="flex flex-col items-center gap-1.5">
+        <div class="skel h-[72px] w-[72px] rounded-full"></div>
+        <div class="skel h-3 w-14"></div>
+      </div>
+    </div>
+  </div>
+
+  <div v-else-if="progress" class="card p-5">
     <p class="mb-3 font-bold">
       Прогресс <span class="text-[var(--muted)]">· {{ totalDone }} / {{ totalLessons }} уроков</span>
     </p>

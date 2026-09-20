@@ -104,7 +104,14 @@ onUnmounted(() => window.removeEventListener('keydown', onKey))
     </div>
   </div>
 
-  <p v-if="loading" class="text-[var(--muted)]">Загрузка…</p>
+  <div v-if="loading" class="space-y-5">
+    <div class="skel h-1.5 w-full rounded-full"></div>
+    <div class="card flex min-h-[13rem] flex-col items-center justify-center gap-3 p-8">
+      <div class="skel h-9 w-40"></div>
+      <div class="skel h-4 w-24"></div>
+    </div>
+    <div class="skel h-12 w-full rounded-2xl"></div>
+  </div>
   <p v-else-if="error" class="card p-4 text-[var(--bad)]">{{ error }}</p>
 
   <!-- session summary -->

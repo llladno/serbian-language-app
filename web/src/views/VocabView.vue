@@ -32,6 +32,7 @@ const error = ref<string | null>(null)
 
 const allVocab = ref<Vocab[]>([])
 const allTraps = ref<FalseFriend[]>([])
+const initialLoading = ref(true)
 
 watch(tab, (v) => {
   router.replace({ query: { ...route.query, tab: v === 'traps' ? 'traps' : undefined } })
@@ -53,6 +54,8 @@ async function load() {
     error.value = null
   } catch (e) {
     error.value = (e as Error).message
+  } finally {
+    initialLoading.value = false
   }
 }
 onMounted(load)
@@ -135,7 +138,17 @@ function nextCard() {
   </div>
   <SerbianKeys class="mb-3" />
 
-  <Transition name="fade" mode="out-in">
+  <div v-if="initialLoading" class="space-y-2">
+    <div v-for="r in 6" :key="r" class="card flex gap-3 p-3">
+      <div class="skel h-12 w-12 shrink-0 rounded-xl"></div>
+      <div class="min-w-0 flex-1 space-y-1.5">
+        <div class="skel h-5 w-2/5"></div>
+        <div class="skel h-3.5 w-3/5"></div>
+      </div>
+    </div>
+  </div>
+
+  <Transition v-else name="fade" mode="out-in">
     <div :key="tab">
       <template v-if="tab === 'words'">
         <div class="mb-3 flex items-center gap-3 text-sm text-[var(--muted)]">

@@ -116,6 +116,33 @@ async function logout() {
   <div class="space-y-4">
     <p v-if="loadError" class="card p-4 text-[var(--bad)]">{{ loadError }}</p>
 
+    <div v-else-if="!me" class="grid grid-cols-1 items-start gap-4 lg:grid-cols-3">
+      <div class="space-y-4 lg:col-span-2 lg:order-1">
+        <div class="card space-y-3 p-5">
+          <div class="skel h-20 w-full rounded-2xl"></div>
+          <div class="skel h-12 w-full rounded-2xl"></div>
+        </div>
+        <div class="card p-5">
+          <div class="skel mb-3 h-4 w-40"></div>
+          <div class="flex flex-wrap justify-around gap-4">
+            <div v-for="i in 3" :key="i" class="skel h-[72px] w-[72px] rounded-full"></div>
+          </div>
+        </div>
+      </div>
+      <div class="space-y-4 lg:sticky lg:top-20 lg:order-2 lg:col-span-1">
+        <div class="card space-y-3 p-5">
+          <div class="skel h-6 w-32"></div>
+          <div class="skel h-3.5 w-40"></div>
+          <div class="skel h-3.5 w-28"></div>
+        </div>
+        <div class="card space-y-2 p-5">
+          <div class="skel h-4 w-20"></div>
+          <div class="skel h-3.5 w-full"></div>
+          <div class="skel h-3.5 w-full"></div>
+        </div>
+      </div>
+    </div>
+
     <div v-else-if="me" class="grid grid-cols-1 items-start gap-4 lg:grid-cols-3">
     <div class="space-y-4 lg:col-span-2 lg:order-1">
       <ProgressDashboard v-if="me" />

@@ -6,6 +6,7 @@ import type { LeaderRow } from '../types'
 
 const rows = ref<LeaderRow[]>([])
 const error = ref<string | null>(null)
+const loading = ref(true)
 const session = useSessionStore()
 
 onMounted(async () => {
@@ -13,6 +14,8 @@ onMounted(async () => {
     rows.value = await api.leaderboard()
   } catch (e) {
     error.value = (e as Error).message
+  } finally {
+    loading.value = false
   }
 })
 
@@ -31,6 +34,20 @@ function activeLabel(d: string) {
   <p class="mb-4 text-sm text-[var(--muted)]">Прогресс всех, кто занимается по этому курсу.</p>
 
   <p v-if="error" class="card p-4 text-[var(--bad)]">{{ error }}</p>
+
+  <div v-else-if="loading" class="space-y-2">
+    <div v-for="i in 6" :key="i" class="card flex items-center gap-3 p-4">
+      <div class="skel h-5 w-5 shrink-0 rounded"></div>
+      <div class="min-w-0 flex-1 space-y-1.5">
+        <div class="skel h-4 w-2/5"></div>
+        <div class="skel h-3.5 w-3/5"></div>
+      </div>
+      <div class="shrink-0 space-y-1.5 text-right">
+        <div class="skel ml-auto h-4 w-8"></div>
+        <div class="skel h-3 w-16"></div>
+      </div>
+    </div>
+  </div>
 
   <div v-else class="space-y-2">
     <div

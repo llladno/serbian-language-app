@@ -26,7 +26,21 @@ function badgeClass(lesson?: LessonRef) {
 <template>
   <h1 class="mb-4 text-2xl font-extrabold">Курс</h1>
 
-  <p v-if="loading" class="text-[var(--muted)]">Загрузка…</p>
+  <div v-if="loading" class="space-y-8">
+    <section v-for="s in 2" :key="s">
+      <div class="skel mb-3 h-3.5 w-24"></div>
+      <div class="space-y-3">
+        <div v-for="r in 3" :key="r" class="card flex items-center gap-3.5 p-4">
+          <div class="skel h-11 w-11 shrink-0 rounded-full"></div>
+          <span class="min-w-0 flex-1 space-y-1.5">
+            <span class="skel block h-4 w-3/5"></span>
+            <span class="skel block h-3 w-4/5"></span>
+          </span>
+          <div class="skel h-6 w-14 shrink-0 rounded-full"></div>
+        </div>
+      </div>
+    </section>
+  </div>
   <p v-else-if="error" class="card p-4 text-[var(--bad)]">
     {{ error }} <button class="font-semibold text-[var(--accent)]" @click="store.load(true)">повторить</button>
   </p>
