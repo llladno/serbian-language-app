@@ -10,6 +10,7 @@ const MESSAGES: Record<string, string> = {
   'password must be 8 to 128 characters': 'Пароль должен быть от 8 до 128 символов',
   'password must be 8-128 characters': 'Пароль должен быть от 8 до 128 символов',
   'name must be 1 to 40 characters': 'Имя должно быть от 1 до 40 символов',
+  'message must not be empty': 'Напишите сообщение перед отправкой',
   'bad request body': 'Некорректный запрос',
   'too many attempts': 'Слишком много попыток, попробуйте позже',
   wrong_password: 'Неверный пароль',

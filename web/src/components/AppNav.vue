@@ -3,6 +3,7 @@ import { RouterLink, useRoute } from 'vue-router'
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import {
   GraduationCap,
+  Headphones,
   Languages,
   MonitorSmartphone,
   Moon,
@@ -12,6 +13,10 @@ import {
   User,
 } from 'lucide-vue-next'
 import { theme, cycleTheme, THEME_META } from '../theme'
+import { useSupportModal } from '../lib/supportModal'
+import SupportModal from './SupportModal.vue'
+
+const { openModal } = useSupportModal()
 
 defineProps<{ name: string; hideTabBar?: boolean }>()
 
@@ -89,6 +94,16 @@ const themeIcon = computed(() => THEME_ICON[theme.value])
         <component :is="themeIcon" :size="17" :stroke-width="2.25" />
       </button>
 
+      <button
+        class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-[var(--muted)] transition hover:bg-[var(--bg-soft)] hover:text-[var(--fg)]"
+        title="Поддержка"
+        aria-label="Поддержка"
+        data-test="open-support"
+        @click="openModal"
+      >
+        <Headphones :size="17" :stroke-width="2.25" />
+      </button>
+
       <RouterLink
         to="/profile"
         class="flex h-9 shrink-0 items-center gap-1.5 rounded-full px-2.5 text-sm text-[var(--muted)] transition hover:bg-[var(--bg-soft)] hover:text-[var(--fg)]"
@@ -115,4 +130,6 @@ const themeIcon = computed(() => THEME_ICON[theme.value])
       <component :is="l.icon" :size="18" :stroke-width="2.25" />{{ l.label }}
     </RouterLink>
   </nav>
+
+  <SupportModal />
 </template>

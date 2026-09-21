@@ -152,6 +152,7 @@ func Handler(deps Deps) http.Handler {
 	root.HandleFunc("DELETE /api/me/telegram", h.requireSession(h.unlinkTelegram))
 	root.HandleFunc("DELETE /api/me/sessions/{id}", h.requireSession(h.deleteSession))
 	root.HandleFunc("DELETE /api/me", h.requireSession(h.deleteMe))
+	root.HandleFunc("POST /api/me/support", h.requireSession(h.createSupportMessage))
 
 	// Everything else under /api/ requires a resolved caller, and only these
 	// legacy content routes still honour the X-User bridge (the pre-session

@@ -111,6 +111,8 @@ export const api = {
   deleteSession: (id: string) => request<void>(`/me/sessions/${id}`, { method: 'DELETE' }),
   deleteMe: (password?: string) =>
     request<void>('/me', { method: 'DELETE', body: JSON.stringify({ password }) }),
+  sendSupportMessage: (message: string) =>
+    request<{ status: string }>('/me/support', { method: 'POST', body: JSON.stringify({ message }) }),
 
   course: () => request<Course>('/course'),
   lesson: (id: string) => request<Lesson>(`/lessons/${id}`),

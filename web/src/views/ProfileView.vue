@@ -10,6 +10,7 @@ import { useTelegramStart } from '../lib/telegramStart'
 import ProgressDashboard from '../components/ProgressDashboard.vue'
 import PhaseProgressCard from '../components/PhaseProgressCard.vue'
 import LeaderboardCard from '../components/LeaderboardCard.vue'
+import SupportCard from '../components/SupportCard.vue'
 import type { Me } from '../types'
 
 const router = useRouter()
@@ -186,6 +187,8 @@ async function logout() {
       <LeaderboardCard :name="me.name" />
     </div>
     </div>
+
+    <SupportCard v-if="me" />
 
     <Teleport to="body">
       <Transition name="modal-overlay">
