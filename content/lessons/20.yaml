@@ -1,0 +1,80 @@
+lesson: "20"
+title: "Храна код куће"
+subtitle: "еда, напитки"
+teaches:
+  [
+    meso, piletina, riba, povrce, voce, jabuka, paradajz, krompir, pirinac,
+    testenina, supa, corba, salata, jogurt, puter, so-salt, secer, kolac,
+    sladoled, palacinke, caj, sok, pivo, vino, rakija, mineralna, gazirano,
+  ]
+
+steps:
+  - id: "20.1"
+    kind: teach
+    title: "Еда дома"
+    md: "20/1-hrana.md"
+
+  - id: "20.2"
+    kind: practice
+    title: "Что это"
+    exercises:
+      - id: "20.2.1"
+        type: choice
+        prompt: "«мясо» —"
+        options: ["meso", "mleko", "jaja"]
+        answer: "meso"
+      - id: "20.2.2"
+        type: choice
+        prompt: "«овощи» —"
+        options: ["povrće", "voće", "piletina"]
+        answer: "povrće"
+      - id: "20.2.3"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["riba", "рыба"]
+          - ["salata", "салат"]
+          - ["supa", "суп"]
+          - ["jabuka", "яблоко"]
+      - id: "20.2.4"
+        type: fill_blank
+        prompt: "«картофель» по-сербски — ___"
+        accept: ["krompir"]
+
+  - id: "20.3"
+    kind: teach
+    title: "Напитки"
+    md: "20/3-pice.md"
+
+  - id: "20.4"
+    kind: practice
+    title: "Что попить"
+    also_ok: ["kafu"]
+    exercises:
+      - id: "20.4.1"
+        type: choice
+        prompt: "«чай» —"
+        options: ["čaj", "sok", "sir"]
+        answer: "čaj"
+      - id: "20.4.2"
+        type: choice
+        prompt: "«один кофе, пожалуйста» —"
+        options: ["Jednu kafu, molim.", "Jedan kafa, molim.", "Jedno kafu, molim."]
+        answer: "Jednu kafu, molim."
+      - id: "20.4.3"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["voda", "вода"]
+          - ["pivo", "пиво"]
+          - ["vino", "вино"]
+          - ["sok", "сок"]
+      - id: "20.4.4"
+        type: fill_blank
+        prompt: "«мне сок» → Za mene ___."
+        accept: ["sok"]
+      - id: "20.4.5"
+        type: word_bank
+        prompt: "Собери: «ещё одно пиво»"
+        bank: ["Još", "jedno", "pivo"]
+        accept: ["Još jedno pivo."]

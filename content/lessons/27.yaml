@@ -1,0 +1,142 @@
+lesson: "27"
+title: "Свиђа ми се"
+subtitle: "нравится, природа, проверка"
+teaches: [svidja-mi-se, ne-svidja-mi-se, vise-volim, priroda, more, planina, jezero, suma, nebo]
+
+steps:
+  - id: "27.1"
+    kind: teach
+    title: "Нравится / не нравится"
+    md: "27/1-svidja-mi-se.md"
+
+  - id: "27.2"
+    kind: practice
+    title: "Что нравится"
+    also_ok: ["zimu", "planine"]
+    exercises:
+      - id: "27.2.1"
+        type: choice
+        prompt: "«мне нравится лето» —"
+        options: ["Sviđa mi se leto.", "Sviđa me leto.", "Sviđa mi leto se."]
+        answer: "Sviđa mi se leto."
+      - id: "27.2.2"
+        type: choice
+        prompt: "«мне не нравится холодная погода» —"
+        options: ["Ne sviđa mi se hladno vreme.", "Ne sviđa mi hladno vreme.", "Sviđa mi se ne hladno vreme."]
+        answer: "Ne sviđa mi se hladno vreme."
+      - id: "27.2.3"
+        type: fill_blank
+        prompt: "«больше люблю лето, чем зиму» → Više volim leto ___ zimu."
+        accept: ["nego"]
+      - id: "27.2.4"
+        type: word_bank
+        prompt: "Собери: «мне нравится этот город»"
+        bank: ["Sviđa", "mi", "se", "ovaj", "grad"]
+        accept: ["Sviđa mi se ovaj grad."]
+
+  - id: "27.3"
+    kind: teach
+    title: "Природа"
+    md: "27/3-priroda.md"
+
+  - id: "27.4"
+    kind: practice
+    title: "На природе"
+    also_ok: ["prirodu", "more"]
+    exercises:
+      - id: "27.4.1"
+        type: choice
+        prompt: "«море» —"
+        options: ["more", "reka", "jezero"]
+        answer: "more"
+      - id: "27.4.2"
+        type: choice
+        prompt: "«на выходных еду на природу» —"
+        options: ["Vikendom idem u prirodu.", "Vikendom idem prirodu.", "Vikendom u prirodu idem se."]
+        answer: "Vikendom idem u prirodu."
+      - id: "27.4.3"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["planina", "гора"]
+          - ["jezero", "озеро"]
+          - ["šuma", "лес"]
+          - ["nebo", "небо"]
+      - id: "27.4.4"
+        type: fill_blank
+        prompt: "«летом едем на море» → Leti idemo na ___."
+        accept: ["more"]
+
+  - id: "27.5"
+    kind: reading
+    title: "Любимое время года"
+    md: "27/5-citanje.md"
+    also_ok: ["najviše", "lišće", "žuto", "crveno", "vedro", "previše", "mrak", "kroz", "omiljeno", "godišnje", "doba", "teško"]
+    exercises:
+      - id: "27.5.1"
+        type: choice
+        prompt: "Какое время года любит автор?"
+        options: ["Jesen.", "Leto.", "Zima."]
+        answer: "Jesen."
+      - id: "27.5.2"
+        type: choice
+        prompt: "Что автор делает зимой на выходных?"
+        options: ["Gleda kroz prozor i pije čaj.", "Ide na more.", "Radi."]
+        answer: "Gleda kroz prozor i pije čaj."
+
+  - id: "27.6"
+    kind: practice
+    title: "Диктант"
+    mixed: true
+    exercises:
+      - id: "27.6.1"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Napolju je hladno."
+        accept: ["Napolju je hladno."]
+      - id: "27.6.2"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Pada kiša."
+        accept: ["Pada kiša."]
+      - id: "27.6.3"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Sviđa mi se leto."
+        accept: ["Sviđa mi se leto."]
+
+  - id: "27.7"
+    kind: checkpoint
+    title: "Проверка"
+    also_ok: ["leti", "zimu"]
+    exercises:
+      - id: "27.7.1"
+        type: choice
+        prompt: "«пасмурно» —"
+        options: ["oblačno", "sunčano", "toplo"]
+        answer: "oblačno"
+      - id: "27.7.2"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["kiša", "дождь"]
+          - ["sneg", "снег"]
+          - ["leto", "лето"]
+          - ["planina", "гора"]
+      - id: "27.7.3"
+        type: fill_blank
+        prompt: "«мне холодно» → Hladno ___ je."
+        accept: ["mi"]
+      - id: "27.7.4"
+        type: word_bank
+        prompt: "Собери: «мне нравится осень»"
+        bank: ["Sviđa", "mi", "se", "jesen"]
+        accept: ["Sviđa mi se jesen."]
+      - id: "27.7.5"
+        type: translate
+        prompt: "Сегодня солнечно и тепло."
+        accept: ["Danas je sunčano i toplo."]
+      - id: "27.7.6"
+        type: free
+        prompt: "Опиши сегодняшнюю погоду и любимое время года: 4 фразы."
+        sample: "Danas je oblačno i hladno. Napolju je pet stepeni. Više volim jesen nego zimu. Sviđa mi se kad pada sneg za vikend."

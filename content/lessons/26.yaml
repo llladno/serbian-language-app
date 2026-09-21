@@ -1,0 +1,105 @@
+lesson: "26"
+title: "Време"
+subtitle: "погода, тепло/холодно, времена года"
+teaches:
+  [
+    suncano, oblacno, kisa, pada-kisa, sneg, pada-sneg, vetar, vetrovito,
+    magla, led, toplo, hladno, vruce, stepen, napolju, prolece, leto, jesen,
+    zima,
+  ]
+
+steps:
+  - id: "26.1"
+    kind: teach
+    title: "Погода сегодня"
+    md: "26/1-vreme-danas.md"
+
+  - id: "26.2"
+    kind: practice
+    title: "Что за окном"
+    exercises:
+      - id: "26.2.1"
+        type: choice
+        prompt: "«солнечно» —"
+        options: ["sunčano", "oblačno", "vetrovito"]
+        answer: "sunčano"
+      - id: "26.2.2"
+        type: choice
+        prompt: "«идёт дождь» —"
+        options: ["pada kiša", "pada sneg", "ima kiša"]
+        answer: "pada kiša"
+      - id: "26.2.3"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["sunčano", "солнечно"]
+          - ["oblačno", "пасмурно"]
+          - ["magla", "туман"]
+          - ["vetrovito", "ветрено"]
+      - id: "26.2.4"
+        type: fill_blank
+        prompt: "«идёт снег» → pada ___."
+        accept: ["sneg"]
+
+  - id: "26.3"
+    kind: teach
+    title: "Тепло / холодно"
+    md: "26/3-toplo-hladno.md"
+
+  - id: "26.4"
+    kind: practice
+    title: "Сколько градусов"
+    also_ok: ["stepeni"]
+    exercises:
+      - id: "26.4.1"
+        type: choice
+        prompt: "«на улице холодно» —"
+        options: ["Napolju je hladno.", "Napolju hladno je.", "Hladno napolju je."]
+        answer: "Napolju je hladno."
+      - id: "26.4.2"
+        type: choice
+        prompt: "«мне жарко» —"
+        options: ["Vruće mi je.", "Vruće sam.", "Ja vruće je."]
+        answer: "Vruće mi je."
+      - id: "26.4.3"
+        type: fill_blank
+        prompt: "«30 градусов» → trideset ___."
+        accept: ["stepeni"]
+      - id: "26.4.4"
+        type: word_bank
+        prompt: "Собери: «сегодня жарко»"
+        bank: ["Danas", "je", "vruće"]
+        accept: ["Danas je vruće."]
+
+  - id: "26.5"
+    kind: teach
+    title: "Времена года"
+    md: "26/5-godisnja-doba.md"
+
+  - id: "26.6"
+    kind: practice
+    title: "Какое время года"
+    also_ok: ["leti", "zimi", "zimu"]
+    exercises:
+      - id: "26.6.1"
+        type: choice
+        prompt: "«зима» —"
+        options: ["zima", "leto", "jesen"]
+        answer: "zima"
+      - id: "26.6.2"
+        type: choice
+        prompt: "«зимой идёт снег» —"
+        options: ["Zimi pada sneg.", "Zima pada sneg.", "U zima pada sneg."]
+        answer: "Zimi pada sneg."
+      - id: "26.6.3"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["proleće", "весна"]
+          - ["leto", "лето"]
+          - ["jesen", "осень"]
+          - ["zima", "зима"]
+      - id: "26.6.4"
+        type: fill_blank
+        prompt: "«летом жарко» → ___ je vruće."
+        accept: ["Leti", "leti"]

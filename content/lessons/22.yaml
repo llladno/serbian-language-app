@@ -1,0 +1,233 @@
+lesson: "22"
+title: "Рачун, молим"
+subtitle: "счёт, вкусно?, проверка"
+teaches: [baksis, platiti, ukusno, ljuto, slano]
+
+steps:
+  - id: "22.1"
+    kind: teach
+    title: "Счёт"
+    md: "22/1-racun.md"
+
+  - id: "22.2"
+    kind: practice
+    title: "Платим"
+    also_ok: ["platimo"]
+    exercises:
+      - id: "22.2.1"
+        type: choice
+        prompt: "«можно рассчитаться?» —"
+        options: ["Možemo li da platimo?", "Možemo platimo?", "Platimo možemo li da?"]
+        answer: "Možemo li da platimo?"
+      - id: "22.2.2"
+        type: choice
+        prompt: "«счёт, пожалуйста» —"
+        options: ["Račun, molim.", "Jelovnik, molim.", "Konobar, molim."]
+        answer: "Račun, molim."
+      - id: "22.2.3"
+        type: fill_blank
+        prompt: "«картой можно?» → Karticom, ___?"
+        accept: ["može"]
+      - id: "22.2.4"
+        type: word_bank
+        prompt: "Собери: «это всё, спасибо»"
+        bank: ["To", "je", "sve", "hvala"]
+        accept: ["To je sve, hvala."]
+
+  - id: "22.3"
+    kind: teach
+    title: "Как тебе"
+    md: "22/3-kakav-je.md"
+
+  - id: "22.4"
+    kind: practice
+    title: "Вкусно?"
+    also_ok: ["kakva"]
+    exercises:
+      - id: "22.4.1"
+        type: choice
+        prompt: "«вкусно!» —"
+        options: ["Ukusno je!", "Ljuto je!", "Slano je!"]
+        answer: "Ukusno je!"
+      - id: "22.4.2"
+        type: choice
+        prompt: "«солоновато» —"
+        options: ["Malo je slano.", "Malo je ukusno.", "Malo je sveže."]
+        answer: "Malo je slano."
+      - id: "22.4.3"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["ukusno", "вкусно"]
+          - ["ljuto", "остро"]
+          - ["slano", "солёно"]
+          - ["sveže", "свежо"]
+      - id: "22.4.4"
+        type: fill_blank
+        prompt: "«островато» → Malo je ___."
+        accept: ["ljuto"]
+
+  - id: "22.5"
+    kind: reading
+    title: "В кафе"
+    md: "22/5-citanje.md"
+    also_ok: ["kafu", "gaziranu", "negaziranu", "cokoladom", "dzemom", "posle"]
+    exercises:
+      - id: "22.5.1"
+        type: choice
+        prompt: "Что заказал человек попить?"
+        options: ["Kafu i vodu.", "Pivo i sok.", "Čaj i vino."]
+        answer: "Kafu i vodu."
+      - id: "22.5.2"
+        type: choice
+        prompt: "Как он хочет заплатить?"
+        options: ["Karticom.", "Kešom.", "Ništa."]
+        answer: "Karticom."
+
+  - id: "22.6"
+    kind: practice
+    title: "Диктант"
+    mixed: true
+    also_ok: ["kafu"]
+    exercises:
+      - id: "22.6.1"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Molim vas jednu kafu."
+        accept: ["Molim vas jednu kafu."]
+      - id: "22.6.2"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Gladan sam."
+        accept: ["Gladan sam."]
+      - id: "22.6.3"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Račun, molim."
+        accept: ["Račun, molim."]
+
+  - id: "22.7"
+    kind: checkpoint
+    title: "Проверка"
+    also_ok: ["kafu", "caj"]
+    exercises:
+      - id: "22.7.1"
+        type: choice
+        prompt: "«овощи» —"
+        options: ["povrće", "voće", "meso"]
+        answer: "povrće"
+      - id: "22.7.2"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["kafić", "кафе"]
+          - ["jelovnik", "меню"]
+          - ["račun", "счёт"]
+          - ["bakšiš", "чаевые"]
+      - id: "22.7.3"
+        type: fill_blank
+        prompt: "«я хочу пить» → Žedan ___."
+        accept: ["sam"]
+      - id: "22.7.4"
+        type: word_bank
+        prompt: "Собери: «один кофе, пожалуйста»"
+        bank: ["Molim", "vas", "jednu", "kafu"]
+        accept: ["Molim vas jednu kafu."]
+      - id: "22.7.5"
+        type: translate
+        prompt: "Мне, пожалуйста, один чай."
+        accept: ["Za mene jedan čaj.", "Molim vas jedan čaj."]
+      - id: "22.7.6"
+        type: free
+        prompt: "Закажи завтрак в кафе и попроси счёт: 4 фразы (поздоровайся, закажи кофе и что-то поесть, спроси счёт, скажи как платишь)."
+        sample: "Dobar dan! Jednu kafu i palačinke, molim. Možemo li da platimo? Karticom, može?"
+
+  - id: "22.8"
+    kind: dialogue
+    title: "У кафићу"
+    scene: "Ты сел за столик в кафиче. Подходит официант."
+    voice: m
+    also_ok: ["poručujete", "kafu"]
+    turns:
+      - who: npc
+        sr: "Dobar dan, izvolite. Jelovnik?"
+        ru: "Добрый день, пожалуйста. Меню?"
+
+      - who: me
+        sr: "Dobar dan. Da, hvala."
+        ru: "Добрый день. Да, спасибо."
+        exercise:
+          id: "22.8.1"
+          type: choice
+          prompt: "Поздоровайся и согласись взять меню"
+          options:
+            - "Dobar dan. Da, hvala."
+            - "Dobar dan. Ne, hvala."
+            - "Laku noć. Da, hvala."
+          answer: "Dobar dan. Da, hvala."
+
+      - who: npc
+        sr: "Izvolite, poručujete?"
+        ru: "Пожалуйста, заказываете?"
+
+      - who: me
+        sr: "Za mene supa i salata."
+        ru: "Мне суп и салат."
+        exercise:
+          id: "22.8.2"
+          type: choice
+          prompt: "Закажи суп и салат"
+          options:
+            - "Za mene supa i salata."
+            - "Za mene meso i pivo."
+            - "Za mene sladoled i kolač."
+          answer: "Za mene supa i salata."
+          explain: "«za mene» — «мне, для меня»: обычный способ заказать в кафиче."
+
+      - who: npc
+        sr: "Dobro. Pijete nešto?"
+        ru: "Хорошо. Будете что-нибудь пить?"
+
+      - who: me
+        sr: "Jedan sok, molim."
+        ru: "Один сок, пожалуйста."
+        exercise:
+          id: "22.8.3"
+          type: fill_blank
+          prompt: "«Один сок, пожалуйста» → Jedan ___, molim."
+          accept: ["sok"]
+
+      - who: npc
+        sr: "Dobro, hvala."
+        ru: "Хорошо, спасибо."
+
+      - who: npc
+        sr: "Izvolite. Je li ukusno?"
+        ru: "Пожалуйста. Вкусно?"
+
+      - who: me
+        sr: "Da, ukusno je. Hvala."
+        ru: "Да, вкусно. Спасибо."
+        exercise:
+          id: "22.8.4"
+          type: choice
+          prompt: "Скажи, что вкусно"
+          options:
+            - "Da, ukusno je. Hvala."
+            - "Da, ljuto je. Hvala."
+            - "Ne, slano je. Hvala."
+          answer: "Da, ukusno je. Hvala."
+
+      - who: me
+        sr: "Molim vas, račun."
+        ru: "Счёт, пожалуйста."
+        exercise:
+          id: "22.8.5"
+          type: translate
+          prompt: "Попроси счёт"
+          accept: ["Molim vas, račun.", "Račun, molim.", "Molim vas račun", "Račun, molim vas."]
+          explain: "«Račun, molim» — короче и звучит так же вежливо."
+
+      - who: npc
+        sr: "Evo računa. Prijatno!"
+        ru: "Вот счёт. Всего доброго!"

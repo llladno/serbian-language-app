@@ -436,6 +436,8 @@ func TestMigrationV1toV2(t *testing.T) {
 	}
 	db.Exec(`INSERT INTO reviews (card_id, grade, reviewed_at) VALUES ('vocab:z', 2, '2026-09-06T10:00:00Z')`)
 	db.Exec(`INSERT INTO lesson_progress (lesson, status, started_at) VALUES ('01','done','x')`)
+	// lesson "01" was later split into "02"+"03" (migrate004) — see
+	// docs/superpowers/specs/2026-09-21-split-lessons-00-12-design.md
 	db.Close()
 
 	s, err := Open(dir)
@@ -454,8 +456,8 @@ func TestMigrationV1toV2(t *testing.T) {
 		t.Errorf("migrated cards = %d, want 1", total)
 	}
 	m, _ := u.LessonStatuses()
-	if m["01"] != "done" {
-		t.Errorf("migrated lesson status = %v", m)
+	if m["02"] != "done" || m["03"] != "done" {
+		t.Errorf("migrated lesson status = %v, want 02 and 03 done", m)
 	}
 	if n, _ := u.ReviewedToday(time.Date(2026, 9, 6, 0, 0, 0, 0, time.UTC)); n != 1 {
 		t.Errorf("migrated reviews = %d, want 1", n)

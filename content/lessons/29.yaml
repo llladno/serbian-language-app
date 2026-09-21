@@ -1,0 +1,137 @@
+lesson: "29"
+title: "Провера 2б"
+subtitle: "город, погода, ролёвки"
+teaches: []
+
+steps:
+  - id: "29.1"
+    kind: practice
+    title: "Город и вопросы"
+    mixed: true
+    also_ok: ["stanice", "banke"]
+    exercises:
+      - id: "29.1.1"
+        type: choice
+        prompt: "«У вас есть вода?» (разговорно) —"
+        options: ["Jel' imate vodu?", "Li imate vodu?", "Vodu da imate?"]
+        answer: "Jel' imate vodu?"
+      - id: "29.1.2"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["gde", "где"]
+          - ["zašto", "почему"]
+          - ["stanica", "остановка"]
+          - ["levo", "налево"]
+      - id: "29.1.3"
+        type: fill_blank
+        prompt: "«Поверните направо» → Skrenite ___."
+        accept: ["desno"]
+      - id: "29.1.4"
+        type: word_bank
+        prompt: "Собери: «как пройти к почте?»"
+        bank: ["Kako", "da", "dođem", "do", "pošte"]
+        accept: ["Kako da dođem do pošte?"]
+      - id: "29.1.5"
+        type: translate
+        prompt: "Извините, где банк?"
+        accept: ["Izvinite, gde je banka?"]
+
+  - id: "29.2"
+    kind: practice
+    title: "Погода"
+    mixed: true
+    also_ok: ["zimu", "leti"]
+    exercises:
+      - id: "29.2.1"
+        type: choice
+        prompt: "«идёт дождь» —"
+        options: ["pada kiša", "pada sneg", "ima kiša"]
+        answer: "pada kiša"
+      - id: "29.2.2"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["sunčano", "солнечно"]
+          - ["hladno", "холодно"]
+          - ["zima", "зима"]
+          - ["more", "море"]
+      - id: "29.2.3"
+        type: fill_blank
+        prompt: "«больше люблю лето, чем зиму» → Više volim leto ___ zimu."
+        accept: ["nego"]
+      - id: "29.2.4"
+        type: word_bank
+        prompt: "Собери: «мне нравится осень»"
+        bank: ["Sviđa", "mi", "se", "jesen"]
+        accept: ["Sviđa mi se jesen."]
+      - id: "29.2.5"
+        type: translate
+        prompt: "Сегодня холодно."
+        accept: ["Danas je hladno."]
+
+  - id: "29.3"
+    kind: checkpoint
+    title: "Большая проверка"
+    also_ok: ["ustajem", "kafu", "sobi"]
+    exercises:
+      - id: "29.3.1"
+        type: choice
+        prompt: "«мне надо идти» —"
+        options: ["Moram da idem.", "Moram idem.", "Moram ići da."]
+        answer: "Moram da idem."
+      - id: "29.3.2"
+        type: choice
+        prompt: "«кровать в спальне» —"
+        options: ["Krevet je u spavaćoj sobi.", "Krevet je na spavaćoj sobi.", "Krevet spavaćoj sobi je."]
+        answer: "Krevet je u spavaćoj sobi."
+      - id: "29.3.3"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["doručak", "завтрак"]
+          - ["frižider", "холодильник"]
+          - ["autobus", "автобус"]
+          - ["kiša", "дождь"]
+      - id: "29.3.4"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["ko", "кто"]
+          - ["kako", "как"]
+          - ["koliko", "сколько"]
+          - ["zašto", "почему"]
+      - id: "29.3.5"
+        type: fill_blank
+        prompt: "«я хочу есть» → Hoću da ___."
+        accept: ["jedem"]
+      - id: "29.3.6"
+        type: word_bank
+        prompt: "Собери: «где остановка?»"
+        bank: ["Gde", "je", "stanica"]
+        accept: ["Gde je stanica?"]
+      - id: "29.3.7"
+        type: translate
+        prompt: "Я встаю в семь и иду на работу."
+        accept: ["Ustajem u sedam i idem na posao."]
+      - id: "29.3.8"
+        type: translate
+        prompt: "Мне нравится осень."
+        accept: ["Sviđa mi se jesen."]
+
+  - id: "29.4"
+    kind: checkpoint
+    title: "Ролёвки"
+    exercises:
+      - id: "29.4.1"
+        type: free
+        prompt: "Расскажи свой будний день: 4–5 фраз (утро, дорога, работа, вечер, выходные)."
+        sample: "Ustajem u sedam, doručkujem i idem na posao autobusom. Radim kao {job} do pet. Uveče gledam seriju. Vikendom idem u prirodu."
+      - id: "29.4.2"
+        type: free
+        prompt: "Закажи обед в кафе и попроси счёт: 4 фразы."
+        sample: "Dobar dan! Za mene supu i jednu kafu. Ukusno je! Možemo li da platimo karticom?"
+      - id: "29.4.3"
+        type: free
+        prompt: "Спроси у прохожего дорогу до банка и уточни, далеко ли: 3–4 фразы."
+        sample: "Izvinite, kako da dođem do banke? Da li je daleko? Hvala vam puno!"

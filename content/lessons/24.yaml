@@ -1,0 +1,68 @@
+lesson: "24"
+title: "Зашто?"
+subtitle: "почему, переспрос"
+teaches: [zasto, zato-sto, jer, zbog]
+
+steps:
+  - id: "24.1"
+    kind: teach
+    title: "Почему / потому что"
+    md: "24/1-zasto-jer.md"
+
+  - id: "24.2"
+    kind: practice
+    title: "Почему"
+    also_ok: ["kiše"]
+    exercises:
+      - id: "24.2.1"
+        type: choice
+        prompt: "«Почему не работаешь?» —"
+        options: ["Zašto ne radiš?", "Zato što ne radiš?", "Jer ne radiš?"]
+        answer: "Zašto ne radiš?"
+      - id: "24.2.2"
+        type: choice
+        prompt: "«Потому что воскресенье» —"
+        options: ["Zato što je nedelja.", "Zašto je nedelja.", "Zbog je nedelja."]
+        answer: "Zato što je nedelja."
+      - id: "24.2.3"
+        type: fill_blank
+        prompt: "«Не иду, потому что идёт дождь» → Ne idem ___ pada kiša."
+        accept: ["jer"]
+      - id: "24.2.4"
+        type: word_bank
+        prompt: "Собери: «из-за дождя» (+ сущ.)"
+        bank: ["zbog", "kiše"]
+        accept: ["zbog kiše"]
+
+  - id: "24.3"
+    kind: teach
+    title: "Не понял"
+    md: "24/3-ne-razumem.md"
+
+  - id: "24.4"
+    kind: practice
+    title: "Переспрос"
+    also_ok: ["ponovite", "razumeo", "sporije", "brzo"]
+    exercises:
+      - id: "24.4.1"
+        type: choice
+        prompt: "Не расслышал — просишь повторить —"
+        options: ["Možete ponoviti?", "Možete sporije ponoviti li?", "Ponoviti možete da?"]
+        answer: "Možete ponoviti?"
+      - id: "24.4.2"
+        type: choice
+        prompt: "«Можно медленнее?» —"
+        options: ["Možete sporije, molim vas?", "Možete brzo, molim vas?", "Sporije možete li da vas?"]
+        answer: "Možete sporije, molim vas?"
+      - id: "24.4.3"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["Molim?", "что-что?"]
+          - ["Nisam razumeo.", "я не понял"]
+          - ["Šta znači?", "что значит?"]
+          - ["Kako se kaže?", "как будет?"]
+      - id: "24.4.4"
+        type: fill_blank
+        prompt: "«Я не понял» → Nisam ___."
+        accept: ["razumeo"]

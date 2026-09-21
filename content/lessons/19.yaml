@@ -1,0 +1,228 @@
+lesson: "19"
+title: "У / на"
+subtitle: "предлоги места, ima/nema, проверка"
+teaches: [tepih, slika, vrata, prozor, kljuc, zid, pod, mali, veliki, nov, star, kirija]
+
+steps:
+  - id: "19.1"
+    kind: teach
+    title: "Где это — u / na"
+    md: "19/1-gde-je.md"
+
+  - id: "19.2"
+    kind: practice
+    title: "u или na"
+    also_ok: ["sobi", "stolu"]
+    exercises:
+      - id: "19.2.1"
+        type: choice
+        prompt: "«кровать в спальне» —"
+        options: ["Krevet je u spavaćoj sobi.", "Krevet je na spavaćoj sobi.", "Krevet je spavaćoj sobi."]
+        answer: "Krevet je u spavaćoj sobi."
+      - id: "19.2.2"
+        type: choice
+        prompt: "«лампа на столе» —"
+        options: ["Lampa je na stolu.", "Lampa je u stolu.", "Lampa je stolu."]
+        answer: "Lampa je na stolu."
+      - id: "19.2.3"
+        type: fill_blank
+        prompt: "«Стул на террасе» → Stolica je ___ terasi."
+        accept: ["na"]
+      - id: "19.2.4"
+        type: word_bank
+        prompt: "Собери: «холодильник на кухне»"
+        bank: ["Frižider", "je", "u", "kuhinji"]
+        accept: ["Frižider je u kuhinji."]
+
+  - id: "19.3"
+    kind: teach
+    title: "ima / nema дома"
+    md: "19/3-ima-nema.md"
+
+  - id: "19.4"
+    kind: practice
+    title: "Есть или нет"
+    also_ok: ["lifta", "zgradi"]
+    exercises:
+      - id: "19.4.1"
+        type: choice
+        prompt: "«В кухне есть плита» —"
+        options: ["U kuhinji ima šporet.", "U kuhinji šporet ima je.", "Ima kuhinji šporet u."]
+        answer: "U kuhinji ima šporet."
+      - id: "19.4.2"
+        type: choice
+        prompt: "«В доме нет лифта» —"
+        options: ["U zgradi nema lifta.", "U zgradi ne lift.", "U zgradi nema lift ne."]
+        answer: "U zgradi nema lifta."
+      - id: "19.4.3"
+        type: fill_blank
+        prompt: "«У меня нет балкона» → Nemam ___."
+        accept: ["balkon"]
+      - id: "19.4.4"
+        type: word_bank
+        prompt: "Собери: «в квартире есть терраса»"
+        bank: ["U", "stanu", "ima", "terasa"]
+        accept: ["U stanu ima terasa."]
+
+  - id: "19.5"
+    kind: reading
+    title: "Мой стан"
+    md: "19/5-citanje.md"
+    also_ok: ["kuhinju", "sudoperu", "knjige", "malom", "drugom"]
+    exercises:
+      - id: "19.5.1"
+        type: choice
+        prompt: "Сколько комнат в квартире?"
+        options: ["Dve.", "Jedna.", "Tri."]
+        answer: "Dve."
+      - id: "19.5.2"
+        type: choice
+        prompt: "Что есть на кухне?"
+        options: ["Šporet, frižider i sudopera.", "Krevet i sto.", "Ništa."]
+        answer: "Šporet, frižider i sudopera."
+
+  - id: "19.6"
+    kind: practice
+    title: "Диктант"
+    mixed: true
+    exercises:
+      - id: "19.6.1"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Gde je kupatilo?"
+        accept: ["Gde je kupatilo?"]
+      - id: "19.6.2"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "U kuhinji ima šporet."
+        accept: ["U kuhinji ima šporet."]
+      - id: "19.6.3"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Zgrada nema lift."
+        accept: ["Zgrada nema lift."]
+
+  - id: "19.7"
+    kind: checkpoint
+    title: "Проверка"
+    also_ok: ["sobe", "sobi"]
+    exercises:
+      - id: "19.7.1"
+        type: choice
+        prompt: "«я живу в квартире» —"
+        options: ["Živim u stanu.", "Živim u stan.", "Živim na stan."]
+        answer: "Živim u stanu."
+      - id: "19.7.2"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["kuhinja", "кухня"]
+          - ["krevet", "кровать"]
+          - ["prozor", "окно"]
+          - ["ključ", "ключ"]
+      - id: "19.7.3"
+        type: fill_blank
+        prompt: "«лампа на столе» → Lampa je ___ stolu."
+        accept: ["na"]
+      - id: "19.7.4"
+        type: word_bank
+        prompt: "Собери: «в квартире две комнаты»"
+        bank: ["Stan", "ima", "dve", "sobe"]
+        accept: ["Stan ima dve sobe."]
+      - id: "19.7.5"
+        type: translate
+        prompt: "Где ванная?"
+        accept: ["Gde je kupatilo?"]
+      - id: "19.7.6"
+        type: free
+        prompt: "Опиши свою квартиру: 4 фразы (сколько комнат, что на кухне, где спишь, есть ли балкон)."
+        sample: "Živim u malom stanu. Kuhinja ima šporet i frižider. Spavam u sobi. Nemam balkon, ali imam terasu."
+
+  - id: "19.8"
+    kind: dialogue
+    title: "Гледамо стан"
+    scene: "Ты пришёл смотреть квартиру. Хозяйка открывает дверь и показывает комнаты."
+    voice: f
+    also_ok: ["soba", "sobe", "gledamo", "uzimam"]
+    turns:
+      - who: npc
+        sr: "Izvolite, ovo je stan."
+        ru: "Проходите, вот квартира."
+
+      - who: me
+        sr: "Hvala. Koliko soba ima?"
+        ru: "Спасибо. Сколько комнат?"
+        exercise:
+          id: "19.8.1"
+          type: choice
+          prompt: "Спроси, сколько здесь комнат"
+          options:
+            - "Hvala. Koliko soba ima?"
+            - "Hvala. Gde je soba?"
+            - "Hvala. Koliko košta soba?"
+          answer: "Hvala. Koliko soba ima?"
+
+      - who: npc
+        sr: "Dve sobe, kuhinja i kupatilo."
+        ru: "Две комнаты, кухня и ванная."
+
+      - who: me
+        sr: "A gde je kupatilo?"
+        ru: "А где ванная?"
+        exercise:
+          id: "19.8.2"
+          type: fill_blank
+          prompt: "A ___ je kupatilo?"
+          accept: ["gde"]
+
+      - who: npc
+        sr: "Kupatilo je tamo, a kuhinja ovde."
+        ru: "Ванная там, а кухня здесь."
+
+      - who: me
+        sr: "Ima li balkon?"
+        ru: "Балкон есть?"
+        exercise:
+          id: "19.8.3"
+          type: choice
+          prompt: "Спроси, есть ли балкон"
+          options:
+            - "Ima li balkon?"
+            - "Ima li lift?"
+            - "Ima li ključ?"
+          answer: "Ima li balkon?"
+
+      - who: npc
+        sr: "Da, veliki balkon. I lift u zgradi."
+        ru: "Да, большой балкон. И лифт в доме."
+
+      - who: me
+        sr: "Koliko je kirija?"
+        ru: "Сколько стоит аренда?"
+        exercise:
+          id: "19.8.4"
+          type: translate
+          prompt: "Спроси, сколько стоит аренда"
+          accept: ["Koliko je kirija?", "Kolika je kirija?", "Koliko košta kirija?"]
+          explain: "«kirija» — плата за жильё; «Koliko je kirija?» слышишь на каждом просмотре."
+
+      - who: npc
+        sr: "Trideset hiljada dinara."
+        ru: "Тридцать тысяч динаров."
+
+      - who: me
+        sr: "Dobro, stan je dobar. Uzimam."
+        ru: "Хорошо, квартира хорошая. Беру."
+        exercise:
+          id: "19.8.5"
+          type: choice
+          prompt: "Скажи, что квартира хорошая и ты её берёшь"
+          options:
+            - "Dobro, stan je dobar. Uzimam."
+            - "Dobro, stan je mali. Uzimam."
+            - "Dobro, stan je star. Ne uzimam."
+          answer: "Dobro, stan je dobar. Uzimam."
+
+      - who: npc
+        sr: "Dobro! Evo ključ."
+        ru: "Хорошо! Вот ключ."

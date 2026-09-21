@@ -1,0 +1,121 @@
+lesson: "28"
+title: "Провера 2а"
+subtitle: "мой день, дом, еда/кафе"
+teaches: []
+
+steps:
+  - id: "28.1"
+    kind: reading
+    title: "Один день"
+    md: "28/1-citanje.md"
+    also_ok: ["radnim", "danom", "kancelariji", "pauzi", "izlazim", "ako", "peške", "kolima"]
+    exercises:
+      - id: "28.1.1"
+        type: choice
+        prompt: "Как автор добирается на работу?"
+        options: ["Autobusom.", "Peške.", "Kolima."]
+        answer: "Autobusom."
+      - id: "28.1.2"
+        type: choice
+        prompt: "Что автор покупает после работы?"
+        options: ["Hleb, mleko i sir.", "Meso i vino.", "Ništa."]
+        answer: "Hleb, mleko i sir."
+
+  - id: "28.2"
+    kind: practice
+    title: "Мой день"
+    mixed: true
+    also_ok: ["ustajem", "doručkujem"]
+    exercises:
+      - id: "28.2.1"
+        type: choice
+        prompt: "«я работаю каждый день» —"
+        options: ["Radim svaki dan.", "Radim svaki dana.", "Radi svaki dan."]
+        answer: "Radim svaki dan."
+      - id: "28.2.2"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["ponedeljak", "понедельник"]
+          - ["obično", "обычно"]
+          - ["uvek", "всегда"]
+          - ["vikend", "выходные"]
+      - id: "28.2.3"
+        type: fill_blank
+        prompt: "«я люблю читать» → Volim ___ čitam."
+        accept: ["da"]
+      - id: "28.2.4"
+        type: word_bank
+        prompt: "Собери: «я встаю рано»"
+        bank: ["Ustajem", "rano"]
+        accept: ["Ustajem rano."]
+      - id: "28.2.5"
+        type: translate
+        prompt: "Мне надо идти на работу."
+        accept: ["Moram da idem na posao."]
+
+  - id: "28.3"
+    kind: practice
+    title: "Дом"
+    mixed: true
+    also_ok: ["sobe", "sobi"]
+    exercises:
+      - id: "28.3.1"
+        type: choice
+        prompt: "«я живу в квартире» —"
+        options: ["Živim u stanu.", "Živim u stan.", "Živim na stanu."]
+        answer: "Živim u stanu."
+      - id: "28.3.2"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["kuhinja", "кухня"]
+          - ["krevet", "кровать"]
+          - ["prozor", "окно"]
+          - ["ključ", "ключ"]
+      - id: "28.3.3"
+        type: fill_blank
+        prompt: "«лампа на столе» → Lampa je ___ stolu."
+        accept: ["na"]
+      - id: "28.3.4"
+        type: word_bank
+        prompt: "Собери: «в квартире две комнаты»"
+        bank: ["Stan", "ima", "dve", "sobe"]
+        accept: ["Stan ima dve sobe."]
+      - id: "28.3.5"
+        type: translate
+        prompt: "Где ванная?"
+        accept: ["Gde je kupatilo?"]
+
+  - id: "28.4"
+    kind: practice
+    title: "Еда и кафе"
+    mixed: true
+    also_ok: ["kafu", "jedem"]
+    exercises:
+      - id: "28.4.1"
+        type: choice
+        prompt: "«я голоден» —"
+        options: ["Gladan sam.", "Gladan je.", "Gladna je."]
+        answer: "Gladan sam."
+      - id: "28.4.2"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["kafić", "кафе"]
+          - ["jelovnik", "меню"]
+          - ["račun", "счёт"]
+          - ["povrće", "овощи"]
+      - id: "28.4.3"
+        type: fill_blank
+        prompt: "«счёт, пожалуйста» → ___, molim."
+        accept: ["Račun", "račun"]
+      - id: "28.4.4"
+        type: word_bank
+        prompt: "Собери: «один кофе, пожалуйста»"
+        bank: ["Molim", "vas", "jednu", "kafu"]
+        accept: ["Molim vas jednu kafu."]
+      - id: "28.4.5"
+        type: translate
+        prompt: "Можно рассчитаться картой?"
+        accept: ["Možemo li da platimo karticom?", "Karticom, može?"]

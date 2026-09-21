@@ -1,0 +1,210 @@
+lesson: "15"
+title: "Провера 1б"
+subtitle: "в магазине, ролёвки"
+teaches: []
+
+steps:
+  - id: "15.1"
+    kind: practice
+    title: "В магазине"
+    mixed: true
+    exercises:
+      - id: "15.1.1"
+        type: choice
+        prompt: "«Мне нужен хлеб» —"
+        options: ["Treba mi hleb.", "Mi hleb treba.", "Treba hleb."]
+        answer: "Treba mi hleb."
+      - id: "15.1.2"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["pekara", "пекарня"]
+          - ["kesa", "пакет"]
+          - ["račun", "чек"]
+          - ["kusur", "сдача"]
+      - id: "15.1.3"
+        type: fill_blank
+        prompt: "«Это всё» → To je ___."
+        accept: ["sve"]
+      - id: "15.1.4"
+        type: word_bank
+        prompt: "Собери: «сколько с меня?»"
+        bank: ["Koliko", "dugujem"]
+        accept: ["Koliko dugujem?"]
+      - id: "15.1.5"
+        type: translate
+        prompt: "Картой можно?"
+        accept: ["Može karticom?", "Karticom, može?"]
+
+  - id: "15.2"
+    kind: checkpoint
+    title: "Большая проверка"
+    also_ok: ["brata"]
+    exercises:
+      - id: "15.2.1"
+        type: choice
+        prompt: "Выходишь из кафе, тебе говорят «Prijatno!». Отвечаешь —"
+        options: ["Prijatno!", "Dobro jutro!", "Molim?"]
+        answer: "Prijatno!"
+      - id: "15.2.2"
+        type: choice
+        prompt: "«У меня нет брата» —"
+        options: ["Nemam brata.", "Nemam brat.", "Imam brata."]
+        answer: "Nemam brata."
+      - id: "15.2.3"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["sedam", "семь"]
+          - ["trideset", "тридцать"]
+          - ["sto", "сто"]
+          - ["dvanaest", "двенадцать"]
+      - id: "15.2.4"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["pekara", "пекарня"]
+          - ["apoteka", "аптека"]
+          - ["pijaca", "рынок"]
+          - ["prodavnica", "магазин"]
+      - id: "15.2.5"
+        type: fill_blank
+        prompt: "«Работаю программистом» → Radim ___ programer."
+        accept: ["kao"]
+      - id: "15.2.6"
+        type: word_bank
+        prompt: "Собери: «сколько стоит кофе?»"
+        bank: ["Koliko", "košta", "kafa"]
+        accept: ["Koliko košta kafa?"]
+      - id: "15.2.7"
+        type: translate
+        prompt: "Спасибо, до свидания!"
+        accept: ["Hvala, doviđenja!"]
+      - id: "15.2.8"
+        type: translate
+        prompt: "Сколько с меня?"
+        accept: ["Koliko dugujem?"]
+
+  - id: "15.3"
+    kind: checkpoint
+    title: "Ролёвки"
+    exercises:
+      - id: "15.3.1"
+        type: free
+        prompt: "Познакомься на улице: скажи имя, откуда ты, кем работаешь — 3 фразы."
+        sample: "Zdravo! Ja sam {name_latin}. Iz Rusije sam, živim u Novom Sadu. Radim kao {job}."
+      - id: "15.3.2"
+        type: free
+        prompt: "Купи в пекаре два кофе, спроси цену, заплати картой — 3 фразы."
+        sample: "Dobar dan! Dve kafe, molim. Koliko košta? Karticom, može?"
+      - id: "15.3.3"
+        type: free
+        prompt: "В магазине: попроси полкило сыра и хлеб, спроси, сколько с тебя — 3 фразы."
+        sample: "Treba mi pola kile sira i hleb. To je sve. Koliko dugujem?"
+
+  - id: "15.4"
+    kind: dialogue
+    title: "Први дан"
+    scene: "Ты только приехал и снял квартиру. Хозяин, Марко, встречает тебя у подъезда, чтобы отдать ключи."
+    voice: m
+    turns:
+      - who: npc
+        sr: "Dobar dan! Vi ste iz Rusije?"
+        ru: "Добрый день! Вы из России?"
+
+      - who: me
+        sr: "Dobar dan. Da, ja sam iz Rusije."
+        ru: "Добрый день. Да, я из России."
+        exercise:
+          id: "15.4.1"
+          type: choice
+          prompt: "Поздоровайся и подтверди, что ты из России"
+          options:
+            - "Dobar dan. Da, ja sam iz Rusije."
+            - "Dobro veče. Da, ja sam iz Rusije."
+            - "Dobar dan. Ne, ja sam iz Rusije."
+          answer: "Dobar dan. Da, ja sam iz Rusije."
+
+      - who: npc
+        sr: "Drago mi je. Ja sam Marko."
+        ru: "Приятно познакомиться. Я Марко."
+
+      - who: me
+        sr: "Drago mi je takođe."
+        ru: "Мне тоже приятно."
+        exercise:
+          id: "15.4.2"
+          type: choice
+          prompt: "Ответь вежливо"
+          options:
+            - "Drago mi je takođe."
+            - "Nema na čemu."
+            - "Ne žalim se."
+          answer: "Drago mi je takođe."
+
+      - who: npc
+        sr: "Evo, ovo je za vas."
+        ru: "Вот, это вам."
+
+      - who: me
+        sr: "Hvala. Koliko dugujem?"
+        ru: "Спасибо. Сколько с меня?"
+        exercise:
+          id: "15.4.3"
+          type: translate
+          prompt: "Поблагодари и спроси, сколько с тебя"
+          accept: ["Hvala. Koliko dugujem?", "Hvala, koliko dugujem?", "Koliko dugujem?"]
+          explain: "«Koliko dugujem?» — «сколько я должен»: так спрашивают и в кафе, и при оплате жилья."
+
+      - who: npc
+        sr: "Trideset hiljada dinara."
+        ru: "Тридцать тысяч динаров."
+
+      - who: me
+        sr: "Može karticom?"
+        ru: "Можно картой?"
+        exercise:
+          id: "15.4.4"
+          type: choice
+          prompt: "Спроси, можно ли картой"
+          options:
+            - "Može karticom?"
+            - "Može kešom?"
+            - "Koliko je sati?"
+          answer: "Može karticom?"
+
+      - who: npc
+        sr: "Ne, samo keš."
+        ru: "Нет, только наличные."
+
+      - who: me
+        sr: "Dobro. Izvolite."
+        ru: "Хорошо. Вот, пожалуйста."
+        exercise:
+          id: "15.4.5"
+          type: choice
+          prompt: "Согласись и протяни деньги"
+          options:
+            - "Dobro. Izvolite."
+            - "Dobro. Molim?"
+            - "Dobro. Doviđenja."
+          answer: "Dobro. Izvolite."
+          explain: "«Izvolite» работает в обе стороны: и «вот, пожалуйста», и «слушаю вас»."
+
+      - who: npc
+        sr: "Hvala. Vidimo se sutra u pet?"
+        ru: "Спасибо. Увидимся завтра в пять?"
+
+      - who: me
+        sr: "Da, sutra u pet. Doviđenja!"
+        ru: "Да, завтра в пять. До свидания!"
+        exercise:
+          id: "15.4.6"
+          type: fill_blank
+          prompt: "Da, sutra ___ pet. Doviđenja!"
+          accept: ["u"]
+          explain: "Время — с предлогом «u»: u pet, u osam, u podne."
+
+      - who: npc
+        sr: "Prijatno!"
+        ru: "Всего доброго!"

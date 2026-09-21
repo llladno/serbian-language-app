@@ -1,7 +1,7 @@
 package content
 
 import (
-	"strings"
+	"fmt"
 	"testing"
 )
 
@@ -39,6 +39,14 @@ func TestLegacyLessonSynthesizesSteps(t *testing.T) {
 }
 
 // TestRealContentLoads guards the migrated content/ tree at the repo root.
+//
+// Levels 1-2 (lessons "00".."29") are authored as short manifests: each
+// original topic was split into 2-3 lessons (see
+// docs/superpowers/specs/2026-09-21-split-lessons-00-12-design.md), so a
+// single lesson no longer necessarily carries its own reading/checkpoint —
+// only the closing lesson of each original topic does. The checks below
+// verify structure in aggregate across the whole authored range instead of
+// per-lesson.
 func TestRealContentLoads(t *testing.T) {
 	c, err := Load("../../../content")
 	if err != nil {
@@ -62,117 +70,45 @@ func TestRealContentLoads(t *testing.T) {
 	if len(c.FalseFriends) < 50 {
 		t.Errorf("false friends = %d, want >= 50", len(c.FalseFriends))
 	}
-	{
-		l := c.Lessons["01"]
-		if !l.Manifest {
-			t.Fatal("lesson 01 should be a manifest")
-		}
-		if len(l.Steps) < 6 {
-			t.Errorf("lesson 01: %d steps, want >= 6", len(l.Steps))
-		}
-		kinds := map[string]int{}
-		for _, s := range l.Steps {
-			kinds[s.Kind]++
-		}
-		if kinds["teach"] < 2 || kinds["practice"] < 2 || kinds["checkpoint"] < 1 {
-			t.Errorf("lesson 01 step kinds: %v", kinds)
-		}
+	if len(c.Phases) != 5 {
+		t.Errorf("phases = %d, want 5", len(c.Phases))
 	}
-	{
-		l := c.Lessons["02"]
-		if !l.Manifest {
-			t.Fatal("lesson 02 should be a manifest")
-		}
-		if len(l.Steps) < 6 {
-			t.Errorf("lesson 02: %d steps, want >= 6", len(l.Steps))
-		}
-		kinds := map[string]int{}
-		for _, s := range l.Steps {
-			kinds[s.Kind]++
-		}
-		if kinds["teach"] < 2 || kinds["practice"] < 2 || kinds["checkpoint"] < 1 {
-			t.Errorf("lesson 02 step kinds: %v", kinds)
-		}
+	if len(c.Lessons) != 59 {
+		t.Errorf("lessons = %d, want 59", len(c.Lessons))
 	}
-	{
-		l := c.Lessons["03"]
-		if !l.Manifest || l.Title == "Pitanja" {
-			t.Fatalf("lesson 03 should be the 'Ljudi oko mene' manifest, got title=%q manifest=%v", l.Title, l.Manifest)
-		}
-		if len(l.Steps) < 6 {
-			t.Errorf("lesson 03: %d steps, want >= 6", len(l.Steps))
-		}
-		kinds := map[string]int{}
-		for _, s := range l.Steps {
-			kinds[s.Kind]++
-		}
-		if kinds["reading"] < 1 || kinds["checkpoint"] < 1 {
-			t.Errorf("lesson 03 step kinds: %v", kinds)
-		}
+
+	// "00".."29" are the fully authored lessons of levels 1-2.
+	var authored []string
+	for i := 0; i <= 29; i++ {
+		authored = append(authored, fmt.Sprintf("%02d", i))
 	}
-	for _, id := range []string{"04", "05", "06"} {
+	// Lessons whose first step is a reading (the opening half of a
+	// "Провера" review lesson), so they don't have to start with "teach".
+	readingFirst := map[string]bool{"14": true, "28": true}
+
+	kindTotals := map[string]int{}
+	listen := 0
+	for _, id := range authored {
 		l := c.Lessons[id]
+		if l == nil {
+			t.Errorf("lesson %s missing", id)
+			continue
+		}
 		if l.Planned || !l.Manifest {
 			t.Errorf("lesson %s should be a non-planned manifest", id)
 		}
-		if len(c.Exercises[id]) < 5 {
-			t.Errorf("lesson %s blocks = %d, want >= 5", id, len(c.Exercises[id]))
+		if len(l.Steps) < 2 {
+			t.Errorf("lesson %s: %d steps, want >= 2", id, len(l.Steps))
 		}
-		if len(l.Steps) < 6 {
-			t.Errorf("lesson %s: %d steps, want >= 6", id, len(l.Steps))
+		if len(l.Steps) > 0 {
+			first := l.Steps[0].Kind
+			if !readingFirst[id] && first != "teach" && first != "practice" {
+				t.Errorf("lesson %s: first step kind = %q, want teach", id, first)
+			}
 		}
-		kinds := map[string]int{}
 		for _, s := range l.Steps {
-			kinds[s.Kind]++
+			kindTotals[s.Kind]++
 		}
-		if kinds["checkpoint"] < 1 {
-			t.Errorf("lesson %s: no checkpoint step (%v)", id, kinds)
-		}
-	}
-	for _, id := range []string{"04", "05"} {
-		if len(c.Lessons[id].Steps) < 9 {
-			t.Errorf("lesson %s: %d steps, want >= 9 (broken into small pieces)", id, len(c.Lessons[id].Steps))
-		}
-	}
-	// Block 2 (level 2) is fully authored as manifests.
-	for _, id := range []string{"07", "08", "09", "10", "11", "12"} {
-		l := c.Lessons[id]
-		if l == nil || l.Planned || !l.Manifest {
-			t.Errorf("lesson %s should be a non-planned manifest", id)
-			continue
-		}
-		kinds := map[string]int{}
-		for _, s := range l.Steps {
-			kinds[s.Kind]++
-		}
-		if kinds["checkpoint"] < 1 || kinds["reading"] < 1 {
-			t.Errorf("lesson %s step kinds: %v", id, kinds)
-		}
-		min := 9
-		if id == "12" {
-			min = 6 // review lesson, fewer steps
-		}
-		if len(l.Steps) < min {
-			t.Errorf("lesson %s: %d steps, want >= %d", id, len(l.Steps), min)
-		}
-	}
-	// Every teaching lesson of blocks 1-2 has a dictation step with audio.
-	for _, id := range []string{"01", "02", "03", "04", "05", "07", "08", "09", "10", "11"} {
-		l := c.Lessons[id]
-		if l.Reading == "" || l.ReadingRU == "" {
-			t.Errorf("lesson %s: want a reading block with translation", id)
-		}
-		if strings.Contains(l.Markdown, "<!-- reading") {
-			t.Errorf("lesson %s: reading markers left in markdown", id)
-		}
-		if len(l.Steps) < 3 {
-			t.Errorf("lesson %s: %d steps, want >= 3", id, len(l.Steps))
-		}
-		if len(l.Steps) > 0 && l.Steps[0].Kind != "teach" {
-			t.Errorf("lesson %s: first step kind = %q, want teach", id, l.Steps[0].Kind)
-		}
-
-		listen := 0
 		for _, b := range c.Exercises[id] {
 			for _, e := range b.Exercises {
 				if e.Type != "listen" {
@@ -187,20 +123,24 @@ func TestRealContentLoads(t *testing.T) {
 				}
 			}
 		}
-		if listen < 3 {
-			t.Errorf("lesson %s: listen exercises = %d, want >= 3", id, listen)
-		}
 	}
-	if c.Lessons["01"].Planned {
-		t.Error("lesson 01 should have content")
+	if kindTotals["checkpoint"] != 15 {
+		t.Errorf("checkpoint steps across 00-29 = %d, want 15", kindTotals["checkpoint"])
 	}
-	if len(c.Phases) != 5 {
-		t.Errorf("phases = %d, want 5", len(c.Phases))
+	if kindTotals["reading"] != 12 {
+		t.Errorf("reading steps across 00-29 = %d, want 12", kindTotals["reading"])
 	}
-	if len(c.Lessons) < 40 {
-		t.Errorf("lessons = %d, want >= 40", len(c.Lessons))
+	if kindTotals["dialogue"] != 6 {
+		t.Errorf("dialogue steps across 00-29 = %d, want 6", kindTotals["dialogue"])
 	}
-	for _, id := range []string{"22", "32", "41"} {
+	if listen != 34 {
+		t.Errorf("listen exercises across 00-29 = %d, want 34", listen)
+	}
+
+	if c.Lessons["00"].Planned {
+		t.Error("lesson 00 should have content")
+	}
+	for _, id := range []string{"39", "49", "58"} {
 		if !c.Lessons[id].Planned {
 			t.Errorf("checkpoint lesson %s should be planned", id)
 		}

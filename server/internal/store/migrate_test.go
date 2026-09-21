@@ -88,7 +88,10 @@ func TestMigration002RekeysExistingData(t *testing.T) {
 	}
 	mustExec(t, s, `INSERT INTO users (name, created_at) VALUES ('Гриша', '2026-09-06T10:00:00Z')`)
 	mustExec(t, s, `INSERT INTO lesson_progress (user_name, lesson, status) VALUES ('Гриша', '01', 'done')`)
-	if err := s.runMigrations(); err != nil {
+	// cap at 2: this test is only about the user_name -> user_id rekey: a
+	// later migrate004 run would relabel lesson "01" itself and the query
+	// below would find nothing.
+	if err := s.runMigrationsUpTo(2); err != nil {
 		t.Fatal(err)
 	}
 
@@ -180,7 +183,10 @@ func TestMigration002RekeysStateTablesMultiUser(t *testing.T) {
 		orphan, "03", "03.1", "done", nil)
 
 	// --- apply migration 002 (002_auth.sql + migrate002 hook) ---
-	if err := s.runMigrations(); err != nil {
+	// Capped at 2: a later migrate004 run would relabel these lesson ids
+	// ("01".."03", "09") out from under the assertions below, which are only
+	// about the user_name -> user_id rekey.
+	if err := s.runMigrationsUpTo(2); err != nil {
 		t.Fatalf("runMigrations: %v", err)
 	}
 
@@ -328,5 +334,97 @@ func TestMigration003Accounts(t *testing.T) {
 	s.db.QueryRow(`SELECT COUNT(*) FROM identities WHERE user_id = ? AND provider = 'telegram'`, grishaID).Scan(&n)
 	if n != 1 {
 		t.Fatalf("telegram identities for Гриша = %d, want 1", n)
+	}
+}
+
+// TestMigration004RelabelsLessons seeds progress against the pre-split lesson
+// ids ("00".."12") and checks migrate004 relabels it to the post-split ids
+// ("00".."29") from the 2026-09-21 lesson-split (see
+// docs/superpowers/specs/2026-09-21-split-lessons-00-12-design.md): a
+// whole-lesson lesson_progress row fans out across every new part, while
+// lesson_step_progress and attempts follow the exact step/exercise renumbering.
+func TestMigration004RelabelsLessons(t *testing.T) {
+	s := &Store{db: mustOpenRaw(t)}
+	if err := s.runMigrationsUpTo(3); err != nil {
+		t.Fatal(err)
+	}
+	uid := auth.NewUserID()
+	mustExec(t, s, `INSERT INTO users (id, name, created_at) VALUES (?, 'Гриша', '2026-09-06T10:00:00Z')`, uid)
+
+	// old lesson "02" ("Ko si ti") split into new "04" + "05" — a whole-lesson
+	// status must fan out to both.
+	mustExec(t, s, `INSERT INTO lesson_progress (user_id, lesson, status, started_at, completed_at)
+		VALUES (?, '02', 'done', '2026-09-06T10:00:00Z', '2026-09-06T10:20:00Z')`, uid)
+
+	// old "04.11" (Který čas, first step of the 3rd of 3 parts) -> new "10.1"
+	mustExec(t, s, `INSERT INTO lesson_step_progress (user_id, lesson, step, status, completed_at)
+		VALUES (?, '04', '04.11', 'done', '2026-09-06T11:00:00Z')`, uid)
+	// old "05.9" (2nd part of the split, local 9 of range 5-10) -> new "12.5"
+	mustExec(t, s, `INSERT INTO lesson_step_progress (user_id, lesson, step, status, completed_at)
+		VALUES (?, '05', '05.9', 'in_progress', NULL)`, uid)
+
+	// old "09.16.3" (dialogue turn 3 of step 09.16, 3rd of 3 parts) -> "22.8.3"
+	mustExec(t, s, `INSERT INTO attempts (user_id, exercise_id, lesson, block, answer, correct, attempted_at)
+		VALUES (?, '09.16.3', '09', '09.16', 'Jedan sok, molim.', 1, '2026-09-06T12:00:00Z')`, uid)
+
+	if err := s.runMigrations(); err != nil {
+		t.Fatalf("run migrations: %v", err)
+	} // applies version 4
+
+	// lesson_progress fanned out, old id gone
+	rows, err := s.db.Query(`SELECT lesson, status FROM lesson_progress WHERE user_id = ? ORDER BY lesson`, uid)
+	if err != nil {
+		t.Fatal(err)
+	}
+	got := map[string]string{}
+	for rows.Next() {
+		var lesson, status string
+		if err := rows.Scan(&lesson, &status); err != nil {
+			t.Fatal(err)
+		}
+		got[lesson] = status
+	}
+	rows.Close()
+	if want := map[string]string{"04": "done", "05": "done"}; len(got) != len(want) || got["04"] != want["04"] || got["05"] != want["05"] {
+		t.Errorf("lesson_progress after migrate = %v, want %v", got, want)
+	}
+
+	// lesson_step_progress renumbered
+	assertStep := func(lesson, step, wantStatus string) {
+		t.Helper()
+		var status string
+		if err := s.db.QueryRow(`SELECT status FROM lesson_step_progress WHERE user_id = ? AND lesson = ? AND step = ?`,
+			uid, lesson, step).Scan(&status); err != nil {
+			t.Fatalf("lesson_step_progress %s/%s: %v", lesson, step, err)
+		}
+		if status != wantStatus {
+			t.Errorf("lesson_step_progress %s/%s status = %q, want %q", lesson, step, status, wantStatus)
+		}
+	}
+	assertStep("10", "10.1", "done")
+	assertStep("12", "12.5", "in_progress")
+	var n int
+	s.db.QueryRow(`SELECT COUNT(*) FROM lesson_step_progress WHERE lesson IN ('04','05')`).Scan(&n)
+	if n != 0 {
+		t.Errorf("old-id lesson_step_progress rows left: %d", n)
+	}
+
+	// attempts renumbered
+	var lesson, block, exID string
+	if err := s.db.QueryRow(`SELECT lesson, block, exercise_id FROM attempts WHERE user_id = ?`, uid).
+		Scan(&lesson, &block, &exID); err != nil {
+		t.Fatalf("attempts: %v", err)
+	}
+	if lesson != "22" || block != "22.8" || exID != "22.8.3" {
+		t.Errorf("attempt = lesson=%q block=%q exercise_id=%q, want 22/22.8/22.8.3", lesson, block, exID)
+	}
+
+	// idempotent: re-running does not re-fire the hook or duplicate rows
+	if err := s.runMigrations(); err != nil {
+		t.Fatalf("re-run: %v", err)
+	}
+	s.db.QueryRow(`SELECT COUNT(*) FROM lesson_progress WHERE user_id = ?`, uid).Scan(&n)
+	if n != 2 {
+		t.Fatalf("lesson_progress rows after re-run = %d, want 2", n)
 	}
 }

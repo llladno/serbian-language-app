@@ -1,0 +1,221 @@
+lesson: "25"
+title: "Град"
+subtitle: "где что, как пройти, проверка"
+teaches:
+  [
+    grad, ulica, trg, park, posta, banka, bolnica, skola, fakultet, bioskop,
+    pozoriste, muzej, stanica, autobus, most, reka, centar, raskrsnica,
+    semafor, cosak, levo, desno, pravo, blizu, daleko, pored, iza, ispred,
+    preko-puta, kod-prep, skrenuti, stici, kako-da-dodjem, gde-je,
+  ]
+
+steps:
+  - id: "25.1"
+    kind: teach
+    title: "Город"
+    md: "25/1-grad.md"
+
+  - id: "25.2"
+    kind: practice
+    title: "Что где"
+    also_ok: ["trgu", "autobusom"]
+    exercises:
+      - id: "25.2.1"
+        type: choice
+        prompt: "«остановка» —"
+        options: ["stanica", "raskrsnica", "semafor"]
+        answer: "stanica"
+      - id: "25.2.2"
+        type: choice
+        prompt: "«я еду в центр на автобусе» —"
+        options: ["Idem u centar autobusom.", "Idem u centar autobus.", "Idem centar u autobusom."]
+        answer: "Idem u centar autobusom."
+      - id: "25.2.3"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["pošta", "почта"]
+          - ["banka", "банк"]
+          - ["most", "мост"]
+          - ["park", "парк"]
+      - id: "25.2.4"
+        type: fill_blank
+        prompt: "«почта на площади» → Pošta je na ___."
+        accept: ["trgu"]
+
+  - id: "25.3"
+    kind: teach
+    title: "Как пройти"
+    md: "25/3-kako-da-dodjem.md"
+
+  - id: "25.4"
+    kind: practice
+    title: "Направление"
+    also_ok: ["skrenite", "poste", "stanice", "banke"]
+    exercises:
+      - id: "25.4.1"
+        type: choice
+        prompt: "«Извините, где почта?» —"
+        options: ["Izvinite, gde je pošta?", "Izvinite, gde pošta je?", "Izvinite, pošta gde?"]
+        answer: "Izvinite, gde je pošta?"
+      - id: "25.4.2"
+        type: choice
+        prompt: "«Поверните налево» —"
+        options: ["Skrenite levo.", "Skrenite pravo.", "Idite levo skrenite."]
+        answer: "Skrenite levo."
+      - id: "25.4.3"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["levo", "налево"]
+          - ["desno", "направо"]
+          - ["pravo", "прямо"]
+          - ["blizu", "близко"]
+      - id: "25.4.4"
+        type: word_bank
+        prompt: "Собери: «как пройти к остановке?»"
+        bank: ["Kako", "da", "dođem", "do", "stanice"]
+        accept: ["Kako da dođem do stanice?"]
+
+  - id: "25.5"
+    kind: reading
+    title: "Спрашиваю дорогу"
+    md: "25/5-citanje.md"
+    also_ok: ["poste", "skrenite", "banke", "ovom", "ulicom", "raskrsnice", "minuta", "nedeljom", "subotom", "puno"]
+    exercises:
+      - id: "25.5.1"
+        type: choice
+        prompt: "Далеко ли до почты?"
+        options: ["Ne, pet minuta.", "Da, daleko je.", "Ne radi danas."]
+        answer: "Ne, pet minuta."
+      - id: "25.5.2"
+        type: choice
+        prompt: "Когда работает почта?"
+        options: ["Radnim danima i subotom.", "Samo nedeljom.", "Svaki dan."]
+        answer: "Radnim danima i subotom."
+
+  - id: "25.6"
+    kind: practice
+    title: "Диктант"
+    mixed: true
+    exercises:
+      - id: "25.6.1"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Gde je stanica?"
+        accept: ["Gde je stanica?"]
+      - id: "25.6.2"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Da li je daleko?"
+        accept: ["Da li je daleko?"]
+      - id: "25.6.3"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Skrenite levo."
+        accept: ["Skrenite levo."]
+
+  - id: "25.7"
+    kind: checkpoint
+    title: "Проверка"
+    also_ok: ["banke", "stanice"]
+    exercises:
+      - id: "25.7.1"
+        type: choice
+        prompt: "«У вас есть вода?» (разговорно) —"
+        options: ["Jel' imate vodu?", "Li imate vodu?", "Vodu imate da?"]
+        answer: "Jel' imate vodu?"
+      - id: "25.7.2"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["ko", "кто"]
+          - ["zašto", "почему"]
+          - ["pošta", "почта"]
+          - ["desno", "направо"]
+      - id: "25.7.3"
+        type: fill_blank
+        prompt: "«Не иду, потому что дождь» → Ne idem ___ pada kiša."
+        accept: ["jer"]
+      - id: "25.7.4"
+        type: word_bank
+        prompt: "Собери: «где банк?»"
+        bank: ["Gde", "je", "banka"]
+        accept: ["Gde je banka?"]
+      - id: "25.7.5"
+        type: translate
+        prompt: "Извините, где почта?"
+        accept: ["Izvinite, gde je pošta?"]
+      - id: "25.7.6"
+        type: free
+        prompt: "Останови прохожего и спроси дорогу до рынка, уточни, далеко ли — 3–4 фразы."
+        sample: "Izvinite, kako da dođem do pijace? Da li je daleko? Hvala vam puno!"
+
+  - id: "25.8"
+    kind: dialogue
+    title: "Где је станица"
+    scene: "Ты вышел не на той остановке и ищешь автобусную станцию. Спрашиваешь прохожую."
+    voice: f
+    also_ok: ["autobuska", "semafora", "pošte", "idite"]
+    turns:
+      - who: me
+        sr: "Izvinite, gde je autobuska stanica?"
+        ru: "Извините, где автобусная станция?"
+        exercise:
+          id: "25.8.1"
+          type: choice
+          prompt: "Вежливо спроси, где автобусная станция"
+          options:
+            - "Izvinite, gde je autobuska stanica?"
+            - "Izvinite, kada je autobuska stanica?"
+            - "Izvinite, kako je autobuska stanica?"
+          answer: "Izvinite, gde je autobuska stanica?"
+          explain: "«gde» — про место. «kada» — про время, «kako» — про способ."
+
+      - who: npc
+        sr: "Idite pravo do semafora, pa levo."
+        ru: "Идите прямо до светофора, потом налево."
+
+      - who: me
+        sr: "Pravo, pa levo?"
+        ru: "Прямо, потом налево?"
+        exercise:
+          id: "25.8.2"
+          type: fill_blank
+          prompt: "Pravo, pa ___?"
+          accept: ["levo"]
+          explain: "Повторить услышанное — лучший способ проверить, что понял правильно."
+
+      - who: npc
+        sr: "Da. Ulica desno, kod pošte."
+        ru: "Да. Улица направо, у почты."
+
+      - who: me
+        sr: "Je li daleko?"
+        ru: "Это далеко?"
+        exercise:
+          id: "25.8.3"
+          type: choice
+          prompt: "Спроси, далеко ли это"
+          options:
+            - "Je li daleko?"
+            - "Je li blizu pošta?"
+            - "Je li levo?"
+          answer: "Je li daleko?"
+
+      - who: npc
+        sr: "Ne, blizu je."
+        ru: "Нет, близко."
+
+      - who: me
+        sr: "Hvala! Doviđenja!"
+        ru: "Спасибо! До свидания!"
+        exercise:
+          id: "25.8.4"
+          type: translate
+          prompt: "Поблагодари и попрощайся"
+          accept: ["Hvala! Doviđenja!", "Hvala, doviđenja!", "Hvala. Doviđenja."]
+
+      - who: npc
+        sr: "Nema na čemu. Prijatno!"
+        ru: "Не за что. Всего доброго!"

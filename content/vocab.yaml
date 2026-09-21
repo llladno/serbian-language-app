@@ -9,7 +9,7 @@
   cyrillic: "чоколада"
   ru: "шоколад"
   note: "č — твёрдое «ч», как в русском «чай»"
-  lesson: "00"
+  lesson: "01"
   pos: "noun"
   gender: "f"
   tags: ["azbuka"]
@@ -19,7 +19,7 @@
   cyrillic: "ћевапи"
   ru: "чевапи — сербское блюдо из мяса"
   note: "ć — мягче, чем č, среднее между «ч» и «ть»"
-  lesson: "00"
+  lesson: "01"
   pos: "noun"
   gender: "m"
   tags: ["azbuka"]
@@ -29,7 +29,7 @@
   cyrillic: "шешир"
   ru: "шляпа"
   note: "š — как русское «ш»"
-  lesson: "00"
+  lesson: "01"
   pos: "noun"
   gender: "m"
   tags: ["azbuka"]
@@ -39,7 +39,7 @@
   cyrillic: "жаба"
   ru: "лягушка"
   note: "ž — как русское «ж»"
-  lesson: "00"
+  lesson: "01"
   pos: "noun"
   gender: "f"
   tags: ["azbuka"]
@@ -49,7 +49,7 @@
   cyrillic: "ђак"
   ru: "школьник, ученик"
   note: "đ — мягкое «дь», как в слове «дядя»"
-  lesson: "00"
+  lesson: "01"
   pos: "noun"
   gender: "m"
   tags: ["azbuka"]
@@ -59,7 +59,7 @@
   cyrillic: "џем"
   ru: "варенье, джем"
   note: "dž — твёрдое «дж», как в слове «джем»"
-  lesson: "00"
+  lesson: "01"
   pos: "noun"
   gender: "m"
   tags: ["azbuka"]
@@ -69,7 +69,7 @@
   cyrillic: "љубав"
   ru: "любовь"
   note: "lj — мягкое «ль», как в слове «пальто»"
-  lesson: "00"
+  lesson: "01"
   pos: "noun"
   gender: "f"
   tags: ["azbuka"]
@@ -79,7 +79,7 @@
   cyrillic: "коњ"
   ru: "лошадь"
   note: "nj — мягкое «нь»; похоже на русское «конь»"
-  lesson: "00"
+  lesson: "01"
   pos: "noun"
   gender: "m"
   tags: ["azbuka"]
@@ -92,7 +92,7 @@
   cyrillic: "здраво"
   ru: "привет / здравствуйте"
   note: "нейтрально, на все случаи"
-  lesson: "01"
+  lesson: "02"
   pos: "interj"
   tags: ["greetings"]
   example_sr: "Zdravo, kako si?"
@@ -103,7 +103,7 @@
   cyrillic: "ћао"
   ru: "привет / пока"
   note: "неформально"
-  lesson: "01"
+  lesson: "02"
   pos: "interj"
   tags: ["greetings"]
   example_sr: "Ćao, vidimo se sutra!"
@@ -113,7 +113,7 @@
   latin: "dobar dan"
   cyrillic: "добар дан"
   ru: "добрый день"
-  lesson: "01"
+  lesson: "02"
   pos: "phrase"
   tags: ["greetings"]
   example_sr: "Dobar dan, gospođo!"
@@ -123,7 +123,7 @@
   latin: "dobro jutro"
   cyrillic: "добро јутро"
   ru: "доброе утро"
-  lesson: "01"
+  lesson: "02"
   pos: "phrase"
   tags: ["greetings"]
   example_sr: "Dobro jutro! Kako si spavao?"
@@ -133,7 +133,7 @@
   latin: "dobro veče"
   cyrillic: "добро вече"
   ru: "добрый вечер"
-  lesson: "01"
+  lesson: "02"
   pos: "phrase"
   tags: ["greetings"]
   example_sr: "Dobro veče, drago mi je."
@@ -143,7 +143,7 @@
   latin: "laku noć"
   cyrillic: "лаку ноћ"
   ru: "спокойной ночи"
-  lesson: "01"
+  lesson: "02"
   pos: "phrase"
   tags: ["greetings"]
   example_sr: "Laku noć, vidimo se sutra."
@@ -153,7 +153,7 @@
   latin: "doviđenja"
   cyrillic: "довиђења"
   ru: "до свидания"
-  lesson: "01"
+  lesson: "02"
   pos: "phrase"
   tags: ["greetings"]
   example_sr: "Doviđenja, hvala na svemu!"
@@ -164,7 +164,7 @@
   cyrillic: "пријатно"
   ru: "всего доброго / приятного"
   note: "при уходе, часто в кафе и магазине"
-  lesson: "01"
+  lesson: "02"
   pos: "interj"
   tags: ["greetings"]
   example_sr: "Hvala! — Prijatno!"
@@ -174,7 +174,7 @@
   latin: "vidimo se"
   cyrillic: "видимо се"
   ru: "увидимся"
-  lesson: "01"
+  lesson: "02"
   pos: "phrase"
   tags: ["greetings"]
   example_sr: "Vidimo se večeras u sedam."
@@ -184,7 +184,7 @@
   latin: "čujemo se"
   cyrillic: "чујемо се"
   ru: "созвонимся / на связи"
-  lesson: "01"
+  lesson: "02"
   pos: "phrase"
   tags: ["greetings"]
   example_sr: "Čujemo se sutra, važi?"
@@ -194,7 +194,7 @@
   latin: "molim"
   cyrillic: "молим"
   ru: "пожалуйста; не за что; простите? (переспрос)"
-  lesson: "01"
+  lesson: "03"
   pos: "phrase"
   tags: ["politeness"]
   example_sr: "Izvini, molim? Nisam razumeo."
@@ -204,7 +204,7 @@
   latin: "molim vas"
   cyrillic: "молим вас"
   ru: "пожалуйста (просьба)"
-  lesson: "01"
+  lesson: "03"
   pos: "phrase"
   tags: ["politeness"]
   example_sr: "Kafu, molim vas."
@@ -215,7 +215,7 @@
   cyrillic: "хвала (лепо)"
   ru: "спасибо (большое)"
   note: "ложный друг: НЕ «хвала/похвала» (это pohvala)"
-  lesson: "01"
+  lesson: "03"
   pos: "phrase"
   tags: ["politeness"]
   example_sr: "Hvala lepo za pomoć!"
@@ -225,7 +225,7 @@
   latin: "nema na čemu"
   cyrillic: "нема на чему"
   ru: "не за что"
-  lesson: "01"
+  lesson: "03"
   pos: "phrase"
   tags: ["politeness"]
   example_sr: "Hvala puno! — Nema na čemu."
@@ -235,7 +235,7 @@
   latin: "izvini / izvinite"
   cyrillic: "извини / извините"
   ru: "извини(те)"
-  lesson: "01"
+  lesson: "03"
   pos: "phrase"
   tags: ["politeness"]
   example_sr: "Izvini, kasnim malo."
@@ -245,7 +245,7 @@
   latin: "oprosti / oprostite"
   cyrillic: "опрости / опростите"
   ru: "прости(те)"
-  lesson: "01"
+  lesson: "03"
   pos: "phrase"
   tags: ["politeness"]
   example_sr: "Oprosti, nisam te video."
@@ -255,7 +255,7 @@
   latin: "izvolite"
   cyrillic: "изволите"
   ru: "вот, пожалуйста / чем могу помочь / прошу"
-  lesson: "01"
+  lesson: "03"
   pos: "phrase"
   tags: ["politeness"]
   example_sr: "Izvolite, sedite ovde."
@@ -265,7 +265,7 @@
   latin: "nema problema"
   cyrillic: "нема проблема"
   ru: "без проблем"
-  lesson: "01"
+  lesson: "03"
   pos: "phrase"
   tags: ["politeness"]
   example_sr: "Nema problema, imamo vremena."
@@ -275,7 +275,7 @@
   latin: "kako se zoveš? / zovete?"
   cyrillic: "како се зовеш? / зовете?"
   ru: "как тебя / вас зовут?"
-  lesson: "01"
+  lesson: "02"
   pos: "phrase"
   tags: ["intro"]
   example_sr: "Kako se zoveš?"
@@ -285,7 +285,7 @@
   latin: "zovem se…"
   cyrillic: "зовем се…"
   ru: "меня зовут…"
-  lesson: "01"
+  lesson: "02"
   pos: "phrase"
   tags: ["intro"]
   example_sr: "Zovem se Griša."
@@ -295,7 +295,7 @@
   latin: "ja sam…"
   cyrillic: "ја сам…"
   ru: "я … (имя / профессия)"
-  lesson: "01"
+  lesson: "02"
   pos: "phrase"
   tags: ["intro"]
   example_sr: "Ja sam Griša, iz Rusije."
@@ -305,7 +305,7 @@
   latin: "drago mi je"
   cyrillic: "драго ми је"
   ru: "приятно познакомиться"
-  lesson: "01"
+  lesson: "02"
   pos: "phrase"
   tags: ["intro"]
   example_sr: "Drago mi je, ja sam Ana."
@@ -315,7 +315,7 @@
   latin: "takođe"
   cyrillic: "такође"
   ru: "тоже, взаимно"
-  lesson: "01"
+  lesson: "02"
   pos: "adv"
   tags: ["intro"]
   example_sr: "Drago mi je. — Takođe!"
@@ -325,7 +325,7 @@
   latin: "odakle si? / ste?"
   cyrillic: "одакле си? / сте?"
   ru: "откуда ты / вы?"
-  lesson: "01"
+  lesson: "03"
   pos: "phrase"
   tags: ["intro"]
   example_sr: "Odakle si?"
@@ -336,7 +336,7 @@
   cyrillic: "из Русије"
   ru: "из России"
   note: "iz + родительный: iz Rusije, iz Beograda"
-  lesson: "01"
+  lesson: "03"
   pos: "phrase"
   tags: ["intro"]
   example_sr: "Ja sam iz Rusije, iz Moskve."
@@ -346,7 +346,7 @@
   latin: "živim u Novom Sadu"
   cyrillic: "живим у Новом Саду"
   ru: "живу в Нови-Саде"
-  lesson: "01"
+  lesson: "03"
   pos: "phrase"
   tags: ["intro"]
   example_sr: "Živim u Novom Sadu već godinu dana."
@@ -356,7 +356,7 @@
   latin: "radim kao…"
   cyrillic: "радим као…"
   ru: "работаю (кем-то)"
-  lesson: "01"
+  lesson: "03"
   pos: "phrase"
   tags: ["intro"]
   example_sr: "Radim kao programer."
@@ -366,7 +366,7 @@
   latin: "kako si? / ste?"
   cyrillic: "како си? / сте?"
   ru: "как дела (ты / вы)?"
-  lesson: "01"
+  lesson: "02"
   pos: "phrase"
   tags: ["intro"]
   example_sr: "Kako si? Dugo se nismo videli!"
@@ -376,7 +376,7 @@
   latin: "kako ide?"
   cyrillic: "како иде?"
   ru: "как оно / как идёт?"
-  lesson: "01"
+  lesson: "02"
   pos: "phrase"
   tags: ["intro"]
   example_sr: "Kako ide posao ovih dana?"
@@ -386,7 +386,7 @@
   latin: "dobro, hvala"
   cyrillic: "добро, хвала"
   ru: "хорошо, спасибо"
-  lesson: "01"
+  lesson: "02"
   pos: "phrase"
   tags: ["intro"]
   example_sr: "Kako si? — Dobro, hvala."
@@ -396,7 +396,7 @@
   latin: "može"
   cyrillic: "може"
   ru: "нормально / пойдёт / можно"
-  lesson: "01"
+  lesson: "02"
   pos: "phrase"
   tags: ["intro"]
   example_sr: "Može kafa za pola sata?"
@@ -406,7 +406,7 @@
   latin: "ne žalim se"
   cyrillic: "не жалим се"
   ru: "не жалуюсь"
-  lesson: "01"
+  lesson: "02"
   pos: "phrase"
   tags: ["intro"]
   example_sr: "Kako si? — Ne žalim se."
@@ -417,7 +417,7 @@
   cyrillic: "бити"
   ru: "быть"
   note: "в наст. времени обязателен; краткая форма — на 2-м месте"
-  lesson: "01"
+  lesson: "02"
   pos: "verb"
   aspect: "nesv"
   tags: ["verbs", "irregular"]
@@ -429,7 +429,7 @@
   cyrillic: "уморан"
   ru: "усталый"
   note: "ложный друг: НЕ «умный» (это pametan)"
-  lesson: "01"
+  lesson: "02"
   pos: "adj"
   tags: ["adjectives"]
   example_sr: "Veoma sam umoran posle posla."
@@ -443,7 +443,7 @@
   cyrillic: "радити"
   ru: "работать / делать"
   note: "тип I: radim, radiš, radi…"
-  lesson: "02"
+  lesson: "05"
   pos: "verb"
   aspect: "nesv"
   tags: ["verbs"]
@@ -453,7 +453,7 @@
   cyrillic: "живети"
   ru: "жить"
   note: "тип I: živim, živiš…"
-  lesson: "02"
+  lesson: "04"
   pos: "verb"
   aspect: "nesv"
   tags: ["verbs"]
@@ -463,7 +463,7 @@
   cyrillic: "имати"
   ru: "иметь"
   note: "тип A: imam…; отриц. nemam"
-  lesson: "02"
+  lesson: "04"
   pos: "verb"
   aspect: "nesv"
   tags: ["verbs"]
@@ -473,7 +473,7 @@
   cyrillic: "знати"
   ru: "знать"
   note: "тип A: znam, znaš…"
-  lesson: "02"
+  lesson: "04"
   pos: "verb"
   aspect: "nesv"
   tags: ["verbs"]
@@ -483,7 +483,7 @@
   cyrillic: "говорити"
   ru: "говорить"
   note: "тип I: govorim…; язык без предлога: govorim srpski"
-  lesson: "02"
+  lesson: "05"
   pos: "verb"
   aspect: "nesv"
   tags: ["verbs"]
@@ -493,7 +493,7 @@
   cyrillic: "разумети"
   ru: "понимать"
   note: "тип E: razumem, razumeš…"
-  lesson: "02"
+  lesson: "05"
   pos: "verb"
   aspect: "nesv"
   tags: ["verbs"]
@@ -503,7 +503,7 @@
   cyrillic: "учити"
   ru: "учить / изучать"
   note: "тип I: učim…"
-  lesson: "02"
+  lesson: "05"
   pos: "verb"
   aspect: "nesv"
   tags: ["verbs"]
@@ -513,7 +513,7 @@
   cyrillic: "волети"
   ru: "любить"
   note: "тип I: volim…"
-  lesson: "02"
+  lesson: "04"
   pos: "verb"
   aspect: "nesv"
   tags: ["verbs"]
@@ -523,7 +523,7 @@
   cyrillic: "мислити"
   ru: "думать"
   note: "тип I: mislim…"
-  lesson: "02"
+  lesson: "04"
   pos: "verb"
   aspect: "nesv"
   tags: ["verbs"]
@@ -533,7 +533,7 @@
   cyrillic: "гледати"
   ru: "смотреть"
   note: "тип A: gledam…"
-  lesson: "02"
+  lesson: "04"
   pos: "verb"
   aspect: "nesv"
   tags: ["verbs"]
@@ -543,7 +543,7 @@
   cyrillic: "слушати"
   ru: "слушать"
   note: "тип A: slušam…"
-  lesson: "02"
+  lesson: "04"
   pos: "verb"
   aspect: "nesv"
   tags: ["verbs"]
@@ -553,7 +553,7 @@
   cyrillic: "читати"
   ru: "читать"
   note: "тип A: čitam…"
-  lesson: "02"
+  lesson: "04"
   pos: "verb"
   aspect: "nesv"
   tags: ["verbs"]
@@ -563,7 +563,7 @@
   cyrillic: "писати"
   ru: "писать"
   note: "тип E: pišem, pišeš…"
-  lesson: "02"
+  lesson: "04"
   pos: "verb"
   aspect: "nesv"
   tags: ["verbs"]
@@ -573,7 +573,7 @@
   cyrillic: "ићи"
   ru: "идти / ехать"
   note: "тип E: idem, ideš, idu"
-  lesson: "02"
+  lesson: "04"
   pos: "verb"
   aspect: "nesv"
   tags: ["verbs"]
@@ -583,7 +583,7 @@
   cyrillic: "хтети"
   ru: "хотеть"
   note: "непр.: hoću, hoćeš…; отриц. neću"
-  lesson: "02"
+  lesson: "04"
   pos: "verb"
   aspect: "nesv"
   tags: ["verbs", "irregular"]
@@ -593,7 +593,7 @@
   cyrillic: "моћи"
   ru: "мочь"
   note: "непр.: mogu, možeš…, oni mogu"
-  lesson: "02"
+  lesson: "04"
   pos: "verb"
   tags: ["verbs", "irregular"]
 - id: "putovati"
@@ -602,7 +602,7 @@
   cyrillic: "путовати"
   ru: "путешествовать / ехать"
   note: "тип E: putujem (-ovati → -ujem)"
-  lesson: "02"
+  lesson: "04"
   pos: "verb"
   aspect: "nesv"
   tags: ["verbs"]
@@ -612,7 +612,7 @@
   cyrillic: "куповати"
   ru: "покупать"
   note: "тип E: kupujem (-ovati → -ujem)"
-  lesson: "02"
+  lesson: "04"
   pos: "verb"
   aspect: "nesv"
   tags: ["verbs"]
@@ -622,7 +622,7 @@
   cyrillic: "тражити"
   ru: "искать"
   note: "тип I: tražim…"
-  lesson: "02"
+  lesson: "04"
   pos: "verb"
   aspect: "nesv"
   tags: ["verbs"]
@@ -632,7 +632,7 @@
   cyrillic: "чекати"
   ru: "ждать"
   note: "тип A: čekam…"
-  lesson: "02"
+  lesson: "04"
   pos: "verb"
   aspect: "nesv"
   tags: ["verbs"]
@@ -642,7 +642,7 @@
   cyrillic: "коштати"
   ru: "стоить"
   note: "тип A: košta; «Koliko košta?»"
-  lesson: "02"
+  lesson: "04"
   pos: "verb"
   aspect: "nesv"
   tags: ["verbs", "shop"]
@@ -651,7 +651,7 @@
   latin: "ovde"
   cyrillic: "овде"
   ru: "здесь"
-  lesson: "02"
+  lesson: "04"
   pos: "adv"
   tags: ["adverbs"]
 - id: "tamo"
@@ -659,7 +659,7 @@
   latin: "tamo"
   cyrillic: "тамо"
   ru: "там"
-  lesson: "02"
+  lesson: "04"
   pos: "adv"
   tags: ["adverbs"]
 - id: "sada"
@@ -667,7 +667,7 @@
   latin: "sada / sad"
   cyrillic: "сада / сад"
   ru: "сейчас"
-  lesson: "02"
+  lesson: "04"
   pos: "adv"
   tags: ["adverbs", "time"]
 - id: "danas"
@@ -675,7 +675,7 @@
   latin: "danas"
   cyrillic: "данас"
   ru: "сегодня"
-  lesson: "02"
+  lesson: "04"
   pos: "adv"
   tags: ["time"]
 - id: "sutra"
@@ -684,7 +684,7 @@
   cyrillic: "сутра"
   ru: "завтра"
   note: "ложный друг: НЕ «утро» (это jutro)"
-  lesson: "02"
+  lesson: "04"
   pos: "adv"
   tags: ["time"]
 - id: "juce"
@@ -692,7 +692,7 @@
   latin: "juče"
   cyrillic: "јуче"
   ru: "вчера"
-  lesson: "02"
+  lesson: "04"
   pos: "adv"
   tags: ["time"]
 - id: "kuci"
@@ -701,7 +701,7 @@
   cyrillic: "кући"
   ru: "домой"
   note: "«idem kući» — иду домой"
-  lesson: "02"
+  lesson: "04"
   pos: "adv"
   tags: ["adverbs"]
 - id: "vreme"
@@ -710,7 +710,7 @@
   cyrillic: "време"
   ru: "время / погода"
   note: "после отрицания → nemam vremena"
-  lesson: "02"
+  lesson: "04"
   pos: "noun"
   gender: "n"
   tags: ["nouns", "time"]
@@ -719,7 +719,7 @@
   latin: "ništa"
   cyrillic: "ништа"
   ru: "ничего"
-  lesson: "02"
+  lesson: "04"
   pos: "pron"
   tags: ["pronouns"]
 - id: "nesto"
@@ -727,7 +727,7 @@
   latin: "nešto"
   cyrillic: "нешто"
   ru: "что-то"
-  lesson: "02"
+  lesson: "04"
   pos: "pron"
   tags: ["pronouns"]
 - id: "dobro-lose"
@@ -735,7 +735,7 @@
   latin: "dobro / loše"
   cyrillic: "добро / лоше"
   ru: "хорошо / плохо"
-  lesson: "02"
+  lesson: "04"
   pos: "adv"
   tags: ["adverbs"]
 - id: "malo-mnogo"
@@ -743,7 +743,7 @@
   latin: "malo / mnogo"
   cyrillic: "мало / много"
   ru: "мало / много"
-  lesson: "02"
+  lesson: "04"
   pos: "adv"
   tags: ["adverbs"]
 - id: "ruski"
@@ -752,7 +752,7 @@
   cyrillic: "руски"
   ru: "русский (язык)"
   note: "«govorim ruski» — без предлога"
-  lesson: "02"
+  lesson: "05"
   pos: "adj"
   tags: ["languages"]
 - id: "srpski"
@@ -760,7 +760,7 @@
   latin: "srpski"
   cyrillic: "српски"
   ru: "сербский (язык)"
-  lesson: "02"
+  lesson: "05"
   pos: "adj"
   tags: ["languages"]
 - id: "engleski"
@@ -768,7 +768,7 @@
   latin: "engleski"
   cyrillic: "енглески"
   ru: "английский (язык)"
-  lesson: "02"
+  lesson: "05"
   pos: "adj"
   tags: ["languages"]
 - id: "zemlja"
@@ -776,7 +776,7 @@
   latin: "zemlja"
   cyrillic: "земља"
   ru: "страна / земля"
-  lesson: "02"
+  lesson: "04"
   pos: "noun"
   gender: "f"
   tags: ["intro"]
@@ -786,7 +786,7 @@
   cyrillic: "програмер"
   ru: "программист"
   note: "ж. род — programerka"
-  lesson: "02"
+  lesson: "05"
   pos: "noun"
   gender: "m"
   tags: ["jobs"]
@@ -796,7 +796,7 @@
   cyrillic: "студент"
   ru: "студент"
   note: "ж. род — studentkinja"
-  lesson: "02"
+  lesson: "05"
   pos: "noun"
   gender: "m"
   tags: ["jobs"]
@@ -806,7 +806,7 @@
   cyrillic: "лекар"
   ru: "врач"
   note: "разг. также doktor"
-  lesson: "02"
+  lesson: "05"
   pos: "noun"
   gender: "m"
   tags: ["jobs"]
@@ -815,7 +815,7 @@
   latin: "konobar"
   cyrillic: "конобар"
   ru: "официант"
-  lesson: "02"
+  lesson: "05"
   pos: "noun"
   gender: "m"
   tags: ["jobs"]
@@ -825,7 +825,7 @@
   cyrillic: "наставник"
   ru: "учитель / преподаватель"
   note: "ж. род — nastavnica"
-  lesson: "02"
+  lesson: "05"
   pos: "noun"
   gender: "m"
   tags: ["jobs"]
@@ -837,7 +837,7 @@
   latin: "porodica"
   cyrillic: "породица"
   ru: "семья"
-  lesson: "03"
+  lesson: "06"
   pos: "noun"
   gender: "f"
   tags: ["family"]
@@ -847,7 +847,7 @@
   cyrillic: "мама"
   ru: "мама"
   note: "офиц. majka; акуз. mamu"
-  lesson: "03"
+  lesson: "06"
   pos: "noun"
   gender: "f"
   tags: ["family"]
@@ -857,7 +857,7 @@
   cyrillic: "тата"
   ru: "папа"
   note: "офиц. otac; акуз. tatu"
-  lesson: "03"
+  lesson: "06"
   pos: "noun"
   gender: "m"
   tags: ["family"]
@@ -867,7 +867,7 @@
   cyrillic: "брат"
   ru: "брат"
   note: "акуз. brata; мн. braća"
-  lesson: "03"
+  lesson: "06"
   pos: "noun"
   gender: "m"
   tags: ["family"]
@@ -877,7 +877,7 @@
   cyrillic: "сестра"
   ru: "сестра"
   note: "акуз. sestru"
-  lesson: "03"
+  lesson: "06"
   pos: "noun"
   gender: "f"
   tags: ["family"]
@@ -887,7 +887,7 @@
   cyrillic: "муж"
   ru: "муж"
   note: "акуз. muža"
-  lesson: "03"
+  lesson: "06"
   pos: "noun"
   gender: "m"
   tags: ["family"]
@@ -897,7 +897,7 @@
   cyrillic: "жена"
   ru: "жена / женщина"
   note: "акуз. ženu"
-  lesson: "03"
+  lesson: "06"
   pos: "noun"
   gender: "f"
   tags: ["family"]
@@ -907,7 +907,7 @@
   cyrillic: "син"
   ru: "сын"
   note: "акуз. sina"
-  lesson: "03"
+  lesson: "06"
   pos: "noun"
   gender: "m"
   tags: ["family"]
@@ -917,7 +917,7 @@
   cyrillic: "ћерка"
   ru: "дочь"
   note: "акуз. ćerku"
-  lesson: "03"
+  lesson: "06"
   pos: "noun"
   gender: "f"
   tags: ["family"]
@@ -927,7 +927,7 @@
   cyrillic: "дете"
   ru: "ребёнок"
   note: "мн. deca (ед. ч. глагол)"
-  lesson: "03"
+  lesson: "06"
   pos: "noun"
   gender: "n"
   tags: ["family"]
@@ -936,7 +936,7 @@
   latin: "roditelji"
   cyrillic: "родитељи"
   ru: "родители"
-  lesson: "03"
+  lesson: "06"
   pos: "noun"
   gender: "m"
   tags: ["family"]
@@ -945,7 +945,7 @@
   latin: "baba"
   cyrillic: "баба"
   ru: "бабушка"
-  lesson: "03"
+  lesson: "06"
   pos: "noun"
   gender: "f"
   tags: ["family"]
@@ -954,7 +954,7 @@
   latin: "deda"
   cyrillic: "деда"
   ru: "дедушка"
-  lesson: "03"
+  lesson: "06"
   pos: "noun"
   gender: "m"
   tags: ["family"]
@@ -964,7 +964,7 @@
   cyrillic: "имам / немам"
   ru: "у меня есть / у меня нет"
   note: "«nemam» + родительный: nemam brata"
-  lesson: "03"
+  lesson: "06"
   pos: "verb"
   aspect: "nesv"
   tags: ["family"]
@@ -973,7 +973,7 @@
   latin: "moj / moja / moje"
   cyrillic: "мој / моја / моје"
   ru: "мой / моя / моё"
-  lesson: "03"
+  lesson: "07"
   pos: "pron"
   tags: ["family"]
 - id: "tvoj"
@@ -981,7 +981,7 @@
   latin: "tvoj / tvoja / tvoje"
   cyrillic: "твој / твоја / твоје"
   ru: "твой / твоя / твоё"
-  lesson: "03"
+  lesson: "07"
   pos: "pron"
   tags: ["family"]
 - id: "njegov"
@@ -989,7 +989,7 @@
   latin: "njegov / njen"
   cyrillic: "његов / њен"
   ru: "его / её"
-  lesson: "03"
+  lesson: "07"
   pos: "pron"
   tags: ["family"]
 
@@ -1001,7 +1001,7 @@
   cyrillic: "да ли"
   ru: "ли (рамка да/нет-вопроса)"
   note: "в начале вопроса: «Da li imate…?»"
-  lesson: "10"
+  lesson: "23"
   pos: "phrase"
   tags: ["questions"]
 - id: "jel"
@@ -1010,7 +1010,7 @@
   cyrillic: "јел / је ли"
   ru: "разг. «да ли»"
   note: "живая речь; на письме — da li"
-  lesson: "10"
+  lesson: "23"
   pos: "phrase"
   tags: ["questions", "colloquial"]
 - id: "ko"
@@ -1018,7 +1018,7 @@
   latin: "ko"
   cyrillic: "ко"
   ru: "кто"
-  lesson: "10"
+  lesson: "23"
   pos: "pron"
   tags: ["questions"]
 - id: "sta"
@@ -1027,7 +1027,7 @@
   cyrillic: "шта"
   ru: "что"
   note: "в Сербии «что» = šta; što = «потому что / который»"
-  lesson: "10"
+  lesson: "23"
   pos: "pron"
   tags: ["questions"]
 - id: "koji"
@@ -1035,7 +1035,7 @@
   latin: "koji / koja / koje"
   cyrillic: "који / која / које"
   ru: "какой / который (из ряда)"
-  lesson: "10"
+  lesson: "23"
   pos: "pron"
   tags: ["questions"]
 - id: "kakav"
@@ -1043,7 +1043,7 @@
   latin: "kakav / kakva / kakvo"
   cyrillic: "какав / каква / какво"
   ru: "какой (по качеству)"
-  lesson: "10"
+  lesson: "23"
   pos: "pron"
   tags: ["questions"]
 - id: "ciji"
@@ -1051,7 +1051,7 @@
   latin: "čiji / čija / čije"
   cyrillic: "чији / чија / чије"
   ru: "чей"
-  lesson: "10"
+  lesson: "23"
   pos: "pron"
   tags: ["questions"]
 - id: "gde"
@@ -1060,7 +1060,7 @@
   cyrillic: "где"
   ru: "где"
   note: "базовое «где» — с урока 08 (дом); система вопросов — урок 10"
-  lesson: "08"
+  lesson: "18"
   pos: "adv"
   tags: ["questions", "city"]
 - id: "kuda"
@@ -1068,7 +1068,7 @@
   latin: "kuda / kud"
   cyrillic: "куда / куд"
   ru: "куда"
-  lesson: "10"
+  lesson: "23"
   pos: "adv"
   tags: ["questions"]
 - id: "odakle"
@@ -1076,7 +1076,7 @@
   latin: "odakle"
   cyrillic: "одакле"
   ru: "откуда"
-  lesson: "10"
+  lesson: "23"
   pos: "adv"
   tags: ["questions"]
 - id: "kada"
@@ -1084,7 +1084,7 @@
   latin: "kada / kad"
   cyrillic: "када / кад"
   ru: "когда"
-  lesson: "07"
+  lesson: "16"
   pos: "adv"
   tags: ["questions", "time"]
 - id: "kako"
@@ -1092,7 +1092,7 @@
   latin: "kako"
   cyrillic: "како"
   ru: "как"
-  lesson: "10"
+  lesson: "23"
   pos: "adv"
   tags: ["questions"]
 - id: "koliko"
@@ -1101,7 +1101,7 @@
   cyrillic: "колико"
   ru: "сколько"
   note: "нужно с урока 04 (цена, возраст); система вопросов — урок 10"
-  lesson: "04"
+  lesson: "08"
   pos: "adv"
   tags: ["questions", "numbers"]
 - id: "zasto"
@@ -1110,7 +1110,7 @@
   cyrillic: "зашто"
   ru: "почему"
   note: "слитно; «za šta» = «для чего»"
-  lesson: "10"
+  lesson: "24"
   pos: "adv"
   tags: ["questions"]
 - id: "zato-sto"
@@ -1118,7 +1118,7 @@
   latin: "zato što"
   cyrillic: "зато што"
   ru: "потому что"
-  lesson: "10"
+  lesson: "24"
   pos: "conj"
   tags: ["questions"]
 - id: "jer"
@@ -1126,7 +1126,7 @@
   latin: "jer"
   cyrillic: "јер"
   ru: "потому что (короче/книжнее)"
-  lesson: "10"
+  lesson: "24"
   pos: "conj"
   tags: ["questions"]
 - id: "zbog"
@@ -1134,7 +1134,7 @@
   latin: "zbog"
   cyrillic: "због"
   ru: "из-за (+ сущ.)"
-  lesson: "10"
+  lesson: "24"
   pos: "prep"
   tags: ["questions"]
 - id: "naravno"
@@ -1142,7 +1142,7 @@
   latin: "naravno"
   cyrillic: "наравно"
   ru: "конечно"
-  lesson: "10"
+  lesson: "23"
   pos: "adv"
   tags: ["phrases"]
 - id: "molim-q"
@@ -1150,7 +1150,7 @@
   latin: "Molim?"
   cyrillic: "Молим?"
   ru: "что-что? / простите? (переспрос)"
-  lesson: "10"
+  lesson: "24"
   pos: "phrase"
   tags: ["phrases", "survival"]
 - id: "nisam-razumeo"
@@ -1158,7 +1158,7 @@
   latin: "nisam razumeo / razumela"
   cyrillic: "нисам разумео / разумела"
   ru: "я не понял / не поняла"
-  lesson: "10"
+  lesson: "24"
   pos: "phrase"
   tags: ["phrases", "survival"]
 - id: "ponoviti"
@@ -1166,7 +1166,7 @@
   latin: "ponoviti (ponovim)"
   cyrillic: "поновити (поновим)"
   ru: "повторить"
-  lesson: "10"
+  lesson: "24"
   pos: "verb"
   aspect: "sv"
   tags: ["verbs"]
@@ -1175,7 +1175,7 @@
   latin: "sporije"
   cyrillic: "спорије"
   ru: "медленнее"
-  lesson: "10"
+  lesson: "24"
   pos: "adv"
   tags: ["phrases", "survival"]
 - id: "kako-se-kaze"
@@ -1183,7 +1183,7 @@
   latin: "kako se kaže …?"
   cyrillic: "како се каже …?"
   ru: "как будет …? (по-сербски)"
-  lesson: "10"
+  lesson: "24"
   pos: "phrase"
   tags: ["phrases", "survival"]
 - id: "sta-znaci"
@@ -1191,7 +1191,7 @@
   latin: "šta znači …?"
   cyrillic: "шта значи …?"
   ru: "что значит …?"
-  lesson: "10"
+  lesson: "24"
   pos: "phrase"
   tags: ["phrases", "survival"]
 - id: "pomoci"
@@ -1199,7 +1199,7 @@
   latin: "pomoći (pomognem)"
   cyrillic: "помоћи (помогнем)"
   ru: "помочь"
-  lesson: "10"
+  lesson: "23"
   pos: "verb"
   aspect: "sv"
   tags: ["verbs"]
@@ -1208,7 +1208,7 @@
   latin: "žuriti (žurim)"
   cyrillic: "журити (журим)"
   ru: "спешить"
-  lesson: "10"
+  lesson: "23"
   pos: "verb"
   aspect: "nesv"
   tags: ["verbs"]
@@ -1220,7 +1220,7 @@
   latin: "nula"
   cyrillic: "нула"
   ru: "ноль"
-  lesson: "04"
+  lesson: "08"
   pos: "num"
   tags: ["numbers"]
 - id: "jedan"
@@ -1229,7 +1229,7 @@
   cyrillic: "један / једна / једно"
   ru: "один"
   note: "меняется по роду"
-  lesson: "04"
+  lesson: "08"
   pos: "num"
   tags: ["numbers"]
 - id: "dva"
@@ -1238,7 +1238,7 @@
   cyrillic: "два / две"
   ru: "два"
   note: "dva (м./ср.), dve (ж.)"
-  lesson: "04"
+  lesson: "08"
   pos: "num"
   tags: ["numbers"]
 - id: "tri"
@@ -1246,7 +1246,7 @@
   latin: "tri"
   cyrillic: "три"
   ru: "три"
-  lesson: "04"
+  lesson: "08"
   pos: "num"
   tags: ["numbers"]
 - id: "cetiri"
@@ -1254,7 +1254,7 @@
   latin: "četiri"
   cyrillic: "четири"
   ru: "четыре"
-  lesson: "04"
+  lesson: "08"
   pos: "num"
   tags: ["numbers"]
 - id: "pet"
@@ -1263,7 +1263,7 @@
   cyrillic: "пет"
   ru: "пять"
   note: "5+ → существительное в род. мн."
-  lesson: "04"
+  lesson: "08"
   pos: "num"
   tags: ["numbers"]
 - id: "deset"
@@ -1271,7 +1271,7 @@
   latin: "deset"
   cyrillic: "десет"
   ru: "десять"
-  lesson: "04"
+  lesson: "08"
   pos: "num"
   tags: ["numbers"]
 - id: "dvadeset"
@@ -1279,7 +1279,7 @@
   latin: "dvadeset"
   cyrillic: "двадесет"
   ru: "двадцать"
-  lesson: "04"
+  lesson: "08"
   pos: "num"
   tags: ["numbers"]
 - id: "sto-num"
@@ -1288,7 +1288,7 @@
   cyrillic: "сто"
   ru: "сто"
   note: "200 = dvesta, 300 = trista"
-  lesson: "04"
+  lesson: "08"
   pos: "num"
   tags: ["numbers"]
 - id: "hiljadu"
@@ -1297,7 +1297,7 @@
   cyrillic: "хиљаду (хиљада)"
   ru: "тысяча"
   note: "в счёте — hiljadu dinara; dve hiljade"
-  lesson: "04"
+  lesson: "08"
   pos: "num"
   tags: ["numbers"]
 - id: "dinar"
@@ -1305,7 +1305,7 @@
   latin: "dinar"
   cyrillic: "динар"
   ru: "динар (RSD)"
-  lesson: "04"
+  lesson: "08"
   pos: "noun"
   gender: "m"
   tags: ["money"]
@@ -1314,7 +1314,7 @@
   latin: "pare (para)"
   cyrillic: "паре (пара)"
   ru: "деньги (разг.)"
-  lesson: "04"
+  lesson: "09"
   pos: "noun"
   gender: "f"
   tags: ["money"]
@@ -1323,7 +1323,7 @@
   latin: "novac"
   cyrillic: "новац"
   ru: "деньги (нейтр.)"
-  lesson: "04"
+  lesson: "09"
   pos: "noun"
   gender: "m"
   tags: ["money"]
@@ -1332,7 +1332,7 @@
   latin: "pošto?"
   cyrillic: "пошто?"
   ru: "почём? (разг.)"
-  lesson: "04"
+  lesson: "09"
   pos: "phrase"
   tags: ["money", "shop"]
 - id: "sve-zajedno"
@@ -1340,7 +1340,7 @@
   latin: "sve zajedno"
   cyrillic: "све заједно"
   ru: "всё вместе"
-  lesson: "04"
+  lesson: "09"
   pos: "phrase"
   tags: ["money", "shop"]
 - id: "koliko-dugujem"
@@ -1348,7 +1348,7 @@
   latin: "koliko dugujem?"
   cyrillic: "колико дугујем?"
   ru: "сколько с меня?"
-  lesson: "04"
+  lesson: "09"
   pos: "phrase"
   tags: ["money", "shop"]
 - id: "kartica"
@@ -1356,7 +1356,7 @@
   latin: "kartica / karticom"
   cyrillic: "картица / картицом"
   ru: "карта / картой"
-  lesson: "04"
+  lesson: "09"
   pos: "noun"
   gender: "f"
   tags: ["money"]
@@ -1365,7 +1365,7 @@
   latin: "keš / kešom"
   cyrillic: "кеш / кешом"
   ru: "наличные / наличными"
-  lesson: "04"
+  lesson: "09"
   pos: "noun"
   gender: "m"
   tags: ["money"]
@@ -1375,7 +1375,7 @@
   cyrillic: "ситно"
   ru: "мелочь"
   note: "«Imate li sitno?»"
-  lesson: "04"
+  lesson: "09"
   pos: "noun"
   gender: "n"
   tags: ["money"]
@@ -1384,7 +1384,7 @@
   latin: "kusur"
   cyrillic: "кусур"
   ru: "сдача"
-  lesson: "04"
+  lesson: "09"
   pos: "noun"
   gender: "m"
   tags: ["money"]
@@ -1393,7 +1393,7 @@
   latin: "račun"
   cyrillic: "рачун"
   ru: "чек / счёт"
-  lesson: "04"
+  lesson: "09"
   pos: "noun"
   gender: "m"
   tags: ["money", "shop"]
@@ -1402,7 +1402,7 @@
   latin: "akcija / sniženje / popust"
   cyrillic: "акција / снижење / попуст"
   ru: "акция / скидка"
-  lesson: "04"
+  lesson: "09"
   pos: "noun"
   gender: "f"
   tags: ["money", "shop"]
@@ -1411,7 +1411,7 @@
   latin: "koliko imaš godina?"
   cyrillic: "колико имаш година?"
   ru: "сколько тебе лет?"
-  lesson: "04"
+  lesson: "09"
   pos: "phrase"
   tags: ["phrases"]
 - id: "broj-telefona"
@@ -1419,7 +1419,7 @@
   latin: "broj (telefona)"
   cyrillic: "број (телефона)"
   ru: "номер телефона"
-  lesson: "04"
+  lesson: "10"
   pos: "noun"
   gender: "m"
   tags: ["phone"]
@@ -1428,7 +1428,7 @@
   latin: "javiti se (javim se)"
   cyrillic: "јавити се (јавим се)"
   ru: "написать / позвонить / выйти на связь"
-  lesson: "04"
+  lesson: "10"
   pos: "verb"
   aspect: "sv"
   tags: ["phone", "verbs"]
@@ -1437,7 +1437,7 @@
   latin: "poruka"
   cyrillic: "порука"
   ru: "сообщение"
-  lesson: "04"
+  lesson: "10"
   pos: "noun"
   gender: "f"
   tags: ["phone"]
@@ -1447,7 +1447,7 @@
   cyrillic: "спрат"
   ru: "этаж"
   note: "prvi sprat = второй этаж; земля — prizemlje"
-  lesson: "04"
+  lesson: "08"
   pos: "noun"
   gender: "m"
   tags: ["city"]
@@ -1456,7 +1456,7 @@
   latin: "prizemlje"
   cyrillic: "приземље"
   ru: "первый этаж (на уровне земли)"
-  lesson: "04"
+  lesson: "08"
   pos: "noun"
   gender: "n"
   tags: ["city"]
@@ -1469,7 +1469,7 @@
   cyrillic: "продавница"
   ru: "магазин"
   note: "«magacin» = склад, не магазин"
-  lesson: "05"
+  lesson: "11"
   pos: "noun"
   gender: "f"
   tags: ["shop"]
@@ -1478,7 +1478,7 @@
   latin: "pekara"
   cyrillic: "пекара"
   ru: "пекарня"
-  lesson: "05"
+  lesson: "11"
   pos: "noun"
   gender: "f"
   tags: ["shop"]
@@ -1487,7 +1487,7 @@
   latin: "mesara"
   cyrillic: "месара"
   ru: "мясная лавка"
-  lesson: "05"
+  lesson: "11"
   pos: "noun"
   gender: "f"
   tags: ["shop"]
@@ -1496,7 +1496,7 @@
   latin: "piljara"
   cyrillic: "пиљара"
   ru: "овощи-фрукты (лавка)"
-  lesson: "05"
+  lesson: "11"
   pos: "noun"
   gender: "f"
   tags: ["shop"]
@@ -1505,7 +1505,7 @@
   latin: "pijaca"
   cyrillic: "пијаца"
   ru: "рынок"
-  lesson: "05"
+  lesson: "11"
   pos: "noun"
   gender: "f"
   tags: ["shop"]
@@ -1514,7 +1514,7 @@
   latin: "apoteka"
   cyrillic: "апотека"
   ru: "аптека"
-  lesson: "05"
+  lesson: "11"
   pos: "noun"
   gender: "f"
   tags: ["shop"]
@@ -1523,7 +1523,7 @@
   latin: "trafika / kiosk"
   cyrillic: "трафика / киоск"
   ru: "киоск"
-  lesson: "05"
+  lesson: "11"
   pos: "noun"
   gender: "f"
   tags: ["shop"]
@@ -1532,7 +1532,7 @@
   latin: "samoposluga"
   cyrillic: "самопослуга"
   ru: "супермаркет (самообслуживание)"
-  lesson: "05"
+  lesson: "11"
   pos: "noun"
   gender: "f"
   tags: ["shop"]
@@ -1541,7 +1541,7 @@
   latin: "roba"
   cyrillic: "роба"
   ru: "товар"
-  lesson: "05"
+  lesson: "11"
   pos: "noun"
   gender: "f"
   tags: ["shop"]
@@ -1550,7 +1550,7 @@
   latin: "recite? / kažite?"
   cyrillic: "реците? / кажите?"
   ru: "слушаю вас? (продавец)"
-  lesson: "05"
+  lesson: "11"
   pos: "phrase"
   tags: ["shop"]
 - id: "treba-mi"
@@ -1558,7 +1558,7 @@
   latin: "treba mi …"
   cyrillic: "треба ми …"
   ru: "мне нужно …"
-  lesson: "05"
+  lesson: "11"
   pos: "phrase"
   tags: ["shop"]
 - id: "dajte-mi"
@@ -1566,7 +1566,7 @@
   latin: "dajte mi …"
   cyrillic: "дајте ми …"
   ru: "дайте мне …"
-  lesson: "05"
+  lesson: "11"
   pos: "phrase"
   tags: ["shop"]
 - id: "hleb"
@@ -1574,7 +1574,7 @@
   latin: "hleb"
   cyrillic: "хлеб"
   ru: "хлеб"
-  lesson: "05"
+  lesson: "11"
   pos: "noun"
   gender: "m"
   tags: ["shop", "food"]
@@ -1583,7 +1583,7 @@
   latin: "kilo / kilogram"
   cyrillic: "кило / килограм"
   ru: "килограмм"
-  lesson: "05"
+  lesson: "12"
   pos: "noun"
   gender: "n"
   tags: ["shop"]
@@ -1592,7 +1592,7 @@
   latin: "pola kile"
   cyrillic: "пола киле"
   ru: "полкило"
-  lesson: "05"
+  lesson: "12"
   pos: "phrase"
   tags: ["shop"]
 - id: "komad"
@@ -1601,7 +1601,7 @@
   cyrillic: "комад"
   ru: "штука"
   note: "«dva komada», «na komad»"
-  lesson: "05"
+  lesson: "12"
   pos: "noun"
   gender: "m"
   tags: ["shop"]
@@ -1610,7 +1610,7 @@
   latin: "pakovanje"
   cyrillic: "паковање"
   ru: "упаковка / пачка"
-  lesson: "05"
+  lesson: "12"
   pos: "noun"
   gender: "n"
   tags: ["shop"]
@@ -1620,7 +1620,7 @@
   cyrillic: "кеса"
   ru: "пакет"
   note: "часто платный; не «коса»"
-  lesson: "05"
+  lesson: "12"
   pos: "noun"
   gender: "f"
   tags: ["shop"]
@@ -1629,7 +1629,7 @@
   latin: "još nešto?"
   cyrillic: "још нешто?"
   ru: "ещё что-нибудь?"
-  lesson: "05"
+  lesson: "12"
   pos: "phrase"
   tags: ["shop"]
 - id: "to-je-sve"
@@ -1637,7 +1637,7 @@
   latin: "to je sve"
   cyrillic: "то је све"
   ru: "это всё"
-  lesson: "05"
+  lesson: "12"
   pos: "phrase"
   tags: ["shop"]
 - id: "svejedno"
@@ -1645,7 +1645,7 @@
   latin: "svejedno"
   cyrillic: "свеједно"
   ru: "всё равно"
-  lesson: "05"
+  lesson: "12"
   pos: "adv"
   tags: ["phrases"]
 - id: "pokvareno"
@@ -1653,7 +1653,7 @@
   latin: "pokvareno"
   cyrillic: "покварено"
   ru: "испорчено"
-  lesson: "05"
+  lesson: "13"
   pos: "adj"
   tags: ["shop"]
 - id: "rok-trajanja"
@@ -1661,7 +1661,7 @@
   latin: "rok trajanja"
   cyrillic: "рок трајања"
   ru: "срок годности"
-  lesson: "05"
+  lesson: "13"
   pos: "phrase"
   tags: ["shop"]
 - id: "vratiti"
@@ -1669,7 +1669,7 @@
   latin: "vratiti (vratim)"
   cyrillic: "вратити (вратим)"
   ru: "вернуть"
-  lesson: "05"
+  lesson: "13"
   pos: "verb"
   aspect: "sv"
   tags: ["verbs", "shop"]
@@ -1678,7 +1678,7 @@
   latin: "zameniti (zamenim)"
   cyrillic: "заменити (заменим)"
   ru: "поменять / обменять"
-  lesson: "05"
+  lesson: "13"
   pos: "verb"
   aspect: "sv"
   tags: ["verbs", "shop"]
@@ -1687,7 +1687,7 @@
   latin: "red"
   cyrillic: "ред"
   ru: "очередь / ряд / порядок"
-  lesson: "05"
+  lesson: "13"
   pos: "noun"
   gender: "m"
   tags: ["shop"]
@@ -1696,7 +1696,7 @@
   latin: "ko je poslednji?"
   cyrillic: "ко је последњи?"
   ru: "кто последний?"
-  lesson: "05"
+  lesson: "13"
   pos: "phrase"
   tags: ["shop"]
 - id: "radno-vreme"
@@ -1704,7 +1704,7 @@
   latin: "radno vreme"
   cyrillic: "радно време"
   ru: "часы работы"
-  lesson: "05"
+  lesson: "13"
   pos: "phrase"
   tags: ["shop"]
 - id: "otvoreno-zatvoreno"
@@ -1712,7 +1712,7 @@
   latin: "otvoreno / zatvoreno"
   cyrillic: "отворено / затворено"
   ru: "открыто / закрыто"
-  lesson: "05"
+  lesson: "13"
   pos: "adj"
   tags: ["shop"]
 - id: "svez"
@@ -1720,7 +1720,7 @@
   latin: "svež / sveže"
   cyrillic: "свеж / свеже"
   ru: "свежий"
-  lesson: "05"
+  lesson: "13"
   pos: "adj"
   tags: ["shop", "food"]
 
@@ -1731,7 +1731,7 @@
   latin: "šest"
   cyrillic: "шест"
   ru: "шесть"
-  lesson: "04"
+  lesson: "08"
   pos: "num"
   tags: ["numbers"]
 - id: "sedam"
@@ -1739,7 +1739,7 @@
   latin: "sedam"
   cyrillic: "седам"
   ru: "семь"
-  lesson: "04"
+  lesson: "08"
   pos: "num"
   tags: ["numbers"]
 - id: "osam"
@@ -1747,7 +1747,7 @@
   latin: "osam"
   cyrillic: "осам"
   ru: "восемь"
-  lesson: "04"
+  lesson: "08"
   pos: "num"
   tags: ["numbers"]
 - id: "devet"
@@ -1755,7 +1755,7 @@
   latin: "devet"
   cyrillic: "девет"
   ru: "девять"
-  lesson: "04"
+  lesson: "08"
   pos: "num"
   tags: ["numbers"]
 - id: "jedanaest"
@@ -1764,7 +1764,7 @@
   cyrillic: "једанаест"
   ru: "одиннадцать"
   note: "11–19 — корень + -naest: dvanaest, trinaest, četrnaest…"
-  lesson: "04"
+  lesson: "08"
   pos: "num"
   tags: ["numbers"]
 - id: "dvanaest"
@@ -1772,7 +1772,7 @@
   latin: "dvanaest"
   cyrillic: "дванаест"
   ru: "двенадцать"
-  lesson: "04"
+  lesson: "08"
   pos: "num"
   tags: ["numbers"]
 - id: "petnaest"
@@ -1781,7 +1781,7 @@
   cyrillic: "петнаест"
   ru: "пятнадцать"
   note: "«pola» + следующий час: pola tri = 14:30"
-  lesson: "04"
+  lesson: "08"
   pos: "num"
   tags: ["numbers", "time"]
 - id: "trideset"
@@ -1789,7 +1789,7 @@
   latin: "trideset"
   cyrillic: "тридесет"
   ru: "тридцать"
-  lesson: "04"
+  lesson: "08"
   pos: "num"
   tags: ["numbers"]
 - id: "cetrdeset"
@@ -1797,7 +1797,7 @@
   latin: "četrdeset"
   cyrillic: "четрдесет"
   ru: "сорок"
-  lesson: "04"
+  lesson: "08"
   pos: "num"
   tags: ["numbers"]
 - id: "pedeset"
@@ -1805,7 +1805,7 @@
   latin: "pedeset"
   cyrillic: "педесет"
   ru: "пятьдесят"
-  lesson: "04"
+  lesson: "08"
   pos: "num"
   tags: ["numbers"]
 - id: "dvesta"
@@ -1814,7 +1814,7 @@
   cyrillic: "двеста"
   ru: "двести"
   note: "200 = dvesta, 300 = trista; дальше «число + sto»: četiristo…"
-  lesson: "04"
+  lesson: "08"
   pos: "num"
   tags: ["numbers"]
 - id: "trista"
@@ -1822,7 +1822,7 @@
   latin: "trista"
   cyrillic: "триста"
   ru: "триста"
-  lesson: "04"
+  lesson: "08"
   pos: "num"
   tags: ["numbers"]
 - id: "godina"
@@ -1831,7 +1831,7 @@
   cyrillic: "година"
   ru: "год / года / лет"
   note: "1 → godinu, 2–4 → godine, 5+ → godina"
-  lesson: "04"
+  lesson: "08"
   pos: "noun"
   gender: "f"
   tags: ["numbers", "time"]
@@ -1841,7 +1841,7 @@
   cyrillic: "сат"
   ru: "час"
   note: "«dva sata», «pet sati»; мн. «sati» в вопросе о времени"
-  lesson: "04"
+  lesson: "10"
   pos: "noun"
   gender: "m"
   tags: ["time"]
@@ -1850,7 +1850,7 @@
   latin: "koliko je sati?"
   cyrillic: "колико је сати?"
   ru: "который час? / сколько времени?"
-  lesson: "04"
+  lesson: "10"
   pos: "phrase"
   tags: ["time"]
 - id: "u-koliko-sati"
@@ -1858,7 +1858,7 @@
   latin: "u koliko sati?"
   cyrillic: "у колико сати?"
   ru: "во сколько?"
-  lesson: "04"
+  lesson: "10"
   pos: "phrase"
   tags: ["time"]
 - id: "pola-sata"
@@ -1867,7 +1867,7 @@
   cyrillic: "пола"
   ru: "половина / полчаса"
   note: "«pola tri» — половина третьего (14:30)"
-  lesson: "04"
+  lesson: "10"
   pos: "noun"
   gender: "n"
   tags: ["time"]
@@ -1876,7 +1876,7 @@
   latin: "podne"
   cyrillic: "подне"
   ru: "полдень"
-  lesson: "04"
+  lesson: "10"
   pos: "noun"
   gender: "n"
   tags: ["time"]
@@ -1885,7 +1885,7 @@
   latin: "ponoć"
   cyrillic: "поноћ"
   ru: "полночь"
-  lesson: "04"
+  lesson: "10"
   pos: "noun"
   gender: "f"
   tags: ["time"]
@@ -1894,7 +1894,7 @@
   latin: "ujutru"
   cyrillic: "ујутру"
   ru: "утром"
-  lesson: "04"
+  lesson: "10"
   pos: "adv"
   tags: ["time"]
 - id: "popodne"
@@ -1902,7 +1902,7 @@
   latin: "popodne"
   cyrillic: "поподне"
   ru: "днём / после обеда"
-  lesson: "04"
+  lesson: "10"
   pos: "adv"
   tags: ["time"]
 - id: "uvece"
@@ -1910,7 +1910,7 @@
   latin: "uveče"
   cyrillic: "увече"
   ru: "вечером"
-  lesson: "04"
+  lesson: "10"
   pos: "adv"
   tags: ["time"]
 - id: "tacno"
@@ -1919,7 +1919,7 @@
   cyrillic: "тачно"
   ru: "точно / ровно"
   note: "о времени: «tačno tri»; при оплате: «Evo, tačno.»"
-  lesson: "04"
+  lesson: "10"
   pos: "adv"
   tags: ["time", "money"]
 - id: "kafa"
@@ -1928,7 +1928,7 @@
   cyrillic: "кафа"
   ru: "кофе"
   note: "ж. род: «jedna kafa», «dve kafe», «pet kafa»"
-  lesson: "04"
+  lesson: "08"
   pos: "noun"
   gender: "f"
   tags: ["food", "shop"]
@@ -1940,7 +1940,7 @@
   latin: "mleko"
   cyrillic: "млеко"
   ru: "молоко"
-  lesson: "05"
+  lesson: "11"
   pos: "noun"
   gender: "n"
   tags: ["shop", "food"]
@@ -1949,7 +1949,7 @@
   latin: "sir"
   cyrillic: "сир"
   ru: "сыр"
-  lesson: "05"
+  lesson: "12"
   pos: "noun"
   gender: "m"
   tags: ["shop", "food"]
@@ -1959,7 +1959,7 @@
   cyrillic: "јаја"
   ru: "яйца"
   note: "ед. jaje (ср.); «deset jaja»"
-  lesson: "05"
+  lesson: "11"
   pos: "noun"
   gender: "n"
   tags: ["shop", "food"]
@@ -1968,7 +1968,7 @@
   latin: "voda"
   cyrillic: "вода"
   ru: "вода"
-  lesson: "05"
+  lesson: "11"
   pos: "noun"
   gender: "f"
   tags: ["shop", "food"]
@@ -1977,7 +1977,7 @@
   latin: "litar"
   cyrillic: "литар"
   ru: "литр"
-  lesson: "05"
+  lesson: "12"
   pos: "noun"
   gender: "m"
   tags: ["shop"]
@@ -1987,7 +1987,7 @@
   cyrillic: "дека"
   ru: "100 грамм (dag)"
   note: "на рынке и в мясной: «dvadeset deka» = 200 г"
-  lesson: "05"
+  lesson: "12"
   pos: "noun"
   gender: "f"
   tags: ["shop"]
@@ -1996,7 +1996,7 @@
   latin: "samo gledam"
   cyrillic: "само гледам"
   ru: "я просто смотрю"
-  lesson: "05"
+  lesson: "11"
   pos: "phrase"
   tags: ["shop"]
 
@@ -2008,7 +2008,7 @@
   cyrillic: "устајати"
   ru: "вставать"
   note: "тип E: ustajem, ustaješ…"
-  lesson: "07"
+  lesson: "16"
   pos: "verb"
   aspect: "nesv"
   tags: ["verbs", "routine"]
@@ -2018,7 +2018,7 @@
   cyrillic: "спавати"
   ru: "спать"
   note: "тип A: spavam, spavaš…"
-  lesson: "07"
+  lesson: "16"
   pos: "verb"
   aspect: "nesv"
   tags: ["verbs", "routine"]
@@ -2027,7 +2027,7 @@
   latin: "tuširati se (tuširam se)"
   cyrillic: "туширати се"
   ru: "принимать душ"
-  lesson: "07"
+  lesson: "16"
   pos: "verb"
   aspect: "nesv"
   tags: ["verbs", "routine"]
@@ -2036,7 +2036,7 @@
   latin: "oblačiti se (oblačim se)"
   cyrillic: "облачити се"
   ru: "одеваться"
-  lesson: "07"
+  lesson: "16"
   pos: "verb"
   aspect: "nesv"
   tags: ["verbs", "routine"]
@@ -2046,7 +2046,7 @@
   cyrillic: "доручковати"
   ru: "завтракать"
   note: "тип E: doručkujem (-ovati → -ujem)"
-  lesson: "07"
+  lesson: "16"
   pos: "verb"
   aspect: "nesv"
   tags: ["verbs", "routine"]
@@ -2055,7 +2055,7 @@
   latin: "spremati se (spremam se)"
   cyrillic: "спремати се"
   ru: "собираться"
-  lesson: "07"
+  lesson: "16"
   pos: "verb"
   aspect: "nesv"
   tags: ["verbs", "routine"]
@@ -2064,7 +2064,7 @@
   latin: "odmarati (odmaram)"
   cyrillic: "одмарати"
   ru: "отдыхать"
-  lesson: "07"
+  lesson: "16"
   pos: "verb"
   aspect: "nesv"
   tags: ["verbs", "routine"]
@@ -2074,7 +2074,7 @@
   cyrillic: "морати"
   ru: "быть должным / надо"
   note: "«moram da radim» — мне надо работать"
-  lesson: "07"
+  lesson: "16"
   pos: "verb"
   aspect: "nesv"
   tags: ["verbs", "modal"]
@@ -2084,7 +2084,7 @@
   cyrillic: "почињати"
   ru: "начинаться"
   note: "«posao počinje u devet»"
-  lesson: "07"
+  lesson: "16"
   pos: "verb"
   aspect: "nesv"
   tags: ["verbs", "routine"]
@@ -2093,7 +2093,7 @@
   latin: "završavati (završavam)"
   cyrillic: "завршавати"
   ru: "заканчивать"
-  lesson: "07"
+  lesson: "16"
   pos: "verb"
   aspect: "nesv"
   tags: ["verbs", "routine"]
@@ -2102,7 +2102,7 @@
   latin: "doručak"
   cyrillic: "доручак"
   ru: "завтрак"
-  lesson: "07"
+  lesson: "16"
   pos: "noun"
   gender: "m"
   tags: ["routine", "food"]
@@ -2111,7 +2111,7 @@
   latin: "ručak"
   cyrillic: "ручак"
   ru: "обед"
-  lesson: "07"
+  lesson: "16"
   pos: "noun"
   gender: "m"
   tags: ["routine", "food"]
@@ -2121,7 +2121,7 @@
   cyrillic: "вечера"
   ru: "ужин"
   note: "не путать с «veče» (вечер)"
-  lesson: "07"
+  lesson: "16"
   pos: "noun"
   gender: "f"
   tags: ["routine", "food"]
@@ -2131,7 +2131,7 @@
   cyrillic: "посао"
   ru: "работа (место / дело)"
   note: "«idem na posao» — иду на работу; «na poslu» — на работе"
-  lesson: "07"
+  lesson: "16"
   pos: "noun"
   gender: "m"
   tags: ["routine", "jobs"]
@@ -2141,7 +2141,7 @@
   cyrillic: "понедељак"
   ru: "понедельник"
   note: "«u ponedeljak» — в понедельник"
-  lesson: "07"
+  lesson: "16"
   pos: "noun"
   gender: "m"
   tags: ["days"]
@@ -2150,7 +2150,7 @@
   latin: "utorak"
   cyrillic: "уторак"
   ru: "вторник"
-  lesson: "07"
+  lesson: "16"
   pos: "noun"
   gender: "m"
   tags: ["days"]
@@ -2159,7 +2159,7 @@
   latin: "sreda"
   cyrillic: "среда"
   ru: "среда"
-  lesson: "07"
+  lesson: "16"
   pos: "noun"
   gender: "f"
   tags: ["days"]
@@ -2168,7 +2168,7 @@
   latin: "četvrtak"
   cyrillic: "четвртак"
   ru: "четверг"
-  lesson: "07"
+  lesson: "16"
   pos: "noun"
   gender: "m"
   tags: ["days"]
@@ -2177,7 +2177,7 @@
   latin: "petak"
   cyrillic: "петак"
   ru: "пятница"
-  lesson: "07"
+  lesson: "16"
   pos: "noun"
   gender: "m"
   tags: ["days"]
@@ -2186,7 +2186,7 @@
   latin: "subota"
   cyrillic: "субота"
   ru: "суббота"
-  lesson: "07"
+  lesson: "16"
   pos: "noun"
   gender: "f"
   tags: ["days"]
@@ -2196,7 +2196,7 @@
   cyrillic: "недеља"
   ru: "воскресенье; неделя"
   note: "и день, и «неделя» вообще"
-  lesson: "07"
+  lesson: "16"
   pos: "noun"
   gender: "f"
   tags: ["days"]
@@ -2206,7 +2206,7 @@
   cyrillic: "викенд"
   ru: "выходные"
   note: "«za vikend» — на выходных"
-  lesson: "07"
+  lesson: "16"
   pos: "noun"
   gender: "m"
   tags: ["days"]
@@ -2215,7 +2215,7 @@
   latin: "radni dan"
   cyrillic: "радни дан"
   ru: "будний день"
-  lesson: "07"
+  lesson: "16"
   pos: "phrase"
   tags: ["days"]
 - id: "obicno"
@@ -2223,7 +2223,7 @@
   latin: "obično"
   cyrillic: "обично"
   ru: "обычно"
-  lesson: "07"
+  lesson: "17"
   pos: "adv"
   tags: ["frequency"]
 - id: "uvek"
@@ -2231,7 +2231,7 @@
   latin: "uvek"
   cyrillic: "увек"
   ru: "всегда"
-  lesson: "07"
+  lesson: "17"
   pos: "adv"
   tags: ["frequency"]
 - id: "ponekad"
@@ -2239,7 +2239,7 @@
   latin: "ponekad"
   cyrillic: "понекад"
   ru: "иногда"
-  lesson: "07"
+  lesson: "17"
   pos: "adv"
   tags: ["frequency"]
 - id: "nikad"
@@ -2248,7 +2248,7 @@
   cyrillic: "никад"
   ru: "никогда"
   note: "двойное отрицание: «nikad ne radim»"
-  lesson: "07"
+  lesson: "17"
   pos: "adv"
   tags: ["frequency"]
 - id: "cesto"
@@ -2256,7 +2256,7 @@
   latin: "često"
   cyrillic: "често"
   ru: "часто"
-  lesson: "07"
+  lesson: "17"
   pos: "adv"
   tags: ["frequency"]
 - id: "retko"
@@ -2264,7 +2264,7 @@
   latin: "retko"
   cyrillic: "ретко"
   ru: "редко"
-  lesson: "07"
+  lesson: "17"
   pos: "adv"
   tags: ["frequency"]
 - id: "rano"
@@ -2272,7 +2272,7 @@
   latin: "rano"
   cyrillic: "рано"
   ru: "рано"
-  lesson: "07"
+  lesson: "17"
   pos: "adv"
   tags: ["time"]
 - id: "kasno"
@@ -2280,7 +2280,7 @@
   latin: "kasno"
   cyrillic: "касно"
   ru: "поздно"
-  lesson: "07"
+  lesson: "17"
   pos: "adv"
   tags: ["time"]
 - id: "svaki-dan"
@@ -2288,7 +2288,7 @@
   latin: "svaki dan"
   cyrillic: "сваки дан"
   ru: "каждый день"
-  lesson: "07"
+  lesson: "17"
   pos: "phrase"
   tags: ["frequency"]
 - id: "volim-da"
@@ -2297,7 +2297,7 @@
   cyrillic: "волим да…"
   ru: "люблю (что-то делать)"
   note: "«volim da čitam» — люблю читать; + настоящее время"
-  lesson: "07"
+  lesson: "17"
   pos: "phrase"
   tags: ["verbs"]
 - id: "moram-da"
@@ -2305,7 +2305,7 @@
   latin: "moram da…"
   cyrillic: "морам да…"
   ru: "мне надо (что-то сделать)"
-  lesson: "07"
+  lesson: "17"
   pos: "phrase"
   tags: ["verbs"]
 
@@ -2317,7 +2317,7 @@
   cyrillic: "кућа"
   ru: "дом (частный)"
   note: "«kod kuće» — дома; «kući» — домой"
-  lesson: "08"
+  lesson: "18"
   pos: "noun"
   gender: "f"
   tags: ["home"]
@@ -2327,7 +2327,7 @@
   cyrillic: "стан"
   ru: "квартира"
   note: "«u stanu» — в квартире"
-  lesson: "08"
+  lesson: "18"
   pos: "noun"
   gender: "m"
   tags: ["home"]
@@ -2336,7 +2336,7 @@
   latin: "zgrada"
   cyrillic: "зграда"
   ru: "здание / дом (многоэтажка)"
-  lesson: "08"
+  lesson: "18"
   pos: "noun"
   gender: "f"
   tags: ["home"]
@@ -2345,7 +2345,7 @@
   latin: "ulaz"
   cyrillic: "улаз"
   ru: "подъезд / вход"
-  lesson: "08"
+  lesson: "18"
   pos: "noun"
   gender: "m"
   tags: ["home"]
@@ -2354,7 +2354,7 @@
   latin: "lift"
   cyrillic: "лифт"
   ru: "лифт"
-  lesson: "08"
+  lesson: "18"
   pos: "noun"
   gender: "m"
   tags: ["home"]
@@ -2364,7 +2364,7 @@
   cyrillic: "соба"
   ru: "комната"
   note: "«u sobi» — в комнате"
-  lesson: "08"
+  lesson: "18"
   pos: "noun"
   gender: "f"
   tags: ["home"]
@@ -2373,7 +2373,7 @@
   latin: "kuhinja"
   cyrillic: "кухиња"
   ru: "кухня"
-  lesson: "08"
+  lesson: "18"
   pos: "noun"
   gender: "f"
   tags: ["home"]
@@ -2382,7 +2382,7 @@
   latin: "kupatilo"
   cyrillic: "купатило"
   ru: "ванная / туалет"
-  lesson: "08"
+  lesson: "18"
   pos: "noun"
   gender: "n"
   tags: ["home"]
@@ -2391,7 +2391,7 @@
   latin: "spavaća soba"
   cyrillic: "спаваћа соба"
   ru: "спальня"
-  lesson: "08"
+  lesson: "18"
   pos: "phrase"
   tags: ["home"]
 - id: "dnevni-boravak"
@@ -2400,7 +2400,7 @@
   cyrillic: "дневни боравак"
   ru: "гостиная"
   note: "разг. также «dnevna soba»"
-  lesson: "08"
+  lesson: "18"
   pos: "phrase"
   tags: ["home"]
 - id: "hodnik"
@@ -2408,7 +2408,7 @@
   latin: "hodnik"
   cyrillic: "ходник"
   ru: "коридор / прихожая"
-  lesson: "08"
+  lesson: "18"
   pos: "noun"
   gender: "m"
   tags: ["home"]
@@ -2417,7 +2417,7 @@
   latin: "terasa"
   cyrillic: "тераса"
   ru: "терраса / балкон (большой)"
-  lesson: "08"
+  lesson: "18"
   pos: "noun"
   gender: "f"
   tags: ["home"]
@@ -2426,7 +2426,7 @@
   latin: "balkon"
   cyrillic: "балкон"
   ru: "балкон"
-  lesson: "08"
+  lesson: "18"
   pos: "noun"
   gender: "m"
   tags: ["home"]
@@ -2436,7 +2436,7 @@
   cyrillic: "сто"
   ru: "стол"
   note: "род. stola; не путать со «sto» = 100"
-  lesson: "08"
+  lesson: "18"
   pos: "noun"
   gender: "m"
   tags: ["home"]
@@ -2446,7 +2446,7 @@
   cyrillic: "столица"
   ru: "стул"
   note: "ложный друг: НЕ «столица» (это prestonica)"
-  lesson: "08"
+  lesson: "18"
   pos: "noun"
   gender: "f"
   tags: ["home"]
@@ -2455,7 +2455,7 @@
   latin: "krevet"
   cyrillic: "кревет"
   ru: "кровать"
-  lesson: "08"
+  lesson: "18"
   pos: "noun"
   gender: "m"
   tags: ["home"]
@@ -2464,7 +2464,7 @@
   latin: "orman"
   cyrillic: "орман"
   ru: "шкаф"
-  lesson: "08"
+  lesson: "18"
   pos: "noun"
   gender: "m"
   tags: ["home"]
@@ -2473,7 +2473,7 @@
   latin: "frižider"
   cyrillic: "фрижидер"
   ru: "холодильник"
-  lesson: "08"
+  lesson: "18"
   pos: "noun"
   gender: "m"
   tags: ["home"]
@@ -2482,7 +2482,7 @@
   latin: "šporet"
   cyrillic: "шпорет"
   ru: "плита"
-  lesson: "08"
+  lesson: "18"
   pos: "noun"
   gender: "m"
   tags: ["home"]
@@ -2491,7 +2491,7 @@
   latin: "sudopera"
   cyrillic: "судопера"
   ru: "раковина (кухонная)"
-  lesson: "08"
+  lesson: "18"
   pos: "noun"
   gender: "f"
   tags: ["home"]
@@ -2500,7 +2500,7 @@
   latin: "lampa"
   cyrillic: "лампа"
   ru: "лампа"
-  lesson: "08"
+  lesson: "18"
   pos: "noun"
   gender: "f"
   tags: ["home"]
@@ -2509,7 +2509,7 @@
   latin: "polica"
   cyrillic: "полица"
   ru: "полка"
-  lesson: "08"
+  lesson: "18"
   pos: "noun"
   gender: "f"
   tags: ["home"]
@@ -2518,7 +2518,7 @@
   latin: "tepih"
   cyrillic: "тепих"
   ru: "ковёр"
-  lesson: "08"
+  lesson: "19"
   pos: "noun"
   gender: "m"
   tags: ["home"]
@@ -2527,7 +2527,7 @@
   latin: "ogledalo"
   cyrillic: "огледало"
   ru: "зеркало"
-  lesson: "08"
+  lesson: "18"
   pos: "noun"
   gender: "n"
   tags: ["home"]
@@ -2536,7 +2536,7 @@
   latin: "slika"
   cyrillic: "слика"
   ru: "картина / фото"
-  lesson: "08"
+  lesson: "19"
   pos: "noun"
   gender: "f"
   tags: ["home"]
@@ -2546,7 +2546,7 @@
   cyrillic: "врата"
   ru: "дверь"
   note: "всегда мн. ч. (ср. род)"
-  lesson: "08"
+  lesson: "19"
   pos: "noun"
   gender: "n"
   tags: ["home"]
@@ -2555,7 +2555,7 @@
   latin: "prozor"
   cyrillic: "прозор"
   ru: "окно"
-  lesson: "08"
+  lesson: "19"
   pos: "noun"
   gender: "m"
   tags: ["home"]
@@ -2564,7 +2564,7 @@
   latin: "ključ"
   cyrillic: "кључ"
   ru: "ключ"
-  lesson: "08"
+  lesson: "19"
   pos: "noun"
   gender: "m"
   tags: ["home"]
@@ -2573,7 +2573,7 @@
   latin: "zid"
   cyrillic: "зид"
   ru: "стена"
-  lesson: "08"
+  lesson: "19"
   pos: "noun"
   gender: "m"
   tags: ["home"]
@@ -2583,7 +2583,7 @@
   cyrillic: "под"
   ru: "пол"
   note: "«na podu» — на полу"
-  lesson: "08"
+  lesson: "19"
   pos: "noun"
   gender: "m"
   tags: ["home"]
@@ -2593,7 +2593,7 @@
   cyrillic: "становати"
   ru: "жить / проживать"
   note: "тип E: stanujem; «Gde stanuješ?»"
-  lesson: "08"
+  lesson: "18"
   pos: "verb"
   aspect: "nesv"
   tags: ["verbs", "home"]
@@ -2603,7 +2603,7 @@
   cyrillic: "мали / мала / мало"
   ru: "маленький"
   note: "меняется по роду: mali stan, mala soba, malo dete"
-  lesson: "08"
+  lesson: "19"
   pos: "adj"
   tags: ["adjectives", "home"]
 - id: "veliki"
@@ -2611,7 +2611,7 @@
   latin: "veliki / velika / veliko"
   cyrillic: "велики / велика / велико"
   ru: "большой"
-  lesson: "08"
+  lesson: "19"
   pos: "adj"
   tags: ["adjectives", "home"]
 - id: "nov"
@@ -2619,7 +2619,7 @@
   latin: "nov / nova / novo"
   cyrillic: "нов / нова / ново"
   ru: "новый"
-  lesson: "08"
+  lesson: "19"
   pos: "adj"
   tags: ["adjectives"]
 - id: "star"
@@ -2627,7 +2627,7 @@
   latin: "star / stara / staro"
   cyrillic: "стар / стара / старо"
   ru: "старый"
-  lesson: "08"
+  lesson: "19"
   pos: "adj"
   tags: ["adjectives"]
 
@@ -2638,7 +2638,7 @@
   latin: "meso"
   cyrillic: "месо"
   ru: "мясо"
-  lesson: "09"
+  lesson: "20"
   pos: "noun"
   gender: "n"
   tags: ["food"]
@@ -2647,7 +2647,7 @@
   latin: "piletina"
   cyrillic: "пилетина"
   ru: "курица (мясо)"
-  lesson: "09"
+  lesson: "20"
   pos: "noun"
   gender: "f"
   tags: ["food"]
@@ -2656,7 +2656,7 @@
   latin: "riba"
   cyrillic: "риба"
   ru: "рыба"
-  lesson: "09"
+  lesson: "20"
   pos: "noun"
   gender: "f"
   tags: ["food"]
@@ -2665,7 +2665,7 @@
   latin: "povrće"
   cyrillic: "поврће"
   ru: "овощи"
-  lesson: "09"
+  lesson: "20"
   pos: "noun"
   gender: "n"
   tags: ["food"]
@@ -2674,7 +2674,7 @@
   latin: "voće"
   cyrillic: "воће"
   ru: "фрукты"
-  lesson: "09"
+  lesson: "20"
   pos: "noun"
   gender: "n"
   tags: ["food"]
@@ -2683,7 +2683,7 @@
   latin: "jabuka"
   cyrillic: "јабука"
   ru: "яблоко"
-  lesson: "09"
+  lesson: "20"
   pos: "noun"
   gender: "f"
   tags: ["food"]
@@ -2692,7 +2692,7 @@
   latin: "paradajz"
   cyrillic: "парадајз"
   ru: "помидор"
-  lesson: "09"
+  lesson: "20"
   pos: "noun"
   gender: "m"
   tags: ["food"]
@@ -2701,7 +2701,7 @@
   latin: "krompir"
   cyrillic: "кромпир"
   ru: "картофель"
-  lesson: "09"
+  lesson: "20"
   pos: "noun"
   gender: "m"
   tags: ["food"]
@@ -2710,7 +2710,7 @@
   latin: "pirinač"
   cyrillic: "пиринач"
   ru: "рис"
-  lesson: "09"
+  lesson: "20"
   pos: "noun"
   gender: "m"
   tags: ["food"]
@@ -2719,7 +2719,7 @@
   latin: "testenina"
   cyrillic: "тестенина"
   ru: "макароны / паста"
-  lesson: "09"
+  lesson: "20"
   pos: "noun"
   gender: "f"
   tags: ["food"]
@@ -2728,7 +2728,7 @@
   latin: "supa"
   cyrillic: "супа"
   ru: "суп (прозрачный)"
-  lesson: "09"
+  lesson: "20"
   pos: "noun"
   gender: "f"
   tags: ["food"]
@@ -2737,7 +2737,7 @@
   latin: "čorba"
   cyrillic: "чорба"
   ru: "чорба (густой суп)"
-  lesson: "09"
+  lesson: "20"
   pos: "noun"
   gender: "f"
   tags: ["food"]
@@ -2746,7 +2746,7 @@
   latin: "salata"
   cyrillic: "салата"
   ru: "салат"
-  lesson: "09"
+  lesson: "20"
   pos: "noun"
   gender: "f"
   tags: ["food"]
@@ -2755,7 +2755,7 @@
   latin: "jogurt"
   cyrillic: "јогурт"
   ru: "йогурт / кефир (питьевой)"
-  lesson: "09"
+  lesson: "20"
   pos: "noun"
   gender: "m"
   tags: ["food"]
@@ -2764,7 +2764,7 @@
   latin: "puter"
   cyrillic: "путер"
   ru: "масло (сливочное)"
-  lesson: "09"
+  lesson: "20"
   pos: "noun"
   gender: "m"
   tags: ["food"]
@@ -2773,7 +2773,7 @@
   latin: "so"
   cyrillic: "со"
   ru: "соль"
-  lesson: "09"
+  lesson: "20"
   pos: "noun"
   gender: "f"
   tags: ["food"]
@@ -2782,7 +2782,7 @@
   latin: "šećer"
   cyrillic: "шећер"
   ru: "сахар"
-  lesson: "09"
+  lesson: "20"
   pos: "noun"
   gender: "m"
   tags: ["food"]
@@ -2791,7 +2791,7 @@
   latin: "kolač"
   cyrillic: "колач"
   ru: "пирожное / торт"
-  lesson: "09"
+  lesson: "20"
   pos: "noun"
   gender: "m"
   tags: ["food"]
@@ -2800,7 +2800,7 @@
   latin: "sladoled"
   cyrillic: "сладолед"
   ru: "мороженое"
-  lesson: "09"
+  lesson: "20"
   pos: "noun"
   gender: "m"
   tags: ["food"]
@@ -2809,7 +2809,7 @@
   latin: "palačinke"
   cyrillic: "палачинке"
   ru: "блины / блинчики"
-  lesson: "09"
+  lesson: "20"
   pos: "noun"
   gender: "f"
   tags: ["food"]
@@ -2818,7 +2818,7 @@
   latin: "čaj"
   cyrillic: "чај"
   ru: "чай"
-  lesson: "09"
+  lesson: "20"
   pos: "noun"
   gender: "m"
   tags: ["food"]
@@ -2827,7 +2827,7 @@
   latin: "sok"
   cyrillic: "сок"
   ru: "сок"
-  lesson: "09"
+  lesson: "20"
   pos: "noun"
   gender: "m"
   tags: ["food"]
@@ -2837,7 +2837,7 @@
   cyrillic: "пиво"
   ru: "пиво"
   note: "ср. род: «jedno pivo», «dva piva»"
-  lesson: "09"
+  lesson: "20"
   pos: "noun"
   gender: "n"
   tags: ["food"]
@@ -2846,7 +2846,7 @@
   latin: "vino"
   cyrillic: "вино"
   ru: "вино"
-  lesson: "09"
+  lesson: "20"
   pos: "noun"
   gender: "n"
   tags: ["food"]
@@ -2855,7 +2855,7 @@
   latin: "rakija"
   cyrillic: "ракија"
   ru: "ракия (фруктовая водка)"
-  lesson: "09"
+  lesson: "20"
   pos: "noun"
   gender: "f"
   tags: ["food"]
@@ -2864,7 +2864,7 @@
   latin: "mineralna (voda)"
   cyrillic: "минерална"
   ru: "минералка"
-  lesson: "09"
+  lesson: "20"
   pos: "phrase"
   tags: ["food"]
 - id: "gazirano"
@@ -2872,7 +2872,7 @@
   latin: "gazirano / negazirano"
   cyrillic: "газирано / негазирано"
   ru: "с газом / без газа"
-  lesson: "09"
+  lesson: "20"
   pos: "adj"
   tags: ["food"]
 - id: "kafic"
@@ -2880,7 +2880,7 @@
   latin: "kafić"
   cyrillic: "кафић"
   ru: "кафе / кофейня"
-  lesson: "09"
+  lesson: "21"
   pos: "noun"
   gender: "m"
   tags: ["food", "city"]
@@ -2889,7 +2889,7 @@
   latin: "restoran"
   cyrillic: "ресторан"
   ru: "ресторан"
-  lesson: "09"
+  lesson: "21"
   pos: "noun"
   gender: "m"
   tags: ["food", "city"]
@@ -2898,7 +2898,7 @@
   latin: "jelovnik / meni"
   cyrillic: "јеловник / мени"
   ru: "меню"
-  lesson: "09"
+  lesson: "21"
   pos: "noun"
   gender: "m"
   tags: ["food"]
@@ -2908,7 +2908,7 @@
   cyrillic: "поручити"
   ru: "заказать"
   note: "тип I: poručim; разг. также «naručiti»"
-  lesson: "09"
+  lesson: "21"
   pos: "verb"
   aspect: "sv"
   tags: ["verbs", "food"]
@@ -2918,7 +2918,7 @@
   cyrillic: "за мене…"
   ru: "мне… (при заказе)"
   note: "«Za mene jednu kafu.»"
-  lesson: "09"
+  lesson: "21"
   pos: "phrase"
   tags: ["food"]
 - id: "gladan"
@@ -2926,7 +2926,7 @@
   latin: "gladan / gladna"
   cyrillic: "гладан / гладна"
   ru: "голодный / голодная"
-  lesson: "09"
+  lesson: "21"
   pos: "adj"
   tags: ["food"]
 - id: "zedan"
@@ -2934,7 +2934,7 @@
   latin: "žedan / žedna"
   cyrillic: "жедан / жедна"
   ru: "хочет пить (жаждущий)"
-  lesson: "09"
+  lesson: "21"
   pos: "adj"
   tags: ["food"]
 - id: "jesti"
@@ -2943,7 +2943,7 @@
   cyrillic: "јести"
   ru: "есть / кушать"
   note: "непр.: jedem, jedeš, jedu"
-  lesson: "09"
+  lesson: "21"
   pos: "verb"
   aspect: "nesv"
   tags: ["verbs", "food"]
@@ -2953,7 +2953,7 @@
   cyrillic: "пити"
   ru: "пить"
   note: "тип E: pijem, piješ, piju"
-  lesson: "09"
+  lesson: "21"
   pos: "verb"
   aspect: "nesv"
   tags: ["verbs", "food"]
@@ -2962,7 +2962,7 @@
   latin: "ukusno"
   cyrillic: "укусно"
   ru: "вкусно"
-  lesson: "09"
+  lesson: "22"
   pos: "adv"
   tags: ["food"]
 - id: "ljuto"
@@ -2970,7 +2970,7 @@
   latin: "ljuto"
   cyrillic: "љуто"
   ru: "остро"
-  lesson: "09"
+  lesson: "22"
   pos: "adv"
   tags: ["food"]
 - id: "slano"
@@ -2978,7 +2978,7 @@
   latin: "slano"
   cyrillic: "слано"
   ru: "солёно"
-  lesson: "09"
+  lesson: "22"
   pos: "adv"
   tags: ["food"]
 - id: "baksis"
@@ -2987,7 +2987,7 @@
   cyrillic: "бакшиш"
   ru: "чаевые"
   note: "обычно ~10%; «Ostavi bakšiš.»"
-  lesson: "09"
+  lesson: "22"
   pos: "noun"
   gender: "m"
   tags: ["food", "money"]
@@ -2997,7 +2997,7 @@
   cyrillic: "платити"
   ru: "заплатить"
   note: "«Možemo li da platimo?»"
-  lesson: "09"
+  lesson: "22"
   pos: "verb"
   aspect: "sv"
   tags: ["verbs", "money"]
@@ -3010,7 +3010,7 @@
   cyrillic: "град"
   ru: "город"
   note: "«u gradu» — в городе"
-  lesson: "10"
+  lesson: "25"
   pos: "noun"
   gender: "m"
   tags: ["city"]
@@ -3019,7 +3019,7 @@
   latin: "ulica"
   cyrillic: "улица"
   ru: "улица"
-  lesson: "10"
+  lesson: "23"
   pos: "noun"
   gender: "f"
   tags: ["city"]
@@ -3028,7 +3028,7 @@
   latin: "trg"
   cyrillic: "трг"
   ru: "площадь"
-  lesson: "10"
+  lesson: "25"
   pos: "noun"
   gender: "m"
   tags: ["city"]
@@ -3037,7 +3037,7 @@
   latin: "park"
   cyrillic: "парк"
   ru: "парк"
-  lesson: "10"
+  lesson: "25"
   pos: "noun"
   gender: "m"
   tags: ["city"]
@@ -3046,7 +3046,7 @@
   latin: "pošta"
   cyrillic: "пошта"
   ru: "почта"
-  lesson: "10"
+  lesson: "25"
   pos: "noun"
   gender: "f"
   tags: ["city"]
@@ -3055,7 +3055,7 @@
   latin: "banka"
   cyrillic: "банка"
   ru: "банк"
-  lesson: "10"
+  lesson: "25"
   pos: "noun"
   gender: "f"
   tags: ["city"]
@@ -3064,7 +3064,7 @@
   latin: "bolnica"
   cyrillic: "болница"
   ru: "больница"
-  lesson: "10"
+  lesson: "25"
   pos: "noun"
   gender: "f"
   tags: ["city"]
@@ -3073,7 +3073,7 @@
   latin: "škola"
   cyrillic: "школа"
   ru: "школа"
-  lesson: "10"
+  lesson: "25"
   pos: "noun"
   gender: "f"
   tags: ["city"]
@@ -3082,7 +3082,7 @@
   latin: "fakultet"
   cyrillic: "факултет"
   ru: "университет / факультет"
-  lesson: "10"
+  lesson: "25"
   pos: "noun"
   gender: "m"
   tags: ["city"]
@@ -3092,7 +3092,7 @@
   cyrillic: "биоскоп"
   ru: "кинотеатр"
   note: "ложный друг: НЕ «биоскоп» = микроскоп; кино — bioskop"
-  lesson: "10"
+  lesson: "25"
   pos: "noun"
   gender: "m"
   tags: ["city"]
@@ -3101,7 +3101,7 @@
   latin: "pozorište"
   cyrillic: "позориште"
   ru: "театр"
-  lesson: "10"
+  lesson: "25"
   pos: "noun"
   gender: "n"
   tags: ["city"]
@@ -3110,7 +3110,7 @@
   latin: "muzej"
   cyrillic: "музеј"
   ru: "музей"
-  lesson: "10"
+  lesson: "25"
   pos: "noun"
   gender: "m"
   tags: ["city"]
@@ -3119,7 +3119,7 @@
   latin: "stanica"
   cyrillic: "станица"
   ru: "остановка / станция"
-  lesson: "10"
+  lesson: "25"
   pos: "noun"
   gender: "f"
   tags: ["city"]
@@ -3128,7 +3128,7 @@
   latin: "autobus"
   cyrillic: "аутобус"
   ru: "автобус"
-  lesson: "10"
+  lesson: "25"
   pos: "noun"
   gender: "m"
   tags: ["city"]
@@ -3137,7 +3137,7 @@
   latin: "most"
   cyrillic: "мост"
   ru: "мост"
-  lesson: "10"
+  lesson: "25"
   pos: "noun"
   gender: "m"
   tags: ["city"]
@@ -3147,7 +3147,7 @@
   cyrillic: "река"
   ru: "река"
   note: "Дунай в Нови-Саде — Dunav"
-  lesson: "10"
+  lesson: "25"
   pos: "noun"
   gender: "f"
   tags: ["city", "nature"]
@@ -3157,7 +3157,7 @@
   cyrillic: "центар"
   ru: "центр"
   note: "«u centru» — в центре"
-  lesson: "10"
+  lesson: "25"
   pos: "noun"
   gender: "m"
   tags: ["city"]
@@ -3166,7 +3166,7 @@
   latin: "raskrsnica"
   cyrillic: "раскрсница"
   ru: "перекрёсток"
-  lesson: "10"
+  lesson: "25"
   pos: "noun"
   gender: "f"
   tags: ["city"]
@@ -3175,7 +3175,7 @@
   latin: "semafor"
   cyrillic: "семафор"
   ru: "светофор"
-  lesson: "10"
+  lesson: "25"
   pos: "noun"
   gender: "m"
   tags: ["city"]
@@ -3184,7 +3184,7 @@
   latin: "ćošak / ugao"
   cyrillic: "ћошак / угао"
   ru: "угол (улицы)"
-  lesson: "10"
+  lesson: "25"
   pos: "noun"
   gender: "m"
   tags: ["city"]
@@ -3193,7 +3193,7 @@
   latin: "levo"
   cyrillic: "лево"
   ru: "налево / слева"
-  lesson: "10"
+  lesson: "25"
   pos: "adv"
   tags: ["directions"]
 - id: "desno"
@@ -3201,7 +3201,7 @@
   latin: "desno"
   cyrillic: "десно"
   ru: "направо / справа"
-  lesson: "10"
+  lesson: "25"
   pos: "adv"
   tags: ["directions"]
 - id: "pravo"
@@ -3210,7 +3210,7 @@
   cyrillic: "право"
   ru: "прямо"
   note: "ложный друг: тут «pravo» = прямо, не «право»"
-  lesson: "10"
+  lesson: "25"
   pos: "adv"
   tags: ["directions"]
 - id: "blizu"
@@ -3218,7 +3218,7 @@
   latin: "blizu"
   cyrillic: "близу"
   ru: "близко / рядом"
-  lesson: "10"
+  lesson: "25"
   pos: "adv"
   tags: ["directions"]
 - id: "daleko"
@@ -3226,7 +3226,7 @@
   latin: "daleko"
   cyrillic: "далеко"
   ru: "далеко"
-  lesson: "10"
+  lesson: "25"
   pos: "adv"
   tags: ["directions"]
 - id: "pored"
@@ -3234,7 +3234,7 @@
   latin: "pored"
   cyrillic: "поред"
   ru: "рядом с (+ род.)"
-  lesson: "10"
+  lesson: "25"
   pos: "prep"
   tags: ["directions"]
 - id: "iza"
@@ -3242,7 +3242,7 @@
   latin: "iza"
   cyrillic: "иза"
   ru: "за / позади (+ род.)"
-  lesson: "10"
+  lesson: "25"
   pos: "prep"
   tags: ["directions"]
 - id: "ispred"
@@ -3250,7 +3250,7 @@
   latin: "ispred"
   cyrillic: "испред"
   ru: "перед (+ род.)"
-  lesson: "10"
+  lesson: "25"
   pos: "prep"
   tags: ["directions"]
 - id: "preko-puta"
@@ -3258,7 +3258,7 @@
   latin: "preko puta"
   cyrillic: "преко пута"
   ru: "напротив"
-  lesson: "10"
+  lesson: "25"
   pos: "phrase"
   tags: ["directions"]
 - id: "kod-prep"
@@ -3267,7 +3267,7 @@
   cyrillic: "код"
   ru: "у / около (+ род.)"
   note: "«kod pošte» — у почты; «kod kuće» — дома"
-  lesson: "10"
+  lesson: "25"
   pos: "prep"
   tags: ["directions"]
 - id: "skrenuti"
@@ -3276,7 +3276,7 @@
   cyrillic: "скренути"
   ru: "свернуть / повернуть"
   note: "«Skrenite levo» — поверните налево"
-  lesson: "10"
+  lesson: "25"
   pos: "verb"
   aspect: "sv"
   tags: ["verbs", "directions"]
@@ -3285,7 +3285,7 @@
   latin: "stići (stignem)"
   cyrillic: "стићи"
   ru: "добраться / успеть"
-  lesson: "10"
+  lesson: "25"
   pos: "verb"
   aspect: "sv"
   tags: ["verbs", "directions"]
@@ -3294,7 +3294,7 @@
   latin: "kako da dođem do…?"
   cyrillic: "како да дођем до…?"
   ru: "как пройти к…?"
-  lesson: "10"
+  lesson: "25"
   pos: "phrase"
   tags: ["directions"]
 - id: "gde-je"
@@ -3302,7 +3302,7 @@
   latin: "gde je…?"
   cyrillic: "где је…?"
   ru: "где находится…?"
-  lesson: "10"
+  lesson: "25"
   pos: "phrase"
   tags: ["directions"]
 
@@ -3313,7 +3313,7 @@
   latin: "sunčano"
   cyrillic: "сунчано"
   ru: "солнечно"
-  lesson: "11"
+  lesson: "26"
   pos: "adv"
   tags: ["weather"]
 - id: "oblacno"
@@ -3321,7 +3321,7 @@
   latin: "oblačno"
   cyrillic: "облачно"
   ru: "облачно / пасмурно"
-  lesson: "11"
+  lesson: "26"
   pos: "adv"
   tags: ["weather"]
 - id: "kisa"
@@ -3329,7 +3329,7 @@
   latin: "kiša"
   cyrillic: "киша"
   ru: "дождь"
-  lesson: "11"
+  lesson: "26"
   pos: "noun"
   gender: "f"
   tags: ["weather"]
@@ -3338,7 +3338,7 @@
   latin: "pada kiša"
   cyrillic: "пада киша"
   ru: "идёт дождь"
-  lesson: "11"
+  lesson: "26"
   pos: "phrase"
   tags: ["weather"]
 - id: "sneg"
@@ -3346,7 +3346,7 @@
   latin: "sneg"
   cyrillic: "снег"
   ru: "снег"
-  lesson: "11"
+  lesson: "26"
   pos: "noun"
   gender: "m"
   tags: ["weather"]
@@ -3355,7 +3355,7 @@
   latin: "pada sneg"
   cyrillic: "пада снег"
   ru: "идёт снег"
-  lesson: "11"
+  lesson: "26"
   pos: "phrase"
   tags: ["weather"]
 - id: "vetar"
@@ -3364,7 +3364,7 @@
   cyrillic: "ветар"
   ru: "ветер"
   note: "войводинская кошава — košava"
-  lesson: "11"
+  lesson: "26"
   pos: "noun"
   gender: "m"
   tags: ["weather"]
@@ -3373,7 +3373,7 @@
   latin: "vetrovito"
   cyrillic: "ветровито"
   ru: "ветрено"
-  lesson: "11"
+  lesson: "26"
   pos: "adv"
   tags: ["weather"]
 - id: "magla"
@@ -3381,7 +3381,7 @@
   latin: "magla"
   cyrillic: "магла"
   ru: "туман"
-  lesson: "11"
+  lesson: "26"
   pos: "noun"
   gender: "f"
   tags: ["weather"]
@@ -3390,7 +3390,7 @@
   latin: "led"
   cyrillic: "лед"
   ru: "лёд / гололёд"
-  lesson: "11"
+  lesson: "26"
   pos: "noun"
   gender: "m"
   tags: ["weather"]
@@ -3399,7 +3399,7 @@
   latin: "toplo"
   cyrillic: "топло"
   ru: "тепло"
-  lesson: "11"
+  lesson: "26"
   pos: "adv"
   tags: ["weather"]
 - id: "hladno"
@@ -3407,7 +3407,7 @@
   latin: "hladno"
   cyrillic: "хладно"
   ru: "холодно"
-  lesson: "11"
+  lesson: "26"
   pos: "adv"
   tags: ["weather"]
 - id: "vruce"
@@ -3415,7 +3415,7 @@
   latin: "vruće"
   cyrillic: "вруће"
   ru: "жарко"
-  lesson: "11"
+  lesson: "26"
   pos: "adv"
   tags: ["weather"]
 - id: "stepen"
@@ -3424,7 +3424,7 @@
   cyrillic: "степен"
   ru: "градус"
   note: "«dvadeset stepeni», «pet ispod nule»"
-  lesson: "11"
+  lesson: "26"
   pos: "noun"
   gender: "m"
   tags: ["weather"]
@@ -3433,7 +3433,7 @@
   latin: "napolju"
   cyrillic: "напољу"
   ru: "на улице / снаружи"
-  lesson: "11"
+  lesson: "26"
   pos: "adv"
   tags: ["weather"]
 - id: "prolece"
@@ -3442,7 +3442,7 @@
   cyrillic: "пролеће"
   ru: "весна"
   note: "«u proleće» — весной"
-  lesson: "11"
+  lesson: "26"
   pos: "noun"
   gender: "n"
   tags: ["seasons"]
@@ -3452,7 +3452,7 @@
   cyrillic: "лето"
   ru: "лето"
   note: "«leti» — летом. Ложный друг: НЕ «лето» = год (это godina)"
-  lesson: "11"
+  lesson: "26"
   pos: "noun"
   gender: "n"
   tags: ["seasons"]
@@ -3462,7 +3462,7 @@
   cyrillic: "јесен"
   ru: "осень"
   note: "«u jesen» / «s jeseni» — осенью"
-  lesson: "11"
+  lesson: "26"
   pos: "noun"
   gender: "f"
   tags: ["seasons"]
@@ -3472,7 +3472,7 @@
   cyrillic: "зима"
   ru: "зима"
   note: "«zimi» — зимой; «Zima mi je» — мне холодно"
-  lesson: "11"
+  lesson: "26"
   pos: "noun"
   gender: "f"
   tags: ["seasons"]
@@ -3482,7 +3482,7 @@
   cyrillic: "свиђа ми се"
   ru: "мне нравится"
   note: "«sviđa mi se leto»; мн. — «sviđaju mi se»"
-  lesson: "11"
+  lesson: "27"
   pos: "phrase"
   tags: ["opinions"]
 - id: "ne-svidja-mi-se"
@@ -3490,7 +3490,7 @@
   latin: "ne sviđa mi se"
   cyrillic: "не свиђа ми се"
   ru: "мне не нравится"
-  lesson: "11"
+  lesson: "27"
   pos: "phrase"
   tags: ["opinions"]
 - id: "vise-volim"
@@ -3498,7 +3498,7 @@
   latin: "više volim … nego …"
   cyrillic: "више волим … него …"
   ru: "больше люблю … чем …"
-  lesson: "11"
+  lesson: "27"
   pos: "phrase"
   tags: ["opinions"]
 - id: "priroda"
@@ -3507,7 +3507,7 @@
   cyrillic: "природа"
   ru: "природа"
   note: "«u prirodi» — на природе"
-  lesson: "11"
+  lesson: "27"
   pos: "noun"
   gender: "f"
   tags: ["nature"]
@@ -3517,7 +3517,7 @@
   cyrillic: "море"
   ru: "море"
   note: "«na moru» — на море"
-  lesson: "11"
+  lesson: "27"
   pos: "noun"
   gender: "n"
   tags: ["nature"]
@@ -3527,7 +3527,7 @@
   cyrillic: "планина"
   ru: "гора"
   note: "«na planini» — в горах"
-  lesson: "11"
+  lesson: "27"
   pos: "noun"
   gender: "f"
   tags: ["nature"]
@@ -3536,7 +3536,7 @@
   latin: "jezero"
   cyrillic: "језеро"
   ru: "озеро"
-  lesson: "11"
+  lesson: "27"
   pos: "noun"
   gender: "n"
   tags: ["nature"]
@@ -3546,7 +3546,7 @@
   cyrillic: "шума"
   ru: "лес"
   note: "ложный друг: НЕ «шум» (это buka)"
-  lesson: "11"
+  lesson: "27"
   pos: "noun"
   gender: "f"
   tags: ["nature"]
@@ -3555,7 +3555,7 @@
   latin: "nebo"
   cyrillic: "небо"
   ru: "небо"
-  lesson: "11"
+  lesson: "27"
   pos: "noun"
   gender: "n"
   tags: ["nature"]
@@ -3566,7 +3566,7 @@
   cyrillic: "не разумем"
   ru: "не понимаю"
   note: "первая фраза, которая понадобится в реальном разговоре"
-  lesson: "02"
+  lesson: "05"
   pos: "phrase"
   tags: ["survival"]
 
@@ -3575,7 +3575,7 @@
   latin: "ponovite, molim"
   cyrillic: "поновите, молим"
   ru: "повторите, пожалуйста"
-  lesson: "02"
+  lesson: "05"
   pos: "phrase"
   tags: ["survival"]
 
@@ -3585,7 +3585,7 @@
   cyrillic: "полако"
   ru: "медленно, потихоньку"
   note: "и «помедленнее», и «не спеши» — очень сербское слово"
-  lesson: "02"
+  lesson: "05"
   pos: "adv"
   tags: ["survival"]
 
@@ -3595,7 +3595,7 @@
   cyrillic: "кирија"
   ru: "аренда, плата за жильё"
   note: "«Koliko je kirija?» — сколько стоит аренда"
-  lesson: "08"
+  lesson: "19"
   pos: "noun"
   gender: "f"
   tags: ["home"]

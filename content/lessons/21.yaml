@@ -1,0 +1,65 @@
+lesson: "21"
+title: "Гладан сам"
+subtitle: "голоден / хочу пить, в кафе"
+teaches: [gladan, zedan, jesti, piti, kafic, restoran, jelovnik, poruciti, za-mene]
+
+steps:
+  - id: "21.1"
+    kind: teach
+    title: "Голоден / хочу пить"
+    md: "21/1-gladan-zedan.md"
+
+  - id: "21.2"
+    kind: practice
+    title: "Есть и пить"
+    also_ok: ["jedem", "pijem", "jedeš", "piješ"]
+    exercises:
+      - id: "21.2.1"
+        type: choice
+        prompt: "«я голоден» —"
+        options: ["Gladan sam.", "Gladan je.", "Gladna je."]
+        answer: "Gladan sam."
+      - id: "21.2.2"
+        type: choice
+        prompt: "«я не ем мясо» —"
+        options: ["Ne jedem meso.", "Ne jesti meso.", "Meso ne jedem ne."]
+        answer: "Ne jedem meso."
+      - id: "21.2.3"
+        type: fill_blank
+        prompt: "«что ты пьёшь?» → Šta ___?"
+        accept: ["piješ"]
+      - id: "21.2.4"
+        type: word_bank
+        prompt: "Собери: «я хочу есть»"
+        bank: ["Hoću", "da", "jedem"]
+        accept: ["Hoću da jedem."]
+
+  - id: "21.3"
+    kind: teach
+    title: "В кафе"
+    md: "21/3-u-kaficu.md"
+
+  - id: "21.4"
+    kind: practice
+    title: "Заказ"
+    also_ok: ["kafu"]
+    exercises:
+      - id: "21.4.1"
+        type: choice
+        prompt: "Официант: «Izvolite?» Ты заказываешь —"
+        options: ["Molim vas jednu kafu.", "Hvala, doviđenja.", "Koliko je sati?"]
+        answer: "Molim vas jednu kafu."
+      - id: "21.4.2"
+        type: choice
+        prompt: "«меню» по-сербски —"
+        options: ["jelovnik", "konobar", "račun"]
+        answer: "jelovnik"
+      - id: "21.4.3"
+        type: fill_blank
+        prompt: "«мне пиво» → Za mene ___."
+        accept: ["pivo"]
+      - id: "21.4.4"
+        type: word_bank
+        prompt: "Собери: «ещё одну, пожалуйста»"
+        bank: ["Još", "jednu", "molim"]
+        accept: ["Još jednu, molim."]

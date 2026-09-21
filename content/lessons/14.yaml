@@ -1,0 +1,120 @@
+lesson: "14"
+title: "Провера 1а"
+subtitle: "приветствия, семья, числа/цена/время"
+teaches: []
+
+steps:
+  - id: "14.1"
+    kind: reading
+    title: "Один день"
+    md: "14/1-citanje.md"
+    also_ok: ["kafe", "kafu"]
+    exercises:
+      - id: "14.1.1"
+        type: choice
+        prompt: "Что покупает человек?"
+        options: ["Hleb i dve kafe.", "Mleko i sir.", "Samo kafu."]
+        answer: "Hleb i dve kafe."
+      - id: "14.1.2"
+        type: choice
+        prompt: "Чем он платит?"
+        options: ["Karticom.", "Kešom.", "Ništa."]
+        answer: "Karticom."
+
+  - id: "14.2"
+    kind: practice
+    title: "Привет и знакомство"
+    mixed: true
+    also_ok: ["ana"]
+    exercises:
+      - id: "14.2.1"
+        type: choice
+        prompt: "Незнакомому человеку старше тебя —"
+        options: ["Kako ste?", "Kako si?", "Kako ide?"]
+        answer: "Kako ste?"
+      - id: "14.2.2"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["Zdravo", "Привет"]
+          - ["Doviđenja", "До свидания"]
+          - ["Hvala", "Спасибо"]
+          - ["Izvinite", "Извините"]
+      - id: "14.2.3"
+        type: fill_blank
+        prompt: "«Я из России» → Ja ___ iz Rusije."
+        accept: ["sam"]
+      - id: "14.2.4"
+        type: word_bank
+        prompt: "Собери: «меня зовут Ана»"
+        bank: ["Zovem", "se", "Ana"]
+        accept: ["Zovem se Ana."]
+      - id: "14.2.5"
+        type: translate
+        prompt: "Откуда ты?"
+        accept: ["Odakle si?"]
+
+  - id: "14.3"
+    kind: practice
+    title: "Семья"
+    mixed: true
+    also_ok: ["brata", "sestru"]
+    exercises:
+      - id: "14.3.1"
+        type: choice
+        prompt: "«У меня есть брат» —"
+        options: ["Imam brata.", "Imam brat.", "Nemam brat."]
+        answer: "Imam brata."
+      - id: "14.3.2"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["mama", "мама"]
+          - ["tata", "папа"]
+          - ["sestra", "сестра"]
+          - ["deda", "дедушка"]
+      - id: "14.3.3"
+        type: fill_blank
+        prompt: "«Моя мама» → ___ mama."
+        accept: ["moja"]
+      - id: "14.3.4"
+        type: word_bank
+        prompt: "Собери: «это мой папа»"
+        bank: ["Ovo", "je", "moj", "tata"]
+        accept: ["Ovo je moj tata."]
+      - id: "14.3.5"
+        type: translate
+        prompt: "У меня нет сестры."
+        accept: ["Nemam sestru."]
+
+  - id: "14.4"
+    kind: practice
+    title: "Числа, цена, время"
+    mixed: true
+    exercises:
+      - id: "14.4.1"
+        type: choice
+        prompt: "«15» —"
+        options: ["petnaest", "pedeset", "pet"]
+        answer: "petnaest"
+      - id: "14.4.2"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["deset", "десять"]
+          - ["dvadeset", "двадцать"]
+          - ["sto", "сто"]
+          - ["pet", "пять"]
+      - id: "14.4.3"
+        type: fill_blank
+        prompt: "«Мне 30 лет» → Imam trideset ___."
+        accept: ["godina"]
+      - id: "14.4.4"
+        type: word_bank
+        prompt: "Собери: «сколько стоит?»"
+        bank: ["Koliko", "košta"]
+        accept: ["Koliko košta?"]
+      - id: "14.4.5"
+        type: translate
+        prompt: "Который час?"
+        accept: ["Koliko je sati?"]

@@ -1,0 +1,96 @@
+lesson: "23"
+title: "Питања 1"
+subtitle: "да/нет-вопрос, вопросительные слова, koji/kakav/čiji"
+teaches: [naravno, ko, sta, koji, kakav, ciji, kuda]
+
+steps:
+  - id: "23.1"
+    kind: teach
+    title: "Да / нет-вопрос"
+    md: "23/1-da-li.md"
+
+  - id: "23.2"
+    kind: practice
+    title: "Спроси да / нет"
+    exercises:
+      - id: "23.2.1"
+        type: choice
+        prompt: "«У вас есть вода?» (literary) —"
+        options: ["Da li imate vodu?", "Li imate vodu?", "Imate vodu li?"]
+        answer: "Da li imate vodu?"
+      - id: "23.2.2"
+        type: choice
+        prompt: "То же самое, разговорно —"
+        options: ["Jel' imate vodu?", "Jel imate li vodu?", "Da imate vodu?"]
+        answer: "Jel' imate vodu?"
+      - id: "23.2.3"
+        type: fill_blank
+        prompt: "«Далеко ли?» → Da ___ je daleko?"
+        accept: ["li"]
+      - id: "23.2.4"
+        type: word_bank
+        prompt: "Собери: «работает ли в воскресенье?»"
+        bank: ["Da", "li", "radi", "u", "nedelju"]
+        accept: ["Da li radi u nedelju?"]
+
+  - id: "23.3"
+    kind: teach
+    title: "Вопросительные слова"
+    md: "23/3-upitne-reci.md"
+
+  - id: "23.4"
+    kind: practice
+    title: "Какое слово"
+    exercises:
+      - id: "23.4.1"
+        type: choice
+        prompt: "«___ ты идёшь?» (направление)"
+        options: ["Kuda", "Gde", "Ko"]
+        answer: "Kuda"
+      - id: "23.4.2"
+        type: choice
+        prompt: "«___ это?» (о человеке)"
+        options: ["Ko je to?", "Šta je to?", "Gde je to?"]
+        answer: "Ko je to?"
+      - id: "23.4.3"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["ko", "кто"]
+          - ["šta", "что"]
+          - ["gde", "где"]
+          - ["kada", "когда"]
+      - id: "23.4.4"
+        type: fill_blank
+        prompt: "«Что ты делаешь?» → ___ radiš?"
+        accept: ["šta", "Šta"]
+
+  - id: "23.5"
+    kind: teach
+    title: "koji / kakav / čiji"
+    md: "23/5-koji-kakav-ciji.md"
+
+  - id: "23.6"
+    kind: practice
+    title: "koji или kakav"
+    also_ok: ["koja", "kakvo"]
+    exercises:
+      - id: "23.6.1"
+        type: choice
+        prompt: "«___ автобус идёт в центр?» (выбор из ряда)"
+        options: ["Koji", "Kakav", "Čiji"]
+        answer: "Koji"
+      - id: "23.6.2"
+        type: choice
+        prompt: "«___ погода?» (свойство)"
+        options: ["Kakvo je vreme?", "Koje je vreme?", "Čije je vreme?"]
+        answer: "Kakvo je vreme?"
+      - id: "23.6.3"
+        type: fill_blank
+        prompt: "«Чей это ключ?» → ___ je ovo ključ?"
+        accept: ["čiji", "Čiji"]
+      - id: "23.6.4"
+        type: word_bank
+        prompt: "Собери: «какая это улица?»"
+        bank: ["Koja", "je", "ovo", "ulica"]
+        accept: ["Koja je ovo ulica?"]

@@ -1,0 +1,115 @@
+lesson: "16"
+title: "Свакодневница"
+subtitle: "настоящее время, мой день, дни недели"
+teaches:
+  [
+    ustajati, spavati, tusirati-se, oblaciti-se, doruckovati, spremati-se,
+    odmarati, morati, pocinjati, zavrsavati, dorucak, rucak, vecera, posao,
+    ponedeljak, utorak, sreda, cetvrtak, petak, subota, nedelja, vikend,
+    radni-dan,
+  ]
+
+steps:
+  - id: "16.1"
+    kind: teach
+    title: "Настоящее время: три типа"
+    md: "16/1-prezent.md"
+
+  - id: "16.2"
+    kind: practice
+    title: "Какое окончание"
+    also_ok: ["čitaš", "čita", "čitamo", "gledaš", "gleda"]
+    exercises:
+      - id: "16.2.1"
+        type: choice
+        prompt: "«я читаю» (ja) —"
+        options: ["čitam", "čitaš", "čita"]
+        answer: "čitam"
+      - id: "16.2.2"
+        type: choice
+        prompt: "«ты смотришь» (ti) —"
+        options: ["gledaš", "gleda", "gledam"]
+        answer: "gledaš"
+      - id: "16.2.3"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["čitam", "я читаю"]
+          - ["čitaš", "ты читаешь"]
+          - ["čita", "он читает"]
+          - ["čitamo", "мы читаем"]
+      - id: "16.2.4"
+        type: fill_blank
+        prompt: "«мы работаем» → Mi ___."
+        accept: ["radimo"]
+
+  - id: "16.3"
+    kind: teach
+    title: "Мой день"
+    md: "16/3-moj-dan.md"
+
+  - id: "16.4"
+    kind: practice
+    title: "По порядку"
+    also_ok: ["ustajem", "doručkujem", "tuširam"]
+    exercises:
+      - id: "16.4.1"
+        type: choice
+        prompt: "«я встаю в семь» —"
+        options: ["Ustajem u sedam.", "Ustajem sedam.", "Ustajem na sedam."]
+        answer: "Ustajem u sedam."
+      - id: "16.4.2"
+        type: choice
+        prompt: "«я завтракаю» —"
+        options: ["Doručkujem.", "Doručak.", "Doručkovati."]
+        answer: "Doručkujem."
+      - id: "16.4.3"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["ustajem", "встаю"]
+          - ["spavam", "сплю"]
+          - ["doručkujem", "завтракаю"]
+          - ["tuširam se", "принимаю душ"]
+      - id: "16.4.4"
+        type: fill_blank
+        prompt: "«я иду на работу» → Idem na ___."
+        accept: ["posao"]
+      - id: "16.4.5"
+        type: word_bank
+        prompt: "Собери: «я встаю в семь»"
+        bank: ["Ustajem", "u", "sedam"]
+        accept: ["Ustajem u sedam."]
+
+  - id: "16.5"
+    kind: teach
+    title: "Дни недели"
+    md: "16/5-dani.md"
+
+  - id: "16.6"
+    kind: practice
+    title: "Какой день"
+    also_ok: ["sredu"]
+    exercises:
+      - id: "16.6.1"
+        type: choice
+        prompt: "Первый день недели —"
+        options: ["ponedeljak", "nedelja", "subota"]
+        answer: "ponedeljak"
+      - id: "16.6.2"
+        type: choice
+        prompt: "«в среду» —"
+        options: ["u sredu", "u sreda", "na sreda"]
+        answer: "u sredu"
+      - id: "16.6.3"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["ponedeljak", "понедельник"]
+          - ["sreda", "среда"]
+          - ["petak", "пятница"]
+          - ["nedelja", "воскресенье"]
+      - id: "16.6.4"
+        type: fill_blank
+        prompt: "«выходные» по-сербски — ___"
+        accept: ["vikend"]

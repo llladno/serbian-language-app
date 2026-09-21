@@ -1,0 +1,112 @@
+lesson: "18"
+title: "Стан"
+subtitle: "дом, комнаты, вещи"
+teaches:
+  [
+    gde, kuca, stan, zgrada, ulaz, lift, stanovati, soba, kuhinja, kupatilo,
+    spavaca-soba, dnevni-boravak, hodnik, terasa, balkon, sto-meb, stolica,
+    krevet, orman, frizider, sporet, sudopera, lampa, polica, ogledalo,
+  ]
+
+steps:
+  - id: "18.1"
+    kind: teach
+    title: "Дом и квартира"
+    md: "18/1-kuca-stan.md"
+
+  - id: "18.2"
+    kind: practice
+    title: "Где живёшь"
+    exercises:
+      - id: "18.2.1"
+        type: choice
+        prompt: "«я живу в квартире» —"
+        options: ["Živim u stanu.", "Živim u stan.", "Živim stanu."]
+        answer: "Živim u stanu."
+      - id: "18.2.2"
+        type: choice
+        prompt: "«дом» (частный) —"
+        options: ["kuća", "stan", "zgrada"]
+        answer: "kuća"
+      - id: "18.2.3"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["kuća", "дом"]
+          - ["stan", "квартира"]
+          - ["zgrada", "здание"]
+          - ["lift", "лифт"]
+      - id: "18.2.4"
+        type: fill_blank
+        prompt: "«подъезд» по-сербски — ___"
+        accept: ["ulaz"]
+
+  - id: "18.3"
+    kind: teach
+    title: "Комнаты"
+    md: "18/3-sobe.md"
+
+  - id: "18.4"
+    kind: practice
+    title: "Комната за комнатой"
+    also_ok: ["sobi", "sobe"]
+    exercises:
+      - id: "18.4.1"
+        type: choice
+        prompt: "Где готовят еду —"
+        options: ["kuhinja", "kupatilo", "hodnik"]
+        answer: "kuhinja"
+      - id: "18.4.2"
+        type: choice
+        prompt: "Где спят —"
+        options: ["spavaća soba", "kuhinja", "terasa"]
+        answer: "spavaća soba"
+      - id: "18.4.3"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["kuhinja", "кухня"]
+          - ["kupatilo", "ванная"]
+          - ["hodnik", "коридор"]
+          - ["terasa", "терраса"]
+      - id: "18.4.4"
+        type: fill_blank
+        prompt: "«в комнате» → u ___."
+        accept: ["sobi"]
+      - id: "18.4.5"
+        type: word_bank
+        prompt: "Собери: «это моя комната»"
+        bank: ["Ovo", "je", "moja", "soba"]
+        accept: ["Ovo je moja soba."]
+
+  - id: "18.5"
+    kind: teach
+    title: "Вещи"
+    md: "18/5-stvari.md"
+
+  - id: "18.6"
+    kind: practice
+    title: "Что в комнате"
+    exercises:
+      - id: "18.6.1"
+        type: choice
+        prompt: "На чём спят —"
+        options: ["krevet", "sto", "orman"]
+        answer: "krevet"
+      - id: "18.6.2"
+        type: choice
+        prompt: "Где хранят еду —"
+        options: ["frižider", "lampa", "ogledalo"]
+        answer: "frižider"
+      - id: "18.6.3"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["sto", "стол"]
+          - ["stolica", "стул"]
+          - ["krevet", "кровать"]
+          - ["orman", "шкаф"]
+      - id: "18.6.4"
+        type: fill_blank
+        prompt: "«холодильник» по-сербски — ___"
+        accept: ["frižider"]
