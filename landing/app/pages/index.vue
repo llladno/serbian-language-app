@@ -77,6 +77,15 @@
       </div>
       <ol class="steps">
         <li class="steps__item reveal">
+          <div class="steps__shot">
+            <img
+              src="/screens/step-1-lesson.webp"
+              width="778"
+              height="1198"
+              loading="lazy"
+              alt="Экран урока ucimo: грамматическое объяснение imam/nemam с таблицей форм"
+            />
+          </div>
           <span class="steps__num">1</span>
           <h3>Урок с объяснением</h3>
           <p>
@@ -85,6 +94,15 @@
           </p>
         </li>
         <li class="steps__item reveal">
+          <div class="steps__shot">
+            <img
+              src="/screens/step-2-exercise.webp"
+              width="788"
+              height="706"
+              loading="lazy"
+              alt="Экран упражнения ucimo: диалог с выбором варианта ответа и автопроверкой"
+            />
+          </div>
           <span class="steps__num">2</span>
           <h3>Упражнения с автопроверкой</h3>
           <p>
@@ -93,6 +111,15 @@
           </p>
         </li>
         <li class="steps__item reveal">
+          <div class="steps__shot">
+            <img
+              src="/screens/step-3-srs.webp"
+              width="782"
+              height="592"
+              loading="lazy"
+              alt="Экран SRS-тренажёра ucimo: карточка слова prijatno с переводом"
+            />
+          </div>
           <span class="steps__num">3</span>
           <h3>SRS-тренажёр слов</h3>
           <p>
@@ -101,6 +128,15 @@
           </p>
         </li>
         <li class="steps__item reveal">
+          <div class="steps__shot">
+            <img
+              src="/screens/step-4-dashboard.webp"
+              width="655"
+              height="698"
+              loading="lazy"
+              alt="Дашборд прогресса ucimo: слова на повторении, дни подряд и следующий урок"
+            />
+          </div>
           <span class="steps__num">4</span>
           <h3>Дашборд прогресса</h3>
           <p>
@@ -746,6 +782,23 @@ useHead({
 
 .steps__item {
   position: relative;
+}
+
+.steps__shot {
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  margin-bottom: 16px;
+}
+
+.steps__shot img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  object-position: top;
 }
 
 .steps__num {
