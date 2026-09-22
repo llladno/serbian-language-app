@@ -17,13 +17,19 @@ import (
 )
 
 // apiBase is the Bot API origin. A var (not const) so tests can point it at
-// an httptest server instead of the real Telegram servers.
+// an httptest server instead of the real Telegram servers, and so
+// production can redirect every call through a reverse proxy when the host
+// itself can't reach api.telegram.org (see SetAPIBase).
 var apiBase = "https://api.telegram.org"
 
-// SetAPIBaseForTesting points every subsequent Bot API call at base instead
-// of https://api.telegram.org, and returns a func that restores the real
-// value. For tests only (in this package and internal/outbox's).
-func SetAPIBaseForTesting(base string) (restore func()) {
+// SetAPIBase points every subsequent Bot API call at base instead of
+// https://api.telegram.org, and returns a func that restores the previous
+// value. Two callers: main.go at startup, when config.Config.TelegramAPIBase
+// is set (routes around a host that can't reach Telegram outbound — see that
+// field's doc comment); and tests, pointing at an httptest server (this
+// package's own withTestServer, and internal/outbox's tests, which reach
+// into this package because apiBase itself is unexported).
+func SetAPIBase(base string) (restore func()) {
 	prev := apiBase
 	apiBase = base
 	return func() { apiBase = prev }

@@ -40,7 +40,7 @@ func TestProcessNextSendsAndMarksSent(t *testing.T) {
 		w.Write([]byte(`{"ok":true,"result":true}`))
 	}))
 	defer srv.Close()
-	restore := telegram.SetAPIBaseForTesting(srv.URL)
+	restore := telegram.SetAPIBase(srv.URL)
 	defer restore()
 
 	st := newTestStore(t)
@@ -69,7 +69,7 @@ func TestProcessNextLeavesRowPendingOn429(t *testing.T) {
 		w.Write([]byte(`{"ok":false,"error_code":429,"description":"Too Many Requests","parameters":{"retry_after":3}}`))
 	}))
 	defer srv.Close()
-	restore := telegram.SetAPIBaseForTesting(srv.URL)
+	restore := telegram.SetAPIBase(srv.URL)
 	defer restore()
 
 	st := newTestStore(t)
@@ -94,7 +94,7 @@ func TestProcessNextMarksFailedOnOtherErrors(t *testing.T) {
 		w.Write([]byte(`{"ok":false,"error_code":403,"description":"Forbidden: bot was blocked by the user"}`))
 	}))
 	defer srv.Close()
-	restore := telegram.SetAPIBaseForTesting(srv.URL)
+	restore := telegram.SetAPIBase(srv.URL)
 	defer restore()
 
 	st := newTestStore(t)
@@ -123,7 +123,7 @@ func TestProcessNextSendsHighPriorityBeforeNormal(t *testing.T) {
 		w.Write([]byte(`{"ok":true,"result":true}`))
 	}))
 	defer srv.Close()
-	restore := telegram.SetAPIBaseForTesting(srv.URL)
+	restore := telegram.SetAPIBase(srv.URL)
 	defer restore()
 
 	st := newTestStore(t)

@@ -68,6 +68,14 @@ func main() {
 
 	cfg := config.Load()
 
+	// Redirect every Bot API call through a reverse proxy when this host
+	// can't reach api.telegram.org directly (see Config.TelegramAPIBase's
+	// doc comment) — must happen before GetMe/SetWebhook below, and before
+	// the outbox worker starts, since both go through this same apiBase.
+	if cfg.TelegramAPIBase != "" {
+		telegram.SetAPIBase(cfg.TelegramAPIBase)
+	}
+
 	// Bot /start login/link needs the bot's own @username (not derivable from
 	// the token — see Config.TelegramBotID, which only gives the numeric id)
 	// and a registered webhook. Both are normally discovered/generated here

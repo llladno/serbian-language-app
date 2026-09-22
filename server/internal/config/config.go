@@ -37,6 +37,18 @@ type Config struct {
 	// the app no longer needs its own boot-time call to succeed.
 	TelegramBotUsername   string
 	TelegramWebhookSecret string
+	// TelegramAPIBase overrides the Bot API origin (default
+	// https://api.telegram.org) for every call the app makes, including
+	// the outbox worker's sendMessage — not just the boot-time calls
+	// TelegramBotUsername/TelegramWebhookSecret bypass. Needed on top of
+	// those two: pinning them only skips the boot-time GetMe/SetWebhook
+	// calls, it does nothing for the ongoing sendMessage calls the outbox
+	// worker makes for as long as the process runs, which hit the exact
+	// same outbound block. Point this at a small reverse-proxy (e.g. a
+	// Cloudflare Worker forwarding to https://api.telegram.org) reachable
+	// from a blocked host. From TELEGRAM_API_BASE; empty keeps the real
+	// Telegram origin.
+	TelegramAPIBase string
 }
 
 // Load reads the configuration from the environment. Missing variables take
@@ -62,6 +74,7 @@ func Load() Config {
 		TelegramBotToken:      os.Getenv("TELEGRAM_BOT_TOKEN"),
 		TelegramBotUsername:   os.Getenv("TELEGRAM_BOT_USERNAME"),
 		TelegramWebhookSecret: os.Getenv("TELEGRAM_WEBHOOK_SECRET"),
+		TelegramAPIBase:       os.Getenv("TELEGRAM_API_BASE"),
 	}
 }
 
