@@ -49,6 +49,17 @@ type Config struct {
 	// from a blocked host. From TELEGRAM_API_BASE; empty keeps the real
 	// Telegram origin.
 	TelegramAPIBase string
+	// TelegramWebhookURL overrides the URL registered with Telegram's
+	// setWebhook (default AppBaseURL + "/api/telegram/webhook", i.e.
+	// Telegram delivers straight to this app). Set this when that direct
+	// route is itself unreliable (inbound, not outbound — a separate
+	// problem from TelegramAPIBase) — point it at a reverse-proxy relay
+	// (e.g. a Cloudflare Worker forwarding to AppBaseURL +
+	// "/api/telegram/webhook") that Telegram can reach even when this host
+	// can't be reached directly. The app's own handler at
+	// /api/telegram/webhook is unaffected either way — only where Telegram
+	// is told to deliver updates changes. From TELEGRAM_WEBHOOK_URL.
+	TelegramWebhookURL string
 }
 
 // Load reads the configuration from the environment. Missing variables take
@@ -75,6 +86,7 @@ func Load() Config {
 		TelegramBotUsername:   os.Getenv("TELEGRAM_BOT_USERNAME"),
 		TelegramWebhookSecret: os.Getenv("TELEGRAM_WEBHOOK_SECRET"),
 		TelegramAPIBase:       os.Getenv("TELEGRAM_API_BASE"),
+		TelegramWebhookURL:    os.Getenv("TELEGRAM_WEBHOOK_URL"),
 	}
 }
 

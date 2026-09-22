@@ -115,7 +115,10 @@ func main() {
 		if username == "" || secret == "" {
 			break // neither discovered nor configured — nothing usable
 		}
-		webhookURL := cfg.AppBaseURL + "/api/telegram/webhook"
+		webhookURL := cfg.TelegramWebhookURL
+		if webhookURL == "" {
+			webhookURL = cfg.AppBaseURL + "/api/telegram/webhook"
+		}
 		if err := telegram.SetWebhook(cfg.TelegramBotToken, webhookURL, secret); err != nil {
 			log.Printf("telegram: setWebhook: %v (harmless if the webhook was already registered externally)", err)
 		}
