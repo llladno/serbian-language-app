@@ -18,6 +18,7 @@ import type {
   TelegramStart,
   TelegramPoll,
 } from './types'
+import { getStoredAttribution } from './attribution'
 
 export class ApiError extends Error {
   status: number
@@ -79,7 +80,7 @@ export const api = {
   register: (email: string, password: string, name: string) =>
     request<{ status: string }>('/auth/register', {
       method: 'POST',
-      body: JSON.stringify({ email, password, name }),
+      body: JSON.stringify({ email, password, name, ...getStoredAttribution() }),
     }),
   login: (email: string, password: string) =>
     request<SessionUser>('/auth/login', { method: 'POST', body: JSON.stringify({ email, password }) }),
@@ -96,7 +97,10 @@ export const api = {
   resetPassword: (token: string, password: string) =>
     request<SessionUser>('/auth/reset', { method: 'POST', body: JSON.stringify({ token, password }) }),
   telegramLogin: (payload: Record<string, unknown>) =>
-    request<SessionUser>('/auth/telegram', { method: 'POST', body: JSON.stringify(payload) }),
+    request<SessionUser>('/auth/telegram', {
+      method: 'POST',
+      body: JSON.stringify({ ...payload, ...getStoredAttribution() }),
+    }),
   telegramLoginStart: () => request<TelegramStart>('/auth/telegram/start', { method: 'POST' }),
   telegramPoll: (token: string) => request<TelegramPoll>('/auth/telegram/poll?token=' + encodeURIComponent(token)),
 
