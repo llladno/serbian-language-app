@@ -4,7 +4,7 @@ import type { ExerciseBlock, LessonAttempts } from '../../types'
 import ExerciseItem from './ExerciseItem.vue'
 
 const props = defineProps<{ lesson: string; block: ExerciseBlock; exIdx: number; priors?: LessonAttempts }>()
-const emit = defineEmits<{ graded: [id: string, ok: boolean]; ungraded: [id: string] }>()
+const emit = defineEmits<{ graded: [id: string, ok: boolean]; ungraded: [id: string]; skip: [] }>()
 
 const graded = reactive<Record<string, boolean>>({})
 for (const ex of props.block.exercises) {
@@ -40,6 +40,7 @@ function onUngraded(id: string) {
         :prior="priors?.[ex.id]"
         @graded="onGraded(ex.id, $event)"
         @ungraded="onUngraded(ex.id)"
+        @skip="emit('skip')"
       />
     </div>
   </section>

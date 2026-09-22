@@ -23,7 +23,7 @@ const props = defineProps<{
 // sentence to transcribe lives only in the audio.
 const glossPrompt = computed(() => props.type === 'fill_blank' || props.type === 'fix_error')
 
-const emit = defineEmits<{ graded: [ok: boolean, result: CheckResult]; ungraded: [] }>()
+const emit = defineEmits<{ graded: [ok: boolean, result: CheckResult]; ungraded: []; skip: [] }>()
 
 const answer = ref(props.prior?.answer ?? '')
 const result = ref<CheckResult | null>(null)
@@ -64,6 +64,14 @@ function retry() {
     <div v-if="type === 'listen'" class="mb-5 flex flex-col items-center gap-3 px-8">
       <SpeakButton :src="audio" :size="52" />
       <span class="text-sm text-[var(--muted)]">{{ prompt || 'Напиши, что слышишь' }}</span>
+      <button
+        v-if="!fromPrior && !result"
+        type="button"
+        class="btn btn-ghost text-sm"
+        @click="emit('skip')"
+      >
+        не могу прослушать :(
+      </button>
     </div>
     <p v-else class="mb-5 whitespace-pre-wrap px-8 text-xl font-medium">
       <GlossedText v-if="glossPrompt" :text="prompt" />

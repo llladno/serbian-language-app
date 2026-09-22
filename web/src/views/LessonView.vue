@@ -186,6 +186,10 @@ async function next() {
     exIdx.value = firstOpenExIdx()
     markSeen()
     window.scrollTo(0, 0)
+  } else if (lesson.value.status === 'done') {
+    // Revisiting an already-completed lesson: the final button reads "Урок
+    // пройден" (nothing left to finish), so pressing it just closes out.
+    closeLesson()
   } else {
     await finish()
   }
@@ -318,6 +322,7 @@ function closeLesson() {
                     :priors="priors"
                     @graded="onGraded"
                     @ungraded="onUngraded"
+                    @skip="next"
                   />
                 </div>
               </template>
@@ -344,6 +349,7 @@ function closeLesson() {
                   :priors="priors"
                   @graded="onGraded"
                   @ungraded="onUngraded"
+                  @skip="next"
                 />
               </div>
             </div>

@@ -8,7 +8,7 @@ import WordBankAnswer from './WordBankAnswer.vue'
 import MatchAnswer from './MatchAnswer.vue'
 
 defineProps<{ lesson: string; exercise: Exercise; prior?: LessonAttempt }>()
-defineEmits<{ graded: [ok: boolean]; ungraded: [] }>()
+defineEmits<{ graded: [ok: boolean]; ungraded: []; skip: [] }>()
 
 const textTypes = ['translate', 'fill_blank', 'fix_error', 'listen']
 </script>
@@ -75,5 +75,6 @@ const textTypes = ['translate', 'fill_blank', 'fix_error', 'listen']
     :prior="prior"
     @graded="$emit('graded', $event)"
     @ungraded="$emit('ungraded')"
+    @skip="$emit('skip')"
   />
 </template>
