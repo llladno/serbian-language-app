@@ -153,6 +153,7 @@ func main() {
 	login := ratelimit.NewLimiter(5.0/60, 5)          // 5/min per IP
 	loginEmail := ratelimit.NewLimiter(10.0/3600, 10) // 10/hour per email
 	slow := ratelimit.NewLimiter(3.0/3600, 3)         // register/resend/forgot: 3/hour
+	visits := ratelimit.NewLimiter(120.0/3600, 60)    // track-visit: ~120/hour per IP, burst 60
 	fails := ratelimit.NewFailCounter(10, 15*time.Minute)
 
 	// Housekeeping: sweep expired sessions hourly.
@@ -177,6 +178,7 @@ func main() {
 		Login:                 login,
 		LoginEmail:            loginEmail,
 		Slow:                  slow,
+		Visits:                visits,
 		Fails:                 fails,
 		TelegramBotUsername:   telegramBotUsername,
 		TelegramWebhookSecret: telegramWebhookSecret,

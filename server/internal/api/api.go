@@ -41,6 +41,10 @@ type Deps struct {
 	LoginEmail *ratelimit.Limiter
 	// Slow throttles register/resend/forgot per ip:/email: key (nil = no limit).
 	Slow *ratelimit.Limiter
+	// Visits throttles the public track-visit beacon per IP (nil = no limit).
+	// Deliberately far more permissive than Slow — this fires on ordinary page
+	// loads, including from shared/NAT'd IPs (offices, mobile carriers).
+	Visits *ratelimit.Limiter
 	// Fails is the soft account lock keyed by email (nil = never locks).
 	Fails *ratelimit.FailCounter
 	// TelegramPending tracks outstanding /start login and link tokens. A nil
@@ -132,6 +136,7 @@ func Handler(deps Deps) http.Handler {
 	// of any kind, authenticated instead by the shared secret header (see
 	// telegramWebhook's own doc comment).
 	root.HandleFunc("POST /api/telegram/webhook", h.telegramWebhook)
+	root.HandleFunc("POST /api/track-visit", h.trackVisit)
 
 	// Account-scoped endpoints. These are registered on root as exact
 	// method+path patterns (the same precedence trick as the public auth routes
