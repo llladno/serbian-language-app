@@ -8,6 +8,7 @@ package telegram
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -27,10 +28,25 @@ var httpClient = &http.Client{Timeout: 10 * time.Second}
 type apiError struct {
 	Description string `json:"description"`
 	ErrorCode   int    `json:"error_code"`
+	RetryAfter  int    `json:"-"` // seconds, from a 429's parameters.retry_after
 }
 
 func (e apiError) Error() string {
 	return fmt.Sprintf("telegram: %d %s", e.ErrorCode, e.Description)
+}
+
+// RateLimited reports whether err is a Telegram 429 (Too Many Requests)
+// response and, if so, how long to wait before retrying — the response's
+// retry_after, or 1 second if Telegram didn't include one.
+func RateLimited(err error) (time.Duration, bool) {
+	var ae apiError
+	if !errors.As(err, &ae) || ae.ErrorCode != http.StatusTooManyRequests {
+		return 0, false
+	}
+	if ae.RetryAfter <= 0 {
+		return time.Second, true
+	}
+	return time.Duration(ae.RetryAfter) * time.Second, true
 }
 
 // call POSTs form-encoded params to method and decodes the result field of a
@@ -49,12 +65,19 @@ func call(botToken, method string, params url.Values, out any) error {
 		Result      json.RawMessage `json:"result"`
 		Description string          `json:"description"`
 		ErrorCode   int             `json:"error_code"`
+		Parameters  *struct {
+			RetryAfter int `json:"retry_after"`
+		} `json:"parameters"`
 	}
 	if err := json.NewDecoder(res.Body).Decode(&envelope); err != nil {
 		return fmt.Errorf("telegram %s: decode response: %w", method, err)
 	}
 	if !envelope.OK {
-		return apiError{Description: envelope.Description, ErrorCode: envelope.ErrorCode}
+		ae := apiError{Description: envelope.Description, ErrorCode: envelope.ErrorCode}
+		if envelope.Parameters != nil {
+			ae.RetryAfter = envelope.Parameters.RetryAfter
+		}
+		return ae
 	}
 	if out != nil && len(envelope.Result) > 0 {
 		if err := json.Unmarshal(envelope.Result, out); err != nil {
@@ -101,6 +124,40 @@ func SendMessage(botToken string, chatID int64, text string) error {
 	return call(botToken, "sendMessage", params, nil)
 }
 
+// InlineButton is a single-button inline keyboard row shown below a
+// message. Exactly one of WebAppURL (opens a Telegram Mini App with
+// initData auto-login) or URL (opens a plain link) should be set.
+type InlineButton struct {
+	Label     string
+	WebAppURL string
+	URL       string
+}
+
+// SendMessageWithButton sends text to chatID, with a single inline button
+// below it if button is non-nil. The only caller in production is
+// internal/outbox.ProcessNext — every bot reply is enqueued into
+// bot_outbox first, never sent directly by a request handler.
+func SendMessageWithButton(botToken string, chatID int64, text string, button *InlineButton) error {
+	params := url.Values{
+		"chat_id": {fmt.Sprintf("%d", chatID)},
+		"text":    {text},
+	}
+	if button != nil {
+		btn := map[string]any{"text": button.Label}
+		if button.WebAppURL != "" {
+			btn["web_app"] = map[string]string{"url": button.WebAppURL}
+		} else {
+			btn["url"] = button.URL
+		}
+		markup, err := json.Marshal(map[string]any{"inline_keyboard": [][]map[string]any{{btn}}})
+		if err != nil {
+			return fmt.Errorf("telegram sendMessage: marshal reply_markup: %w", err)
+		}
+		params.Set("reply_markup", string(markup))
+	}
+	return call(botToken, "sendMessage", params, nil)
+}
+
 // SetChatMenuButton sets the bot's default menu button — shown to every user
 // in their private chat with the bot — to open webAppURL as a Telegram Mini
 // App. text is the button label (Telegram caps it at 64 characters).
@@ -134,4 +191,16 @@ func ParseStartToken(text string) (string, bool) {
 		return "", false
 	}
 	return fields[1], true
+}
+
+// IsBareStart reports whether text is exactly "/start" (optionally
+// "/start@botname"), with no deep-link token — a user who opened the bot
+// directly instead of following a t.me link from the site.
+func IsBareStart(text string) bool {
+	fields := strings.Fields(text)
+	if len(fields) != 1 {
+		return false
+	}
+	cmd := fields[0]
+	return cmd == "/start" || strings.HasPrefix(cmd, "/start@")
 }

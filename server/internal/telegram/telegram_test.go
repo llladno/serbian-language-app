@@ -5,7 +5,9 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"strings"
 	"testing"
+	"time"
 )
 
 // withTestServer points apiBase at a local httptest server for the duration
@@ -155,6 +157,115 @@ func TestParseStartToken(t *testing.T) {
 		got, ok := ParseStartToken(tt.text)
 		if got != tt.wantToken || ok != tt.wantOK {
 			t.Errorf("ParseStartToken(%q) = (%q, %v), want (%q, %v)", tt.text, got, ok, tt.wantToken, tt.wantOK)
+		}
+	}
+}
+
+func TestSendMessageWithButtonWebApp(t *testing.T) {
+	var gotBody string
+	withTestServer(t, func(w http.ResponseWriter, r *http.Request) {
+		r.ParseForm()
+		gotBody = r.Form.Encode()
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte(`{"ok":true,"result":true}`))
+	})
+	err := SendMessageWithButton("tok", 555, "hi", &InlineButton{Label: "Открыть", WebAppURL: "https://ucimo.ru/profile"})
+	if err != nil {
+		t.Fatalf("SendMessageWithButton: %v", err)
+	}
+	form, err := url.ParseQuery(gotBody)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(form.Get("reply_markup"), `"web_app":{"url":"https://ucimo.ru/profile"}`) {
+		t.Errorf("reply_markup = %s, want a web_app button", form.Get("reply_markup"))
+	}
+}
+
+func TestSendMessageWithButtonURL(t *testing.T) {
+	var gotBody string
+	withTestServer(t, func(w http.ResponseWriter, r *http.Request) {
+		r.ParseForm()
+		gotBody = r.Form.Encode()
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte(`{"ok":true,"result":true}`))
+	})
+	err := SendMessageWithButton("tok", 555, "hi", &InlineButton{Label: "Поддержка", URL: SupportURL})
+	if err != nil {
+		t.Fatalf("SendMessageWithButton: %v", err)
+	}
+	form, err := url.ParseQuery(gotBody)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(form.Get("reply_markup"), `"url":"`+SupportURL+`"`) {
+		t.Errorf("reply_markup = %s, want a url button to %s", form.Get("reply_markup"), SupportURL)
+	}
+}
+
+func TestSendMessageWithButtonNilOmitsMarkup(t *testing.T) {
+	var gotBody string
+	withTestServer(t, func(w http.ResponseWriter, r *http.Request) {
+		r.ParseForm()
+		gotBody = r.Form.Encode()
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte(`{"ok":true,"result":true}`))
+	})
+	if err := SendMessageWithButton("tok", 555, "hi", nil); err != nil {
+		t.Fatalf("SendMessageWithButton: %v", err)
+	}
+	form, err := url.ParseQuery(gotBody)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if form.Get("reply_markup") != "" {
+		t.Errorf("reply_markup = %q, want empty for a nil button", form.Get("reply_markup"))
+	}
+}
+
+func TestRateLimitedParsesRetryAfter(t *testing.T) {
+	withTestServer(t, func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusTooManyRequests)
+		w.Write([]byte(`{"ok":false,"error_code":429,"description":"Too Many Requests","parameters":{"retry_after":7}}`))
+	})
+	err := SendMessageWithButton("tok", 1, "hi", nil)
+	if err == nil {
+		t.Fatal("SendMessageWithButton: want error for a 429 response")
+	}
+	wait, ok := RateLimited(err)
+	if !ok || wait != 7*time.Second {
+		t.Errorf("RateLimited = (%v, %v), want (7s, true)", wait, ok)
+	}
+}
+
+func TestRateLimitedFalseForOtherErrors(t *testing.T) {
+	withTestServer(t, func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte(`{"ok":false,"error_code":400,"description":"Bad Request"}`))
+	})
+	err := SendMessageWithButton("tok", 1, "hi", nil)
+	if err == nil {
+		t.Fatal("SendMessageWithButton: want error for a 400 response")
+	}
+	if _, ok := RateLimited(err); ok {
+		t.Errorf("RateLimited(400 error) = true, want false")
+	}
+}
+
+func TestIsBareStart(t *testing.T) {
+	cases := []struct {
+		text string
+		want bool
+	}{
+		{"/start", true},
+		{"/start@ucimoappbot", true},
+		{"/start abc123", false},
+		{"/start@ucimoappbot abc123", false},
+		{"hello", false},
+		{"", false},
+	}
+	for _, c := range cases {
+		if got := IsBareStart(c.text); got != c.want {
+			t.Errorf("IsBareStart(%q) = %v, want %v", c.text, got, c.want)
 		}
 	}
 }
