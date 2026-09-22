@@ -621,16 +621,16 @@ func verifyTelegramPayload(body []byte, botToken string, now time.Time) (auth.Te
 // /start webhook flow (telegramWebhook, resolved out-of-band and picked up by
 // a poll) — this function only resolves the account, it never touches the
 // response writer or issues a session.
-func (h handlers) resolveTelegramLogin(u auth.TelegramUser) (userID string, err error) {
+func (h handlers) resolveTelegramLogin(u auth.TelegramUser) (userID string, created bool, err error) {
 	tgID := strconv.FormatInt(u.ID, 10)
 
 	// 1. Known telegram identity — straight login.
 	id, err := h.Store.IdentityByProviderUID("telegram", tgID)
 	switch {
 	case err == nil:
-		return id.UserID, nil
+		return id.UserID, false, nil
 	case !errors.Is(err, sql.ErrNoRows):
-		return "", fmt.Errorf("lookup identity: %w", err)
+		return "", false, fmt.Errorf("lookup identity: %w", err)
 	}
 
 	// 2. A pending row seeded for this username — rewrite it to the real id.
@@ -644,15 +644,15 @@ func (h handlers) resolveTelegramLogin(u auth.TelegramUser) (userID string, err 
 	if u.Username != "" {
 		matched, err = h.Store.AttachPendingTelegram(strings.ToLower(u.Username), tgID)
 		if err != nil {
-			return "", fmt.Errorf("attach pending: %w", err)
+			return "", false, fmt.Errorf("attach pending: %w", err)
 		}
 	}
 	if matched {
 		id, err := h.Store.IdentityByProviderUID("telegram", tgID)
 		if err != nil {
-			return "", fmt.Errorf("identity after claim: %w", err)
+			return "", false, fmt.Errorf("identity after claim: %w", err)
 		}
-		return id.UserID, nil
+		return id.UserID, false, nil
 	}
 
 	// 3. First contact — create the account and its telegram identity.
@@ -673,7 +673,7 @@ func (h handlers) resolveTelegramLogin(u auth.TelegramUser) (userID string, err 
 
 	uid, err := h.Store.CreateUser(name)
 	if err != nil {
-		return "", fmt.Errorf("create user: %w", err)
+		return "", false, fmt.Errorf("create user: %w", err)
 	}
 	if err := h.Store.CreateIdentity(store.Identity{
 		ID:          auth.NewIdentityID(),
@@ -682,9 +682,9 @@ func (h handlers) resolveTelegramLogin(u auth.TelegramUser) (userID string, err 
 		ProviderUID: tgID,
 		TgUsername:  u.Username,
 	}); err != nil {
-		return "", fmt.Errorf("create identity: %w", err)
+		return "", false, fmt.Errorf("create identity: %w", err)
 	}
-	return uid, nil
+	return uid, true, nil
 }
 
 // errTelegramTaken is resolveTelegramLink's sentinel for "this Telegram
@@ -739,11 +739,30 @@ func (h handlers) telegramLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userID, err := h.resolveTelegramLogin(u)
+	userID, created, err := h.resolveTelegramLogin(u)
 	if err != nil {
 		log.Printf("telegram login: %v", err)
 		fail(w, http.StatusInternalServerError, "internal error")
 		return
+	}
+	if created {
+		// verifyTelegramPayload only validated the "init_data" key of body — the
+		// same raw JSON may carry sibling utm_* keys the HMAC check never looked
+		// at, so it's safe to parse them out here too. Best-effort: a malformed
+		// value just means no attribution, never a login failure.
+		var attrReq struct {
+			UtmSource   string `json:"utm_source"`
+			UtmMedium   string `json:"utm_medium"`
+			UtmCampaign string `json:"utm_campaign"`
+			UtmContent  string `json:"utm_content"`
+		}
+		_ = json.Unmarshal(body, &attrReq)
+		if err := h.Store.SetUserAttribution(userID, store.Attribution{
+			UtmSource: attrReq.UtmSource, UtmMedium: attrReq.UtmMedium,
+			UtmCampaign: attrReq.UtmCampaign, UtmContent: attrReq.UtmContent,
+		}); err != nil {
+			log.Printf("telegram login: set attribution: %v", err)
+		}
 	}
 	h.finishTelegramLogin(w, r, userID)
 }
@@ -892,7 +911,7 @@ func (h handlers) telegramWebhook(w http.ResponseWriter, r *http.Request) {
 	chatID := update.Message.Chat.ID
 
 	if callerUserID == "" {
-		userID, err := h.resolveTelegramLogin(u)
+		userID, _, err := h.resolveTelegramLogin(u)
 		if err != nil {
 			log.Printf("telegram webhook: resolve login: %v", err)
 			h.TelegramPending.Fail(token, "internal error")

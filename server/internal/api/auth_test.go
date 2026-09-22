@@ -908,6 +908,51 @@ func TestTelegramLoginNewUser(t *testing.T) {
 	}
 }
 
+func TestTelegramLoginNewUserStoresAttribution(t *testing.T) {
+	h, st := newTelegramAPI(t)
+
+	body := fmt.Sprintf(`{"init_data":%q,"utm_source":"vk","utm_medium":"social","utm_campaign":"launch"}`,
+		tgInitData(999, "morpheus"))
+	rr := anon(h, "POST", "/api/auth/telegram", body)
+	if rr.Code != http.StatusOK {
+		t.Fatalf("telegram login = %d %s, want 200", rr.Code, rr.Body)
+	}
+
+	user := decodeBody[sessionUserDTO](t, rr)
+	row, err := st.UserByID(user.ID)
+	if err != nil {
+		t.Fatalf("UserByID: %v", err)
+	}
+	if row.UtmSource != "vk" || row.UtmMedium != "social" || row.UtmCampaign != "launch" {
+		t.Errorf("attribution = %+v, want vk/social/launch", row)
+	}
+}
+
+func TestTelegramLoginExistingDoesNotSetAttribution(t *testing.T) {
+	h, st := newTelegramAPI(t)
+
+	first := tgBody(tgInitData(888, "cypher")) // no utm on first login
+	if rr := anon(h, "POST", "/api/auth/telegram", first); rr.Code != http.StatusOK {
+		t.Fatalf("first login = %d", rr.Code)
+	}
+
+	second := fmt.Sprintf(`{"init_data":%q,"utm_source":"vk","utm_medium":"social","utm_campaign":"launch"}`,
+		tgInitData(888, "cypher"))
+	rr := anon(h, "POST", "/api/auth/telegram", second)
+	if rr.Code != http.StatusOK {
+		t.Fatalf("second login = %d %s", rr.Code, rr.Body)
+	}
+
+	user := decodeBody[sessionUserDTO](t, rr)
+	row, err := st.UserByID(user.ID)
+	if err != nil {
+		t.Fatalf("UserByID: %v", err)
+	}
+	if row.UtmSource != "" {
+		t.Errorf("UtmSource = %q, want empty (existing login must not set attribution)", row.UtmSource)
+	}
+}
+
 func TestTelegramLoginExisting(t *testing.T) {
 	h, st := newTelegramAPI(t)
 	body := tgBody(tgInitData(777, "trinity"))
