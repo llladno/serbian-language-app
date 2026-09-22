@@ -10,24 +10,27 @@ import (
 	"testing"
 
 	"github.com/grisha/serbian-app/server/internal/store"
+	"github.com/grisha/serbian-app/server/internal/telegram"
 )
 
 // sentTgMessage is one message captured by tgSink.
 type sentTgMessage struct {
-	ChatID int64
-	Text   string
+	ChatID   int64
+	Text     string
+	Button   *telegram.InlineButton
+	Priority int
 }
 
-// tgSink is a capturing SendTelegramMessage.
+// tgSink is a capturing EnqueueTelegramMessage.
 type tgSink struct {
 	mu   sync.Mutex
 	msgs []sentTgMessage
 }
 
-func (s *tgSink) send(chatID int64, text string) {
+func (s *tgSink) enqueue(chatID int64, text string, button *telegram.InlineButton, priority int) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	s.msgs = append(s.msgs, sentTgMessage{chatID, text})
+	s.msgs = append(s.msgs, sentTgMessage{chatID, text, button, priority})
 }
 
 func (s *tgSink) all() []sentTgMessage {
@@ -49,7 +52,7 @@ func newTelegramBotAPI(t *testing.T) (http.Handler, *store.Store, *tgSink) {
 		d.Config.TelegramBotToken = tgTestToken
 		d.TelegramBotUsername = tgBotUsername
 		d.TelegramWebhookSecret = tgWebhookSecret
-		d.SendTelegramMessage = sink.send
+		d.EnqueueTelegramMessage = sink.enqueue
 	})
 	return h, st, sink
 }

@@ -5,6 +5,8 @@ import (
 	"log"
 	"math/rand"
 	"time"
+
+	"github.com/grisha/serbian-app/server/internal/telegram"
 )
 
 // reminderInactivityAfter is how long since an account's last review or
@@ -77,7 +79,7 @@ func RunReminderSweep(deps Deps, now time.Time) error {
 			if err != nil {
 				log.Printf("reminder sweep: queue for %s: %v", tu.UserID, err)
 			} else if len(rows) == 0 {
-				deps.SendTelegramMessage(tu.ChatID, pickMessage(allDoneMessages))
+				deps.EnqueueTelegramMessage(tu.ChatID, pickMessage(allDoneMessages), nil, telegram.PriorityNormal)
 				if err := deps.Store.SetBotReminderAllDoneDate(tu.UserID, today); err != nil {
 					log.Printf("reminder sweep: save all-done state for %s: %v", tu.UserID, err)
 				}
@@ -91,7 +93,7 @@ func RunReminderSweep(deps Deps, now time.Time) error {
 			continue
 		}
 		if now.Sub(last) >= reminderInactivityAfter && state.InactiveSentAt.Before(last) {
-			deps.SendTelegramMessage(tu.ChatID, pickMessage(inactivityMessages))
+			deps.EnqueueTelegramMessage(tu.ChatID, pickMessage(inactivityMessages), nil, telegram.PriorityNormal)
 			if err := deps.Store.SetBotReminderInactiveSentAt(tu.UserID, now); err != nil {
 				log.Printf("reminder sweep: save inactivity state for %s: %v", tu.UserID, err)
 			}

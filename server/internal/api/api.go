@@ -18,6 +18,7 @@ import (
 	"github.com/grisha/serbian-app/server/internal/ratelimit"
 	"github.com/grisha/serbian-app/server/internal/srs"
 	"github.com/grisha/serbian-app/server/internal/store"
+	"github.com/grisha/serbian-app/server/internal/telegram"
 )
 
 // Deps are the API's collaborators.
@@ -60,10 +61,13 @@ type Deps struct {
 	// via telegram.SetWebhook. Empty makes the webhook handler a no-op 200
 	// for every request — never authenticate against an empty secret.
 	TelegramWebhookSecret string
-	// SendTelegramMessage sends a chat message from the bot. Production
-	// calls the real Bot API; tests capture it. A nil value is replaced by a
-	// no-op in Handler.
-	SendTelegramMessage func(chatID int64, text string)
+	// EnqueueTelegramMessage queues a chat message for the outbox worker
+	// (internal/outbox.ProcessNext) instead of calling the Bot API
+	// directly — keeps every sender (webhook replies, reminders, admin
+	// broadcasts) behind one rate limiter. Production writes a bot_outbox
+	// row; tests capture the call. A nil value is replaced by a no-op in
+	// Handler.
+	EnqueueTelegramMessage func(chatID int64, text string, button *telegram.InlineButton, priority int)
 }
 
 type handlers struct{ Deps }
@@ -112,8 +116,8 @@ func Handler(deps Deps) http.Handler {
 	if deps.TelegramPending == nil {
 		deps.TelegramPending = auth.NewPendingStore()
 	}
-	if deps.SendTelegramMessage == nil {
-		deps.SendTelegramMessage = func(chatID int64, text string) {}
+	if deps.EnqueueTelegramMessage == nil {
+		deps.EnqueueTelegramMessage = func(chatID int64, text string, button *telegram.InlineButton, priority int) {}
 	}
 	h := handlers{deps}
 

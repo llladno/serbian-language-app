@@ -123,16 +123,6 @@ func SetWebhook(botToken, webhookURL, secretToken string) error {
 	return call(botToken, "setWebhook", params, nil)
 }
 
-// SendMessage sends a plain-text message to chatID (a Telegram chat id, e.g.
-// the id of whoever just messaged the bot).
-func SendMessage(botToken string, chatID int64, text string) error {
-	params := url.Values{
-		"chat_id": {fmt.Sprintf("%d", chatID)},
-		"text":    {text},
-	}
-	return call(botToken, "sendMessage", params, nil)
-}
-
 // InlineButton is a single-button inline keyboard row shown below a
 // message. Exactly one of WebAppURL (opens a Telegram Mini App with
 // initData auto-login) or URL (opens a plain link) should be set.

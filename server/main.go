@@ -16,6 +16,7 @@ import (
 	"github.com/grisha/serbian-app/server/internal/config"
 	"github.com/grisha/serbian-app/server/internal/content"
 	"github.com/grisha/serbian-app/server/internal/mail"
+	"github.com/grisha/serbian-app/server/internal/outbox"
 	"github.com/grisha/serbian-app/server/internal/ratelimit"
 	"github.com/grisha/serbian-app/server/internal/store"
 	"github.com/grisha/serbian-app/server/internal/telegram"
@@ -123,9 +124,18 @@ func main() {
 		telegramBotUsername = username
 		telegramWebhookSecret = secret
 	}
-	sendTelegramMessage := func(chatID int64, text string) {
-		if err := telegram.SendMessage(cfg.TelegramBotToken, chatID, text); err != nil {
-			log.Printf("telegram: send message: %v", err)
+	enqueueTelegramMessage := func(chatID int64, text string, button *telegram.InlineButton, priority int) {
+		ob := store.OutboxButton{}
+		if button != nil {
+			ob.Label = button.Label
+			if button.WebAppURL != "" {
+				ob.Type, ob.Target = "web_app", button.WebAppURL
+			} else {
+				ob.Type, ob.Target = "url", button.URL
+			}
+		}
+		if err := st.EnqueueBotMessage(chatID, text, ob, priority, time.Now()); err != nil {
+			log.Printf("telegram: enqueue message: %v", err)
 		}
 	}
 
@@ -168,21 +178,21 @@ func main() {
 	}()
 
 	apiDeps := api.Deps{
-		Course:                getCourse,
-		Store:                 st,
-		Now:                   time.Now,
-		Stale:                 stale,
-		Config:                cfg,
-		SendMail:              sendMail,
-		Async:                 async,
-		Login:                 login,
-		LoginEmail:            loginEmail,
-		Slow:                  slow,
-		Visits:                visits,
-		Fails:                 fails,
-		TelegramBotUsername:   telegramBotUsername,
-		TelegramWebhookSecret: telegramWebhookSecret,
-		SendTelegramMessage:   sendTelegramMessage,
+		Course:                 getCourse,
+		Store:                  st,
+		Now:                    time.Now,
+		Stale:                  stale,
+		Config:                 cfg,
+		SendMail:               sendMail,
+		Async:                  async,
+		Login:                  login,
+		LoginEmail:             loginEmail,
+		Slow:                   slow,
+		Visits:                 visits,
+		Fails:                  fails,
+		TelegramBotUsername:    telegramBotUsername,
+		TelegramWebhookSecret:  telegramWebhookSecret,
+		EnqueueTelegramMessage: enqueueTelegramMessage,
 	}
 
 	// Bot reminders: nudge Telegram-linked accounts that just cleared
@@ -195,6 +205,27 @@ func main() {
 			for range t.C {
 				if err := api.RunReminderSweep(apiDeps, time.Now()); err != nil {
 					log.Printf("reminder sweep: %v", err)
+				}
+			}
+		}()
+	}
+
+	// Outbox worker: the only thing that actually calls the Bot API. A
+	// tight tick (25/s — Telegram's documented bulk cap is 30/s, see
+	// docs/superpowers/specs/2026-09-22-bot-messages-design.md) keeps
+	// high-priority /start replies near-instant while still respecting the
+	// limit when a broadcast or reminder sweep queues many rows at once.
+	if cfg.TelegramEnabled() {
+		go func() {
+			t := time.NewTicker(time.Second / 25)
+			defer t.Stop()
+			for range t.C {
+				_, retryAfter, err := outbox.ProcessNext(st, cfg.TelegramBotToken, time.Now())
+				if err != nil {
+					log.Printf("outbox: process: %v", err)
+				}
+				if retryAfter > 0 {
+					time.Sleep(retryAfter)
 				}
 			}
 		}()

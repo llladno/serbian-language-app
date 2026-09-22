@@ -15,7 +15,7 @@ import (
 // testdata course fixture (4 vocab words, no false friends reachable at
 // beginner level) — enough to drive a review queue to empty without pages of
 // setup. Returns the Deps, the store (for direct assertions/seeding) and a
-// capturing SendTelegramMessage sink.
+// capturing EnqueueTelegramMessage sink.
 func newReminderDeps(t *testing.T) (Deps, *store.Store, *tgSink) {
 	t.Helper()
 	c, err := content.Load("../content/testdata/content")
@@ -30,12 +30,12 @@ func newReminderDeps(t *testing.T) (Deps, *store.Store, *tgSink) {
 
 	sink := &tgSink{}
 	d := Deps{
-		Course:              func() *content.Course { return c },
-		Store:               st,
-		Now:                 func() time.Time { return fixedNow },
-		Stale:               func() bool { return false },
-		Config:              config.Config{AppBaseURL: testBaseURL},
-		SendTelegramMessage: sink.send,
+		Course:                 func() *content.Course { return c },
+		Store:                  st,
+		Now:                    func() time.Time { return fixedNow },
+		Stale:                  func() bool { return false },
+		Config:                 config.Config{AppBaseURL: testBaseURL},
+		EnqueueTelegramMessage: sink.enqueue,
 	}
 	return d, st, sink
 }

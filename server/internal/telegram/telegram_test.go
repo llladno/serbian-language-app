@@ -86,8 +86,8 @@ func TestSendMessageSendsChatIDAndText(t *testing.T) {
 		w.Write([]byte(`{"ok":true,"result":{}}`))
 	})
 
-	if err := SendMessage("tok", 123456, "Готово!"); err != nil {
-		t.Fatalf("SendMessage: %v", err)
+	if err := SendMessageWithButton("tok", 123456, "Готово!", nil); err != nil {
+		t.Fatalf("SendMessageWithButton: %v", err)
 	}
 	form, err := url.ParseQuery(gotBody)
 	if err != nil {

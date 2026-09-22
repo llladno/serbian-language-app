@@ -915,25 +915,25 @@ func (h handlers) telegramWebhook(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			log.Printf("telegram webhook: resolve login: %v", err)
 			h.TelegramPending.Fail(token, "internal error")
-			h.SendTelegramMessage(chatID, "Что-то пошло не так, попробуйте войти ещё раз с сайта.")
+			h.EnqueueTelegramMessage(chatID, "Что-то пошло не так, попробуйте войти ещё раз с сайта.", nil, telegram.PriorityHigh)
 			return
 		}
 		h.TelegramPending.Resolve(token, userID)
-		h.SendTelegramMessage(chatID, "Готово! Вернитесь на сайт.")
+		h.EnqueueTelegramMessage(chatID, "Готово! Вернитесь на сайт.", nil, telegram.PriorityHigh)
 		return
 	}
 
 	if err := h.resolveTelegramLink(callerUserID, u); err != nil {
 		if errors.Is(err, errTelegramTaken) {
 			h.TelegramPending.Fail(token, "telegram_taken")
-			h.SendTelegramMessage(chatID, "Этот Telegram уже привязан к другому аккаунту.")
+			h.EnqueueTelegramMessage(chatID, "Этот Telegram уже привязан к другому аккаунту.", nil, telegram.PriorityHigh)
 			return
 		}
 		log.Printf("telegram webhook: resolve link: %v", err)
 		h.TelegramPending.Fail(token, "internal error")
-		h.SendTelegramMessage(chatID, "Что-то пошло не так, попробуйте ещё раз с сайта.")
+		h.EnqueueTelegramMessage(chatID, "Что-то пошло не так, попробуйте ещё раз с сайта.", nil, telegram.PriorityHigh)
 		return
 	}
 	h.TelegramPending.Resolve(token, callerUserID)
-	h.SendTelegramMessage(chatID, "Готово! Telegram привязан, вернитесь на сайт.")
+	h.EnqueueTelegramMessage(chatID, "Готово! Telegram привязан, вернитесь на сайт.", nil, telegram.PriorityHigh)
 }
