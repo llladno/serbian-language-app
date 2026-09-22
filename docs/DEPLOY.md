@@ -54,7 +54,8 @@ DATABASE_URL=postgres://srpski:<pass>@srpski-db:5432/srpski?sslmode=disable
 
 ## 4. Домен
 
-**Domains → Add Domain:** Host `serbianapp.pockets-money.ru`,
+**Domains → Add Domain:** Host `ucimo.ru` (переименовано с
+`serbianapp.pockets-money.ru` после ребрендинга в «ucimo», ~2026-09-14/15),
 Container Port `8080`, HTTPS on, Redirect HTTP→HTTPS on.
 
 ## 5. Deploy
