@@ -128,13 +128,21 @@ func summaryToDTO(userID string, s userSummary) sessionUserDTO {
 // account and send a verification link — runs in h.Async after the reply.
 func (h handlers) register(w http.ResponseWriter, r *http.Request) {
 	var req struct {
-		Email    string `json:"email"`
-		Password string `json:"password"`
-		Name     string `json:"name"`
+		Email       string `json:"email"`
+		Password    string `json:"password"`
+		Name        string `json:"name"`
+		UtmSource   string `json:"utm_source"`
+		UtmMedium   string `json:"utm_medium"`
+		UtmCampaign string `json:"utm_campaign"`
+		UtmContent  string `json:"utm_content"`
 	}
 	if err := decode(r, &req); err != nil {
 		fail(w, http.StatusBadRequest, "bad request body")
 		return
+	}
+	attr := store.Attribution{
+		UtmSource: req.UtmSource, UtmMedium: req.UtmMedium,
+		UtmCampaign: req.UtmCampaign, UtmContent: req.UtmContent,
 	}
 
 	addr, err := netmail.ParseAddress(req.Email)
@@ -193,6 +201,9 @@ func (h handlers) register(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			log.Printf("register: create user: %v", err)
 			return
+		}
+		if err := h.Store.SetUserAttribution(userID, attr); err != nil {
+			log.Printf("register: set attribution: %v", err)
 		}
 		identityID := auth.NewIdentityID()
 		if err := h.Store.CreateIdentity(store.Identity{

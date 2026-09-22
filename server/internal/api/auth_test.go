@@ -165,6 +165,47 @@ func TestRegisterCreatesUnverifiedAndSendsVerify(t *testing.T) {
 	}
 }
 
+func TestRegisterStoresAttribution(t *testing.T) {
+	h, st, _ := newAuthAPI(t, nil)
+
+	body := `{"email":"bob@example.com","password":"password123","name":"Bob",` +
+		`"utm_source":"vk","utm_medium":"social","utm_campaign":"launch"}`
+	if rr := anon(h, "POST", "/api/auth/register", body); rr.Code != http.StatusOK {
+		t.Fatalf("register = %d %s", rr.Code, rr.Body)
+	}
+
+	id, err := st.IdentityByProviderUID("password", "bob@example.com")
+	if err != nil {
+		t.Fatalf("identity: %v", err)
+	}
+	row, err := st.UserByID(id.UserID)
+	if err != nil {
+		t.Fatalf("UserByID: %v", err)
+	}
+	if row.UtmSource != "vk" || row.UtmMedium != "social" || row.UtmCampaign != "launch" {
+		t.Errorf("attribution = %+v, want vk/social/launch", row)
+	}
+}
+
+func TestRegisterWithoutUtmLeavesAttributionEmpty(t *testing.T) {
+	h, st, _ := newAuthAPI(t, nil)
+
+	if rr := anon(h, "POST", "/api/auth/register", registerBody("bob@example.com", "password123", "Bob")); rr.Code != http.StatusOK {
+		t.Fatalf("register = %d %s", rr.Code, rr.Body)
+	}
+	id, err := st.IdentityByProviderUID("password", "bob@example.com")
+	if err != nil {
+		t.Fatalf("identity: %v", err)
+	}
+	row, err := st.UserByID(id.UserID)
+	if err != nil {
+		t.Fatalf("UserByID: %v", err)
+	}
+	if row.UtmSource != "" {
+		t.Errorf("UtmSource = %q, want empty", row.UtmSource)
+	}
+}
+
 func TestRegisterExistingEmailGenericAndAlreadyMail(t *testing.T) {
 	h, st, sink := newAuthAPI(t, nil)
 	body := registerBody("bob@example.com", "password123", "Bob")
