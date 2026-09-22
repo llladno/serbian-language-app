@@ -282,8 +282,13 @@ func TestTelegramLinkTakenReportsError(t *testing.T) {
 	token := startToken(t, startRR)
 
 	postWebhook(h, tgWebhookSecret, webhookUpdate(1, 888, "taken", "Taken", "/start "+token))
-	if msgs := sink.all(); len(msgs) != 1 {
+	msgs := sink.all()
+	if len(msgs) != 1 {
 		t.Fatalf("sent messages = %+v, want exactly one (the taken notice)", msgs)
+	}
+	wantTaken := telegram.Substitute(telegram.DefaultMessages[telegram.MsgLinkTaken], "Taken")
+	if msgs[0].Text != wantTaken || msgs[0].Button == nil || msgs[0].Button.URL != telegram.SupportURL {
+		t.Errorf("taken message = %+v, want text %q with a support button", msgs[0], wantTaken)
 	}
 
 	poll := anon(h, "GET", "/api/auth/telegram/poll?token="+url.QueryEscape(token), "")
@@ -297,13 +302,94 @@ func TestTelegramLinkTakenReportsError(t *testing.T) {
 	}
 }
 
-func TestTelegramWebhookUnknownTokenSendsNoMessage(t *testing.T) {
+func TestTelegramWebhookUnknownTokenSendsExpiredNotice(t *testing.T) {
 	h, _, sink := newTelegramBotAPI(t)
 	rr := postWebhook(h, tgWebhookSecret, webhookUpdate(1, 42, "neo", "Neo", "/start never-issued-token"))
 	if rr.Code != http.StatusOK {
 		t.Fatalf("webhook unknown token = %d, want 200", rr.Code)
 	}
-	if len(sink.all()) != 0 {
-		t.Errorf("sent %d messages for an unknown token, want 0", len(sink.all()))
+	msgs := sink.all()
+	if len(msgs) != 1 {
+		t.Fatalf("sent %d messages for an unknown token, want 1 (the expired notice)", len(msgs))
+	}
+	want := telegram.Substitute(telegram.DefaultMessages[telegram.MsgLoginTokenExpired], "Neo")
+	if msgs[0].Text != want {
+		t.Errorf("text = %q, want %q", msgs[0].Text, want)
+	}
+	if msgs[0].Priority != telegram.PriorityHigh {
+		t.Errorf("priority = %d, want PriorityHigh", msgs[0].Priority)
+	}
+	if msgs[0].Button != nil {
+		t.Errorf("button = %+v, want nil for the expired notice", msgs[0].Button)
+	}
+}
+
+func TestTelegramWebhookBareStartSendsGreeting(t *testing.T) {
+	h, _, sink := newTelegramBotAPI(t)
+	rr := postWebhook(h, tgWebhookSecret, webhookUpdate(1, 42, "neo_bot", "Neo", "/start"))
+	if rr.Code != http.StatusOK {
+		t.Fatalf("webhook bare start = %d, want 200", rr.Code)
+	}
+	msgs := sink.all()
+	if len(msgs) != 1 {
+		t.Fatalf("sent %d messages for a bare /start, want 1 (the greeting)", len(msgs))
+	}
+	want := telegram.Substitute(telegram.DefaultMessages[telegram.MsgStartGreeting], "Neo")
+	if msgs[0].Text != want {
+		t.Errorf("text = %q, want %q", msgs[0].Text, want)
+	}
+	if msgs[0].Button == nil || msgs[0].Button.WebAppURL != testBaseURL+"/profile" {
+		t.Errorf("button = %+v, want a Mini App button to %s/profile", msgs[0].Button, testBaseURL)
+	}
+}
+
+func TestTelegramWebhookBareStartAtMentionVariant(t *testing.T) {
+	h, _, sink := newTelegramBotAPI(t)
+	rr := postWebhook(h, tgWebhookSecret, webhookUpdate(1, 42, "neo_bot", "Neo", "/start@"+tgBotUsername))
+	if rr.Code != http.StatusOK {
+		t.Fatalf("webhook bare start@bot = %d, want 200", rr.Code)
+	}
+	if len(sink.all()) != 1 {
+		t.Errorf("sent %d messages for /start@%s, want 1", len(sink.all()), tgBotUsername)
+	}
+}
+
+func TestTelegramLoginDistinguishesNewVsExistingAccount(t *testing.T) {
+	h, _, sink := newTelegramBotAPI(t)
+
+	firstStart := anon(h, "POST", "/api/auth/telegram/start", "")
+	firstToken := startToken(t, firstStart)
+	postWebhook(h, tgWebhookSecret, webhookUpdate(555, 424242, "neo_bot", "Neo", "/start "+firstToken))
+
+	secondStart := anon(h, "POST", "/api/auth/telegram/start", "")
+	secondToken := startToken(t, secondStart)
+	postWebhook(h, tgWebhookSecret, webhookUpdate(555, 424242, "neo_bot", "Neo", "/start "+secondToken))
+
+	msgs := sink.all()
+	if len(msgs) != 2 {
+		t.Fatalf("sent %d messages, want 2 (one per login)", len(msgs))
+	}
+	wantNew := telegram.Substitute(telegram.DefaultMessages[telegram.MsgLoginSuccessNew], "Neo")
+	wantExisting := telegram.Substitute(telegram.DefaultMessages[telegram.MsgLoginSuccessExisting], "Neo")
+	if msgs[0].Text != wantNew {
+		t.Errorf("first login text = %q, want the new-account greeting %q", msgs[0].Text, wantNew)
+	}
+	if msgs[1].Text != wantExisting {
+		t.Errorf("second login text = %q, want the returning-account greeting %q", msgs[1].Text, wantExisting)
+	}
+	if msgs[0].Button == nil || msgs[0].Button.WebAppURL != testBaseURL+"/profile" {
+		t.Errorf("first login button = %+v, want a Mini App button to %s/profile", msgs[0].Button, testBaseURL)
+	}
+}
+
+func TestTelegramWebhookUsesBotMessageOverride(t *testing.T) {
+	h, st, sink := newTelegramBotAPI(t)
+	if err := st.SetBotMessageText(string(telegram.MsgStartGreeting), "Custom override {name}!", fixedNow); err != nil {
+		t.Fatal(err)
+	}
+	postWebhook(h, tgWebhookSecret, webhookUpdate(1, 42, "neo", "Neo", "/start"))
+	msgs := sink.all()
+	if len(msgs) != 1 || msgs[0].Text != "Custom override Neo!" {
+		t.Fatalf("messages = %+v, want the DB override substituted", msgs)
 	}
 }

@@ -893,13 +893,20 @@ func (h handlers) telegramWebhook(w http.ResponseWriter, r *http.Request) {
 	if err := json.NewDecoder(r.Body).Decode(&update); err != nil || update.Message == nil {
 		return
 	}
+	chatID := update.Message.Chat.ID
+	name := telegram.DisplayName(update.Message.From.FirstName, update.Message.From.Username)
+
 	token, ok := telegram.ParseStartToken(update.Message.Text)
 	if !ok {
+		if telegram.IsBareStart(update.Message.Text) {
+			h.sendBotMessage(chatID, telegram.MsgStartGreeting, name, h.miniAppButton())
+		}
 		return
 	}
 	callerUserID, ok := h.TelegramPending.Lookup(token)
 	if !ok {
-		return // expired or unknown — nothing sensible to say back in-chat
+		h.sendBotMessage(chatID, telegram.MsgLoginTokenExpired, name, nil)
+		return
 	}
 
 	u := auth.TelegramUser{
@@ -908,32 +915,63 @@ func (h handlers) telegramWebhook(w http.ResponseWriter, r *http.Request) {
 		FirstName: update.Message.From.FirstName,
 		AuthDate:  h.Now(),
 	}
-	chatID := update.Message.Chat.ID
 
 	if callerUserID == "" {
-		userID, _, err := h.resolveTelegramLogin(u)
+		userID, created, err := h.resolveTelegramLogin(u)
 		if err != nil {
 			log.Printf("telegram webhook: resolve login: %v", err)
 			h.TelegramPending.Fail(token, "internal error")
-			h.EnqueueTelegramMessage(chatID, "Что-то пошло не так, попробуйте войти ещё раз с сайта.", nil, telegram.PriorityHigh)
+			h.sendBotMessage(chatID, telegram.MsgLoginError, name, h.supportButton())
 			return
 		}
 		h.TelegramPending.Resolve(token, userID)
-		h.EnqueueTelegramMessage(chatID, "Готово! Вернитесь на сайт.", nil, telegram.PriorityHigh)
+		key := telegram.MsgLoginSuccessExisting
+		if created {
+			key = telegram.MsgLoginSuccessNew
+		}
+		h.sendBotMessage(chatID, key, name, h.miniAppButton())
 		return
 	}
 
 	if err := h.resolveTelegramLink(callerUserID, u); err != nil {
 		if errors.Is(err, errTelegramTaken) {
 			h.TelegramPending.Fail(token, "telegram_taken")
-			h.EnqueueTelegramMessage(chatID, "Этот Telegram уже привязан к другому аккаунту.", nil, telegram.PriorityHigh)
+			h.sendBotMessage(chatID, telegram.MsgLinkTaken, name, h.supportButton())
 			return
 		}
 		log.Printf("telegram webhook: resolve link: %v", err)
 		h.TelegramPending.Fail(token, "internal error")
-		h.EnqueueTelegramMessage(chatID, "Что-то пошло не так, попробуйте ещё раз с сайта.", nil, telegram.PriorityHigh)
+		h.sendBotMessage(chatID, telegram.MsgLinkError, name, h.supportButton())
 		return
 	}
 	h.TelegramPending.Resolve(token, callerUserID)
-	h.EnqueueTelegramMessage(chatID, "Готово! Telegram привязан, вернитесь на сайт.", nil, telegram.PriorityHigh)
+	h.sendBotMessage(chatID, telegram.MsgLinkSuccess, name, h.miniAppButton())
+}
+
+// sendBotMessage resolves key to its current text (an admin override in
+// bot_messages, falling back to telegram.DefaultMessages), substitutes
+// {name}, and enqueues it at high priority — every /start-flow reply is a
+// direct reaction to something the user just did, so it always jumps ahead
+// of reminders/broadcasts in the outbox.
+func (h handlers) sendBotMessage(chatID int64, key telegram.MessageKey, name string, button *telegram.InlineButton) {
+	text, ok, err := h.Store.BotMessageText(string(key))
+	if err != nil {
+		log.Printf("telegram webhook: bot message %s: %v", key, err)
+	}
+	if !ok {
+		text = telegram.DefaultMessages[key]
+	}
+	h.EnqueueTelegramMessage(chatID, telegram.Substitute(text, name), button, telegram.PriorityHigh)
+}
+
+// miniAppButton opens the Mini App (auto-login via Telegram initData) — the
+// same target telegram.SetChatMenuButton already points at.
+func (h handlers) miniAppButton() *telegram.InlineButton {
+	return &telegram.InlineButton{Label: "Открыть Учимо", WebAppURL: h.Config.AppBaseURL + "/profile"}
+}
+
+// supportButton points at the same account the website's support card
+// links to (web/src/lib/supportModal.ts).
+func (h handlers) supportButton() *telegram.InlineButton {
+	return &telegram.InlineButton{Label: "Написать в поддержку", URL: telegram.SupportURL}
 }
