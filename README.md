@@ -37,7 +37,7 @@ cookie. Троттлинг логина/регистрации по IP и email
 параметрами первый источник трафика сохраняется на аккаунте
 (first-touch) — это читает раздел «Ссылки» в
 [ucimo-content-admin](../ucimo-content-admin/README.md), см.
-`docs/superpowers/specs/2026-09-22-utm-link-tracking-design.md`.
+`../ucimo-content-admin/docs/superpowers/specs/2026-09-22-utm-link-tracking-design.md`.
 
 ## Разработка
 
