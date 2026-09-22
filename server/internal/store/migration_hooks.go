@@ -10,12 +10,14 @@ import (
 	"time"
 
 	"github.com/grisha/serbian-app/server/internal/auth"
+	"github.com/grisha/serbian-app/server/internal/telegram"
 )
 
 func init() {
 	registerHook(2, migrate002)
 	registerHook(3, migrate003)
 	registerHook(4, migrate004)
+	registerHook(7, migrate007)
 }
 
 // migrate002 fills users_new with a generated id per legacy row, re-keys the
@@ -472,5 +474,20 @@ func migrate004LessonProgress(tx *dbtx, where string, args []any) error {
 		}
 	}
 	log.Printf("migrate004: lesson_progress: relabeled %d rows into %d rows", len(got), fanned)
+	return nil
+}
+
+// migrate007 seeds bot_messages with telegram.DefaultMessages so
+// ucimo-content-admin's editor always has something to show. Runs once,
+// inside migration 007's transaction, right after 007_bot_messages.sql
+// creates the table.
+func migrate007(tx *dbtx, pg bool) error {
+	now := time.Now().UTC().Format(time.RFC3339)
+	for key, text := range telegram.DefaultMessages {
+		if _, err := tx.Exec(`INSERT INTO bot_messages (key, text, updated_at) VALUES (?, ?, ?)`,
+			string(key), text, now); err != nil {
+			return fmt.Errorf("seed bot message %s: %w", key, err)
+		}
+	}
 	return nil
 }
