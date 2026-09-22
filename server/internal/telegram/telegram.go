@@ -20,6 +20,15 @@ import (
 // an httptest server instead of the real Telegram servers.
 var apiBase = "https://api.telegram.org"
 
+// SetAPIBaseForTesting points every subsequent Bot API call at base instead
+// of https://api.telegram.org, and returns a func that restores the real
+// value. For tests only (in this package and internal/outbox's).
+func SetAPIBaseForTesting(base string) (restore func()) {
+	prev := apiBase
+	apiBase = base
+	return func() { apiBase = prev }
+}
+
 // httpClient is used for every call; a package-level var with a sane timeout
 // so a hung Telegram request cannot block a caller forever.
 var httpClient = &http.Client{Timeout: 10 * time.Second}
