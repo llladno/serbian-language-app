@@ -333,6 +333,13 @@ type UserRow struct {
 	ID        string
 	Name      string
 	CreatedAt string
+	// UtmSource/UtmMedium/UtmCampaign/UtmContent are the first-touch UTM
+	// attribution captured at signup — empty when none was ever provided
+	// (registered before this feature, or an organic/direct visit).
+	UtmSource   string
+	UtmMedium   string
+	UtmCampaign string
+	UtmContent  string
 }
 
 // CreateUser inserts a users row with a generated id and returns it.
@@ -356,7 +363,9 @@ func (s *Store) CreateUser(name string) (string, error) {
 func (s *Store) UserByID(id string) (UserRow, error) {
 	var u UserRow
 	err := s.db.QueryRow(
-		`SELECT id, name, created_at FROM users WHERE id = ?`, id).Scan(&u.ID, &u.Name, &u.CreatedAt)
+		`SELECT id, name, created_at, COALESCE(utm_source,''), COALESCE(utm_medium,''), COALESCE(utm_campaign,''), COALESCE(utm_content,'')
+		 FROM users WHERE id = ?`, id).
+		Scan(&u.ID, &u.Name, &u.CreatedAt, &u.UtmSource, &u.UtmMedium, &u.UtmCampaign, &u.UtmContent)
 	return u, err
 }
 
