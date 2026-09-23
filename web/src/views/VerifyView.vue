@@ -5,6 +5,8 @@ import AuthShell from './AuthShell.vue'
 import { useSessionStore } from '../stores/session'
 import { api } from '../api'
 import { authErrorMessage } from '../lib/authErrors'
+import mascotOk from '../assets/mascot-verify-ok.webp'
+import mascotErr from '../assets/mascot-verify-err.webp'
 
 const route = useRoute()
 const router = useRouter()
@@ -15,6 +17,8 @@ const mode = computed<'ok' | 'err' | 'gate'>(() => {
   if (route.query.err === '1') return 'err'
   return 'gate'
 })
+
+const mascot = computed(() => (mode.value === 'err' ? mascotErr : mascotOk))
 
 const targetEmail = computed(
   () => session.user?.email || (typeof route.query.email === 'string' ? route.query.email : ''),
@@ -59,7 +63,7 @@ async function resend() {
 </script>
 
 <template>
-  <AuthShell title="Почта">
+  <AuthShell title="Почта" :mascot="mascot">
     <div v-if="mode === 'ok'" class="text-center">
       <p class="mb-4">Почта подтверждена!</p>
       <RouterLink to="/login" class="btn btn-primary">Войти</RouterLink>
@@ -73,6 +77,9 @@ async function resend() {
       </button>
       <p v-if="sent" class="text-sm text-[var(--good)]">Письмо отправлено.</p>
       <p v-if="error" class="text-sm text-[var(--bad)]">{{ error }}</p>
+      <p class="text-center text-sm">
+        <RouterLink to="/login" class="text-[var(--accent)]">вернуться к другим способам входа</RouterLink>
+      </p>
     </div>
 
     <div v-else class="space-y-3">
@@ -91,6 +98,9 @@ async function resend() {
       </template>
       <p v-if="sent" class="text-sm text-[var(--good)]">Письмо отправлено.</p>
       <p v-if="error" class="text-sm text-[var(--bad)]">{{ error }}</p>
+      <p class="text-center text-sm">
+        <RouterLink to="/login" class="text-[var(--accent)]">вернуться к другим способам входа</RouterLink>
+      </p>
     </div>
   </AuthShell>
 </template>

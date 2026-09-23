@@ -17,6 +17,7 @@ import type {
   Health,
   TelegramStart,
   TelegramPoll,
+  NotificationsResponse,
 } from './types'
 import { getStoredAttribution } from './attribution'
 
@@ -117,6 +118,8 @@ export const api = {
     request<void>('/me', { method: 'DELETE', body: JSON.stringify({ password }) }),
   sendSupportMessage: (message: string) =>
     request<{ status: string }>('/me/support', { method: 'POST', body: JSON.stringify({ message }) }),
+  getNotifications: () => request<NotificationsResponse>('/me/notifications'),
+  markNotificationsRead: () => request<{ status: string }>('/me/notifications/mark-read', { method: 'POST' }),
 
   course: () => request<Course>('/course'),
   lesson: (id: string) => request<Lesson>(`/lessons/${id}`),

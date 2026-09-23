@@ -4,6 +4,7 @@ import { RouterLink } from 'vue-router'
 import AuthShell from './AuthShell.vue'
 import { useSessionStore } from '../stores/session'
 import { authErrorMessage } from '../lib/authErrors'
+import mascotForgot from '../assets/mascot-forgot.webp'
 
 const session = useSessionStore()
 const email = ref('')
@@ -27,7 +28,7 @@ async function submit() {
 </script>
 
 <template>
-  <AuthShell title="Восстановление пароля">
+  <AuthShell title="Восстановление пароля" :mascot="mascotForgot">
     <div v-if="sent" class="text-center">
       <p>Если такой аккаунт существует, письмо со ссылкой для сброса пароля отправлено.</p>
     </div>

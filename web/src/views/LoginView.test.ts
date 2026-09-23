@@ -85,7 +85,7 @@ describe('LoginView', () => {
 
     const w = mount(LoginView)
     await flushPromises()
-    await w.find('button.btn-ghost').trigger('click')
+    await w.find('button.btn-telegram').trigger('click')
     await flushPromises()
     expect(openSpy).toHaveBeenCalledWith('https://t.me/ucimoappbot?start=tok123', '_blank')
 

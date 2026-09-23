@@ -4,6 +4,7 @@ import { RouterLink, useRouter } from 'vue-router'
 import AuthShell from './AuthShell.vue'
 import { useSessionStore } from '../stores/session'
 import { authErrorMessage } from '../lib/authErrors'
+import mascotRegister from '../assets/mascot-register.webp'
 
 const router = useRouter()
 const session = useSessionStore()
@@ -40,7 +41,7 @@ async function submit() {
 </script>
 
 <template>
-  <AuthShell title="Регистрация">
+  <AuthShell title="Регистрация" :mascot="mascotRegister">
     <form class="space-y-3" @submit.prevent="submit">
       <input v-model="name" class="field w-full" placeholder="имя" required maxlength="40" autofocus />
       <input v-model="email" type="email" class="field w-full" placeholder="email" required />

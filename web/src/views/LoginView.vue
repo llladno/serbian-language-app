@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
+import { Send } from 'lucide-vue-next'
 import AuthShell from './AuthShell.vue'
 import { useSessionStore } from '../stores/session'
 import { authErrorMessage, isEmailUnverified } from '../lib/authErrors'
 import { api } from '../api'
 import { useTelegramStart } from '../lib/telegramStart'
 import type { SessionUser } from '../types'
+import mascotLogin from '../assets/mascot-login.webp'
 
 const route = useRoute()
 const router = useRouter()
@@ -54,7 +56,7 @@ async function submit() {
 </script>
 
 <template>
-  <AuthShell title="Вход">
+  <AuthShell title="Вход" :mascot="mascotLogin">
     <form class="space-y-3" @submit.prevent="submit">
       <input v-model="email" type="email" class="field w-full" placeholder="email" required autofocus />
       <input
@@ -73,10 +75,11 @@ async function submit() {
     <button
       v-if="telegramEnabled"
       type="button"
-      class="btn btn-ghost mt-3 w-full"
+      class="btn btn-telegram mt-3 w-full"
       :disabled="tg.busy.value"
       @click="loginViaTelegram"
     >
+      <Send :size="17" :stroke-width="2.25" fill="currentColor" />
       {{ tg.busy.value ? 'Ждём подтверждения в Telegram…' : 'Войти через Telegram' }}
     </button>
     <p v-if="tg.error.value" class="mt-2 text-sm text-[var(--bad)]">{{ tg.error.value }}</p>

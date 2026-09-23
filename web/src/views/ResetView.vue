@@ -4,6 +4,7 @@ import { RouterLink, useRoute, useRouter } from 'vue-router'
 import AuthShell from './AuthShell.vue'
 import { useSessionStore } from '../stores/session'
 import { authErrorMessage } from '../lib/authErrors'
+import mascotReset from '../assets/mascot-reset.webp'
 
 const route = useRoute()
 const router = useRouter()
@@ -35,7 +36,7 @@ async function submit() {
 </script>
 
 <template>
-  <AuthShell title="Новый пароль">
+  <AuthShell title="Новый пароль" :mascot="mascotReset">
     <p v-if="!token" class="text-[var(--bad)]">Ссылка недействительна.</p>
     <form v-else class="space-y-3" @submit.prevent="submit">
       <input

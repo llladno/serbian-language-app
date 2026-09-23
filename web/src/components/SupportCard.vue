@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Headphones } from 'lucide-vue-next'
 import { useSupportModal } from '../lib/supportModal'
-import supportMascot from '../assets/support-mascot.png'
+import supportMascot from '../assets/support-mascot.webp'
 
 const { openModal } = useSupportModal()
 </script>

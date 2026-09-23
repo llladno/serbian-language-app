@@ -207,6 +207,13 @@ body {
     background: var(--accent-soft);
     color: var(--accent);
   }
+  .btn-telegram {
+    background: #29a9eb;
+    color: #fff;
+  }
+  .btn-telegram:not(:disabled):hover {
+    background: #229ed9;
+  }
   .icon-btn {
     @apply flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-[var(--muted)] transition;
   }

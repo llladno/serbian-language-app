@@ -265,6 +265,18 @@ export interface Health {
   telegram_bot_id: string
 }
 
+export interface Notification {
+  id: number
+  text: string
+  created_at: string
+  read: boolean
+}
+
+export interface NotificationsResponse {
+  items: Notification[]
+  unread_count: number
+}
+
 export interface TelegramStart {
   url: string
   token: string

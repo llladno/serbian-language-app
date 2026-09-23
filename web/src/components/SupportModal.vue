@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { X } from 'lucide-vue-next'
 import { useSupportModal, SUPPORT_TELEGRAM_URL } from '../lib/supportModal'
-import supportMascot from '../assets/support-mascot.png'
+import supportMascot from '../assets/support-mascot.webp'
 
 const { open, message, busy, error, sent, closeModal, send } = useSupportModal()
 </script>

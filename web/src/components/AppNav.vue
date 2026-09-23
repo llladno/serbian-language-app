@@ -15,6 +15,7 @@ import {
 import { theme, cycleTheme, THEME_META } from '../theme'
 import { useSupportModal } from '../lib/supportModal'
 import SupportModal from './SupportModal.vue'
+import NotificationBell from './NotificationBell.vue'
 
 const { openModal } = useSupportModal()
 
@@ -93,6 +94,8 @@ const themeIcon = computed(() => THEME_ICON[theme.value])
       >
         <component :is="themeIcon" :size="17" :stroke-width="2.25" />
       </button>
+
+      <NotificationBell />
 
       <button
         class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-[var(--muted)] transition hover:bg-[var(--bg-soft)] hover:text-[var(--fg)]"
