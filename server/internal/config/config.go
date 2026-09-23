@@ -60,6 +60,12 @@ type Config struct {
 	// /api/telegram/webhook is unaffected either way — only where Telegram
 	// is told to deliver updates changes. From TELEGRAM_WEBHOOK_URL.
 	TelegramWebhookURL string
+	// TributeAPIKey authenticates the Tribute donation webhook
+	// (POST /api/tribute/webhook): Tribute signs every request with
+	// HMAC-SHA256(key=TributeAPIKey, msg=body) in the "trbt-signature"
+	// header. Empty disables the webhook (falls through as a no-op 200).
+	// From TRIBUTE_API_KEY.
+	TributeAPIKey string
 }
 
 // Load reads the configuration from the environment. Missing variables take
@@ -87,6 +93,7 @@ func Load() Config {
 		TelegramWebhookSecret: os.Getenv("TELEGRAM_WEBHOOK_SECRET"),
 		TelegramAPIBase:       os.Getenv("TELEGRAM_API_BASE"),
 		TelegramWebhookURL:    os.Getenv("TELEGRAM_WEBHOOK_URL"),
+		TributeAPIKey:         os.Getenv("TRIBUTE_API_KEY"),
 	}
 }
 

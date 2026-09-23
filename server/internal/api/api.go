@@ -140,6 +140,7 @@ func Handler(deps Deps) http.Handler {
 	// of any kind, authenticated instead by the shared secret header (see
 	// telegramWebhook's own doc comment).
 	root.HandleFunc("POST /api/telegram/webhook", h.telegramWebhook)
+	root.HandleFunc("POST /api/tribute/webhook", h.tributeWebhook)
 	root.HandleFunc("POST /api/track-visit", h.trackVisit)
 
 	// Account-scoped endpoints. These are registered on root as exact
