@@ -11,6 +11,7 @@ import ProgressDashboard from '../components/ProgressDashboard.vue'
 import PhaseProgressCard from '../components/PhaseProgressCard.vue'
 import LeaderboardCard from '../components/LeaderboardCard.vue'
 import SupportCard from '../components/SupportCard.vue'
+import DonateCard from '../components/DonateCard.vue'
 import type { Me } from '../types'
 
 const router = useRouter()
@@ -189,6 +190,7 @@ async function logout() {
     </div>
 
     <SupportCard v-if="me" />
+    <DonateCard v-if="me" />
 
     <Teleport to="body">
       <Transition name="modal-overlay">

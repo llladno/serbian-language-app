@@ -15,6 +15,7 @@ import {
 import { theme, cycleTheme, THEME_META } from '../theme'
 import { useSupportModal } from '../lib/supportModal'
 import SupportModal from './SupportModal.vue'
+import DonateModal from './DonateModal.vue'
 import NotificationBell from './NotificationBell.vue'
 
 const { openModal } = useSupportModal()
@@ -135,4 +136,5 @@ const themeIcon = computed(() => THEME_ICON[theme.value])
   </nav>
 
   <SupportModal />
+  <DonateModal />
 </template>

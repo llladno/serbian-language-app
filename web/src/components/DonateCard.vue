@@ -1,13 +1,17 @@
 <script setup lang="ts">
 import { Heart } from 'lucide-vue-next'
 import { useDonateModal, TRIBUTE_TELEGRAM_LINK } from '../lib/donateModal'
-import { isTelegram } from '../telegram'
+import { isTelegram, initData } from '../telegram'
 import heartIcon from '../assets/donate/heart.png'
 
 const { openModal } = useDonateModal()
 
 function onClick() {
-  if (isTelegram()) {
+  // isTelegram() alone isn't enough: telegram-web-app.js is loaded
+  // unconditionally on every page, so window.Telegram.WebApp exists even in
+  // a plain browser — initData() is only non-empty inside a real Telegram
+  // session (same check stores/session.ts uses).
+  if (isTelegram() && initData()) {
     window.open(TRIBUTE_TELEGRAM_LINK, '_blank')
   } else {
     openModal()
