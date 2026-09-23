@@ -1446,7 +1446,7 @@
   latin: "sprat"
   cyrillic: "спрат"
   ru: "этаж"
-  note: "prvi sprat = второй этаж; земля — prizemlje"
+  note: "нумерация со смещением: prizemlje = 1-й этаж (рус.), prvi sprat = 2-й, drugi sprat = 3-й, treći sprat = 4-й и т.д."
   lesson: "08"
   pos: "noun"
   gender: "m"
