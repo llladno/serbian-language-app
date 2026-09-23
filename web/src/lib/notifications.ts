@@ -66,7 +66,8 @@ export function renderNotificationText(text: string): string {
   const escaped = escapeHtml(text)
   const withLinks = escaped.replace(
     LINK_PATTERN,
-    (_match, label: string, url: string) => `<a href="${url}" target="_blank" rel="noopener">${label}</a>`,
+    (_match, label: string, url: string) =>
+      `<a href="${url}" target="_blank" rel="noopener" class="text-[var(--accent)] underline underline-offset-2">${label}</a>`,
   )
   return withLinks.replace(/\n/g, '<br>')
 }

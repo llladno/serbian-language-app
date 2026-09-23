@@ -26,11 +26,12 @@ describe('renderNotificationText', () => {
   })
 
   it('turns [label](url) into a link for http(s) and relative urls', () => {
+    const linkClass = 'class="text-[var(--accent)] underline underline-offset-2"'
     expect(renderNotificationText('Смотри [тут](https://ucimo.ru/course)')).toBe(
-      'Смотри <a href="https://ucimo.ru/course" target="_blank" rel="noopener">тут</a>',
+      `Смотри <a href="https://ucimo.ru/course" target="_blank" rel="noopener" ${linkClass}>тут</a>`,
     )
     expect(renderNotificationText('[Курс](/course)')).toBe(
-      '<a href="/course" target="_blank" rel="noopener">Курс</a>',
+      `<a href="/course" target="_blank" rel="noopener" ${linkClass}>Курс</a>`,
     )
   })
 
