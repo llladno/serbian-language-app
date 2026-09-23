@@ -20,7 +20,7 @@ const { open, closeModal } = useDonateModal()
           </button>
 
           <div class="space-y-3">
-            <img :src="supportBird" alt="" class="mx-auto h-24 w-24 object-contain" />
+            <img :src="supportBird" alt="" class="mx-auto h-24 w-24 rounded-2xl object-contain" />
             <p class="text-lg font-extrabold">Šoljica kafe ☕ (Чашечка кофе)</p>
             <p class="text-sm text-[var(--muted)]">
               Hvala što si tu! 💛 Ваша поддержка помогает добавлять новые уроки, слова и улучшать приложение.
