@@ -20,14 +20,15 @@ import (
 // is answered with a non-200 status on purpose, so Tribute's own retry
 // policy re-delivers on a transient store error instead of losing the event.
 //
-// See docs/superpowers/specs/2026-09-23-donations-design.md — Tribute's
-// public docs list the webhook event names and the signature scheme but not
-// a full example payload, so the exact field names below (particularly
-// whether amount arrives in major or minor units) are a best-effort read of
-// the docs, not a confirmed spec. stringField/numberField are deliberately
-// tolerant of either a JSON string or number for the same key. raw_payload
-// is always stored in full regardless, so a wrong guess here costs nothing
-// but needs fixing in this file once a real webhook has been observed.
+// Field shapes confirmed against a real webhook delivery (2026-09-23, a 100
+// RUB donation): event name is snake_case ("new_donation", not the docs'
+// "newDonation"), and amount arrives already in minor units (10000 for 100
+// RUB), not major units needing ×100 — both corrected after the first real
+// delivery showed a 100x-inflated stored amount and an unmatched event-type
+// filter in the admin's sum query. stringField/numberField stay tolerant of
+// either a JSON string or number for the same key regardless. raw_payload is
+// always stored in full, so any future format drift is recoverable without
+// data loss.
 func (h handlers) tributeWebhook(w http.ResponseWriter, r *http.Request) {
 	if h.Config.TributeAPIKey == "" {
 		w.WriteHeader(http.StatusOK)
@@ -114,15 +115,17 @@ func stringField(m map[string]any, key string) string {
 	}
 }
 
-// numberField reads key as an amount in major currency units (a JSON number
-// or numeric string) and converts it to minor units (×100).
+// numberField reads key as an amount already in minor currency units (a
+// JSON number or numeric string) — confirmed against a real webhook
+// delivery (2026-09-23): a 100 RUB donation arrived as amount: 10000, i.e.
+// already in kopecks, not major-unit rubles needing ×100.
 func numberField(m map[string]any, key string) int64 {
 	switch v := m[key].(type) {
 	case float64:
-		return int64(v * 100)
+		return int64(v)
 	case string:
 		f, _ := strconv.ParseFloat(v, 64)
-		return int64(f * 100)
+		return int64(f)
 	default:
 		return 0
 	}

@@ -36,7 +36,10 @@ func postTribute(h http.Handler, sig, body string) *httptest.ResponseRecorder {
 	return rr
 }
 
-const donationBody = `{"name":"newDonation","payload":{"id":"evt_abc","telegram_user_id":"555","telegram_username":"alice","amount":100,"currency":"RUB"}}`
+// donationBody mirrors a real webhook delivery observed 2026-09-23: event
+// name is snake_case ("new_donation", not "newDonation"), and amount is
+// already in minor units (10000 = 100 RUB), not major units needing ×100.
+const donationBody = `{"name":"new_donation","payload":{"id":"evt_abc","telegram_user_id":"555","telegram_username":"alice","amount":10000,"currency":"RUB"}}`
 
 func TestTributeWebhookWrongSignatureIs401(t *testing.T) {
 	h, _ := newTributeAPI(t)
@@ -69,10 +72,10 @@ func TestTributeWebhookStoresDonation(t *testing.T) {
 	}
 	d := got[0]
 	if d.TelegramUserID != "555" || d.TelegramUsername != "alice" || d.Currency != "RUB" ||
-		d.EventType != "newDonation" || d.TributeEventID != "evt_abc" {
+		d.EventType != "new_donation" || d.TributeEventID != "evt_abc" {
 		t.Errorf("stored donation = %+v, want fields parsed from the webhook body", d)
 	}
-	if d.AmountMinorUnits != 10000 { // amount:100 (major units) * 100
+	if d.AmountMinorUnits != 10000 { // amount is already minor units, passed through as-is
 		t.Errorf("AmountMinorUnits = %d, want 10000", d.AmountMinorUnits)
 	}
 }
