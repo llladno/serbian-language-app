@@ -118,6 +118,7 @@ onBeforeUnmount(() => {
               <div class="font-semibold">
                 {{ m.latin }}
                 <span v-if="m.cyrillic" class="font-normal text-[var(--muted)]">· {{ m.cyrillic }}</span>
+                <span v-if="m.transcription" class="font-normal text-[var(--muted)]">[{{ m.transcription }}]</span>
               </div>
               <div>{{ m.ru }}</div>
               <div v-if="m.note" class="text-xs text-[var(--muted)]">{{ m.note }}</div>

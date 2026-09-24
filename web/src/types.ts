@@ -137,6 +137,7 @@ export interface Vocab {
   id: string
   latin: string
   cyrillic: string
+  transcription?: string
   ru: string
   note?: string
   lesson?: string
