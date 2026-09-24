@@ -33,6 +33,11 @@ const sessionTTL = 30 * 24 * time.Hour
 // hit/webvisor data, img-src for the noscript pixel and cookie-sync calls —
 // Metrika uses both domains) — the counter's own init call is a same-origin
 // file (landing/public/metrika-init.js), so no 'unsafe-inline' is needed.
+// metrika.yandex.ru/metrica.yandex.ru are allowlisted in frame-ancestors so
+// Metrika's own UI can frame the live site — needed for the visual goal
+// editor (element-click picker) and for Webvisor/session-replay/click-map
+// overlays, all of which embed the real page in an iframe from that origin;
+// without it every one of those just fails to load with a generic error.
 const csp = "default-src 'self'; " +
 	"script-src 'self' https://telegram.org https://mc.yandex.ru https://mc.yandex.com; " +
 	"style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
@@ -41,7 +46,8 @@ const csp = "default-src 'self'; " +
 	"connect-src 'self' https://mc.yandex.ru https://mc.yandex.com; " +
 	"base-uri 'self'; " +
 	"form-action 'self'; " +
-	"frame-ancestors 'self' https://web.telegram.org https://*.telegram.org"
+	"frame-ancestors 'self' https://web.telegram.org https://*.telegram.org " +
+	"https://metrika.yandex.ru https://metrica.yandex.ru"
 
 // SecurityHeaders stamps the static security headers on every response. HSTS
 // is only meaningful (and only sent) when the app is served over HTTPS. There
