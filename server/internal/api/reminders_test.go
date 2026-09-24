@@ -62,10 +62,14 @@ var allTestVocabCards = []store.CardSeed{
 	{CardID: "vocab:svet", Kind: "vocab", RefID: "svet"},
 	{CardID: "vocab:dobar-dan", Kind: "vocab", RefID: "dobar-dan"},
 	{CardID: "vocab:raditi", Kind: "vocab", RefID: "raditi"},
+	// The fixture's one grammar.yaml point — it rides the same
+	// beginner-level "new" budget as vocab (see gramPerDay), so it must be
+	// graded too for the queue to actually go empty.
+	{CardID: "gram:prezent-am", Kind: "gram", RefID: "prezent-am"},
 }
 
-// gradeAllGood seeds and grades every fixture vocab card Good, which is
-// enough to empty the review queue at beginner level (false friends never
+// gradeAllGood seeds and grades every fixture vocab/grammar card Good, which
+// is enough to empty the review queue at beginner level (false friends never
 // enter it with only 4 vocab words — see beginnerWordCount).
 func gradeAllGood(t *testing.T, us *store.UserStore, at time.Time) {
 	t.Helper()

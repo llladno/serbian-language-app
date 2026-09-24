@@ -53,6 +53,42 @@ func TestLoadValidFixture(t *testing.T) {
 	if len(c.Vocab) != 4 || len(c.FalseFriends) != 1 {
 		t.Errorf("vocab=%d ff=%d", len(c.Vocab), len(c.FalseFriends))
 	}
+	if len(c.Grammar) != 1 {
+		t.Fatalf("grammar = %d, want 1", len(c.Grammar))
+	}
+	if g := c.Grammar[0]; g.ID != "prezent-am" || g.Back != "radim · radiš · radi · radimo · radite · rade" {
+		t.Errorf("grammar[0] = %+v", g)
+	}
+}
+
+// grammar.yaml is optional, like persona.yaml: a fixture predating it (no
+// file at all) must still load cleanly, with an empty Grammar slice.
+func TestLoadGrammarOptional(t *testing.T) {
+	dir := t.TempDir()
+	writeTree(t, dir, baseTree())
+	c, err := Load(dir)
+	if err != nil {
+		t.Fatalf("Load: %v", err)
+	}
+	if len(c.Grammar) != 0 {
+		t.Errorf("grammar = %+v, want empty", c.Grammar)
+	}
+}
+
+func TestLoadGrammarDuplicateIDDropped(t *testing.T) {
+	dir := t.TempDir()
+	tree := baseTree()
+	tree["grammar.yaml"] = "" +
+		"- id: \"x\"\n  front: \"a\"\n  back: \"b\"\n  lesson: \"01\"\n" +
+		"- id: \"x\"\n  front: \"c\"\n  back: \"d\"\n  lesson: \"01\"\n"
+	writeTree(t, dir, tree)
+	c, err := Load(dir)
+	if err != nil {
+		t.Fatalf("Load: %v", err)
+	}
+	if len(c.Grammar) != 1 || c.Grammar[0].Front != "a" {
+		t.Errorf("grammar = %+v, want first entry kept once", c.Grammar)
+	}
 }
 
 func baseTree() map[string]string {

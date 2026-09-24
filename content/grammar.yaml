@@ -1,0 +1,68 @@
+# Грамматические карточки для повторения (SRS) — независимо от словаря.
+# lesson: урок, где правило вводится (задаёт порядок открытия новых карточек,
+# как lesson у vocab.yaml). front/back — вопрос/полный ответ для самооценки
+# (Опять/Трудно/Хорошо/Легко), как у обычной карточки слова.
+
+- id: "jesam"
+  front: "jesam — «быть», презент"
+  back: "sam · si · je · smo · ste · su"
+  note: "ja sam, ti si, on/ona/ono je, mi smo, vi ste, oni/one/ona su"
+  lesson: "04"
+  example_sr: "Ja sam iz Rusije."
+  example_ru: "Я из России."
+
+- id: "imati"
+  front: "imati — «иметь», презент (+ nemati)"
+  back: "imam · imaš · ima · imamo · imate · imaju"
+  note: "отрицание — отдельный глагол nemati: nemam, nemaš, nema…"
+  lesson: "06"
+  example_sr: "Imam brata. Nemam sestru."
+  example_ru: "У меня есть брат. У меня нет сестры."
+
+- id: "moj-tvoj"
+  front: "moj / tvoj — согласование по роду"
+  back: "moj/moja/moje · tvoj/tvoja/tvoje (m/f/n)"
+  note: "притяжательное согласуется с родом существительного, не с говорящим"
+  lesson: "07"
+  example_sr: "Moja mama, moj tata, moje dete."
+  example_ru: "Моя мама, мой папа, моё дитя."
+
+- id: "prezent-am"
+  front: "презент, тип -am: čitati — читать"
+  back: "čitam · čitaš · čita · čitamo · čitate · čitaju"
+  note: "тип -am: znati, gledati, slušati, doručkovati…"
+  lesson: "16"
+  example_sr: "Čitam knjigu."
+  example_ru: "Я читаю книгу."
+
+- id: "prezent-im"
+  front: "презент, тип -im: raditi — работать"
+  back: "radim · radiš · radi · radimo · radite · rade"
+  note: "тип -im: živeti, govoriti, učiti, misliti…"
+  lesson: "16"
+  example_sr: "Radim ceo dan."
+  example_ru: "Я работаю весь день."
+
+- id: "prezent-em"
+  front: "презент, тип -em: pisati — писать"
+  back: "pišem · pišeš · piše · pišemo · pišete · pišu"
+  note: "тип -em: ići → idem, razumeti → razumem (неправильные по основе)"
+  lesson: "16"
+  example_sr: "Pišem poruku."
+  example_ru: "Я пишу сообщение."
+
+- id: "u-na"
+  front: "u / na — где (место)"
+  back: "u sobi, u kući, u gradu · na poslu, na stolu, na ulici"
+  note: "u — «внутри», na — «на поверхности» или у некоторых мест по традиции (na poslu, na fakultetu)"
+  lesson: "19"
+  example_sr: "Knjiga je na stolu, a ja sam u sobi."
+  example_ru: "Книга на столе, а я в комнате."
+
+- id: "koji-kakav-ciji"
+  front: "koji / kakav / čiji — три «какой»"
+  back: "koji — который (из ряда) · kakav — какой (по качеству) · čiji — чей"
+  note: "все три меняются по роду: koji/koja/koje, kakav/kakva/kakvo, čiji/čija/čije"
+  lesson: "23"
+  example_sr: "Koji autobus? Kakav je stan? Čiji je ovo ključ?"
+  example_ru: "Какой автобус? Какая квартира? Чей это ключ?"

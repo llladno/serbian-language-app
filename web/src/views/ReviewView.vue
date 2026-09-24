@@ -193,6 +193,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKey))
         @click="revealed = true"
       >
         <p v-if="current.kind === 'ff'" class="mb-2 text-[10px] uppercase tracking-widest text-[var(--accent)]">ложный друг</p>
+        <p v-else-if="current.kind === 'gram'" class="mb-2 text-[10px] uppercase tracking-widest text-[var(--accent)]">грамматика</p>
         <div class="flex items-center gap-2">
           <p class="serbian text-4xl font-semibold">{{ current.front }}</p>
           <SpeakButton :src="current.audio" :size="36" />

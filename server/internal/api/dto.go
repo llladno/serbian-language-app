@@ -173,7 +173,7 @@ type falseFriendDTO struct {
 
 type reviewCardDTO struct {
 	CardID    string         `json:"card_id"`
-	Kind      string         `json:"kind"` // vocab | ff
+	Kind      string         `json:"kind"` // vocab | ff | gram
 	Front     string         `json:"front"`
 	Cyrillic  string         `json:"cyrillic,omitempty"`
 	Back      string         `json:"back"`

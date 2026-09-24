@@ -623,16 +623,26 @@ const (
 	// they're gated one at a time, in lesson order.
 	newPerDay = 15
 	dailyGoal = 20 // reviews + attempts that count as "a day done"
+
+	// gramPerDay caps new grammar cards per queue fetch. Kept small and
+	// separate from newPerDay: there are far fewer grammar points than
+	// words, and each one demands more from the learner (the whole
+	// paradigm, not one translation), so they shouldn't compete with vocab
+	// for the same daily budget.
+	gramPerDay = 2
 )
 
 func (h handlers) cardSeeds() []store.CardSeed {
 	c := h.Course()
-	seeds := make([]store.CardSeed, 0, len(c.Vocab)+len(c.FalseFriends))
+	seeds := make([]store.CardSeed, 0, len(c.Vocab)+len(c.FalseFriends)+len(c.Grammar))
 	for _, v := range c.Vocab {
 		seeds = append(seeds, store.CardSeed{CardID: "vocab:" + v.ID, Kind: "vocab", RefID: v.ID})
 	}
 	for _, f := range c.FalseFriends {
 		seeds = append(seeds, store.CardSeed{CardID: "ff:" + f.ID, Kind: "ff", RefID: f.ID})
+	}
+	for _, g := range c.Grammar {
+		seeds = append(seeds, store.CardSeed{CardID: "gram:" + g.ID, Kind: "gram", RefID: g.ID})
 	}
 	return seeds
 }
@@ -671,6 +681,34 @@ func nextNewVocabCardIDs(vocab []content.Vocab, passed map[string]bool, limit in
 			break
 		}
 		id := "vocab:" + v.ID
+		if !passed[id] {
+			out = append(out, id)
+		}
+	}
+	return out
+}
+
+// orderedGrammar sorts grammar cards by the lesson that introduces them,
+// mirroring orderedVocab.
+func orderedGrammar(cards []content.GrammarCard) []content.GrammarCard {
+	out := make([]content.GrammarCard, len(cards))
+	copy(out, cards)
+	sort.SliceStable(out, func(i, j int) bool { return out[i].Lesson < out[j].Lesson })
+	return out
+}
+
+// nextNewGrammarCardIDs mirrors nextNewVocabCardIDs, but for grammar points:
+// earliest-lesson-first, skipping ones already passed at least once. Unlike
+// vocab it isn't split into a beginner/non-beginner budget — grammar cards
+// get their own small, constant gramPerDay allowance regardless of how many
+// words the learner has passed.
+func nextNewGrammarCardIDs(cards []content.GrammarCard, passed map[string]bool, limit int) []string {
+	out := make([]string, 0, limit)
+	for _, g := range orderedGrammar(cards) {
+		if len(out) >= limit {
+			break
+		}
+		id := "gram:" + g.ID
 		if !passed[id] {
 			out = append(out, id)
 		}
@@ -733,7 +771,18 @@ func (h handlers) dueQueueRows(us *store.UserStore, now time.Time) ([]store.Card
 	if !beginner {
 		ffNewLimit = newPerDay - len(allowedNewVocab)
 	}
-	return us.DueQueue(now, allowedNewVocab, ffNewLimit)
+
+	passedGrammar, err := us.PassedCardIDs("gram:")
+	if err != nil {
+		return nil, err
+	}
+	allowedNewGrammar := nextNewGrammarCardIDs(c.Grammar, passedGrammar, gramPerDay)
+
+	// DueQueue's "allowed new ids" parameter isn't vocab-specific — it just
+	// admits explicitly listed new cards by id, whatever their kind — so
+	// grammar's lesson-gated batch rides along with vocab's instead of
+	// needing its own query.
+	return us.DueQueue(now, append(allowedNewVocab, allowedNewGrammar...), ffNewLimit)
 }
 
 func (h handlers) reviewQueue(w http.ResponseWriter, r *http.Request) {
@@ -758,6 +807,10 @@ func (h handlers) reviewQueue(w http.ResponseWriter, r *http.Request) {
 	for _, f := range c.FalseFriends {
 		ff[f.ID] = f
 		ffBacks = append(ffBacks, f.Means)
+	}
+	grammar := map[string]content.GrammarCard{}
+	for _, g := range c.Grammar {
+		grammar[g.ID] = g
 	}
 
 	now := h.Now()
@@ -801,6 +854,18 @@ func (h handlers) reviewQueue(w http.ResponseWriter, r *http.Request) {
 			if row.State == srs.New {
 				d.Options = buildOptions(f.Means, ffBacks)
 			}
+		case "gram":
+			g, ok := grammar[row.RefID]
+			if !ok {
+				continue
+			}
+			d.Front, d.Back, d.Note = g.Front, g.Back, g.Note
+			d.ExampleSR, d.ExampleRU = g.ExampleSR, g.ExampleRU
+			// No multiple-choice quiz on first encounter: a grammar card's
+			// answer is a whole paradigm/rule, not a single word — there's
+			// no fair way to build 3 plausible-but-wrong distractors for
+			// it, so even a brand-new grammar card goes straight to the
+			// flip-and-self-grade flow vocab/ff only reach after their quiz.
 		}
 		out = append(out, d)
 	}

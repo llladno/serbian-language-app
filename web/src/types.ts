@@ -164,7 +164,7 @@ export interface FalseFriend {
 
 export interface ReviewCard {
   card_id: string
-  kind: 'vocab' | 'ff'
+  kind: 'vocab' | 'ff' | 'gram'
   front: string
   cyrillic?: string
   back: string

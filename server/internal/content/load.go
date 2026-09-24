@@ -89,6 +89,40 @@ type falseFriendFile []struct {
 	Image   string `yaml:"image"`
 }
 
+type grammarFile []struct {
+	ID        string `yaml:"id"`
+	Front     string `yaml:"front"`
+	Back      string `yaml:"back"`
+	Note      string `yaml:"note"`
+	Lesson    string `yaml:"lesson"`
+	ExampleSR string `yaml:"example_sr"`
+	ExampleRU string `yaml:"example_ru"`
+}
+
+// loadGrammar reads grammar.yaml — spaced-repetition cards for grammar
+// points, kept separate from vocab.yaml. The file is optional, like
+// persona.yaml: a missing or unreadable file is a no-op, not an error, so
+// content fixtures that predate this file keep loading unchanged.
+func loadGrammar(dir string) []GrammarCard {
+	var gf grammarFile
+	if err := readYAML(filepath.Join(dir, "grammar.yaml"), &gf); err != nil {
+		return nil
+	}
+	seen := map[string]bool{}
+	var out []GrammarCard
+	for _, g := range gf {
+		if seen[g.ID] {
+			continue
+		}
+		seen[g.ID] = true
+		out = append(out, GrammarCard{
+			ID: g.ID, Front: g.Front, Back: g.Back, Note: g.Note, Lesson: g.Lesson,
+			ExampleSR: g.ExampleSR, ExampleRU: g.ExampleRU,
+		})
+	}
+	return out
+}
+
 // autoTypes are exercise types whose answers are auto-checked against Accept.
 // choice and match carry their own answer fields and are handled separately.
 var autoTypes = map[string]bool{
@@ -298,6 +332,9 @@ func Load(dir string) (*Course, error) {
 			Emoji: f.Emoji, Image: f.Image,
 		})
 	}
+
+	// grammar.yaml — optional spaced-repetition cards for grammar points.
+	c.Grammar = loadGrammar(dir)
 
 	return c, nil
 }

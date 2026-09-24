@@ -10,6 +10,7 @@ type Course struct {
 	Exercises    map[string][]ExerciseBlock // key: lesson id
 	Vocab        []Vocab
 	FalseFriends []FalseFriend
+	Grammar      []GrammarCard
 
 	allowWords []string // flattened content/allow-words.yaml (lexicon guard)
 }
@@ -136,4 +137,20 @@ type FalseFriend struct {
 	Group   string // top | shop | small
 	Emoji   string
 	Image   string
+}
+
+// GrammarCard is one spaced-repetition flashcard for a grammar point (verb
+// conjugation type, case usage, question-word declension…), independent of
+// any single vocab word. Front is the prompt shown first (e.g. an infinitive
+// plus which pattern it follows), Back is the full answer to self-grade
+// against (e.g. all six persons of the paradigm). Lesson orders new-card
+// introduction the same way Vocab.Lesson does.
+type GrammarCard struct {
+	ID        string
+	Front     string
+	Back      string
+	Note      string
+	Lesson    string
+	ExampleSR string
+	ExampleRU string
 }
