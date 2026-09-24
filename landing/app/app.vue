@@ -31,6 +31,10 @@ useHead({
       key: 'cookie-consent',
       src: '/cookie-consent.js',
     },
+    {
+      key: 'metrika-goals',
+      src: '/metrika-goals.js',
+    },
   ],
 })
 </script>

@@ -17,9 +17,7 @@
 
     <div class="article-cta">
       <p>Начните учить сербский бесплатно — 42 урока с нуля, без рекламы и подписки.</p>
-      <a class="btn btn--primary" href="/register" @click="reachGoal('register_blog')"
-        >Изучить сербский</a
-      >
+      <a class="btn btn--primary" href="/register" data-goal="register_blog">Изучить сербский</a>
     </div>
   </main>
 </template>

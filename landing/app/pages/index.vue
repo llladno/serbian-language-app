@@ -10,9 +10,7 @@
           речи. Уровни A1–B1, кириллица и латиница с первого урока.
         </p>
         <div class="hero__actions">
-          <a class="btn btn--primary" href="/register" @click="reachGoal('register_hero')"
-            >Изучить сербский</a
-          >
+          <a class="btn btn--primary" href="/register" data-goal="register_hero">Изучить сербский</a>
           <p class="hero__note">
             Все 42 урока и словарь — бесплатно · Без рекламы · 5–10 минут в
             день
@@ -369,9 +367,7 @@
       <div>
         <h2>Начните учить сербский сегодня</h2>
         <p>Первый урок — алфавит и произношение. Бесплатно, без рекламы.</p>
-        <a class="btn btn--primary" href="/register" @click="reachGoal('register_final')"
-          >Изучить сербский</a
-        >
+        <a class="btn btn--primary" href="/register" data-goal="register_final">Изучить сербский</a>
       </div>
     </section>
   </main>
