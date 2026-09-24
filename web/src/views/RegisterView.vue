@@ -4,6 +4,7 @@ import { RouterLink, useRouter } from 'vue-router'
 import AuthShell from './AuthShell.vue'
 import { useSessionStore } from '../stores/session'
 import { authErrorMessage } from '../lib/authErrors'
+import { reachGoal } from '../metrika'
 import mascotRegister from '../assets/mascot-register.webp'
 
 const router = useRouter()
@@ -31,6 +32,7 @@ async function submit() {
   error.value = null
   try {
     await session.register(email.value.trim(), password.value, name.value.trim())
+    reachGoal('register_submit')
     router.push({ path: '/verify', query: { email: email.value.trim() } })
   } catch (e) {
     error.value = authErrorMessage(e)

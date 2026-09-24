@@ -7,6 +7,7 @@ import { useSessionStore } from '../stores/session'
 import { authErrorMessage, isEmailUnverified } from '../lib/authErrors'
 import { api } from '../api'
 import { useTelegramStart } from '../lib/telegramStart'
+import { reachGoal } from '../metrika'
 import type { SessionUser } from '../types'
 import mascotLogin from '../assets/mascot-login.webp'
 
@@ -30,8 +31,10 @@ function goNext() {
 }
 
 function loginViaTelegram() {
+  reachGoal('telegram_login_click')
   tg.start((user?: SessionUser) => {
     if (user) session.user = user
+    reachGoal('telegram_login_success')
     goNext()
   })
 }

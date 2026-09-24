@@ -8,7 +8,7 @@
         <a href="/#faq">Вопросы</a>
         <NuxtLink to="/blog">Блог</NuxtLink>
       </nav>
-      <a class="btn btn--ghost" href="/login">Войти</a>
+      <a class="btn btn--ghost" href="/login" @click="reachGoal('login_click')">Войти</a>
     </div>
   </header>
 </template>
