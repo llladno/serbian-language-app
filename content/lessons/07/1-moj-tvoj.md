@@ -8,6 +8,8 @@
 | **твой** | tvoj brat | **tvoja** sestra | **tvoje** dete |
 | **его / её** | njegov / njen brat | njegova / njena sestra | njegovo / njeno dete |
 
-- `Ovo je moj tata.` *(это мой папа)*
-- `Tvoja mama je nastavnica?` *(твоя мама учительница?)*
-- `Njena sestra živi u Beogradu.` *(её сестра живёт в Белграде)*
+- `Ovo je moj tata.` [о́во е мой та́та.] *(это мой папа)*
+- `Tvoja mama je nastavnica?` [тво́я ма́ма е на́ставница?] *(твоя мама
+  учительница?)*
+- `Njena sestra živi u Beogradu.` [не́на се́стра жи́ви у бе́ограду.]
+  *(её сестра живёт в Белграде)*
