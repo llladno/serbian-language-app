@@ -154,6 +154,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKey))
         <SpeakButton :src="current.audio" :size="36" />
       </div>
       <p v-if="current.cyrillic" class="mt-1 text-sm text-[var(--muted)]">{{ current.cyrillic }}</p>
+      <p v-if="current.transcription" class="text-sm text-[var(--muted)]">[{{ current.transcription }}]</p>
 
       <div class="mt-5 grid w-full max-w-sm grid-cols-1 gap-2 sm:grid-cols-2">
         <button
@@ -199,6 +200,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKey))
           <SpeakButton :src="current.audio" :size="36" />
         </div>
         <p v-if="current.cyrillic" class="mt-1 text-sm text-[var(--muted)]">{{ current.cyrillic }}</p>
+      <p v-if="current.transcription" class="text-sm text-[var(--muted)]">[{{ current.transcription }}]</p>
 
         <Transition name="fade">
           <div v-if="revealed" class="mt-4 flex flex-col items-center border-t border-[var(--border)] pt-4">

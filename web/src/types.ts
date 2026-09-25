@@ -168,6 +168,7 @@ export interface ReviewCard {
   kind: 'vocab' | 'ff' | 'gram'
   front: string
   cyrillic?: string
+  transcription?: string
   back: string
   note?: string
   state: string

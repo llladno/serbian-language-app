@@ -173,18 +173,19 @@ type falseFriendDTO struct {
 // ---- review ----
 
 type reviewCardDTO struct {
-	CardID    string         `json:"card_id"`
-	Kind      string         `json:"kind"` // vocab | ff | gram
-	Front     string         `json:"front"`
-	Cyrillic  string         `json:"cyrillic,omitempty"`
-	Back      string         `json:"back"`
-	Note      string         `json:"note,omitempty"`
-	State     string         `json:"state"`
-	Emoji     string         `json:"emoji,omitempty"`
-	Image     string         `json:"image,omitempty"`
-	Audio     string         `json:"audio,omitempty"`
-	ExampleSR string         `json:"example_sr,omitempty"`
-	ExampleRU string         `json:"example_ru,omitempty"`
+	CardID        string `json:"card_id"`
+	Kind          string `json:"kind"` // vocab | ff | gram
+	Front         string `json:"front"`
+	Cyrillic      string `json:"cyrillic,omitempty"`
+	Transcription string `json:"transcription,omitempty"`
+	Back          string `json:"back"`
+	Note          string `json:"note,omitempty"`
+	State         string `json:"state"`
+	Emoji         string `json:"emoji,omitempty"`
+	Image         string `json:"image,omitempty"`
+	Audio         string `json:"audio,omitempty"`
+	ExampleSR     string `json:"example_sr,omitempty"`
+	ExampleRU     string `json:"example_ru,omitempty"`
 	// Options carries 4 shuffled candidate translations (Back values, one of
 	// them correct) for a first-encounter recognition quiz. Only set for
 	// state == "new" — an already-started card uses the plain flip+grade UI.

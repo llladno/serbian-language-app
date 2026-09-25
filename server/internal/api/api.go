@@ -828,6 +828,7 @@ func (h handlers) reviewQueue(w http.ResponseWriter, r *http.Request) {
 				continue
 			}
 			d.Front, d.Cyrillic, d.Back, d.Note = v.Latin, v.Cyrillic, v.RU, v.Note
+			d.Transcription = v.Transcription
 			d.Emoji, d.Image, d.Audio = v.Emoji, v.Image, v.Audio
 			d.ExampleSR, d.ExampleRU = v.ExampleSR, v.ExampleRU
 			if row.State == srs.New {
