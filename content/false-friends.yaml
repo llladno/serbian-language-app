@@ -3,75 +3,75 @@
 # image: файл в content/images/ ; emoji: запасной вариант
 
 # ---- Топ-опасные ----
-- { id: "pravo", sr: "pravo", means: "прямо / право (юр.)", not: "направо", correct: "desno", group: "top", emoji: "⬆️" }
-- { id: "desno-levo", sr: "desno / levo", means: "направо / налево", group: "top", emoji: "↔️" }
-- { id: "rec", sr: "reč", means: "слово", not: "речь", correct: "govor", group: "top", emoji: "🔤" }
-- { id: "slovo", sr: "slovo", means: "буква", not: "слово", correct: "reč", group: "top", emoji: "🅰️" }
-- { id: "recenica", sr: "rečenica", means: "предложение (грам.)", group: "top", emoji: "📝" }
-- { id: "pismo", sr: "pismo", means: "письмо / алфавит", group: "top", emoji: "✉️" }
-- { id: "jutro", sr: "jutro", means: "утро", group: "top", emoji: "🌅" }
-- { id: "sutra", sr: "sutra", means: "завтра", not: "утро", group: "top", emoji: "📅" }
-- { id: "prekosutra", sr: "prekosutra", means: "послезавтра", group: "top", emoji: "📆" }
-- { id: "juce", sr: "juče", means: "вчера", group: "top", emoji: "⏮️" }
-- { id: "stolica", sr: "stolica", means: "стул", not: "столица", correct: "prestonica / glavni grad", group: "top", image: "stolica.jpg" }
-- { id: "pas", sr: "pas", means: "собака", not: "пояс", correct: "kaiš / pojas", group: "top", image: "pas.jpg" }
-- { id: "zivot", sr: "život", means: "жизнь", not: "живот", correct: "stomak / trbuh", group: "top", emoji: "🌱" }
-- { id: "pravac", sr: "pravac", means: "направление", group: "top", emoji: "🧭" }
-- { id: "umoran", sr: "umoran", means: "усталый", not: "умный", correct: "pametan", group: "top", emoji: "😩" }
-- { id: "pametan", sr: "pametan", means: "умный", not: "памятный", group: "top", emoji: "🧠" }
-- { id: "trudna", sr: "trudna", means: "беременная", not: "трудная", correct: "teška", group: "top", emoji: "🤰" }
-- { id: "vredan", sr: "vredan", means: "усердный / ценный", not: "вредный", correct: "štetan", group: "top", emoji: "💪" }
-- { id: "stetan", sr: "štetan", means: "вредный", group: "top", emoji: "☠️" }
-- { id: "iskusan", sr: "iskusan", means: "опытный", not: "искусный", correct: "vešt", group: "top", emoji: "🎓" }
-- { id: "iskustvo", sr: "iskustvo", means: "опыт", not: "искусство", correct: "umetnost", group: "top", emoji: "📚" }
-- { id: "hvala", sr: "hvala", means: "спасибо", not: "хвала / похвала", correct: "pohvala", group: "top", emoji: "🙏" }
-- { id: "kuca", sr: "kuća", means: "дом", not: "кухня", correct: "kuhinja", group: "top", image: "kuca.jpg" }
-- { id: "stan", sr: "stan", means: "квартира", not: "стан / лагерь", correct: "logor", group: "top", emoji: "🏢" }
-- { id: "sat", sr: "sat", means: "час / часы (наручные)", group: "top", image: "sat.jpg" }
-- { id: "cas", sr: "čas", means: "урок / момент", not: "час", correct: "sat", group: "top", emoji: "⏱️" }
-- { id: "casopis", sr: "časopis", means: "журнал", group: "top", emoji: "📰" }
-- { id: "nedelja", sr: "nedelja", means: "воскресенье (и «неделя»)", correct: "sedmica (неделя)", group: "top", emoji: "🗓️" }
-- { id: "pozoriste", sr: "pozorište", means: "театр", not: "позор", correct: "sramota", group: "top", emoji: "🎭" }
-- { id: "pozor", sr: "pozor!", means: "внимание! / осторожно!", not: "позор", group: "top", emoji: "⚠️" }
-- { id: "ponos", sr: "ponos", means: "гордость", not: "понос", correct: "proliv", group: "top", emoji: "🦁" }
-- { id: "proliv", sr: "proliv", means: "понос", not: "пролив", correct: "moreuz", group: "top", emoji: "🚽" }
-- { id: "banja", sr: "banja", means: "курорт / спа", not: "баня", correct: "sauna / kupatilo", group: "top", emoji: "♨️" }
-- { id: "kupatilo", sr: "kupatilo", means: "ванная комната", not: "купальня", group: "top", emoji: "🛁" }
+- { id: "pravo", sr: "pravo", transcription: "пра́во", means: "прямо / право (юр.)", not: "направо", correct: "desno", group: "top", emoji: "⬆️" }
+- { id: "desno-levo", sr: "desno / levo", transcription: "де́сно / ле́во", means: "направо / налево", group: "top", emoji: "↔️" }
+- { id: "rec", sr: "reč", transcription: "реч", means: "слово", not: "речь", correct: "govor", group: "top", emoji: "🔤" }
+- { id: "slovo", sr: "slovo", transcription: "сло́во", means: "буква", not: "слово", correct: "reč", group: "top", emoji: "🅰️" }
+- { id: "recenica", sr: "rečenica", transcription: "ре́ченица", means: "предложение (грам.)", group: "top", emoji: "📝" }
+- { id: "pismo", sr: "pismo", transcription: "пи́смо", means: "письмо / алфавит", group: "top", emoji: "✉️" }
+- { id: "jutro", sr: "jutro", transcription: "ю́тро", means: "утро", group: "top", emoji: "🌅" }
+- { id: "sutra", sr: "sutra", transcription: "су́тра", means: "завтра", not: "утро", group: "top", emoji: "📅" }
+- { id: "prekosutra", sr: "prekosutra", transcription: "прекосу́тра", means: "послезавтра", group: "top", emoji: "📆" }
+- { id: "juce", sr: "juče", transcription: "ю́че", means: "вчера", group: "top", emoji: "⏮️" }
+- { id: "stolica", sr: "stolica", transcription: "сто́лица", means: "стул", not: "столица", correct: "prestonica / glavni grad", group: "top", image: "stolica.jpg" }
+- { id: "pas", sr: "pas", transcription: "пас", means: "собака", not: "пояс", correct: "kaiš / pojas", group: "top", image: "pas.jpg" }
+- { id: "zivot", sr: "život", transcription: "жи́вот", means: "жизнь", not: "живот", correct: "stomak / trbuh", group: "top", emoji: "🌱" }
+- { id: "pravac", sr: "pravac", transcription: "пра́вац", means: "направление", group: "top", emoji: "🧭" }
+- { id: "umoran", sr: "umoran", transcription: "умо́ран", means: "усталый", not: "умный", correct: "pametan", group: "top", emoji: "😩" }
+- { id: "pametan", sr: "pametan", transcription: "па́метан", means: "умный", not: "памятный", group: "top", emoji: "🧠" }
+- { id: "trudna", sr: "trudna", transcription: "тру́дна", means: "беременная", not: "трудная", correct: "teška", group: "top", emoji: "🤰" }
+- { id: "vredan", sr: "vredan", transcription: "вре́дан", means: "усердный / ценный", not: "вредный", correct: "štetan", group: "top", emoji: "💪" }
+- { id: "stetan", sr: "štetan", transcription: "ште́тан", means: "вредный", group: "top", emoji: "☠️" }
+- { id: "iskusan", sr: "iskusan", transcription: "и́скусан", means: "опытный", not: "искусный", correct: "vešt", group: "top", emoji: "🎓" }
+- { id: "iskustvo", sr: "iskustvo", transcription: "и́скуство", means: "опыт", not: "искусство", correct: "umetnost", group: "top", emoji: "📚" }
+- { id: "hvala", sr: "hvala", transcription: "хва́ла", means: "спасибо", not: "хвала / похвала", correct: "pohvala", group: "top", emoji: "🙏" }
+- { id: "kuca", sr: "kuća", transcription: "ку́ча", means: "дом", not: "кухня", correct: "kuhinja", group: "top", image: "kuca.jpg" }
+- { id: "stan", sr: "stan", transcription: "стан", means: "квартира", not: "стан / лагерь", correct: "logor", group: "top", emoji: "🏢" }
+- { id: "sat", sr: "sat", transcription: "сат", means: "час / часы (наручные)", group: "top", image: "sat.jpg" }
+- { id: "cas", sr: "čas", transcription: "час", means: "урок / момент", not: "час", correct: "sat", group: "top", emoji: "⏱️" }
+- { id: "casopis", sr: "časopis", transcription: "ча́сопис", means: "журнал", group: "top", emoji: "📰" }
+- { id: "nedelja", sr: "nedelja", transcription: "не́деля", means: "воскресенье (и «неделя»)", correct: "sedmica (неделя)", group: "top", emoji: "🗓️" }
+- { id: "pozoriste", sr: "pozorište", transcription: "позо́риште", means: "театр", not: "позор", correct: "sramota", group: "top", emoji: "🎭" }
+- { id: "pozor", sr: "pozor!", transcription: "по́зор!", means: "внимание! / осторожно!", not: "позор", group: "top", emoji: "⚠️" }
+- { id: "ponos", sr: "ponos", transcription: "по́нос", means: "гордость", not: "понос", correct: "proliv", group: "top", emoji: "🦁" }
+- { id: "proliv", sr: "proliv", transcription: "про́лив", means: "понос", not: "пролив", correct: "moreuz", group: "top", emoji: "🚽" }
+- { id: "banja", sr: "banja", transcription: "ба́ня", means: "курорт / спа", not: "баня", correct: "sauna / kupatilo", group: "top", emoji: "♨️" }
+- { id: "kupatilo", sr: "kupatilo", transcription: "купа́тило", means: "ванная комната", not: "купальня", group: "top", emoji: "🛁" }
 
 # ---- Магазин / еда ----
-- { id: "beli-luk", sr: "beli luk", means: "чеснок", not: "белый лук", group: "shop", image: "beli-luk.jpg" }
-- { id: "crni-luk", sr: "crni luk / crveni luk", means: "репчатый лук", group: "shop", image: "crni-luk.jpg" }
-- { id: "luk", sr: "luk", means: "лук (растение) / дуга, лук (оружие)", group: "shop", emoji: "🏹" }
-- { id: "jagoda", sr: "jagoda", means: "клубника", not: "ягода вообще", correct: "bobica / bobičasto voće", group: "shop", image: "jagoda.jpg" }
-- { id: "dinja", sr: "dinja", means: "дыня", group: "shop", image: "dinja.jpg" }
-- { id: "lubenica", sr: "lubenica", means: "арбуз", group: "shop", image: "lubenica.jpg" }
-- { id: "pecurke", sr: "pečurke / gljive", means: "грибы", group: "shop", image: "pecurke.jpg" }
-- { id: "paradajz", sr: "paradajz", means: "помидор", group: "shop", image: "paradajz.jpg" }
-- { id: "sargarepa", sr: "šargarepa", means: "морковь", group: "shop", image: "sargarepa.jpg" }
-- { id: "krofna", sr: "krofna", means: "пончик", group: "shop", image: "krofna.jpg" }
-- { id: "kifla", sr: "kifla", means: "булочка / рогалик", group: "shop", image: "kifla.jpg" }
-- { id: "pecivo", sr: "pecivo", means: "выпечка (несладкая)", group: "shop", emoji: "🥐" }
-- { id: "pasulj", sr: "pasulj", means: "фасоль", group: "shop", image: "pasulj.jpg" }
-- { id: "grah", sr: "grah", means: "фасоль (боснийск.)", group: "shop", emoji: "🫘" }
-- { id: "kesa", sr: "kesa", means: "пакет", not: "касса", group: "shop", image: "kesa.jpg" }
-- { id: "racun", sr: "račun", means: "чек / счёт", group: "shop", image: "racun.jpg" }
-- { id: "sitno", sr: "sitno / kusur", means: "мелочь / сдача", group: "shop", emoji: "🪙" }
-- { id: "para", sr: "para (мн. pare)", means: "деньги (разг.) / грош", group: "shop", emoji: "💰" }
+- { id: "beli-luk", sr: "beli luk", transcription: "бе́ли лук", means: "чеснок", not: "белый лук", group: "shop", image: "beli-luk.jpg" }
+- { id: "crni-luk", sr: "crni luk / crveni luk", transcription: "црни лук / црвени лук", means: "репчатый лук", group: "shop", image: "crni-luk.jpg" }
+- { id: "luk", sr: "luk", transcription: "лук", means: "лук (растение) / дуга, лук (оружие)", group: "shop", emoji: "🏹" }
+- { id: "jagoda", sr: "jagoda", transcription: "я́года", means: "клубника", not: "ягода вообще", correct: "bobica / bobičasto voće", group: "shop", image: "jagoda.jpg" }
+- { id: "dinja", sr: "dinja", transcription: "ди́ня", means: "дыня", group: "shop", image: "dinja.jpg" }
+- { id: "lubenica", sr: "lubenica", transcription: "лу́беница", means: "арбуз", group: "shop", image: "lubenica.jpg" }
+- { id: "pecurke", sr: "pečurke / gljive", transcription: "пе́чурке / гли́ве", means: "грибы", group: "shop", image: "pecurke.jpg" }
+- { id: "paradajz", sr: "paradajz", transcription: "пара́дайз", means: "помидор", group: "shop", image: "paradajz.jpg" }
+- { id: "sargarepa", sr: "šargarepa", transcription: "ша́ргарепа", means: "морковь", group: "shop", image: "sargarepa.jpg" }
+- { id: "krofna", sr: "krofna", transcription: "кро́фна", means: "пончик", group: "shop", image: "krofna.jpg" }
+- { id: "kifla", sr: "kifla", transcription: "ки́фла", means: "булочка / рогалик", group: "shop", image: "kifla.jpg" }
+- { id: "pecivo", sr: "pecivo", transcription: "пе́циво", means: "выпечка (несладкая)", group: "shop", emoji: "🥐" }
+- { id: "pasulj", sr: "pasulj", transcription: "па́суль", means: "фасоль", group: "shop", image: "pasulj.jpg" }
+- { id: "grah", sr: "grah", transcription: "грах", means: "фасоль (боснийск.)", group: "shop", emoji: "🫘" }
+- { id: "kesa", sr: "kesa", transcription: "ке́са", means: "пакет", not: "касса", group: "shop", image: "kesa.jpg" }
+- { id: "racun", sr: "račun", transcription: "ра́чун", means: "чек / счёт", group: "shop", image: "racun.jpg" }
+- { id: "sitno", sr: "sitno / kusur", transcription: "си́тно / ку́сур", means: "мелочь / сдача", group: "shop", emoji: "🪙" }
+- { id: "para", sr: "para (мн. pare)", transcription: "па́ра (мн. па́ре)", means: "деньги (разг.) / грош", group: "shop", emoji: "💰" }
 
 # ---- Мелкие частые ----
-- { id: "direktno", sr: "direktno", means: "напрямую", group: "small", emoji: "➡️" }
-- { id: "upravo", sr: "upravo", means: "как раз / только что", not: "управа", group: "small", emoji: "🎯" }
-- { id: "bas", sr: "baš", means: "как раз / прямо (усилит.)", group: "small", emoji: "💯" }
-- { id: "odmah", sr: "odmah", means: "сразу", group: "small", emoji: "⚡" }
-- { id: "samo", sr: "samo", means: "только", not: "само", group: "small", emoji: "☝️" }
-- { id: "vec", sr: "već", means: "уже", group: "small", emoji: "✅" }
-- { id: "jos", sr: "još", means: "ещё", group: "small", emoji: "➕" }
-- { id: "ceo", sr: "ceo", means: "целый / весь", group: "small", emoji: "🥧" }
-- { id: "pravi", sr: "pravi", means: "настоящий", not: "правый", group: "small", emoji: "💎" }
-- { id: "grad", sr: "grad", means: "город", not: "град (осадки — по контексту тоже grad)", group: "small", emoji: "🏙️" }
-- { id: "godina", sr: "godina", means: "год", group: "small", emoji: "🎂" }
-- { id: "doba", sr: "doba", means: "пора / эпоха", group: "small", emoji: "⏳" }
-- { id: "kosa", sr: "kosa", means: "волосы / коса", group: "small", emoji: "💇" }
-- { id: "brak", sr: "brak", means: "брак (супружество)", not: "брак (дефект)", correct: "kvar / greška", group: "small", emoji: "💍" }
-- { id: "glava", sr: "glava", means: "голова / глава (книги)", group: "small", emoji: "🗣️" }
-- { id: "jezik", sr: "jezik", means: "язык (речь и орган)", group: "small", emoji: "👅" }
+- { id: "direktno", sr: "direktno", transcription: "дире́ктно", means: "напрямую", group: "small", emoji: "➡️" }
+- { id: "upravo", sr: "upravo", transcription: "упра́во", means: "как раз / только что", not: "управа", group: "small", emoji: "🎯" }
+- { id: "bas", sr: "baš", transcription: "баш", means: "как раз / прямо (усилит.)", group: "small", emoji: "💯" }
+- { id: "odmah", sr: "odmah", transcription: "о́дмах", means: "сразу", group: "small", emoji: "⚡" }
+- { id: "samo", sr: "samo", transcription: "са́мо", means: "только", not: "само", group: "small", emoji: "☝️" }
+- { id: "vec", sr: "već", transcription: "веч", means: "уже", group: "small", emoji: "✅" }
+- { id: "jos", sr: "još", transcription: "ёш", means: "ещё", group: "small", emoji: "➕" }
+- { id: "ceo", sr: "ceo", transcription: "це́о", means: "целый / весь", group: "small", emoji: "🥧" }
+- { id: "pravi", sr: "pravi", transcription: "пра́ви", means: "настоящий", not: "правый", group: "small", emoji: "💎" }
+- { id: "grad", sr: "grad", transcription: "град", means: "город", not: "град (осадки — по контексту тоже grad)", group: "small", emoji: "🏙️" }
+- { id: "godina", sr: "godina", transcription: "годи́на", means: "год", group: "small", emoji: "🎂" }
+- { id: "doba", sr: "doba", transcription: "до́ба", means: "пора / эпоха", group: "small", emoji: "⏳" }
+- { id: "kosa", sr: "kosa", transcription: "ко́са", means: "волосы / коса", group: "small", emoji: "💇" }
+- { id: "brak", sr: "brak", transcription: "брак", means: "брак (супружество)", not: "брак (дефект)", correct: "kvar / greška", group: "small", emoji: "💍" }
+- { id: "glava", sr: "glava", transcription: "гла́ва", means: "голова / глава (книги)", group: "small", emoji: "🗣️" }
+- { id: "jezik", sr: "jezik", transcription: "е́зик", means: "язык (речь и орган)", group: "small", emoji: "👅" }

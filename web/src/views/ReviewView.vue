@@ -5,6 +5,9 @@ import { CircleQuestionMark } from 'lucide-vue-next'
 import { useReviewStore } from '../stores/review'
 import WordMedia from '../components/WordMedia.vue'
 import SpeakButton from '../components/SpeakButton.vue'
+import SerbianKeys from '../components/SerbianKeys.vue'
+import BottomBar from '../components/BottomBar.vue'
+import type { GramCheckResult } from '../types'
 
 const store = useReviewStore()
 const { current, remaining, total, sessionCount, tally, loading, error } = storeToRefs(store)
@@ -14,6 +17,12 @@ const showHelp = ref(false)
 // Quiz state for a first-encounter ("new") card: null until the learner
 // taps an option, then holds the picked text so the UI can highlight it.
 const quizPicked = ref<string | null>(null)
+
+// Grammar-drill state: the typed answer for the current item and the
+// check result once submitted (null = not answered yet).
+const gramAnswer = ref('')
+const gramResult = ref<GramCheckResult | null>(null)
+const gramPending = ref(false)
 
 onMounted(() => store.load())
 
@@ -48,6 +57,24 @@ async function grade(g: number) {
   await store.grade(g)
 }
 
+async function submitGram() {
+  if (gramPending.value || !gramAnswer.value.trim()) return
+  gramPending.value = true
+  try {
+    gramResult.value = await store.checkGram(gramAnswer.value)
+  } finally {
+    gramPending.value = false
+  }
+}
+
+function nextGram() {
+  if (!gramResult.value) return
+  const ok = gramResult.value.ok
+  gramAnswer.value = ''
+  gramResult.value = null
+  store.advanceGram(ok)
+}
+
 function pickOption(opt: string) {
   if (quizPicked.value || !current.value) return
   quizPicked.value = opt
@@ -66,7 +93,7 @@ async function confirmQuiz() {
 }
 
 function onKey(e: KeyboardEvent) {
-  if (!current.value || isQuiz.value) return
+  if (!current.value || isQuiz.value || current.value.kind === 'gram') return
   if (e.code === 'Space' || e.code === 'Enter') {
     e.preventDefault()
     if (!revealed.value) revealed.value = true
@@ -98,6 +125,12 @@ onUnmounted(() => window.removeEventListener('keydown', onKey))
             Первое знакомство со словом — тест на 4 варианта перевода. Дальше
             слово уходит в обычное повторение: интервал до следующего показа
             растёт при верных ответах и сбрасывается при «Опять».
+          </p>
+          <p class="mt-1.5">
+            Карточки «грамматика» — не то же самое: там просят вписать одну
+            форму (например, «radim» для ti), ответ реально проверяется, и
+            интервал повторения считается по тому, ответил ли ты верно —
+            выбирать оценку самому не нужно.
           </p>
         </div>
       </template>
@@ -146,8 +179,56 @@ onUnmounted(() => window.removeEventListener('keydown', onKey))
     </div>
     <p class="text-center text-xs text-[var(--muted)]">осталось {{ remaining }}</p>
 
+    <!-- grammar item: type the asked form, checked for real -->
+    <div v-if="current.kind === 'gram'" class="card flex min-h-[13rem] flex-col items-center p-8 text-center pop" :key="current.card_id">
+      <p class="mb-2 text-[10px] uppercase tracking-widest text-[var(--accent)]">грамматика</p>
+      <p class="serbian text-lg font-semibold">{{ current.front }}</p>
+      <p v-if="current.note" class="mt-1 text-sm text-[var(--muted)]">{{ current.note }}</p>
+
+      <div class="mt-5 flex flex-col items-center gap-1">
+        <p class="text-[10px] uppercase tracking-widest text-[var(--muted)]">впиши форму</p>
+        <p class="serbian text-2xl font-semibold">{{ current.item_prompt }}</p>
+      </div>
+
+      <form v-if="!gramResult" class="mx-auto mt-4 w-full max-w-sm" @submit.prevent="submitGram">
+        <input
+          v-model="gramAnswer"
+          type="text"
+          autocomplete="off"
+          autocapitalize="off"
+          autocorrect="off"
+          spellcheck="false"
+          class="field serbian w-full text-center"
+          placeholder="ответ…"
+        />
+        <SerbianKeys class="mt-1.5 justify-center" />
+      </form>
+
+      <Transition name="fade">
+        <div v-if="gramResult" class="mt-4 flex flex-col items-center border-t border-[var(--border)] pt-4">
+          <p class="font-semibold" :class="gramResult.ok ? 'text-[var(--good)]' : 'text-[var(--bad)]'">
+            {{ gramResult.ok ? '✓ Верно' : gramResult.near_miss ? 'Почти — опечатка?' : '✗ Не то' }}
+          </p>
+          <p v-if="!gramResult.ok && gramResult.expected" class="text-sm">
+            Правильно: <span class="serbian font-semibold">{{ gramResult.expected }}</span>
+          </p>
+          <p v-if="current.example_sr" class="serbian mt-2 text-[var(--fg)]">{{ current.example_sr }}</p>
+          <p v-if="current.example_ru" class="text-sm text-[var(--muted)]">{{ current.example_ru }}</p>
+        </div>
+      </Transition>
+
+      <BottomBar v-if="!gramResult">
+        <button class="btn btn-primary w-full" :disabled="gramPending || !gramAnswer.trim()" @click="submitGram">
+          Проверить
+        </button>
+      </BottomBar>
+      <BottomBar v-else>
+        <button class="btn btn-primary w-full" @click="nextGram">Дальше</button>
+      </BottomBar>
+    </div>
+
     <!-- first encounter: pick 1 of 4 translations to learn the word -->
-    <div v-if="isQuiz" class="card flex min-h-[13rem] flex-col items-center p-8 text-center pop" :key="current.card_id">
+    <div v-else-if="isQuiz" class="card flex min-h-[13rem] flex-col items-center p-8 text-center pop" :key="current.card_id">
       <p class="mb-2 text-[10px] uppercase tracking-widest text-[var(--accent)]">новое слово</p>
       <div class="flex items-center gap-2">
         <p class="serbian text-4xl font-semibold">{{ current.front }}</p>
@@ -194,13 +275,12 @@ onUnmounted(() => window.removeEventListener('keydown', onKey))
         @click="revealed = true"
       >
         <p v-if="current.kind === 'ff'" class="mb-2 text-[10px] uppercase tracking-widest text-[var(--accent)]">ложный друг</p>
-        <p v-else-if="current.kind === 'gram'" class="mb-2 text-[10px] uppercase tracking-widest text-[var(--accent)]">грамматика</p>
         <div class="flex items-center gap-2">
           <p class="serbian text-4xl font-semibold">{{ current.front }}</p>
           <SpeakButton :src="current.audio" :size="36" />
         </div>
         <p v-if="current.cyrillic" class="mt-1 text-sm text-[var(--muted)]">{{ current.cyrillic }}</p>
-      <p v-if="current.transcription" class="text-sm text-[var(--muted)]">[{{ current.transcription }}]</p>
+        <p v-if="current.transcription" class="text-sm text-[var(--muted)]">[{{ current.transcription }}]</p>
 
         <Transition name="fade">
           <div v-if="revealed" class="mt-4 flex flex-col items-center border-t border-[var(--border)] pt-4">

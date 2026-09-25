@@ -155,6 +155,7 @@ export interface Vocab {
 export interface FalseFriend {
   id: string
   sr: string
+  transcription?: string
   means: string
   not?: string
   correct?: string
@@ -181,9 +182,23 @@ export interface ReviewCard {
   // a first-encounter ("new") card — see ReviewView's recognition quiz.
   options?: string[]
   preview: Record<'again' | 'hard' | 'good' | 'easy', number>
+  // kind === 'gram' only: one item picked at random from the card, to type
+  // and have checked — see ReviewView's grammar drill and
+  // api.gradeGram/GramCheckResult.
+  item_prompt?: string
+  item_index?: number
 }
 
 export interface GradeResult {
+  due: string
+  interval_days: number
+  state: string
+}
+
+export interface GramCheckResult {
+  ok: boolean
+  expected?: string
+  near_miss?: boolean
   due: string
   interval_days: number
   state: string

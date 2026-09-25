@@ -9,6 +9,7 @@ import type {
   FalseFriend,
   ReviewCard,
   GradeResult,
+  GramCheckResult,
   Progress,
   LessonAttempts,
   LeaderRow,
@@ -148,6 +149,11 @@ export const api = {
     request<GradeResult>('/review/grade', {
       method: 'POST',
       body: JSON.stringify({ card_id: cardId, grade }),
+    }),
+  gradeGram: (cardId: string, itemIndex: number, answer: string) =>
+    request<GramCheckResult>('/review/grade-gram', {
+      method: 'POST',
+      body: JSON.stringify({ card_id: cardId, item_index: itemIndex, answer }),
     }),
   addToReview: (vocabId: string) =>
     request<{ status: 'added' | 'already' }>('/review/add', {

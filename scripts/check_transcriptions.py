@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """Sanity-check every Russian [transcription] in the course, repo-wide.
 
-Run this after adding/editing any word (content/vocab.yaml) or any teach-step
-markdown fragment that carries a `word [транскрипция]` annotation. It never
+Run this after adding/editing any word (content/vocab.yaml,
+content/false-friends.yaml) or any teach-step markdown fragment that
+carries a `word [транскрипция]` annotation. It never
 knows if a stress is *correct* (no native-speaker dictionary is consulted) --
 it only catches mechanical mistakes that are unambiguously wrong:
 
@@ -14,8 +15,8 @@ it only catches mechanical mistakes that are unambiguously wrong:
      transcription in two places (vocab.yaml vs. a lesson, or two lessons).
   4. unbalanced markdown    -- mismatched `` ` `` / `[` `]` / `(` `)` inside
      a paragraph (usually a forgotten closing bracket).
-  5. missing                -- a vocab.yaml entry with no `transcription:` at
-     all.
+  5. missing                -- a vocab.yaml/false-friends.yaml entry with no
+     `transcription:` at all.
 
 Usage:
     python3 scripts/check_transcriptions.py            # scan everything
@@ -38,6 +39,7 @@ import yaml
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 VOCAB_PATH = os.path.join(ROOT, 'content', 'vocab.yaml')
+FALSE_FRIENDS_PATH = os.path.join(ROOT, 'content', 'false-friends.yaml')
 LESSON_MD_GLOB = os.path.join(ROOT, 'content', 'lessons', '*', '*.md')
 
 VOWELS = set('аеёиоуыэюя')
@@ -117,6 +119,17 @@ def main():
         check_stray_chars(tr, f"vocab.yaml:{d['id']}", out)
         canon[d['latin'].lower()] = tr
 
+    with open(FALSE_FRIENDS_PATH, encoding='utf-8') as f:
+        false_friends = yaml.safe_load(f)
+
+    for d in false_friends:
+        tr = d.get('transcription')
+        if not tr:
+            out['missing'].append((d['id'], FALSE_FRIENDS_PATH))
+            continue
+        check_stress(tr, f"false-friends.yaml:{d['id']}", out)
+        check_stray_chars(tr, f"false-friends.yaml:{d['id']}", out)
+
     md_files = sorted(glob.glob(LESSON_MD_GLOB))
     occurrences = defaultdict(set)
     pair_re = re.compile(r'`([^`]+)`\s*\[([^\]]+)\]')
@@ -164,7 +177,8 @@ def main():
 
     if total == 0:
         if not args.quiet:
-            print('OK -- no issues found across', len(vocab), 'vocab entries and', len(md_files), 'lesson files.')
+            print('OK -- no issues found across', len(vocab), 'vocab entries,',
+                  len(false_friends), 'false-friends entries, and', len(md_files), 'lesson files.')
         sys.exit(0)
     print(f'\n{total} issue(s) found.')
     sys.exit(1)

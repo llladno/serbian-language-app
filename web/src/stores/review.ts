@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import { api } from '../api'
-import type { ReviewCard } from '../types'
+import type { GramCheckResult, ReviewCard } from '../types'
 
 export const useReviewStore = defineStore('review', () => {
   const queue = ref<ReviewCard[]>([])
@@ -40,5 +40,39 @@ export const useReviewStore = defineStore('review', () => {
     index.value++
   }
 
-  return { queue, index, sessionCount, tally, loading, error, current, remaining, total, load, grade }
+  // checkGram sends the typed answer for the current grammar card's picked
+  // item and returns the check result — it does NOT advance the queue
+  // itself, so the view can show correct/incorrect feedback first. Call
+  // advanceGram once the learner taps past that feedback.
+  async function checkGram(answer: string): Promise<GramCheckResult | null> {
+    const card = current.value
+    if (!card || card.kind !== 'gram' || card.item_index === undefined) return null
+    return api.gradeGram(card.card_id, card.item_index, answer)
+  }
+
+  function advanceGram(ok: boolean) {
+    const card = current.value
+    if (!card) return
+    const g = ok ? 2 : 0
+    sessionCount.value++
+    tally.value[g]++
+    if (!ok) queue.value.push({ ...card })
+    index.value++
+  }
+
+  return {
+    queue,
+    index,
+    sessionCount,
+    tally,
+    loading,
+    error,
+    current,
+    remaining,
+    total,
+    load,
+    grade,
+    checkGram,
+    advanceGram,
+  }
 })

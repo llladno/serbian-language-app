@@ -56,7 +56,7 @@ func TestLoadValidFixture(t *testing.T) {
 	if len(c.Grammar) != 1 {
 		t.Fatalf("grammar = %d, want 1", len(c.Grammar))
 	}
-	if g := c.Grammar[0]; g.ID != "prezent-am" || g.Back != "radim · radiš · radi · radimo · radite · rade" {
+	if g := c.Grammar[0]; g.ID != "prezent-am" || len(g.Items) != 2 || g.Items[0].Prompt != "ja (я)" || g.Items[0].Accept[0] != "radim" {
 		t.Errorf("grammar[0] = %+v", g)
 	}
 }
@@ -75,19 +75,35 @@ func TestLoadGrammarOptional(t *testing.T) {
 	}
 }
 
-func TestLoadGrammarDuplicateIDDropped(t *testing.T) {
+func TestLoadGrammarRejectsDuplicateID(t *testing.T) {
 	dir := t.TempDir()
 	tree := baseTree()
 	tree["grammar.yaml"] = "" +
-		"- id: \"x\"\n  front: \"a\"\n  back: \"b\"\n  lesson: \"01\"\n" +
-		"- id: \"x\"\n  front: \"c\"\n  back: \"d\"\n  lesson: \"01\"\n"
+		"- id: \"x\"\n  front: \"a\"\n  lesson: \"01\"\n  items: [{prompt: \"p\", accept: [\"b\"]}]\n" +
+		"- id: \"x\"\n  front: \"c\"\n  lesson: \"01\"\n  items: [{prompt: \"p\", accept: [\"d\"]}]\n"
 	writeTree(t, dir, tree)
-	c, err := Load(dir)
-	if err != nil {
-		t.Fatalf("Load: %v", err)
+	if _, err := Load(dir); err == nil {
+		t.Error("Load: want error for duplicate grammar id, got nil")
 	}
-	if len(c.Grammar) != 1 || c.Grammar[0].Front != "a" {
-		t.Errorf("grammar = %+v, want first entry kept once", c.Grammar)
+}
+
+func TestLoadGrammarRejectsNoItems(t *testing.T) {
+	dir := t.TempDir()
+	tree := baseTree()
+	tree["grammar.yaml"] = "- id: \"x\"\n  front: \"a\"\n  lesson: \"01\"\n"
+	writeTree(t, dir, tree)
+	if _, err := Load(dir); err == nil {
+		t.Error("Load: want error for a grammar card with no items, got nil")
+	}
+}
+
+func TestLoadGrammarRejectsItemWithNoAccept(t *testing.T) {
+	dir := t.TempDir()
+	tree := baseTree()
+	tree["grammar.yaml"] = "- id: \"x\"\n  front: \"a\"\n  lesson: \"01\"\n  items: [{prompt: \"p\", accept: []}]\n"
+	writeTree(t, dir, tree)
+	if _, err := Load(dir); err == nil {
+		t.Error("Load: want error for a grammar item with no accept, got nil")
 	}
 }
 

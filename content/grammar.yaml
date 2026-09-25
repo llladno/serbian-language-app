@@ -1,68 +1,172 @@
 # Грамматические карточки для повторения (SRS) — независимо от словаря.
 # lesson: урок, где правило вводится (задаёт порядок открытия новых карточек,
-# как lesson у vocab.yaml). front/back — вопрос/полный ответ для самооценки
-# (Опять/Трудно/Хорошо/Легко), как у обычной карточки слова.
+# как lesson у vocab.yaml). front/note — заголовок и подсказка карточки.
+# items: список отдельных вопросов ("прошпрягай для ti", "какой род") —
+# на каждом повторении показывается ОДИН случайный item, ответ проверяется
+# по-настоящему (как fill_blank), а не самооценкой.
 
 - id: "jesam"
-  front: "jesam — «быть», презент"
-  back: "sam · si · je · smo · ste · su"
+  front: "jesam — быть, презент (настоящее время)"
   note: "ja sam, ti si, on/ona/ono je, mi smo, vi ste, oni/one/ona su"
   lesson: "04"
   example_sr: "Ja sam iz Rusije."
   example_ru: "Я из России."
+  items:
+    - prompt: "ja (я)"
+      accept: ["sam"]
+    - prompt: "ti (ты)"
+      accept: ["si"]
+    - prompt: "on/ona/ono (он/она/оно)"
+      accept: ["je"]
+    - prompt: "mi (мы)"
+      accept: ["smo"]
+    - prompt: "vi (вы)"
+      accept: ["ste"]
+    - prompt: "oni/one/ona (они)"
+      accept: ["su"]
 
 - id: "imati"
-  front: "imati — «иметь», презент (+ nemati)"
-  back: "imam · imaš · ima · imamo · imate · imaju"
+  front: "imati — иметь, презент (настоящее время, + nemati)"
   note: "отрицание — отдельный глагол nemati: nemam, nemaš, nema…"
   lesson: "06"
   example_sr: "Imam brata. Nemam sestru."
   example_ru: "У меня есть брат. У меня нет сестры."
+  items:
+    - prompt: "ja (я)"
+      accept: ["imam"]
+    - prompt: "ti (ты)"
+      accept: ["imaš"]
+    - prompt: "on/ona/ono (он/она/оно)"
+      accept: ["ima"]
+    - prompt: "mi (мы)"
+      accept: ["imamo"]
+    - prompt: "vi (вы)"
+      accept: ["imate"]
+    - prompt: "oni/one/ona (они)"
+      accept: ["imaju"]
 
 - id: "moj-tvoj"
   front: "moj / tvoj — согласование по роду"
-  back: "moj/moja/moje · tvoj/tvoja/tvoje (m/f/n)"
-  note: "притяжательное согласуется с родом существительного, не с говорящим"
+  note: "притяжательное согласуется с родом предмета, не с говорящим"
   lesson: "07"
   example_sr: "Moja mama, moj tata, moje dete."
   example_ru: "Моя мама, мой папа, моё дитя."
+  items:
+    - prompt: "moj + mama (ж.р.)"
+      accept: ["moja"]
+    - prompt: "moj + tata (м.р.)"
+      accept: ["moj"]
+    - prompt: "moj + dete (ср.р.)"
+      accept: ["moje"]
+    - prompt: "tvoj + brat (м.р.)"
+      accept: ["tvoj"]
+    - prompt: "tvoj + sestra (ж.р.)"
+      accept: ["tvoja"]
+    - prompt: "tvoj + dete (ср.р.)"
+      accept: ["tvoje"]
 
 - id: "prezent-am"
-  front: "презент, тип -am: čitati — читать"
-  back: "čitam · čitaš · čita · čitamo · čitate · čitaju"
+  front: "презент, тип -am: čitati — читать (настоящее время)"
   note: "тип -am: znati, gledati, slušati…"
   lesson: "16"
   example_sr: "Čitam knjigu."
   example_ru: "Я читаю книгу."
+  items:
+    - prompt: "ja (я)"
+      accept: ["čitam"]
+    - prompt: "ti (ты)"
+      accept: ["čitaš"]
+    - prompt: "on/ona/ono (он/она/оно)"
+      accept: ["čita"]
+    - prompt: "mi (мы)"
+      accept: ["čitamo"]
+    - prompt: "vi (вы)"
+      accept: ["čitate"]
+    - prompt: "oni/one/ona (они)"
+      accept: ["čitaju"]
 
 - id: "prezent-im"
-  front: "презент, тип -im: raditi — работать"
-  back: "radim · radiš · radi · radimo · radite · rade"
+  front: "презент, тип -im: raditi — работать (настоящее время)"
   note: "тип -im: živeti, govoriti, učiti, misliti…"
   lesson: "16"
   example_sr: "Radim ceo dan."
   example_ru: "Я работаю весь день."
+  items:
+    - prompt: "ja (я)"
+      accept: ["radim"]
+    - prompt: "ti (ты)"
+      accept: ["radiš"]
+    - prompt: "on/ona/ono (он/она/оно)"
+      accept: ["radi"]
+    - prompt: "mi (мы)"
+      accept: ["radimo"]
+    - prompt: "vi (вы)"
+      accept: ["radite"]
+    - prompt: "oni/one/ona (они)"
+      accept: ["rade"]
 
 - id: "prezent-em"
-  front: "презент, тип -em: pisati — писать"
-  back: "pišem · pišeš · piše · pišemo · pišete · pišu"
+  front: "презент, тип -em: pisati — писать (настоящее время)"
   note: "тип -em: ići → idem, razumeti → razumem (неправильные по основе)"
   lesson: "16"
   example_sr: "Pišem poruku."
   example_ru: "Я пишу сообщение."
+  items:
+    - prompt: "ja (я)"
+      accept: ["pišem"]
+    - prompt: "ti (ты)"
+      accept: ["pišeš"]
+    - prompt: "on/ona/ono (он/она/оно)"
+      accept: ["piše"]
+    - prompt: "mi (мы)"
+      accept: ["pišemo"]
+    - prompt: "vi (вы)"
+      accept: ["pišete"]
+    - prompt: "oni/one/ona (они)"
+      accept: ["pišu"]
 
 - id: "u-na"
   front: "u / na — где (место)"
-  back: "u sobi, u kući, u gradu · na poslu, na stolu, na ulici"
   note: "u — «внутри», na — «на поверхности» или у некоторых мест по традиции (na poslu, na fakultetu)"
   lesson: "19"
   example_sr: "Knjiga je na stolu, a ja sam u sobi."
   example_ru: "Книга на столе, а я в комнате."
+  items:
+    - prompt: "___ sobi (в комнате)"
+      accept: ["u"]
+    - prompt: "___ kući (дома)"
+      accept: ["u"]
+    - prompt: "___ gradu (в городе)"
+      accept: ["u"]
+    - prompt: "___ poslu (на работе)"
+      accept: ["na"]
+    - prompt: "___ stolu (на столе)"
+      accept: ["na"]
+    - prompt: "___ ulici (на улице)"
+      accept: ["na"]
 
 - id: "koji-kakav-ciji"
   front: "koji / kakav / čiji — три «какой»"
-  back: "koji — который (из ряда) · kakav — какой (по качеству) · čiji — чей"
-  note: "все три меняются по роду: koji/koja/koje, kakav/kakva/kakvo, čiji/čija/čije"
+  note: "koji — который (из ряда), kakav — какой (по качеству), čiji — чей; все три меняются по роду"
   lesson: "23"
   example_sr: "Koji autobus? Kakav je stan? Čiji je ovo ključ?"
   example_ru: "Какой автобус? Какая квартира? Чей это ключ?"
+  items:
+    - prompt: "который — м.р."
+      accept: ["koji"]
+    - prompt: "который — ж.р."
+      accept: ["koja"]
+    - prompt: "который — ср.р."
+      accept: ["koje"]
+    - prompt: "какой (по качеству) — м.р."
+      accept: ["kakav"]
+    - prompt: "какой (по качеству) — ж.р."
+      accept: ["kakva"]
+    - prompt: "какой (по качеству) — ср.р."
+      accept: ["kakvo"]
+    - prompt: "чей — м.р."
+      accept: ["čiji"]
+    - prompt: "чей — ж.р."
+      accept: ["čija"]
+    - prompt: "чей — ср.р."
+      accept: ["čije"]

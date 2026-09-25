@@ -80,48 +80,68 @@ type vocabFile []struct {
 }
 
 type falseFriendFile []struct {
-	ID      string `yaml:"id"`
-	SR      string `yaml:"sr"`
-	Means   string `yaml:"means"`
-	Not     string `yaml:"not"`
-	Correct string `yaml:"correct"`
-	Group   string `yaml:"group"`
-	Emoji   string `yaml:"emoji"`
-	Image   string `yaml:"image"`
+	ID            string `yaml:"id"`
+	SR            string `yaml:"sr"`
+	Transcription string `yaml:"transcription"`
+	Means         string `yaml:"means"`
+	Not           string `yaml:"not"`
+	Correct       string `yaml:"correct"`
+	Group         string `yaml:"group"`
+	Emoji         string `yaml:"emoji"`
+	Image         string `yaml:"image"`
 }
 
 type grammarFile []struct {
 	ID        string `yaml:"id"`
 	Front     string `yaml:"front"`
-	Back      string `yaml:"back"`
 	Note      string `yaml:"note"`
 	Lesson    string `yaml:"lesson"`
 	ExampleSR string `yaml:"example_sr"`
 	ExampleRU string `yaml:"example_ru"`
+	Items     []struct {
+		Prompt string   `yaml:"prompt"`
+		Accept []string `yaml:"accept"`
+	} `yaml:"items"`
 }
 
-// loadGrammar reads grammar.yaml — spaced-repetition cards for grammar
-// points, kept separate from vocab.yaml. The file is optional, like
-// persona.yaml: a missing or unreadable file is a no-op, not an error, so
-// content fixtures that predate this file keep loading unchanged.
-func loadGrammar(dir string) []GrammarCard {
+// loadGrammar reads grammar.yaml — spaced-repetition items for grammar
+// points, kept separate from vocab.yaml. The file itself is optional, like
+// persona.yaml: a missing file is a no-op, so content fixtures that predate
+// it keep loading unchanged. Unlike a missing file, a *present but broken*
+// one (bad YAML, a duplicate id, a card with no items, an item with no
+// accepted answer) is a real error — silently dropping a malformed card
+// would just hide the bug instead of fixing it.
+func loadGrammar(dir string) ([]GrammarCard, error) {
 	var gf grammarFile
 	if err := readYAML(filepath.Join(dir, "grammar.yaml"), &gf); err != nil {
-		return nil
+		if os.IsNotExist(err) {
+			return nil, nil
+		}
+		return nil, fmt.Errorf("grammar.yaml: %w", err)
 	}
 	seen := map[string]bool{}
 	var out []GrammarCard
 	for _, g := range gf {
 		if seen[g.ID] {
-			continue
+			return nil, fmt.Errorf("grammar.yaml: duplicate id %q", g.ID)
 		}
 		seen[g.ID] = true
+		if len(g.Items) == 0 {
+			return nil, fmt.Errorf("grammar.yaml: %s: needs at least one item", g.ID)
+		}
+		items := make([]GrammarItem, 0, len(g.Items))
+		for _, it := range g.Items {
+			if len(it.Accept) == 0 {
+				return nil, fmt.Errorf("grammar.yaml: %s: item %q has no accept", g.ID, it.Prompt)
+			}
+			items = append(items, GrammarItem{Prompt: it.Prompt, Accept: it.Accept})
+		}
 		out = append(out, GrammarCard{
-			ID: g.ID, Front: g.Front, Back: g.Back, Note: g.Note, Lesson: g.Lesson,
-			ExampleSR: g.ExampleSR, ExampleRU: g.ExampleRU,
+			ID: g.ID, Front: g.Front, Note: g.Note, Lesson: g.Lesson,
+			ExampleSR: g.ExampleSR, ExampleRU: g.ExampleRU, Items: items,
 		})
 	}
-	return out
+	return out, nil
 }
 
 // autoTypes are exercise types whose answers are auto-checked against Accept.
@@ -329,13 +349,17 @@ func Load(dir string) (*Course, error) {
 		}
 		seenF[f.ID] = true
 		c.FalseFriends = append(c.FalseFriends, FalseFriend{
-			ID: f.ID, SR: f.SR, Means: f.Means, Not: f.Not, Correct: f.Correct, Group: f.Group,
+			ID: f.ID, SR: f.SR, Transcription: f.Transcription, Means: f.Means, Not: f.Not, Correct: f.Correct, Group: f.Group,
 			Emoji: f.Emoji, Image: f.Image,
 		})
 	}
 
 	// grammar.yaml — optional spaced-repetition cards for grammar points.
-	c.Grammar = loadGrammar(dir)
+	grammar, err := loadGrammar(dir)
+	if err != nil {
+		return nil, err
+	}
+	c.Grammar = grammar
 
 	return c, nil
 }
