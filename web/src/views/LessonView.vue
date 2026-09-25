@@ -358,7 +358,7 @@ function closeLesson() {
       </div>
 
       <BottomBar v-if="!showOwnBottomButton">
-        <button class="btn btn-primary w-full disabled:opacity-40" :disabled="!canAdvance" @click="next">
+        <button class="btn btn-primary w-full" :disabled="!canAdvance" @click="next">
           <template v-if="isFinalAction">
             <CircleCheckBig :size="16" :stroke-width="2.5" />
             {{ lesson.status === 'done' ? 'Урок пройден' : 'Завершить урок' }}

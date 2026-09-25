@@ -199,6 +199,11 @@ body {
     background: var(--accent);
     color: #fff;
   }
+  .btn-primary:disabled {
+    background: var(--ring-track);
+    color: var(--muted);
+    cursor: not-allowed;
+  }
   .btn-ghost {
     background: var(--bg-soft);
     color: var(--fg);

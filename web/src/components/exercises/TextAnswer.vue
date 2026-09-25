@@ -73,10 +73,15 @@ function retry() {
         не могу прослушать :(
       </button>
     </div>
-    <p v-else class="mb-5 whitespace-pre-wrap px-8 text-xl font-medium">
-      <GlossedText v-if="glossPrompt" :text="prompt" />
-      <template v-else>{{ prompt }}</template>
-    </p>
+    <div v-else class="mb-5 px-8 text-center">
+      <p v-if="type === 'fix_error'" class="mb-1.5 text-[10px] uppercase tracking-widest text-[var(--accent)]">
+        найди и исправь ошибку
+      </p>
+      <p class="whitespace-pre-wrap text-xl font-medium">
+        <GlossedText v-if="glossPrompt" :text="prompt" />
+        <template v-else>{{ prompt }}</template>
+      </p>
+    </div>
 
     <!-- previously answered -->
     <div v-if="fromPrior" class="text-sm">
@@ -101,7 +106,7 @@ function retry() {
       <SerbianKeys class="mt-1.5 justify-center" />
     </form>
     <BottomBar v-if="!fromPrior && !result">
-      <button class="btn btn-primary w-full disabled:opacity-50" :disabled="pending || !answer.trim()" @click="submit">
+      <button class="btn btn-primary w-full" :disabled="pending || !answer.trim()" @click="submit">
         Проверить
       </button>
     </BottomBar>

@@ -154,7 +154,7 @@ function retry() {
       </div>
 
       <BottomBar v-if="!result">
-        <button class="btn btn-primary w-full disabled:opacity-50" :disabled="pending || !complete" @click="submit">
+        <button class="btn btn-primary w-full" :disabled="pending || !complete" @click="submit">
           Проверить
         </button>
       </BottomBar>
