@@ -588,7 +588,7 @@ func (h handlers) getVocab(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 		out = append(out, vocabDTO{
-			ID: v.ID, Latin: v.Latin, Cyrillic: v.Cyrillic, RU: v.RU, Note: v.Note,
+			ID: v.ID, Latin: v.Latin, Cyrillic: v.Cyrillic, Transcription: v.Transcription, RU: v.RU, Note: v.Note,
 			Lesson: v.Lesson, POS: v.POS, Gender: v.Gender, Aspect: v.Aspect, Tags: v.Tags,
 			Emoji: v.Emoji, Image: v.Image, Audio: v.Audio,
 			ExampleSR: v.ExampleSR, ExampleRU: v.ExampleRU,

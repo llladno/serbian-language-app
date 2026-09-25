@@ -21,7 +21,7 @@ func (h handlers) lookup(w http.ResponseWriter, r *http.Request) {
 	out := lookupResultDTO{Query: q, Matches: []vocabDTO{}, Partial: partial}
 	for _, v := range found {
 		out.Matches = append(out.Matches, vocabDTO{
-			ID: v.ID, Latin: v.Latin, Cyrillic: v.Cyrillic, RU: v.RU, Note: v.Note,
+			ID: v.ID, Latin: v.Latin, Cyrillic: v.Cyrillic, Transcription: v.Transcription, RU: v.RU, Note: v.Note,
 			Lesson: v.Lesson, POS: v.POS, Gender: v.Gender, Aspect: v.Aspect, Tags: v.Tags,
 			Emoji: v.Emoji, Image: v.Image, Audio: v.Audio,
 		})

@@ -186,6 +186,7 @@ function nextCard() {
                   <span class="serbian text-lg font-semibold">{{
                     scriptMode === 'latin' ? v.latin : v.cyrillic
                   }}</span>
+                  <span v-if="v.transcription" class="text-sm text-[var(--muted)]">[{{ v.transcription }}]</span>
                   <SpeakButton :src="v.audio" :size="22" />
                 </span>
                 <span v-if="v.lesson" class="shrink-0 text-sm text-[var(--muted)]">урок {{ v.lesson }}</span>

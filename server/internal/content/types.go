@@ -110,21 +110,22 @@ type Exercise struct {
 
 // Vocab is one dictionary entry.
 type Vocab struct {
-	ID        string
-	Latin     string
-	Cyrillic  string
-	RU        string
-	Note      string
-	Lesson    string
-	POS       string
-	Gender    string
-	Aspect    string
-	Tags      []string
-	Emoji     string // optional
-	Image     string // optional filename under content/images/
-	Audio     string // optional filename under content/audio/ (set when the file exists)
-	ExampleSR string // optional example sentence using the word, in Serbian
-	ExampleRU string // ExampleSR's Russian translation
+	ID            string
+	Latin         string
+	Cyrillic      string
+	Transcription string // optional Russian-letter phonetic transcription (with stress)
+	RU            string
+	Note          string
+	Lesson        string
+	POS           string
+	Gender        string
+	Aspect        string
+	Tags          []string
+	Emoji         string // optional
+	Image         string // optional filename under content/images/
+	Audio         string // optional filename under content/audio/ (set when the file exists)
+	ExampleSR     string // optional example sentence using the word, in Serbian
+	ExampleRU     string // ExampleSR's Russian translation
 }
 
 // FalseFriend is one RU↔SR false-friend entry.
