@@ -33,6 +33,23 @@ steps:
         prompt: "Собери: «мне нравится этот город»"
         bank: ["Sviđa", "mi", "se", "ovaj", "grad"]
         accept: ["Sviđa mi se ovaj grad."]
+      - id: "27.2.5"
+        type: fix_error
+        prompt: "Sviđa mi leto."
+        accept: ["Sviđa mi se leto."]
+      - id: "27.2.6"
+        type: conjugate
+        prompt: "sviđati se — нравиться (кому?)"
+        forms: ["meni", "tebi", "njemu", "njoj", "nama", "vama", "njima"]
+        accept:
+          - ["mi"]
+          - ["ti"]
+          - ["mu"]
+          - ["joj"]
+          - ["nam"]
+          - ["vam"]
+          - ["im"]
+        meta: "краткие формы дательного падежа"
 
   - id: "27.3"
     kind: teach

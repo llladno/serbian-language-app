@@ -108,3 +108,11 @@ steps:
         type: fill_blank
         prompt: "Дополни: «tri ___» (kafa, женский род)"
         accept: ["kafe"]
+      - id: "08.6.5"
+        type: fix_error
+        prompt: "Pet dinar."
+        accept: ["Pet dinara."]
+      - id: "08.6.6"
+        type: fix_error
+        prompt: "Dve kafa."
+        accept: ["Dve kafe."]

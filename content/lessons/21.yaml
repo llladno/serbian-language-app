@@ -33,6 +33,14 @@ steps:
         prompt: "Собери: «я хочу есть»"
         bank: ["Hoću", "da", "jedem"]
         accept: ["Hoću da jedem."]
+      - id: "21.2.5"
+        type: fix_error
+        prompt: "Ana kaže: «Gladan sam.» (Ана — женщина)"
+        accept: ["Gladna sam."]
+      - id: "21.2.6"
+        type: fix_error
+        prompt: "Marko kaže: «Žedna sam.» (Марко — мужчина)"
+        accept: ["Žedan sam."]
 
   - id: "21.3"
     kind: teach

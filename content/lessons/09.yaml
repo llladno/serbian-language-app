@@ -61,3 +61,11 @@ steps:
         prompt: "Собери: «мне сорок лет»"
         bank: ["Imam", "četrdeset", "godina"]
         accept: ["Imam četrdeset godina."]
+      - id: "09.4.5"
+        type: fix_error
+        prompt: "Imam trideset godinu."
+        accept: ["Imam trideset godina."]
+      - id: "09.4.6"
+        type: fix_error
+        prompt: "Imam dvadeset dve godina."
+        accept: ["Imam dvadeset dve godine."]

@@ -33,6 +33,14 @@ steps:
         prompt: "Собери: «холодильник на кухне»"
         bank: ["Frižider", "je", "u", "kuhinji"]
         accept: ["Frižider je u kuhinji."]
+      - id: "19.2.5"
+        type: fix_error
+        prompt: "Lampa je u stolu."
+        accept: ["Lampa je na stolu."]
+      - id: "19.2.6"
+        type: fix_error
+        prompt: "Krevet je na sobi."
+        accept: ["Krevet je u sobi."]
 
   - id: "19.3"
     kind: teach

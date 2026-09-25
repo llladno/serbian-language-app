@@ -94,3 +94,34 @@ steps:
         prompt: "Собери: «какая это улица?»"
         bank: ["Koja", "je", "ovo", "ulica"]
         accept: ["Koja je ovo ulica?"]
+      - id: "23.6.5"
+        type: fix_error
+        prompt: "Koji je vreme?"
+        accept: ["Kakvo je vreme?"]
+      - id: "23.6.6"
+        type: conjugate
+        prompt: "koji — который (по родам)"
+        forms: ["m", "f", "n"]
+        accept:
+          - ["koji"]
+          - ["koja"]
+          - ["koje"]
+        meta: "koji/koja/koje"
+      - id: "23.6.7"
+        type: conjugate
+        prompt: "kakav — какой (по родам)"
+        forms: ["m", "f", "n"]
+        accept:
+          - ["kakav"]
+          - ["kakva"]
+          - ["kakvo"]
+        meta: "kakav/kakva/kakvo"
+      - id: "23.6.8"
+        type: conjugate
+        prompt: "čiji — чей (по родам)"
+        forms: ["m", "f", "n"]
+        accept:
+          - ["čiji"]
+          - ["čija"]
+          - ["čije"]
+        meta: "čiji/čija/čije"
