@@ -107,8 +107,8 @@ steps:
       - id: "19.6.3"
         type: listen
         prompt: "Запиши, что слышишь."
-        say: "Zgrada nema lift."
-        accept: ["Zgrada nema lift."]
+        say: "Zgrada nema lifta."
+        accept: ["Zgrada nema lifta."]
 
   - id: "19.7"
     kind: checkpoint

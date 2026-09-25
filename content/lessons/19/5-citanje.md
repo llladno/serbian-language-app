@@ -2,7 +2,7 @@
 kupatilo. Kuhinja je mala, ali ima sve: šporet, frižider i sudoperu.
 
 U dnevnom boravku je krevet, sto i velika polica za knjige. Volim da
-čitam na terasi — terasa je mala, ali topla. Zgrada nema lift, a ja
+čitam na terasi — terasa je mala, ali topla. Zgrada nema lifta, a ja
 živim na drugom spratu, pa je to okej.
 
 ---

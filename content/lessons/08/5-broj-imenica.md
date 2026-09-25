@@ -5,7 +5,7 @@
 
 | Число | Форма | Примеры |
 |---|---|---|
-| **1** (и …21, …31) | как в словаре | `jedan dinar`, `jedna kafa`, `jednu godinu` |
+| **1** (и …21, …31) | как в словаре | `jedan dinar`, `jedna kafa`, `jedna godina` |
 | **2, 3, 4** | «двойка» — как `-a` / `-e` | `dva dinara`, `tri kafe`, `četiri godine` |
 | **5 и больше** | «мешок» — обычно `-a` | `pet dinara`, `deset kafa`, `sto godina` |
 

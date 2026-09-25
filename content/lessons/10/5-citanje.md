@@ -2,7 +2,7 @@
 — Sto pedeset dinara.
 — Molim vas dve. Koliko dugujem?
 — Trista dinara sve zajedno. Imate sitno?
-— Nemam, evo kartica.
+— Nemam, evo kartice.
 — Može. Izvolite račun.
 — Hvala! Doviđenja.
 

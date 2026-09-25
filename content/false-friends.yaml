@@ -53,7 +53,7 @@
 - { id: "pecivo", sr: "pecivo", means: "выпечка (несладкая)", group: "shop", emoji: "🥐" }
 - { id: "pasulj", sr: "pasulj", means: "фасоль", group: "shop", image: "pasulj.jpg" }
 - { id: "grah", sr: "grah", means: "фасоль (боснийск.)", group: "shop", emoji: "🫘" }
-- { id: "kesa", sr: "kesa", means: "пакет", not: "коса", group: "shop", image: "kesa.jpg" }
+- { id: "kesa", sr: "kesa", means: "пакет", not: "касса", group: "shop", image: "kesa.jpg" }
 - { id: "racun", sr: "račun", means: "чек / счёт", group: "shop", image: "racun.jpg" }
 - { id: "sitno", sr: "sitno / kusur", means: "мелочь / сдача", group: "shop", emoji: "🪙" }
 - { id: "para", sr: "para (мн. pare)", means: "деньги (разг.) / грош", group: "shop", emoji: "💰" }
@@ -66,7 +66,7 @@
 - { id: "samo", sr: "samo", means: "только", not: "само", group: "small", emoji: "☝️" }
 - { id: "vec", sr: "već", means: "уже", group: "small", emoji: "✅" }
 - { id: "jos", sr: "još", means: "ещё", group: "small", emoji: "➕" }
-- { id: "ceo", sr: "ceo", means: "целый / весь", not: "цел", group: "small", emoji: "🥧" }
+- { id: "ceo", sr: "ceo", means: "целый / весь", group: "small", emoji: "🥧" }
 - { id: "pravi", sr: "pravi", means: "настоящий", not: "правый", group: "small", emoji: "💎" }
 - { id: "grad", sr: "grad", means: "город", not: "град (осадки — по контексту тоже grad)", group: "small", emoji: "🏙️" }
 - { id: "godina", sr: "godina", means: "год", group: "small", emoji: "🎂" }
