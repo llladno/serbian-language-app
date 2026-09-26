@@ -183,15 +183,18 @@ function nextCard() {
             <div class="min-w-0 flex-1">
               <div class="flex items-baseline justify-between gap-2">
                 <span class="flex items-center gap-1.5">
-                  <span class="serbian text-lg font-semibold">{{
+                  <span class="serbian text-sm font-semibold sm:text-lg">{{
                     scriptMode === 'latin' ? v.latin : v.cyrillic
                   }}</span>
-                  <span v-if="v.transcription" class="text-sm text-[var(--muted)]">[{{ v.transcription }}]</span>
+                  <span v-if="v.transcription" class="hidden text-sm text-[var(--muted)] sm:inline"
+                    >[{{ v.transcription }}]</span
+                  >
                   <SpeakButton :src="v.audio" :size="22" />
                 </span>
                 <span v-if="v.lesson" class="shrink-0 text-sm text-[var(--muted)]">урок {{ v.lesson }}</span>
               </div>
               <p class="text-sm">{{ v.ru }}</p>
+              <p v-if="v.transcription" class="text-xs text-[var(--muted)] sm:hidden">[{{ v.transcription }}]</p>
               <p v-if="v.note" class="mt-0.5 text-sm text-[var(--muted)]">{{ v.note }}</p>
             </div>
           </div>
@@ -208,12 +211,15 @@ function nextCard() {
             <div class="min-w-0 flex-1">
               <div class="flex flex-wrap items-baseline justify-between gap-x-2 gap-y-0.5">
                 <span class="flex items-center gap-1.5">
-                  <span class="serbian text-lg font-semibold">{{ f.sr }}</span>
-                  <span v-if="f.transcription" class="text-sm text-[var(--muted)]">[{{ f.transcription }}]</span>
+                  <span class="serbian text-sm font-semibold sm:text-lg">{{ f.sr }}</span>
+                  <span v-if="f.transcription" class="hidden text-sm text-[var(--muted)] sm:inline"
+                    >[{{ f.transcription }}]</span
+                  >
                 </span>
                 <span v-if="f.not" class="text-sm text-[var(--bad)]">≠ {{ f.not }}</span>
               </div>
               <p class="text-sm">{{ f.means }}</p>
+              <p v-if="f.transcription" class="text-xs text-[var(--muted)] sm:hidden">[{{ f.transcription }}]</p>
               <p v-if="f.correct" class="mt-0.5 text-sm text-[var(--muted)]">
                 «то самое» → <span class="serbian">{{ f.correct }}</span>
               </p>
