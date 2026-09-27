@@ -230,6 +230,16 @@ export interface DayActivity {
   count: number
 }
 
+export interface LeaderboardPage {
+  rows: LeaderRow[]
+  has_more: boolean
+}
+
+export interface LeaderboardMe {
+  rank: number
+  row: LeaderRow
+}
+
 export interface LeaderRow {
   name: string
   lessons_done: number

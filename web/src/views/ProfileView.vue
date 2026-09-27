@@ -116,78 +116,80 @@ async function logout() {
 
 <template>
   <div class="space-y-4">
-    <p v-if="loadError" class="card p-4 text-[var(--bad)]">{{ loadError }}</p>
+    <Transition name="fade" mode="out-in">
+      <p v-if="loadError" key="error" class="card p-4 text-[var(--bad)]">{{ loadError }}</p>
 
-    <div v-else-if="!me" class="grid grid-cols-1 items-start gap-4 lg:grid-cols-3">
-      <div class="space-y-4 lg:col-span-2 lg:order-1">
-        <div class="card space-y-3 p-5">
-          <div class="skel h-20 w-full rounded-2xl"></div>
-          <div class="skel h-12 w-full rounded-2xl"></div>
-        </div>
-        <div class="card p-5">
-          <div class="skel mb-3 h-4 w-40"></div>
-          <div class="flex flex-wrap justify-around gap-4">
-            <div v-for="i in 3" :key="i" class="skel h-[72px] w-[72px] rounded-full"></div>
+      <div v-else-if="!me" key="skel" class="grid grid-cols-1 items-start gap-4 lg:grid-cols-3">
+        <div class="space-y-4 lg:col-span-2 lg:order-1">
+          <div class="card space-y-3 p-5">
+            <div class="skel h-20 w-full rounded-2xl"></div>
+            <div class="skel h-12 w-full rounded-2xl"></div>
+          </div>
+          <div class="card p-5">
+            <div class="skel mb-3 h-4 w-40"></div>
+            <div class="flex flex-wrap justify-around gap-4">
+              <div v-for="i in 3" :key="i" class="skel h-[72px] w-[72px] rounded-full"></div>
+            </div>
           </div>
         </div>
-      </div>
-      <div class="space-y-4 lg:sticky lg:top-20 lg:order-2 lg:col-span-1">
-        <div class="card space-y-3 p-5">
-          <div class="skel h-6 w-32"></div>
-          <div class="skel h-3.5 w-40"></div>
-          <div class="skel h-3.5 w-28"></div>
-        </div>
-        <div class="card space-y-2 p-5">
-          <div class="skel h-4 w-20"></div>
-          <div class="skel h-3.5 w-full"></div>
-          <div class="skel h-3.5 w-full"></div>
-        </div>
-      </div>
-    </div>
-
-    <div v-else-if="me" class="grid grid-cols-1 items-start gap-4 lg:grid-cols-3">
-    <div class="space-y-4 lg:col-span-2 lg:order-1">
-      <ProgressDashboard v-if="me" />
-      <PhaseProgressCard />
-    </div>
-
-    <div class="space-y-4 lg:sticky lg:top-20 lg:order-2 lg:col-span-1">
-      <div class="card space-y-3 p-5">
-        <div class="flex items-center justify-between gap-2">
-          <p class="text-xl font-extrabold">{{ me.name }}</p>
-          <button class="icon-btn shrink-0" title="Настройки" aria-label="Настройки" @click="showSettings = true">
-            <Settings :size="19" :stroke-width="2.25" />
-          </button>
-        </div>
-
-        <div class="space-y-1.5 text-sm">
-          <div class="flex items-center gap-2">
-            <span class="text-[var(--muted)]">Telegram:</span>
-            <span v-if="me.telegram.linked">@{{ me.telegram.username || '—' }}</span>
-            <span v-else class="text-[var(--muted)]">не привязан</span>
+        <div class="space-y-4 lg:sticky lg:top-20 lg:order-2 lg:col-span-1">
+          <div class="card space-y-3 p-5">
+            <div class="skel h-6 w-32"></div>
+            <div class="skel h-3.5 w-40"></div>
+            <div class="skel h-3.5 w-28"></div>
           </div>
-          <div class="flex items-center gap-2">
-            <span class="text-[var(--muted)]">Почта:</span>
-            <span v-if="me.email">{{ me.email }}</span>
-            <span v-else class="text-[var(--muted)]">не указана</span>
-            <span
-              v-if="me.email"
-              class="rounded-full px-2 py-0.5 text-xs font-semibold"
-              :style="
-                me.email_verified
-                  ? { background: 'color-mix(in srgb, var(--good) 16%, transparent)', color: 'var(--good)' }
-                  : { background: 'var(--bg-soft)', color: 'var(--muted)' }
-              "
-            >
-              {{ me.email_verified ? 'подтверждена' : 'не подтверждена' }}
-            </span>
+          <div class="card space-y-2 p-5">
+            <div class="skel h-4 w-20"></div>
+            <div class="skel h-3.5 w-full"></div>
+            <div class="skel h-3.5 w-full"></div>
           </div>
         </div>
       </div>
 
-      <LeaderboardCard :name="me.name" />
-    </div>
-    </div>
+      <div v-else key="loaded" class="grid grid-cols-1 items-start gap-4 lg:grid-cols-3">
+        <div class="space-y-4 lg:col-span-2 lg:order-1">
+          <ProgressDashboard />
+          <PhaseProgressCard />
+        </div>
+
+        <div class="space-y-4 lg:sticky lg:top-20 lg:order-2 lg:col-span-1">
+          <div class="card space-y-3 p-5">
+            <div class="flex items-center justify-between gap-2">
+              <p class="text-xl font-extrabold">{{ me.name }}</p>
+              <button class="icon-btn shrink-0" title="Настройки" aria-label="Настройки" @click="showSettings = true">
+                <Settings :size="19" :stroke-width="2.25" />
+              </button>
+            </div>
+
+            <div class="space-y-1.5 text-sm">
+              <div class="flex items-center gap-2">
+                <span class="text-[var(--muted)]">Telegram:</span>
+                <span v-if="me.telegram.linked">@{{ me.telegram.username || '—' }}</span>
+                <span v-else class="text-[var(--muted)]">не привязан</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="text-[var(--muted)]">Почта:</span>
+                <span v-if="me.email">{{ me.email }}</span>
+                <span v-else class="text-[var(--muted)]">не указана</span>
+                <span
+                  v-if="me.email"
+                  class="rounded-full px-2 py-0.5 text-xs font-semibold"
+                  :style="
+                    me.email_verified
+                      ? { background: 'color-mix(in srgb, var(--good) 16%, transparent)', color: 'var(--good)' }
+                      : { background: 'var(--bg-soft)', color: 'var(--muted)' }
+                  "
+                >
+                  {{ me.email_verified ? 'подтверждена' : 'не подтверждена' }}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <LeaderboardCard :name="me.name" />
+        </div>
+      </div>
+    </Transition>
 
     <SupportCard v-if="me" />
     <DonateCard v-if="me" />

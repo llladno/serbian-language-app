@@ -12,7 +12,8 @@ import type {
   GramCheckResult,
   Progress,
   LessonAttempts,
-  LeaderRow,
+  LeaderboardPage,
+  LeaderboardMe,
   SessionUser,
   Me,
   Health,
@@ -161,5 +162,9 @@ export const api = {
       body: JSON.stringify({ vocab_id: vocabId }),
     }),
   progress: () => request<Progress>('/progress'),
-  leaderboard: () => request<LeaderRow[]>('/leaderboard'),
+  leaderboard: (params?: { limit?: number; offset?: number }) =>
+    request<LeaderboardPage>(
+      '/leaderboard' + qs({ limit: params?.limit?.toString(), offset: params?.offset?.toString() }),
+    ),
+  leaderboardMe: () => request<LeaderboardMe>('/leaderboard/me'),
 }

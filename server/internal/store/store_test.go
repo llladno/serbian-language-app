@@ -148,7 +148,7 @@ func TestListUsers(t *testing.T) {
 	}
 }
 
-func TestAllUsersProgress(t *testing.T) {
+func TestLeaderboardPage(t *testing.T) {
 	s := newStore(t)
 	activeID, err := s.CreateUser("Активный")
 	if err != nil {
@@ -170,9 +170,12 @@ func TestAllUsersProgress(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	prog, err := s.AllUsersProgress(day0)
+	prog, hasMore, err := s.LeaderboardPage(day0, 50, 0)
 	if err != nil {
-		t.Fatalf("AllUsersProgress: %v", err)
+		t.Fatalf("LeaderboardPage: %v", err)
+	}
+	if hasMore {
+		t.Error("has_more = true, want false (2 accounts fit in one page of 50)")
 	}
 	if len(prog) != 2 {
 		t.Fatalf("progress rows = %d, want 2 (%+v)", len(prog), prog)
@@ -190,6 +193,90 @@ func TestAllUsersProgress(t *testing.T) {
 	}
 	if prog[0].LessonsDone != 1 {
 		t.Errorf("active LessonsDone = %d, want 1", prog[0].LessonsDone)
+	}
+}
+
+func TestUserRank(t *testing.T) {
+	s := newStore(t)
+	activeID, err := s.CreateUser("Активный")
+	if err != nil {
+		t.Fatal(err)
+	}
+	passiveID, err := s.CreateUser("Пассивный")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	u := s.User(activeID)
+	if err := u.SetLessonStatus("01", "done", day0); err != nil {
+		t.Fatal(err)
+	}
+
+	rank, prog, err := s.UserRank(day0, activeID)
+	if err != nil {
+		t.Fatalf("UserRank(active): %v", err)
+	}
+	if rank != 1 {
+		t.Errorf("active rank = %d, want 1", rank)
+	}
+	if prog.Name != "Активный" || prog.LessonsDone != 1 {
+		t.Errorf("active progress = %+v", prog)
+	}
+
+	rank, prog, err = s.UserRank(day0, passiveID)
+	if err != nil {
+		t.Fatalf("UserRank(passive): %v", err)
+	}
+	if rank != 2 {
+		t.Errorf("passive rank = %d, want 2", rank)
+	}
+	if prog.Name != "Пассивный" || prog.LessonsDone != 0 {
+		t.Errorf("passive progress = %+v", prog)
+	}
+
+	if _, _, err := s.UserRank(day0, "no-such-user"); err == nil {
+		t.Error("UserRank for an unknown id should error, not silently succeed")
+	}
+}
+
+func TestLeaderboardPagePaginates(t *testing.T) {
+	s := newStore(t)
+	for _, name := range []string{"А", "Б", "В", "Г", "Д"} {
+		if _, err := s.CreateUser(name); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	var seen []string
+	offset := 0
+	for {
+		page, hasMore, err := s.LeaderboardPage(day0, 2, offset)
+		if err != nil {
+			t.Fatalf("LeaderboardPage at offset %d: %v", offset, err)
+		}
+		if !hasMore && offset+len(page) < 5 {
+			t.Fatalf("has_more=false too early at offset %d (%d seen so far)", offset, offset+len(page))
+		}
+		for _, p := range page {
+			seen = append(seen, p.Name)
+		}
+		if !hasMore {
+			break
+		}
+		offset += len(page)
+		if offset > 10 {
+			t.Fatal("pagination did not terminate")
+		}
+	}
+	if len(seen) != 5 {
+		t.Fatalf("paged through %d accounts, want 5 (%v)", len(seen), seen)
+	}
+	byName := map[string]bool{}
+	for _, n := range seen {
+		if byName[n] {
+			t.Errorf("account %q returned on more than one page", n)
+		}
+		byName[n] = true
 	}
 }
 

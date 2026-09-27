@@ -254,6 +254,16 @@ type leaderRowDTO struct {
 	LastActive    string `json:"last_active"`
 }
 
+type leaderboardPageDTO struct {
+	Rows    []leaderRowDTO `json:"rows"`
+	HasMore bool           `json:"has_more"`
+}
+
+type leaderboardMeDTO struct {
+	Rank int          `json:"rank"`
+	Row  leaderRowDTO `json:"row"`
+}
+
 type phaseProgressDTO struct {
 	ID    string `json:"id"`
 	Title string `json:"title"`

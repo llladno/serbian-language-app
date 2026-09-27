@@ -138,18 +138,18 @@ function nextCard() {
   </div>
   <SerbianKeys class="mb-3" />
 
-  <div v-if="initialLoading" class="space-y-2">
-    <div v-for="r in 6" :key="r" class="card flex gap-3 p-3">
-      <div class="skel h-12 w-12 shrink-0 rounded-xl"></div>
-      <div class="min-w-0 flex-1 space-y-1.5">
-        <div class="skel h-5 w-2/5"></div>
-        <div class="skel h-3.5 w-3/5"></div>
+  <Transition name="fade" mode="out-in">
+    <div v-if="initialLoading" key="skel" class="space-y-2">
+      <div v-for="r in 6" :key="r" class="card flex gap-3 p-3">
+        <div class="skel h-12 w-12 shrink-0 rounded-xl"></div>
+        <div class="min-w-0 flex-1 space-y-1.5">
+          <div class="skel h-5 w-2/5"></div>
+          <div class="skel h-3.5 w-3/5"></div>
+        </div>
       </div>
     </div>
-  </div>
 
-  <Transition v-else name="fade" mode="out-in">
-    <div :key="tab">
+    <div v-else :key="tab">
       <template v-if="tab === 'words'">
         <div class="mb-3 flex items-center gap-3 text-sm text-[var(--muted)]">
           <span>{{ vocabRows.length }} слов</span>

@@ -9,8 +9,8 @@ const leaders = ref<LeaderRow[]>([])
 const loading = ref(true)
 onMounted(() => {
   api
-    .leaderboard()
-    .then((r) => (leaders.value = r))
+    .leaderboard({ limit: 3 })
+    .then((r) => (leaders.value = r.rows))
     .catch(() => {})
     .finally(() => (loading.value = false))
 })

@@ -8,6 +8,7 @@ import (
 	"math/rand"
 	"net/http"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 
@@ -188,6 +189,7 @@ func Handler(deps Deps) http.Handler {
 	protected.HandleFunc("POST /api/review/add", h.reviewAdd)
 	protected.HandleFunc("GET /api/progress", h.getProgress)
 	protected.HandleFunc("GET /api/leaderboard", h.getLeaderboard)
+	protected.HandleFunc("GET /api/leaderboard/me", h.getLeaderboardMe)
 
 	root.Handle("/api/", h.requireAuth(protected))
 
@@ -1097,28 +1099,68 @@ func (h handlers) getProgress(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, 200, out)
 }
 
+const (
+	leaderboardPageDefault = 30
+	leaderboardPageMax     = 100
+)
+
+func (h handlers) totalLessons() int {
+	n := 0
+	for _, p := range h.Course().Phases {
+		n += len(p.Lessons)
+	}
+	return n
+}
+
+func leaderRowFrom(p store.UserProgress, lessonsTotal int) leaderRowDTO {
+	return leaderRowDTO{
+		Name: p.Name, LessonsDone: p.LessonsDone, LessonsTotal: lessonsTotal,
+		CardsKnown: p.CardsKnown, TotalCards: p.TotalCards, StreakDays: p.StreakDays,
+		ReviewedToday: p.ReviewedToday, LastActive: p.LastActive,
+	}
+}
+
 func (h handlers) getLeaderboard(w http.ResponseWriter, r *http.Request) {
 	if _, ok := h.user(w, r); !ok {
 		return
 	}
-	rows, err := h.Store.AllUsersProgress(h.Now())
+	limit := leaderboardPageDefault
+	if v, err := strconv.Atoi(r.URL.Query().Get("limit")); err == nil && v > 0 {
+		limit = min(v, leaderboardPageMax)
+	}
+	offset := 0
+	if v, err := strconv.Atoi(r.URL.Query().Get("offset")); err == nil && v > 0 {
+		offset = v
+	}
+
+	rows, hasMore, err := h.Store.LeaderboardPage(h.Now(), limit, offset)
 	if err != nil {
 		fail(w, 500, err.Error())
 		return
 	}
-	totalLessons := 0
-	for _, p := range h.Course().Phases {
-		totalLessons += len(p.Lessons)
-	}
+	lessonsTotal := h.totalLessons()
 	out := make([]leaderRowDTO, 0, len(rows))
 	for _, p := range rows {
-		out = append(out, leaderRowDTO{
-			Name: p.Name, LessonsDone: p.LessonsDone, LessonsTotal: totalLessons,
-			CardsKnown: p.CardsKnown, TotalCards: p.TotalCards, StreakDays: p.StreakDays,
-			ReviewedToday: p.ReviewedToday, LastActive: p.LastActive,
-		})
+		out = append(out, leaderRowFrom(p, lessonsTotal))
 	}
-	writeJSON(w, 200, out)
+	writeJSON(w, 200, leaderboardPageDTO{Rows: out, HasMore: hasMore})
+}
+
+// getLeaderboardMe returns the caller's own leaderboard position, so the UI
+// can pin it above the paginated list without waiting for that account's
+// actual page to load (it may be hundreds of rows down).
+func (h handlers) getLeaderboardMe(w http.ResponseWriter, r *http.Request) {
+	ac, ok := authFrom(r)
+	if !ok {
+		fail(w, http.StatusUnauthorized, "no session")
+		return
+	}
+	rank, prog, err := h.Store.UserRank(h.Now(), ac.UserID)
+	if err != nil {
+		fail(w, 500, err.Error())
+		return
+	}
+	writeJSON(w, 200, leaderboardMeDTO{Rank: rank, Row: leaderRowFrom(prog, h.totalLessons())})
 }
 
 func hasTag(tags []string, want string) bool {
