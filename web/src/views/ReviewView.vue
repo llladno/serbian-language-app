@@ -5,6 +5,9 @@ import { CircleQuestionMark } from 'lucide-vue-next'
 import { useReviewStore } from '../stores/review'
 import WordMedia from '../components/WordMedia.vue'
 import SpeakButton from '../components/SpeakButton.vue'
+import SerbianKeys from '../components/SerbianKeys.vue'
+import BottomBar from '../components/BottomBar.vue'
+import type { GramCheckResult } from '../types'
 
 const store = useReviewStore()
 const { current, remaining, total, sessionCount, tally, loading, error } = storeToRefs(store)
@@ -14,6 +17,12 @@ const showHelp = ref(false)
 // Quiz state for a first-encounter ("new") card: null until the learner
 // taps an option, then holds the picked text so the UI can highlight it.
 const quizPicked = ref<string | null>(null)
+
+// Grammar-drill state: the typed answer for the current item and the
+// check result once submitted (null = not answered yet).
+const gramAnswer = ref('')
+const gramResult = ref<GramCheckResult | null>(null)
+const gramPending = ref(false)
 
 onMounted(() => store.load())
 
@@ -48,6 +57,24 @@ async function grade(g: number) {
   await store.grade(g)
 }
 
+async function submitGram() {
+  if (gramPending.value || !gramAnswer.value.trim()) return
+  gramPending.value = true
+  try {
+    gramResult.value = await store.checkGram(gramAnswer.value)
+  } finally {
+    gramPending.value = false
+  }
+}
+
+function nextGram() {
+  if (!gramResult.value) return
+  const ok = gramResult.value.ok
+  gramAnswer.value = ''
+  gramResult.value = null
+  store.advanceGram(ok)
+}
+
 function pickOption(opt: string) {
   if (quizPicked.value || !current.value) return
   quizPicked.value = opt
@@ -66,7 +93,7 @@ async function confirmQuiz() {
 }
 
 function onKey(e: KeyboardEvent) {
-  if (!current.value || isQuiz.value) return
+  if (!current.value || isQuiz.value || current.value.kind === 'gram') return
   if (e.code === 'Space' || e.code === 'Enter') {
     e.preventDefault()
     if (!revealed.value) revealed.value = true
@@ -99,131 +126,189 @@ onUnmounted(() => window.removeEventListener('keydown', onKey))
             слово уходит в обычное повторение: интервал до следующего показа
             растёт при верных ответах и сбрасывается при «Опять».
           </p>
+          <p class="mt-1.5">
+            Карточки «грамматика» — не то же самое: там просят вписать одну
+            форму (например, «radim» для ti), ответ реально проверяется, и
+            интервал повторения считается по тому, ответил ли ты верно —
+            выбирать оценку самому не нужно.
+          </p>
         </div>
       </template>
     </div>
   </div>
 
-  <div v-if="loading" class="space-y-5">
-    <div class="skel h-1.5 w-full rounded-full"></div>
-    <div class="card flex min-h-[13rem] flex-col items-center justify-center gap-3 p-8">
-      <div class="skel h-9 w-40"></div>
-      <div class="skel h-4 w-24"></div>
-    </div>
-    <div class="skel h-12 w-full rounded-2xl"></div>
-  </div>
-  <p v-else-if="error" class="card p-4 text-[var(--bad)]">{{ error }}</p>
-
-  <!-- session summary -->
-  <div v-else-if="done" class="card p-8 text-center">
-    <p class="text-4xl">🎉</p>
-    <p class="mt-2 text-lg font-bold">Сессия закончена</p>
-    <p class="mt-1 text-[var(--muted)]">{{ sessionCount }} карточек</p>
-    <div class="mx-auto mt-4 grid max-w-xs grid-cols-4 gap-2 text-sm">
-      <div v-for="(b, i) in GRADES" :key="i" class="rounded-lg bg-[var(--bg-soft)] py-2">
-        <p class="font-bold">{{ tally[i] }}</p>
-        <p class="text-xs text-[var(--muted)]">{{ b.label }}</p>
+  <Transition name="fade" mode="out-in">
+    <div v-if="loading" key="skel" class="space-y-5">
+      <div class="skel h-1.5 w-full rounded-full"></div>
+      <div class="card flex min-h-[13rem] flex-col items-center justify-center gap-3 p-8">
+        <div class="skel h-9 w-40"></div>
+        <div class="skel h-4 w-24"></div>
       </div>
+      <div class="skel h-12 w-full rounded-2xl"></div>
     </div>
-    <div class="mt-6 flex justify-center gap-2">
-      <button class="btn btn-ghost" @click="store.load()">Ещё раз</button>
-      <RouterLink to="/profile" class="btn btn-primary">В профиль</RouterLink>
-    </div>
-  </div>
+    <p v-else-if="error" key="error" class="card p-4 text-[var(--bad)]">{{ error }}</p>
 
-  <!-- empty -->
-  <div v-else-if="!current" class="card p-8 text-center">
-    <p class="text-3xl">✨</p>
-    <p class="mt-2 text-lg font-bold">На сегодня всё</p>
-    <p class="mt-1 text-[var(--muted)]">Новые карточки и повторения появятся завтра.</p>
-    <RouterLink to="/profile" class="btn btn-primary mt-5">В профиль</RouterLink>
-  </div>
-
-  <!-- card -->
-  <div v-else class="space-y-5">
-    <div class="h-1.5 overflow-hidden rounded-full bg-[var(--ring-track)]">
-      <div class="h-full rounded-full bg-[var(--accent)] transition-all duration-300" :style="{ width: progressPct + '%' }" />
-    </div>
-    <p class="text-center text-xs text-[var(--muted)]">осталось {{ remaining }}</p>
-
-    <!-- first encounter: pick 1 of 4 translations to learn the word -->
-    <div v-if="isQuiz" class="card flex min-h-[13rem] flex-col items-center p-8 text-center pop" :key="current.card_id">
-      <p class="mb-2 text-[10px] uppercase tracking-widest text-[var(--accent)]">новое слово</p>
-      <div class="flex items-center gap-2">
-        <p class="serbian text-4xl font-semibold">{{ current.front }}</p>
-        <SpeakButton :src="current.audio" :size="36" />
-      </div>
-      <p v-if="current.cyrillic" class="mt-1 text-sm text-[var(--muted)]">{{ current.cyrillic }}</p>
-
-      <div class="mt-5 grid w-full max-w-sm grid-cols-1 gap-2 sm:grid-cols-2">
-        <button
-          v-for="opt in current.options"
-          :key="opt"
-          class="btn btn-ghost justify-center"
-          :class="{
-            'ring-2 ring-[var(--good)]': quizPicked && opt === current.back,
-            'ring-2 ring-[var(--bad)]': quizPicked && opt === quizPicked && opt !== current.back,
-          }"
-          :disabled="!!quizPicked"
-          @click="pickOption(opt)"
-        >
-          {{ opt }}
-        </button>
-      </div>
-
-      <Transition name="fade">
-        <div v-if="quizPicked" class="mt-4 flex flex-col items-center border-t border-[var(--border)] pt-4">
-          <WordMedia :image="current.image" :emoji="current.emoji" :alt="current.back" :size="96" />
-          <p class="mt-2 font-semibold" :class="quizPicked === current.back ? 'text-[var(--good)]' : 'text-[var(--bad)]'">
-            {{ quizPicked === current.back ? '✓ Верно' : '✗ Не то — правильно: ' + current.back }}
-          </p>
-          <p v-if="current.example_sr" class="serbian mt-2 text-[var(--fg)]">{{ current.example_sr }}</p>
-          <p v-if="current.example_ru" class="text-sm text-[var(--muted)]">{{ current.example_ru }}</p>
+    <!-- session summary -->
+    <div v-else-if="done" key="done" class="card p-8 text-center">
+      <p class="text-4xl">🎉</p>
+      <p class="mt-2 text-lg font-bold">Сессия закончена</p>
+      <p class="mt-1 text-[var(--muted)]">{{ sessionCount }} карточек</p>
+      <div class="mx-auto mt-4 grid max-w-xs grid-cols-4 gap-2 text-sm">
+        <div v-for="(b, i) in GRADES" :key="i" class="rounded-lg bg-[var(--bg-soft)] py-2">
+          <p class="font-bold">{{ tally[i] }}</p>
+          <p class="text-xs text-[var(--muted)]">{{ b.label }}</p>
         </div>
-      </Transition>
-      <p v-if="!quizPicked" class="mt-5 text-xs text-[var(--muted)]">выбери перевод</p>
-      <button v-else class="btn btn-primary mt-4 w-full max-w-sm" @click="confirmQuiz">Дальше</button>
+      </div>
+      <div class="mt-6 flex justify-center gap-2">
+        <button class="btn btn-ghost" @click="store.load()">Ещё раз</button>
+        <RouterLink to="/profile" class="btn btn-primary">В профиль</RouterLink>
+      </div>
     </div>
 
-    <!-- already-known card: flip and self-grade -->
-    <template v-else>
-      <div
-        class="card flex min-h-[13rem] cursor-pointer flex-col items-center justify-center p-8 text-center pop"
-        :key="current.card_id"
-        @click="revealed = true"
-      >
-        <p v-if="current.kind === 'ff'" class="mb-2 text-[10px] uppercase tracking-widest text-[var(--accent)]">ложный друг</p>
+    <!-- empty -->
+    <div v-else-if="!current" key="empty" class="card p-8 text-center">
+      <p class="text-3xl">✨</p>
+      <p class="mt-2 text-lg font-bold">На сегодня всё</p>
+      <p class="mt-1 text-[var(--muted)]">Новые карточки и повторения появятся завтра.</p>
+      <RouterLink to="/profile" class="btn btn-primary mt-5">В профиль</RouterLink>
+    </div>
+
+    <!-- card -->
+    <div v-else key="card" class="space-y-5">
+      <div class="h-1.5 overflow-hidden rounded-full bg-[var(--ring-track)]">
+        <div class="h-full rounded-full bg-[var(--accent)] transition-all duration-300" :style="{ width: progressPct + '%' }" />
+      </div>
+      <p class="text-center text-xs text-[var(--muted)]">осталось {{ remaining }}</p>
+
+      <!-- grammar item: type the asked form, checked for real -->
+      <div v-if="current.kind === 'gram'" class="card flex min-h-[13rem] flex-col items-center p-8 text-center pop" :key="current.card_id">
+        <p class="mb-2 text-[10px] uppercase tracking-widest text-[var(--accent)]">грамматика</p>
+        <p class="serbian text-lg font-semibold">{{ current.front }}</p>
+        <p v-if="current.note" class="mt-1 text-sm text-[var(--muted)]">{{ current.note }}</p>
+
+        <div class="mt-5 flex flex-col items-center gap-1">
+          <p class="text-[10px] uppercase tracking-widest text-[var(--muted)]">впиши форму</p>
+          <p class="serbian text-2xl font-semibold">{{ current.item_prompt }}</p>
+        </div>
+
+        <form v-if="!gramResult" class="mx-auto mt-4 w-full max-w-sm" @submit.prevent="submitGram">
+          <input
+            v-model="gramAnswer"
+            type="text"
+            autocomplete="off"
+            autocapitalize="off"
+            autocorrect="off"
+            spellcheck="false"
+            class="field serbian w-full text-center"
+            placeholder="ответ…"
+          />
+          <SerbianKeys class="mt-1.5 justify-center" />
+        </form>
+
+        <Transition name="fade">
+          <div v-if="gramResult" class="mt-4 flex flex-col items-center border-t border-[var(--border)] pt-4">
+            <p class="font-semibold" :class="gramResult.ok ? 'text-[var(--good)]' : 'text-[var(--bad)]'">
+              {{ gramResult.ok ? '✓ Верно' : gramResult.near_miss ? 'Почти — опечатка?' : '✗ Не то' }}
+            </p>
+            <p v-if="!gramResult.ok && gramResult.expected" class="text-sm">
+              Правильно: <span class="serbian font-semibold">{{ gramResult.expected }}</span>
+            </p>
+            <p v-if="current.example_sr" class="serbian mt-2 text-[var(--fg)]">{{ current.example_sr }}</p>
+            <p v-if="current.example_ru" class="text-sm text-[var(--muted)]">{{ current.example_ru }}</p>
+          </div>
+        </Transition>
+
+        <BottomBar v-if="!gramResult">
+          <button class="btn btn-primary w-full" :disabled="gramPending || !gramAnswer.trim()" @click="submitGram">
+            Проверить
+          </button>
+        </BottomBar>
+        <BottomBar v-else>
+          <button class="btn btn-primary w-full" @click="nextGram">Дальше</button>
+        </BottomBar>
+      </div>
+
+      <!-- first encounter: pick 1 of 4 translations to learn the word -->
+      <div v-else-if="isQuiz" class="card flex min-h-[13rem] flex-col items-center p-8 text-center pop" :key="current.card_id">
+        <p class="mb-2 text-[10px] uppercase tracking-widest text-[var(--accent)]">новое слово</p>
         <div class="flex items-center gap-2">
           <p class="serbian text-4xl font-semibold">{{ current.front }}</p>
           <SpeakButton :src="current.audio" :size="36" />
         </div>
         <p v-if="current.cyrillic" class="mt-1 text-sm text-[var(--muted)]">{{ current.cyrillic }}</p>
+        <p v-if="current.transcription" class="text-sm text-[var(--muted)]">[{{ current.transcription }}]</p>
+
+        <div class="mt-5 grid w-full max-w-sm grid-cols-1 gap-2 sm:grid-cols-2">
+          <button
+            v-for="opt in current.options"
+            :key="opt"
+            class="btn btn-ghost justify-center"
+            :class="{
+              'ring-2 ring-[var(--good)]': quizPicked && opt === current.back,
+              'ring-2 ring-[var(--bad)]': quizPicked && opt === quizPicked && opt !== current.back,
+            }"
+            :disabled="!!quizPicked"
+            @click="pickOption(opt)"
+          >
+            {{ opt }}
+          </button>
+        </div>
 
         <Transition name="fade">
-          <div v-if="revealed" class="mt-4 flex flex-col items-center border-t border-[var(--border)] pt-4">
-            <WordMedia :image="current.image" :emoji="current.emoji" :alt="current.back" :size="112" />
-            <p class="mt-3 text-xl">{{ current.back }}</p>
-            <p v-if="current.note" class="mt-1 text-sm text-[var(--muted)]">{{ current.note }}</p>
-            <p v-if="current.example_sr" class="serbian mt-2.5 text-[var(--fg)]">{{ current.example_sr }}</p>
+          <div v-if="quizPicked" class="mt-4 flex flex-col items-center border-t border-[var(--border)] pt-4">
+            <WordMedia :image="current.image" :emoji="current.emoji" :alt="current.back" :size="96" />
+            <p class="mt-2 font-semibold" :class="quizPicked === current.back ? 'text-[var(--good)]' : 'text-[var(--bad)]'">
+              {{ quizPicked === current.back ? '✓ Верно' : '✗ Не то — правильно: ' + current.back }}
+            </p>
+            <p v-if="current.example_sr" class="serbian mt-2 text-[var(--fg)]">{{ current.example_sr }}</p>
             <p v-if="current.example_ru" class="text-sm text-[var(--muted)]">{{ current.example_ru }}</p>
           </div>
         </Transition>
-        <p v-if="!revealed" class="mt-5 text-xs text-[var(--muted)]">нажми или пробел</p>
+        <p v-if="!quizPicked" class="mt-5 text-xs text-[var(--muted)]">выбери перевод</p>
+        <button v-else class="btn btn-primary mt-4 w-full max-w-sm" @click="confirmQuiz">Дальше</button>
       </div>
 
-      <div v-if="revealed" class="grid grid-cols-4 gap-2 pop">
-        <button
-          v-for="b in GRADES"
-          :key="b.g"
-          class="flex flex-col items-center rounded-xl py-2 text-white transition active:scale-95"
-          :class="b.cls"
-          @click="grade(b.g)"
+      <!-- already-known card: flip and self-grade -->
+      <template v-else>
+        <div
+          class="card flex min-h-[13rem] cursor-pointer flex-col items-center justify-center p-8 text-center pop"
+          :key="current.card_id"
+          @click="revealed = true"
         >
-          <span class="text-sm font-semibold">{{ b.label }}</span>
-          <span class="text-[11px] opacity-80">{{ fmtInterval(current.preview[b.key as 'again']) }}</span>
-        </button>
-      </div>
-      <button v-else class="btn btn-primary w-full" @click="revealed = true">Показать</button>
-    </template>
-  </div>
+          <p v-if="current.kind === 'ff'" class="mb-2 text-[10px] uppercase tracking-widest text-[var(--accent)]">ложный друг</p>
+          <div class="flex items-center gap-2">
+            <p class="serbian text-4xl font-semibold">{{ current.front }}</p>
+            <SpeakButton :src="current.audio" :size="36" />
+          </div>
+          <p v-if="current.cyrillic" class="mt-1 text-sm text-[var(--muted)]">{{ current.cyrillic }}</p>
+          <p v-if="current.transcription" class="text-sm text-[var(--muted)]">[{{ current.transcription }}]</p>
+
+          <Transition name="fade">
+            <div v-if="revealed" class="mt-4 flex flex-col items-center border-t border-[var(--border)] pt-4">
+              <WordMedia :image="current.image" :emoji="current.emoji" :alt="current.back" :size="112" />
+              <p class="mt-3 text-xl">{{ current.back }}</p>
+              <p v-if="current.note" class="mt-1 text-sm text-[var(--muted)]">{{ current.note }}</p>
+              <p v-if="current.example_sr" class="serbian mt-2.5 text-[var(--fg)]">{{ current.example_sr }}</p>
+              <p v-if="current.example_ru" class="text-sm text-[var(--muted)]">{{ current.example_ru }}</p>
+            </div>
+          </Transition>
+          <p v-if="!revealed" class="mt-5 text-xs text-[var(--muted)]">нажми или пробел</p>
+        </div>
+
+        <div v-if="revealed" class="grid grid-cols-4 gap-2 pop">
+          <button
+            v-for="b in GRADES"
+            :key="b.g"
+            class="flex flex-col items-center rounded-xl py-2 text-white transition active:scale-95"
+            :class="b.cls"
+            @click="grade(b.g)"
+          >
+            <span class="text-sm font-semibold">{{ b.label }}</span>
+            <span class="text-[11px] opacity-80">{{ fmtInterval(current.preview[b.key as 'again']) }}</span>
+          </button>
+        </div>
+        <button v-else class="btn btn-primary w-full" @click="revealed = true">Показать</button>
+      </template>
+    </div>
+  </Transition>
 </template>

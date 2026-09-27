@@ -393,15 +393,71 @@ func TestLeaderboard(t *testing.T) {
 	do(h, "POST", "/api/lessons/01/complete", "")                                      // tester: 1 lesson
 	doAs(h, "Оля", "POST", "/api/lessons/01/exercises/01-A-1/check", `{"answer":"x"}`) // Оля: activity, 0 lessons
 
-	rows := decodeBody[[]leaderRowDTO](t, do(h, "GET", "/api/leaderboard", ""))
-	if len(rows) != 2 {
-		t.Fatalf("rows = %+v", rows)
+	page := decodeBody[leaderboardPageDTO](t, do(h, "GET", "/api/leaderboard", ""))
+	if len(page.Rows) != 2 {
+		t.Fatalf("rows = %+v", page.Rows)
 	}
-	if rows[0].Name != "tester" || rows[0].LessonsDone != 1 {
-		t.Errorf("leader = %+v", rows[0])
+	if page.HasMore {
+		t.Error("has_more = true, want false (only 2 accounts, default page is bigger)")
 	}
-	if rows[0].LessonsTotal != 2 { // fixture course has 2 lessons
-		t.Errorf("lessons_total = %d", rows[0].LessonsTotal)
+	if page.Rows[0].Name != "tester" || page.Rows[0].LessonsDone != 1 {
+		t.Errorf("leader = %+v", page.Rows[0])
+	}
+	if page.Rows[0].LessonsTotal != 2 { // fixture course has 2 lessons
+		t.Errorf("lessons_total = %d", page.Rows[0].LessonsTotal)
+	}
+}
+
+func TestLeaderboardPagination(t *testing.T) {
+	h, st := newTestAPI(t)
+	// tester already exists (newTestAPI); add two more so there are 3 total.
+	_, _ = st.EnsureUserByName("Оля")
+	_, _ = st.EnsureUserByName("Марко")
+
+	first := decodeBody[leaderboardPageDTO](t, do(h, "GET", "/api/leaderboard?limit=2", ""))
+	if len(first.Rows) != 2 {
+		t.Fatalf("first page rows = %+v", first.Rows)
+	}
+	if !first.HasMore {
+		t.Error("has_more = false, want true (3 accounts, page size 2)")
+	}
+
+	second := decodeBody[leaderboardPageDTO](t, do(h, "GET", "/api/leaderboard?limit=2&offset=2", ""))
+	if len(second.Rows) != 1 {
+		t.Fatalf("second page rows = %+v", second.Rows)
+	}
+	if second.HasMore {
+		t.Error("has_more = true, want false on the last page")
+	}
+	// no overlap between pages
+	for _, r := range second.Rows {
+		if r.Name == first.Rows[0].Name || r.Name == first.Rows[1].Name {
+			t.Errorf("row %q appears on both pages", r.Name)
+		}
+	}
+}
+
+func TestLeaderboardMe(t *testing.T) {
+	h, st := newTestAPI(t)
+	_, _ = st.EnsureUserByName("Оля")
+	_, _ = st.EnsureUserByName("Марко")
+	do(h, "POST", "/api/lessons/01/complete", "") // tester: 1 lesson, outranks Оля and Марко
+
+	me := decodeBody[leaderboardMeDTO](t, do(h, "GET", "/api/leaderboard/me", ""))
+	if me.Rank != 1 {
+		t.Errorf("rank = %d, want 1", me.Rank)
+	}
+	if me.Row.Name != "tester" || me.Row.LessonsDone != 1 {
+		t.Errorf("row = %+v", me.Row)
+	}
+
+	// a lower-ranked account gets its own (worse) rank, not tester's
+	meAsOlya := decodeBody[leaderboardMeDTO](t, doAs(h, "Оля", "GET", "/api/leaderboard/me", ""))
+	if meAsOlya.Rank != 2 {
+		t.Errorf("Оля rank = %d, want 2 (tied with Марко, but created first)", meAsOlya.Rank)
+	}
+	if meAsOlya.Row.Name != "Оля" || meAsOlya.Row.LessonsDone != 0 {
+		t.Errorf("Оля row = %+v", meAsOlya.Row)
 	}
 }
 

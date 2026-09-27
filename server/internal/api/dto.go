@@ -141,57 +141,86 @@ type meDTO struct {
 // ---- vocab / false friends ----
 
 type vocabDTO struct {
-	ID        string   `json:"id"`
-	Latin     string   `json:"latin"`
-	Cyrillic  string   `json:"cyrillic"`
-	RU        string   `json:"ru"`
-	Note      string   `json:"note,omitempty"`
-	Lesson    string   `json:"lesson,omitempty"`
-	POS       string   `json:"pos,omitempty"`
-	Gender    string   `json:"gender,omitempty"`
-	Aspect    string   `json:"aspect,omitempty"`
-	Tags      []string `json:"tags,omitempty"`
-	Emoji     string   `json:"emoji,omitempty"`
-	Image     string   `json:"image,omitempty"`
-	Audio     string   `json:"audio,omitempty"`
-	ExampleSR string   `json:"example_sr,omitempty"`
-	ExampleRU string   `json:"example_ru,omitempty"`
+	ID            string   `json:"id"`
+	Latin         string   `json:"latin"`
+	Cyrillic      string   `json:"cyrillic"`
+	Transcription string   `json:"transcription,omitempty"`
+	RU            string   `json:"ru"`
+	Note          string   `json:"note,omitempty"`
+	Lesson        string   `json:"lesson,omitempty"`
+	POS           string   `json:"pos,omitempty"`
+	Gender        string   `json:"gender,omitempty"`
+	Aspect        string   `json:"aspect,omitempty"`
+	Tags          []string `json:"tags,omitempty"`
+	Emoji         string   `json:"emoji,omitempty"`
+	Image         string   `json:"image,omitempty"`
+	Audio         string   `json:"audio,omitempty"`
+	ExampleSR     string   `json:"example_sr,omitempty"`
+	ExampleRU     string   `json:"example_ru,omitempty"`
 }
 
 type falseFriendDTO struct {
-	ID      string `json:"id"`
-	SR      string `json:"sr"`
-	Means   string `json:"means"`
-	Not     string `json:"not,omitempty"`
-	Correct string `json:"correct,omitempty"`
-	Group   string `json:"group"`
-	Emoji   string `json:"emoji,omitempty"`
-	Image   string `json:"image,omitempty"`
+	ID            string `json:"id"`
+	SR            string `json:"sr"`
+	Transcription string `json:"transcription,omitempty"`
+	Means         string `json:"means"`
+	Not           string `json:"not,omitempty"`
+	Correct       string `json:"correct,omitempty"`
+	Group         string `json:"group"`
+	Emoji         string `json:"emoji,omitempty"`
+	Image         string `json:"image,omitempty"`
 }
 
 // ---- review ----
 
 type reviewCardDTO struct {
-	CardID    string         `json:"card_id"`
-	Kind      string         `json:"kind"` // vocab | ff
-	Front     string         `json:"front"`
-	Cyrillic  string         `json:"cyrillic,omitempty"`
-	Back      string         `json:"back"`
-	Note      string         `json:"note,omitempty"`
-	State     string         `json:"state"`
-	Emoji     string         `json:"emoji,omitempty"`
-	Image     string         `json:"image,omitempty"`
-	Audio     string         `json:"audio,omitempty"`
-	ExampleSR string         `json:"example_sr,omitempty"`
-	ExampleRU string         `json:"example_ru,omitempty"`
+	CardID        string `json:"card_id"`
+	Kind          string `json:"kind"` // vocab | ff | gram
+	Front         string `json:"front"`
+	Cyrillic      string `json:"cyrillic,omitempty"`
+	Transcription string `json:"transcription,omitempty"`
+	Back          string `json:"back"`
+	Note          string `json:"note,omitempty"`
+	State         string `json:"state"`
+	Emoji         string `json:"emoji,omitempty"`
+	Image         string `json:"image,omitempty"`
+	Audio         string `json:"audio,omitempty"`
+	ExampleSR     string `json:"example_sr,omitempty"`
+	ExampleRU     string `json:"example_ru,omitempty"`
 	// Options carries 4 shuffled candidate translations (Back values, one of
 	// them correct) for a first-encounter recognition quiz. Only set for
 	// state == "new" — an already-started card uses the plain flip+grade UI.
 	Options []string       `json:"options,omitempty"`
 	Preview map[string]int `json:"preview"` // grade name -> next interval in days
+	// ItemPrompt/ItemIndex are set only for kind == "gram": one item was
+	// picked at random from the card's Items, and this is the question to
+	// ask ("ti (ты)") plus the index the client echoes back to
+	// POST /api/review/grade-gram so the server knows which item's accept
+	// list to check against — the accept list itself never reaches the
+	// client.
+	ItemPrompt string `json:"item_prompt,omitempty"`
+	// ItemIndex has no omitempty: 0 (the first item) is a normal value and
+	// must round-trip, not vanish — callers should gate on Kind == "gram"
+	// to know whether this field means anything, not on its zero value.
+	ItemIndex int `json:"item_index"`
 }
 
 type gradeResultDTO struct {
+	Due          string `json:"due"`
+	IntervalDays int    `json:"interval_days"`
+	State        string `json:"state"`
+}
+
+// gramCheckResultDTO is the response to POST /api/review/grade-gram: the
+// answer's correctness (checker.Result, same shape a lesson exercise check
+// returns) plus the SM-2 outcome (gradeResultDTO) — checking and grading a
+// grammar item happen in the same call, since the grade is derived from
+// correctness rather than self-reported.
+type gramCheckResultDTO struct {
+	OK       bool   `json:"ok"`
+	Expected string `json:"expected,omitempty"`
+	NearMiss bool   `json:"near_miss,omitempty"`
+
 	Due          string `json:"due"`
 	IntervalDays int    `json:"interval_days"`
 	State        string `json:"state"`
@@ -223,6 +252,16 @@ type leaderRowDTO struct {
 	StreakDays    int    `json:"streak_days"`
 	ReviewedToday int    `json:"reviewed_today"`
 	LastActive    string `json:"last_active"`
+}
+
+type leaderboardPageDTO struct {
+	Rows    []leaderRowDTO `json:"rows"`
+	HasMore bool           `json:"has_more"`
+}
+
+type leaderboardMeDTO struct {
+	Rank int          `json:"rank"`
+	Row  leaderRowDTO `json:"row"`
 }
 
 type phaseProgressDTO struct {

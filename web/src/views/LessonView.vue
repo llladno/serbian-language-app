@@ -106,6 +106,16 @@ const showOwnBottomButton = computed(() => {
   return TYPES_WITH_OWN_ACTION.has(ex.type)
 })
 
+// One BottomBar instance for the whole view (loading skeleton included)
+// instead of one per branch, so it's already pinned to the bottom before
+// the lesson even loads and never pops in/jumps once it does - only its
+// inner content swaps (skeleton -> Далее/Завершить), never the bar itself.
+const showBottomBar = computed(() => {
+  if (!lesson.value) return true
+  if (lesson.value.planned) return false
+  return !!cur.value && !showOwnBottomButton.value
+})
+
 async function loadLesson(id: string) {
   lesson.value = null
   blocks.value = []
@@ -237,31 +247,32 @@ function closeLesson() {
 
 <template>
   <Confetti v-if="celebrate" />
-  <p v-if="error" class="card p-4 text-[var(--bad)]">{{ error }}</p>
 
-  <div v-else-if="!lesson" class="flex min-h-[calc(100dvh-11rem)] flex-col">
-    <header class="shrink-0 pb-4">
-      <div class="flex items-center w-full gap-3">
-        <div class="skel h-11 w-11 shrink-0 rounded-full"></div>
-        <div class="flex-1 space-y-1.5">
-          <div class="skel h-3.5 w-2/5"></div>
-          <div class="skel h-2.5 w-1/4"></div>
+  <Transition name="fade" mode="out-in">
+    <p v-if="error" key="error" class="card p-4 text-[var(--bad)]">{{ error }}</p>
+
+    <div v-else-if="!lesson" key="skel" class="flex min-h-[calc(100dvh-11rem)] flex-col">
+      <header class="shrink-0 pb-4">
+        <div class="flex items-center w-full gap-3">
+          <div class="skel h-11 w-11 shrink-0 rounded-full"></div>
+          <div class="flex-1 space-y-1.5">
+            <div class="skel h-3.5 w-2/5"></div>
+            <div class="skel h-2.5 w-1/4"></div>
+          </div>
+        </div>
+        <div class="skel mt-3 h-1.5 w-full rounded-full"></div>
+      </header>
+      <div class="flex flex-1 flex-col justify-center">
+        <div class="card space-y-3 p-5 sm:p-6">
+          <div class="skel h-5 w-1/3"></div>
+          <div class="skel h-3.5 w-full"></div>
+          <div class="skel h-3.5 w-full"></div>
+          <div class="skel h-3.5 w-4/5"></div>
         </div>
       </div>
-      <div class="skel mt-3 h-1.5 w-full rounded-full"></div>
-    </header>
-    <div class="flex flex-1 flex-col justify-center">
-      <div class="card space-y-3 p-5 sm:p-6">
-        <div class="skel h-5 w-1/3"></div>
-        <div class="skel h-3.5 w-full"></div>
-        <div class="skel h-3.5 w-full"></div>
-        <div class="skel h-3.5 w-4/5"></div>
-      </div>
     </div>
-  </div>
 
-  <template v-else>
-    <div v-if="lesson.planned">
+    <div v-else-if="lesson.planned" key="planned">
       <RouterLink to="/course" class="text-sm text-[var(--muted)] hover:text-[var(--fg)]">← к курсу</RouterLink>
       <div class="card mt-4 border-dashed p-8 text-center">
         <h1 class="text-xl font-bold">{{ lesson.title }}</h1>
@@ -270,78 +281,50 @@ function closeLesson() {
       </div>
     </div>
 
-    <template v-else-if="cur">
-      <div class="flex min-h-[calc(100dvh-11rem)] flex-col">
-        <header class="shrink-0 pb-4">
-          <div class="flex items-center w-full">
-            <button class="icon-btn shrink-0" title="Назад" aria-label="Назад" @click="goBack">
-              <ArrowLeft :size="20" :stroke-width="2.5" />
-            </button>
-            <div>
-              <p class="text-[14px]">
-                {{ lesson.title }}
-              </p>
-              <p class="text-[10px] text-[var(--muted)]">
-                {{ lesson.subtitle }}
-              </p>
-            </div>
-            <button
-                class="icon-btn shrink-0 ml-auto"
-                title="Закрыть урок"
-                aria-label="Закрыть урок"
-                @click="closeLesson"
-            >
-              <X :size="20" :stroke-width="2.25" />
-            </button>
+    <div v-else-if="cur" key="lesson" class="flex min-h-[calc(100dvh-11rem)] flex-col">
+      <header class="shrink-0 pb-4">
+        <div class="flex items-center w-full">
+          <button class="icon-btn shrink-0" title="Назад" aria-label="Назад" @click="goBack">
+            <ArrowLeft :size="20" :stroke-width="2.5" />
+          </button>
+          <div>
+            <p class="text-[14px]">
+              {{ lesson.title }}
+            </p>
+            <p class="text-[10px] text-[var(--muted)]">
+              {{ lesson.subtitle }}
+            </p>
           </div>
-          <div class="flex items-center gap-3">
+          <button
+              class="icon-btn shrink-0 ml-auto"
+              title="Закрыть урок"
+              aria-label="Закрыть урок"
+              @click="closeLesson"
+          >
+            <X :size="20" :stroke-width="2.25" />
+          </button>
+        </div>
+        <div class="flex items-center gap-3">
 
 
-            <StepProgress class="flex-1" :steps="steps" :current="idx" :current-fraction="currentFraction" />
-          </div>
-          <p class="mt-2 truncate pl-1 text-sm font-semibold text-[var(--muted)]">{{ cur.title }}</p>
-        </header>
+          <StepProgress class="flex-1" :steps="steps" :current="idx" :current-fraction="currentFraction" />
+        </div>
+        <p class="mt-2 truncate pl-1 text-sm font-semibold text-[var(--muted)]">{{ cur.title }}</p>
+      </header>
 
-        <div class="flex flex-1 flex-col justify-center">
-          <Transition name="step" mode="out-in">
-            <div :key="cur.id" class="space-y-6">
-              <article v-if="cur.kind === 'teach'" class="card p-5 sm:p-6">
-                <MarkdownView :source="cur.markdown ?? ''" />
-              </article>
+      <div class="flex flex-1 flex-col justify-center">
+        <Transition name="step" mode="out-in">
+          <div :key="cur.id" class="space-y-6">
+            <article v-if="cur.kind === 'teach'" class="card p-5 sm:p-6">
+              <MarkdownView :source="cur.markdown ?? ''" />
+            </article>
 
-              <template v-else-if="cur.kind === 'reading'">
-                <section class="card p-5 sm:p-6">
-                  <MarkdownView v-if="cur.markdown && !cur.markdown_ru" :source="cur.markdown" />
-                  <ReadingText v-else :serbian="cur.markdown ?? ''" :translation="cur.markdown_ru" />
-                </section>
-                <div v-if="curBlock" class="space-y-4">
-                  <ExerciseBlockView
-                    :lesson="lesson.id"
-                    :block="curBlock"
-                    :ex-idx="exIdx"
-                    :priors="priors"
-                    @graded="onGraded"
-                    @ungraded="onUngraded"
-                    @skip="next"
-                  />
-                </div>
-              </template>
-
-              <DialogueStep
-                v-else-if="cur.kind === 'dialogue'"
-                ref="dialogueRef"
-                :lesson="lesson.id"
-                :step="cur"
-                :exercises="curBlock?.exercises ?? []"
-                :priors="priors"
-                @graded="onGraded"
-                @ungraded="onUngraded"
-              />
-
-              <div v-else-if="curBlock" class="space-y-4">
-                <p v-if="cur.markdown" class="rounded-xl bg-[var(--bg-soft)] px-4 py-2.5 text-sm text-[var(--muted)]">
-                  {{ cur.markdown }}
-                </p>
+            <template v-else-if="cur.kind === 'reading'">
+              <section class="card p-5 sm:p-6">
+                <MarkdownView v-if="cur.markdown && !cur.markdown_ru" :source="cur.markdown" />
+                <ReadingText v-else :serbian="cur.markdown ?? ''" :translation="cur.markdown_ru" />
+              </section>
+              <div v-if="curBlock" class="space-y-4">
                 <ExerciseBlockView
                   :lesson="lesson.id"
                   :block="curBlock"
@@ -352,22 +335,49 @@ function closeLesson() {
                   @skip="next"
                 />
               </div>
-            </div>
-          </Transition>
-        </div>
-      </div>
+            </template>
 
-      <BottomBar v-if="!showOwnBottomButton">
-        <button class="btn btn-primary w-full disabled:opacity-40" :disabled="!canAdvance" @click="next">
-          <template v-if="isFinalAction">
-            <CircleCheckBig :size="16" :stroke-width="2.5" />
-            {{ lesson.status === 'done' ? 'Урок пройден' : 'Завершить урок' }}
-          </template>
-          <template v-else> Дальше<ArrowRight :size="16" :stroke-width="2.5" /> </template>
-        </button>
-      </BottomBar>
-    </template>
-  </template>
+            <DialogueStep
+              v-else-if="cur.kind === 'dialogue'"
+              ref="dialogueRef"
+              :lesson="lesson.id"
+              :step="cur"
+              :exercises="curBlock?.exercises ?? []"
+              :priors="priors"
+              @graded="onGraded"
+              @ungraded="onUngraded"
+            />
+
+            <div v-else-if="curBlock" class="space-y-4">
+              <p v-if="cur.markdown" class="rounded-xl bg-[var(--bg-soft)] px-4 py-2.5 text-sm text-[var(--muted)]">
+                {{ cur.markdown }}
+              </p>
+              <ExerciseBlockView
+                :lesson="lesson.id"
+                :block="curBlock"
+                :ex-idx="exIdx"
+                :priors="priors"
+                @graded="onGraded"
+                @ungraded="onUngraded"
+                @skip="next"
+              />
+            </div>
+          </div>
+        </Transition>
+      </div>
+    </div>
+  </Transition>
+
+  <BottomBar v-if="showBottomBar">
+    <div v-if="!lesson" class="skel h-12 w-full rounded-2xl"></div>
+    <button v-else class="btn btn-primary w-full" :disabled="!canAdvance" @click="next">
+      <template v-if="isFinalAction">
+        <CircleCheckBig :size="16" :stroke-width="2.5" />
+        {{ lesson.status === 'done' ? 'Урок пройден' : 'Завершить урок' }}
+      </template>
+      <template v-else> Дальше<ArrowRight :size="16" :stroke-width="2.5" /> </template>
+    </button>
+  </BottomBar>
 </template>
 
 <style scoped>

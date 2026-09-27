@@ -37,6 +37,22 @@ steps:
         prompt: "Собери: «я не студент»"
         bank: ["Ja", "nisam", "student"]
         accept: ["Ja nisam student."]
+      - id: "04.2.6"
+        type: fix_error
+        prompt: "Iz Rusije."
+        accept: ["Ja sam iz Rusije.", "Iz Rusije sam."]
+      - id: "04.2.7"
+        type: conjugate
+        prompt: "biti — быть"
+        forms: ["ja", "ti", "on/ona/ono", "mi", "vi", "oni/one/ona"]
+        accept:
+          - ["sam"]
+          - ["si"]
+          - ["je"]
+          - ["smo"]
+          - ["ste"]
+          - ["su"]
+        meta: "jesam"
 
   - id: "04.3"
     kind: teach

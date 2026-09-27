@@ -74,3 +74,19 @@ steps:
         prompt: "Собери: «у меня есть жена»"
         bank: ["Imam", "ženu"]
         accept: ["Imam ženu."]
+      - id: "06.4.5"
+        type: fix_error
+        prompt: "Imam brat."
+        accept: ["Imam brata."]
+      - id: "06.4.6"
+        type: conjugate
+        prompt: "imati — иметь"
+        forms: ["ja", "ti", "on/ona/ono", "mi", "vi", "oni/one/ona"]
+        accept:
+          - ["imam"]
+          - ["imaš"]
+          - ["ima"]
+          - ["imamo"]
+          - ["imate"]
+          - ["imaju"]
+        meta: "nemati — так же, + nemam/nemaš/nema…"

@@ -109,7 +109,7 @@ steps:
   - id: "22.7"
     kind: checkpoint
     title: "Проверка"
-    also_ok: ["kafu", "caj"]
+    also_ok: ["kafu", "caj", "žedna"]
     exercises:
       - id: "22.7.1"
         type: choice
@@ -133,6 +133,10 @@ steps:
         prompt: "Собери: «один кофе, пожалуйста»"
         bank: ["Molim", "vas", "jednu", "kafu"]
         accept: ["Molim vas jednu kafu."]
+      - id: "22.7.7"
+        type: fix_error
+        prompt: "Ana kaže: «Žedan sam.» (Ана — женщина)"
+        accept: ["Žedna sam."]
       - id: "22.7.5"
         type: translate
         prompt: "Мне, пожалуйста, один чай."

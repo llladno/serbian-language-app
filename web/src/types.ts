@@ -137,6 +137,7 @@ export interface Vocab {
   id: string
   latin: string
   cyrillic: string
+  transcription?: string
   ru: string
   note?: string
   lesson?: string
@@ -154,6 +155,7 @@ export interface Vocab {
 export interface FalseFriend {
   id: string
   sr: string
+  transcription?: string
   means: string
   not?: string
   correct?: string
@@ -164,9 +166,10 @@ export interface FalseFriend {
 
 export interface ReviewCard {
   card_id: string
-  kind: 'vocab' | 'ff'
+  kind: 'vocab' | 'ff' | 'gram'
   front: string
   cyrillic?: string
+  transcription?: string
   back: string
   note?: string
   state: string
@@ -179,9 +182,23 @@ export interface ReviewCard {
   // a first-encounter ("new") card — see ReviewView's recognition quiz.
   options?: string[]
   preview: Record<'again' | 'hard' | 'good' | 'easy', number>
+  // kind === 'gram' only: one item picked at random from the card, to type
+  // and have checked — see ReviewView's grammar drill and
+  // api.gradeGram/GramCheckResult.
+  item_prompt?: string
+  item_index?: number
 }
 
 export interface GradeResult {
+  due: string
+  interval_days: number
+  state: string
+}
+
+export interface GramCheckResult {
+  ok: boolean
+  expected?: string
+  near_miss?: boolean
   due: string
   interval_days: number
   state: string
@@ -211,6 +228,16 @@ export interface RecentLesson {
 export interface DayActivity {
   date: string
   count: number
+}
+
+export interface LeaderboardPage {
+  rows: LeaderRow[]
+  has_more: boolean
+}
+
+export interface LeaderboardMe {
+  rank: number
+  row: LeaderRow
 }
 
 export interface LeaderRow {

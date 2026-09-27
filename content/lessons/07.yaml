@@ -33,6 +33,14 @@ steps:
         prompt: "Собери: «это мой папа»"
         bank: ["Ovo", "je", "moj", "tata"]
         accept: ["Ovo je moj tata."]
+      - id: "07.2.5"
+        type: fix_error
+        prompt: "Moj mama."
+        accept: ["Moja mama."]
+      - id: "07.2.6"
+        type: fix_error
+        prompt: "Tvoja brat."
+        accept: ["Tvoj brat."]
 
   - id: "07.3"
     kind: reading

@@ -11,7 +11,6 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -472,44 +471,103 @@ type UserProgress struct {
 	LastActive    string // ISO date; "" if never active
 }
 
-// AllUsersProgress returns a progress summary per account, best first
-// (lessons done, then cards known).
-func (s *Store) AllUsersProgress(today time.Time) ([]UserProgress, error) {
-	users, err := s.ListUsers()
-	if err != nil {
-		return nil, err
-	}
-	lessons := map[string]int{}
-	scanCount(s.db, `SELECT user_id, COUNT(*) FROM lesson_progress WHERE status='done' GROUP BY user_id`, lessons)
+// rankedUser is one account's position in the leaderboard ordering, before
+// the expensive per-account fields (streak, last active, reviewed today)
+// are filled in by enrichProgress.
+type rankedUser struct {
+	id, name                            string
+	lessonsDone, cardsKnown, totalCards int
+}
 
-	known := map[string]int{}
-	total := map[string]int{}
-	if rows, err := s.db.Query(`SELECT user_id, COUNT(*),
-		SUM(CASE WHEN state='review' AND interval_days>=7 THEN 1 ELSE 0 END)
-		FROM srs_cards GROUP BY user_id`); err == nil {
-		for rows.Next() {
-			var id string
-			var t, k int
-			if rows.Scan(&id, &t, &k) == nil {
-				total[id] = t
-				known[id] = k
-			}
+// queryRanked returns accounts ordered by the leaderboard ranking (lessons
+// done, then cards known, ties broken by account age so the order is
+// stable). limit<=0 fetches the whole ranking unpaginated - used by
+// UserRank, which needs every account's position to find just one of them.
+func (s *Store) queryRanked(limit, offset int) ([]rankedUser, error) {
+	q := `
+		SELECT u.id, u.name,
+		       COALESCE(l.lessons_done, 0),
+		       COALESCE(c.cards_known, 0),
+		       COALESCE(c.total_cards, 0)
+		FROM users u
+		LEFT JOIN (
+			SELECT user_id, COUNT(*) AS lessons_done
+			FROM lesson_progress WHERE status='done' GROUP BY user_id
+		) l ON l.user_id = u.id
+		LEFT JOIN (
+			SELECT user_id, COUNT(*) AS total_cards,
+			       SUM(CASE WHEN state='review' AND interval_days>=7 THEN 1 ELSE 0 END) AS cards_known
+			FROM srs_cards GROUP BY user_id
+		) c ON c.user_id = u.id
+		ORDER BY lessons_done DESC, cards_known DESC, u.created_at ASC`
+	args := []any{}
+	if limit > 0 {
+		q += ` LIMIT ? OFFSET ?`
+		args = append(args, limit, offset)
+	}
+	rows, err := s.db.Query(q, args...)
+	if err != nil {
+		return nil, fmt.Errorf("ranked users: %w", err)
+	}
+	defer rows.Close()
+	var out []rankedUser
+	for rows.Next() {
+		var p rankedUser
+		if err := rows.Scan(&p.id, &p.name, &p.lessonsDone, &p.cardsKnown, &p.totalCards); err != nil {
+			return nil, fmt.Errorf("ranked users: %w", err)
 		}
-		rows.Close()
+		out = append(out, p)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("ranked users: %w", err)
+	}
+	return out, nil
+}
+
+// enrichProgress fills in the expensive per-account fields - streak, last
+// active, reviewed today - for exactly the given accounts, not the whole
+// user base (see LeaderboardPage and UserRank for why that distinction
+// matters: it's what keeps either of them from touching every account on
+// every request).
+func (s *Store) enrichProgress(today time.Time, page []rankedUser) ([]UserProgress, error) {
+	if len(page) == 0 {
+		return nil, nil
+	}
+	ids := make([]string, len(page))
+	for i, p := range page {
+		ids[i] = p.id
+	}
+	in := inPlaceholders(len(ids))
+	idArgs := func() []any {
+		a := make([]any, len(ids))
+		for i, id := range ids {
+			a[i] = id
+		}
+		return a
 	}
 
 	reviewedToday := map[string]int{}
-	scanCount(s.db, `SELECT user_id, COUNT(*) FROM reviews WHERE substr(reviewed_at,1,10)='`+
-		today.Format(dateFmt)+`' GROUP BY user_id`, reviewedToday)
+	if rt, err := s.db.Query(`SELECT user_id, COUNT(*) FROM reviews
+		WHERE substr(reviewed_at,1,10) = ? AND user_id IN (`+in+`) GROUP BY user_id`,
+		append([]any{today.Format(dateFmt)}, idArgs()...)...); err == nil {
+		for rt.Next() {
+			var id string
+			var n int
+			if rt.Scan(&id, &n) == nil {
+				reviewedToday[id] = n
+			}
+		}
+		rt.Close()
+	}
 
 	lastActive := map[string]string{}
-	// The derived table needs an explicit alias — Postgres rejects a subquery
+	// The derived table needs an explicit alias - Postgres rejects a subquery
 	// in FROM without one. Surface the error instead of swallowing it: a
 	// silent failure here leaves every LastActive empty on prod.
 	laRows, err := s.db.Query(`SELECT user_id, MAX(d) FROM (
-		SELECT user_id, substr(reviewed_at,1,10) d FROM reviews
-		UNION ALL SELECT user_id, substr(attempted_at,1,10) FROM attempts
-	) AS activity GROUP BY user_id`)
+		SELECT user_id, substr(reviewed_at,1,10) d FROM reviews WHERE user_id IN (`+in+`)
+		UNION ALL SELECT user_id, substr(attempted_at,1,10) FROM attempts WHERE user_id IN (`+in+`)
+	) AS activity GROUP BY user_id`, append(idArgs(), idArgs()...)...)
 	if err != nil {
 		return nil, fmt.Errorf("last active: %w", err)
 	}
@@ -521,37 +579,65 @@ func (s *Store) AllUsersProgress(today time.Time) ([]UserProgress, error) {
 	}
 	laRows.Close()
 
-	out := make([]UserProgress, 0, len(users))
-	for _, ur := range users {
-		streak, _ := s.User(ur.ID).StreakDays(today)
+	out := make([]UserProgress, 0, len(page))
+	for _, p := range page {
+		streak, _ := s.User(p.id).StreakDays(today)
 		out = append(out, UserProgress{
-			Name: ur.Name, LessonsDone: lessons[ur.ID], CardsKnown: known[ur.ID],
-			TotalCards: total[ur.ID], StreakDays: streak,
-			ReviewedToday: reviewedToday[ur.ID], LastActive: lastActive[ur.ID],
+			Name: p.name, LessonsDone: p.lessonsDone, CardsKnown: p.cardsKnown,
+			TotalCards: p.totalCards, StreakDays: streak,
+			ReviewedToday: reviewedToday[p.id], LastActive: lastActive[p.id],
 		})
 	}
-	sort.Slice(out, func(i, j int) bool {
-		if out[i].LessonsDone != out[j].LessonsDone {
-			return out[i].LessonsDone > out[j].LessonsDone
-		}
-		return out[i].CardsKnown > out[j].CardsKnown
-	})
 	return out, nil
 }
 
-func scanCount(db *database, q string, into map[string]int) {
-	rows, err := db.Query(q)
+// LeaderboardPage returns one page of the leaderboard, ranked by lessons
+// done then cards known. The ranking itself needs one aggregate query over
+// everyone - there's no way around that and still get a correct global
+// order - but the expensive per-account lookups (streak, last active,
+// reviewed today) only run for the `limit` accounts in this page, not the
+// whole user base. hasMore reports whether another page follows.
+func (s *Store) LeaderboardPage(today time.Time, limit, offset int) (rows []UserProgress, hasMore bool, err error) {
+	page, err := s.queryRanked(limit+1, offset)
 	if err != nil {
-		return
+		return nil, false, err
 	}
-	defer rows.Close()
-	for rows.Next() {
-		var k string
-		var v int
-		if rows.Scan(&k, &v) == nil {
-			into[k] = v
+	if hasMore = len(page) > limit; hasMore {
+		page = page[:limit]
+	}
+	out, err := s.enrichProgress(today, page)
+	if err != nil {
+		return nil, false, err
+	}
+	return out, hasMore, nil
+}
+
+// UserRank returns one account's 1-based leaderboard position together with
+// its progress summary. It exists so the UI can show "you" pinned above the
+// paginated list without waiting for that account's actual page to load -
+// like LeaderboardPage, the expensive per-account work only runs for this
+// one account, not everyone.
+func (s *Store) UserRank(today time.Time, userID string) (rank int, progress UserProgress, err error) {
+	all, err := s.queryRanked(0, 0)
+	if err != nil {
+		return 0, UserProgress{}, err
+	}
+	for i, p := range all {
+		if p.id != userID {
+			continue
 		}
+		enriched, err := s.enrichProgress(today, []rankedUser{p})
+		if err != nil {
+			return 0, UserProgress{}, err
+		}
+		return i + 1, enriched[0], nil
 	}
+	return 0, UserProgress{}, fmt.Errorf("user %s not found in ranking", userID)
+}
+
+// inPlaceholders returns "?,?,...,?" (n placeholders) for an IN clause.
+func inPlaceholders(n int) string {
+	return strings.TrimSuffix(strings.Repeat("?,", n), ",")
 }
 
 // ---- per-account state ----

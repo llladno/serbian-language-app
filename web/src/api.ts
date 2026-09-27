@@ -9,9 +9,11 @@ import type {
   FalseFriend,
   ReviewCard,
   GradeResult,
+  GramCheckResult,
   Progress,
   LessonAttempts,
-  LeaderRow,
+  LeaderboardPage,
+  LeaderboardMe,
   SessionUser,
   Me,
   Health,
@@ -149,11 +151,20 @@ export const api = {
       method: 'POST',
       body: JSON.stringify({ card_id: cardId, grade }),
     }),
+  gradeGram: (cardId: string, itemIndex: number, answer: string) =>
+    request<GramCheckResult>('/review/grade-gram', {
+      method: 'POST',
+      body: JSON.stringify({ card_id: cardId, item_index: itemIndex, answer }),
+    }),
   addToReview: (vocabId: string) =>
     request<{ status: 'added' | 'already' }>('/review/add', {
       method: 'POST',
       body: JSON.stringify({ vocab_id: vocabId }),
     }),
   progress: () => request<Progress>('/progress'),
-  leaderboard: () => request<LeaderRow[]>('/leaderboard'),
+  leaderboard: (params?: { limit?: number; offset?: number }) =>
+    request<LeaderboardPage>(
+      '/leaderboard' + qs({ limit: params?.limit?.toString(), offset: params?.offset?.toString() }),
+    ),
+  leaderboardMe: () => request<LeaderboardMe>('/leaderboard/me'),
 }

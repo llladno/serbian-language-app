@@ -8,6 +8,7 @@ import (
 	"math/rand"
 	"net/http"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 
@@ -184,9 +185,11 @@ func Handler(deps Deps) http.Handler {
 	protected.HandleFunc("GET /api/false-friends", h.getFalseFriends)
 	protected.HandleFunc("GET /api/review/queue", h.reviewQueue)
 	protected.HandleFunc("POST /api/review/grade", h.reviewGrade)
+	protected.HandleFunc("POST /api/review/grade-gram", h.reviewGradeGram)
 	protected.HandleFunc("POST /api/review/add", h.reviewAdd)
 	protected.HandleFunc("GET /api/progress", h.getProgress)
 	protected.HandleFunc("GET /api/leaderboard", h.getLeaderboard)
+	protected.HandleFunc("GET /api/leaderboard/me", h.getLeaderboardMe)
 
 	root.Handle("/api/", h.requireAuth(protected))
 
@@ -588,7 +591,7 @@ func (h handlers) getVocab(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 		out = append(out, vocabDTO{
-			ID: v.ID, Latin: v.Latin, Cyrillic: v.Cyrillic, RU: v.RU, Note: v.Note,
+			ID: v.ID, Latin: v.Latin, Cyrillic: v.Cyrillic, Transcription: v.Transcription, RU: v.RU, Note: v.Note,
 			Lesson: v.Lesson, POS: v.POS, Gender: v.Gender, Aspect: v.Aspect, Tags: v.Tags,
 			Emoji: v.Emoji, Image: v.Image, Audio: v.Audio,
 			ExampleSR: v.ExampleSR, ExampleRU: v.ExampleRU,
@@ -609,7 +612,7 @@ func (h handlers) getFalseFriends(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 		out = append(out, falseFriendDTO{
-			ID: f.ID, SR: f.SR, Means: f.Means, Not: f.Not, Correct: f.Correct, Group: f.Group,
+			ID: f.ID, SR: f.SR, Transcription: f.Transcription, Means: f.Means, Not: f.Not, Correct: f.Correct, Group: f.Group,
 			Emoji: f.Emoji, Image: f.Image,
 		})
 	}
@@ -623,16 +626,26 @@ const (
 	// they're gated one at a time, in lesson order.
 	newPerDay = 15
 	dailyGoal = 20 // reviews + attempts that count as "a day done"
+
+	// gramPerDay caps new grammar cards per queue fetch. Kept small and
+	// separate from newPerDay: there are far fewer grammar points than
+	// words, and each one demands more from the learner (the whole
+	// paradigm, not one translation), so they shouldn't compete with vocab
+	// for the same daily budget.
+	gramPerDay = 2
 )
 
 func (h handlers) cardSeeds() []store.CardSeed {
 	c := h.Course()
-	seeds := make([]store.CardSeed, 0, len(c.Vocab)+len(c.FalseFriends))
+	seeds := make([]store.CardSeed, 0, len(c.Vocab)+len(c.FalseFriends)+len(c.Grammar))
 	for _, v := range c.Vocab {
 		seeds = append(seeds, store.CardSeed{CardID: "vocab:" + v.ID, Kind: "vocab", RefID: v.ID})
 	}
 	for _, f := range c.FalseFriends {
 		seeds = append(seeds, store.CardSeed{CardID: "ff:" + f.ID, Kind: "ff", RefID: f.ID})
+	}
+	for _, g := range c.Grammar {
+		seeds = append(seeds, store.CardSeed{CardID: "gram:" + g.ID, Kind: "gram", RefID: g.ID})
 	}
 	return seeds
 }
@@ -671,6 +684,34 @@ func nextNewVocabCardIDs(vocab []content.Vocab, passed map[string]bool, limit in
 			break
 		}
 		id := "vocab:" + v.ID
+		if !passed[id] {
+			out = append(out, id)
+		}
+	}
+	return out
+}
+
+// orderedGrammar sorts grammar cards by the lesson that introduces them,
+// mirroring orderedVocab.
+func orderedGrammar(cards []content.GrammarCard) []content.GrammarCard {
+	out := make([]content.GrammarCard, len(cards))
+	copy(out, cards)
+	sort.SliceStable(out, func(i, j int) bool { return out[i].Lesson < out[j].Lesson })
+	return out
+}
+
+// nextNewGrammarCardIDs mirrors nextNewVocabCardIDs, but for grammar points:
+// earliest-lesson-first, skipping ones already passed at least once. Unlike
+// vocab it isn't split into a beginner/non-beginner budget — grammar cards
+// get their own small, constant gramPerDay allowance regardless of how many
+// words the learner has passed.
+func nextNewGrammarCardIDs(cards []content.GrammarCard, passed map[string]bool, limit int) []string {
+	out := make([]string, 0, limit)
+	for _, g := range orderedGrammar(cards) {
+		if len(out) >= limit {
+			break
+		}
+		id := "gram:" + g.ID
 		if !passed[id] {
 			out = append(out, id)
 		}
@@ -733,7 +774,18 @@ func (h handlers) dueQueueRows(us *store.UserStore, now time.Time) ([]store.Card
 	if !beginner {
 		ffNewLimit = newPerDay - len(allowedNewVocab)
 	}
-	return us.DueQueue(now, allowedNewVocab, ffNewLimit)
+
+	passedGrammar, err := us.PassedCardIDs("gram:")
+	if err != nil {
+		return nil, err
+	}
+	allowedNewGrammar := nextNewGrammarCardIDs(c.Grammar, passedGrammar, gramPerDay)
+
+	// DueQueue's "allowed new ids" parameter isn't vocab-specific — it just
+	// admits explicitly listed new cards by id, whatever their kind — so
+	// grammar's lesson-gated batch rides along with vocab's instead of
+	// needing its own query.
+	return us.DueQueue(now, append(allowedNewVocab, allowedNewGrammar...), ffNewLimit)
 }
 
 func (h handlers) reviewQueue(w http.ResponseWriter, r *http.Request) {
@@ -759,6 +811,10 @@ func (h handlers) reviewQueue(w http.ResponseWriter, r *http.Request) {
 		ff[f.ID] = f
 		ffBacks = append(ffBacks, f.Means)
 	}
+	grammar := map[string]content.GrammarCard{}
+	for _, g := range c.Grammar {
+		grammar[g.ID] = g
+	}
 
 	now := h.Now()
 	gradeNames := map[srs.Grade]string{srs.Again: "again", srs.Hard: "hard", srs.Good: "good", srs.Easy: "easy"}
@@ -775,6 +831,7 @@ func (h handlers) reviewQueue(w http.ResponseWriter, r *http.Request) {
 				continue
 			}
 			d.Front, d.Cyrillic, d.Back, d.Note = v.Latin, v.Cyrillic, v.RU, v.Note
+			d.Transcription = v.Transcription
 			d.Emoji, d.Image, d.Audio = v.Emoji, v.Image, v.Audio
 			d.ExampleSR, d.ExampleRU = v.ExampleSR, v.ExampleRU
 			if row.State == srs.New {
@@ -786,6 +843,7 @@ func (h handlers) reviewQueue(w http.ResponseWriter, r *http.Request) {
 				continue
 			}
 			d.Front, d.Back = f.SR, f.Means
+			d.Transcription = f.Transcription
 			d.Emoji, d.Image = f.Emoji, f.Image
 			note := ""
 			if f.Not != "" {
@@ -801,6 +859,22 @@ func (h handlers) reviewQueue(w http.ResponseWriter, r *http.Request) {
 			if row.State == srs.New {
 				d.Options = buildOptions(f.Means, ffBacks)
 			}
+		case "gram":
+			g, ok := grammar[row.RefID]
+			if !ok || len(g.Items) == 0 {
+				continue
+			}
+			d.Front, d.Note = g.Front, g.Note
+			d.ExampleSR, d.ExampleRU = g.ExampleSR, g.ExampleRU
+			// A grammar card doesn't flip-and-self-grade like vocab/ff: each
+			// review asks ONE item from the card, typed and auto-checked
+			// (see reviewGradeGram) — picked fresh every time so repeated
+			// reviews of the same card drill different forms instead of
+			// always the same one. The accept list stays server-side; only
+			// the prompt and its index go to the client.
+			idx := rand.Intn(len(g.Items))
+			d.ItemIndex = idx
+			d.ItemPrompt = g.Items[idx].Prompt
 		}
 		out = append(out, d)
 	}
@@ -826,6 +900,10 @@ func (h handlers) reviewGrade(w http.ResponseWriter, r *http.Request) {
 		fail(w, 400, "grade must be 0..3")
 		return
 	}
+	if strings.HasPrefix(req.CardID, "gram:") {
+		fail(w, 400, "grammar cards grade through /api/review/grade-gram, not self-report")
+		return
+	}
 	card, err := us.GradeCard(req.CardID, srs.Grade(req.Grade), h.Now())
 	if err != nil {
 		fail(w, 404, "unknown card")
@@ -836,6 +914,66 @@ func (h handlers) reviewGrade(w http.ResponseWriter, r *http.Request) {
 		due = card.Due.Format("2006-01-02")
 	}
 	writeJSON(w, 200, gradeResultDTO{Due: due, IntervalDays: card.IntervalDays, State: string(card.State)})
+}
+
+type gramCheckRequest struct {
+	CardID    string `json:"card_id"`
+	ItemIndex int    `json:"item_index"`
+	Answer    string `json:"answer"`
+}
+
+// reviewGradeGram checks one typed answer against the grammar item the
+// client was shown (by index — reviewQueue picks it, this just re-reads the
+// same card's Items so the accept list is never sent to the client) and
+// grades the card from that correctness: right first try -> Good, wrong ->
+// Again. Unlike reviewGrade, the caller never supplies the SM-2 grade
+// itself — there's nothing to self-report once the answer is objectively
+// checked.
+func (h handlers) reviewGradeGram(w http.ResponseWriter, r *http.Request) {
+	us, ok := h.user(w, r)
+	if !ok {
+		return
+	}
+	var req gramCheckRequest
+	if err := decode(r, &req); err != nil {
+		fail(w, 400, "bad request body")
+		return
+	}
+	refID, isGram := strings.CutPrefix(req.CardID, "gram:")
+	if !isGram {
+		fail(w, 400, "not a grammar card")
+		return
+	}
+	var card *content.GrammarCard
+	for i := range h.Course().Grammar {
+		if h.Course().Grammar[i].ID == refID {
+			card = &h.Course().Grammar[i]
+			break
+		}
+	}
+	if card == nil || req.ItemIndex < 0 || req.ItemIndex >= len(card.Items) {
+		fail(w, 404, "unknown card or item")
+		return
+	}
+
+	res := checker.Check(req.Answer, card.Items[req.ItemIndex].Accept)
+	grade := srs.Again
+	if res.OK {
+		grade = srs.Good
+	}
+	updated, err := us.GradeCard(req.CardID, grade, h.Now())
+	if err != nil {
+		fail(w, 404, "unknown card")
+		return
+	}
+	due := ""
+	if !updated.Due.IsZero() {
+		due = updated.Due.Format("2006-01-02")
+	}
+	writeJSON(w, 200, gramCheckResultDTO{
+		OK: res.OK, Expected: res.Expected, NearMiss: res.NearMiss,
+		Due: due, IntervalDays: updated.IntervalDays, State: string(updated.State),
+	})
 }
 
 // reviewAdd pulls a dictionary word into the learner's review queue — used by
@@ -961,28 +1099,68 @@ func (h handlers) getProgress(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, 200, out)
 }
 
+const (
+	leaderboardPageDefault = 30
+	leaderboardPageMax     = 100
+)
+
+func (h handlers) totalLessons() int {
+	n := 0
+	for _, p := range h.Course().Phases {
+		n += len(p.Lessons)
+	}
+	return n
+}
+
+func leaderRowFrom(p store.UserProgress, lessonsTotal int) leaderRowDTO {
+	return leaderRowDTO{
+		Name: p.Name, LessonsDone: p.LessonsDone, LessonsTotal: lessonsTotal,
+		CardsKnown: p.CardsKnown, TotalCards: p.TotalCards, StreakDays: p.StreakDays,
+		ReviewedToday: p.ReviewedToday, LastActive: p.LastActive,
+	}
+}
+
 func (h handlers) getLeaderboard(w http.ResponseWriter, r *http.Request) {
 	if _, ok := h.user(w, r); !ok {
 		return
 	}
-	rows, err := h.Store.AllUsersProgress(h.Now())
+	limit := leaderboardPageDefault
+	if v, err := strconv.Atoi(r.URL.Query().Get("limit")); err == nil && v > 0 {
+		limit = min(v, leaderboardPageMax)
+	}
+	offset := 0
+	if v, err := strconv.Atoi(r.URL.Query().Get("offset")); err == nil && v > 0 {
+		offset = v
+	}
+
+	rows, hasMore, err := h.Store.LeaderboardPage(h.Now(), limit, offset)
 	if err != nil {
 		fail(w, 500, err.Error())
 		return
 	}
-	totalLessons := 0
-	for _, p := range h.Course().Phases {
-		totalLessons += len(p.Lessons)
-	}
+	lessonsTotal := h.totalLessons()
 	out := make([]leaderRowDTO, 0, len(rows))
 	for _, p := range rows {
-		out = append(out, leaderRowDTO{
-			Name: p.Name, LessonsDone: p.LessonsDone, LessonsTotal: totalLessons,
-			CardsKnown: p.CardsKnown, TotalCards: p.TotalCards, StreakDays: p.StreakDays,
-			ReviewedToday: p.ReviewedToday, LastActive: p.LastActive,
-		})
+		out = append(out, leaderRowFrom(p, lessonsTotal))
 	}
-	writeJSON(w, 200, out)
+	writeJSON(w, 200, leaderboardPageDTO{Rows: out, HasMore: hasMore})
+}
+
+// getLeaderboardMe returns the caller's own leaderboard position, so the UI
+// can pin it above the paginated list without waiting for that account's
+// actual page to load (it may be hundreds of rows down).
+func (h handlers) getLeaderboardMe(w http.ResponseWriter, r *http.Request) {
+	ac, ok := authFrom(r)
+	if !ok {
+		fail(w, http.StatusUnauthorized, "no session")
+		return
+	}
+	rank, prog, err := h.Store.UserRank(h.Now(), ac.UserID)
+	if err != nil {
+		fail(w, 500, err.Error())
+		return
+	}
+	writeJSON(w, 200, leaderboardMeDTO{Rank: rank, Row: leaderRowFrom(prog, h.totalLessons())})
 }
 
 func hasTag(tags []string, want string) bool {

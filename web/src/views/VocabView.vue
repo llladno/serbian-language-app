@@ -138,18 +138,18 @@ function nextCard() {
   </div>
   <SerbianKeys class="mb-3" />
 
-  <div v-if="initialLoading" class="space-y-2">
-    <div v-for="r in 6" :key="r" class="card flex gap-3 p-3">
-      <div class="skel h-12 w-12 shrink-0 rounded-xl"></div>
-      <div class="min-w-0 flex-1 space-y-1.5">
-        <div class="skel h-5 w-2/5"></div>
-        <div class="skel h-3.5 w-3/5"></div>
+  <Transition name="fade" mode="out-in">
+    <div v-if="initialLoading" key="skel" class="space-y-2">
+      <div v-for="r in 6" :key="r" class="card flex gap-3 p-3">
+        <div class="skel h-12 w-12 shrink-0 rounded-xl"></div>
+        <div class="min-w-0 flex-1 space-y-1.5">
+          <div class="skel h-5 w-2/5"></div>
+          <div class="skel h-3.5 w-3/5"></div>
+        </div>
       </div>
     </div>
-  </div>
 
-  <Transition v-else name="fade" mode="out-in">
-    <div :key="tab">
+    <div v-else :key="tab">
       <template v-if="tab === 'words'">
         <div class="mb-3 flex items-center gap-3 text-sm text-[var(--muted)]">
           <span>{{ vocabRows.length }} слов</span>
@@ -183,14 +183,18 @@ function nextCard() {
             <div class="min-w-0 flex-1">
               <div class="flex items-baseline justify-between gap-2">
                 <span class="flex items-center gap-1.5">
-                  <span class="serbian text-lg font-semibold">{{
+                  <span class="serbian text-sm font-semibold sm:text-lg">{{
                     scriptMode === 'latin' ? v.latin : v.cyrillic
                   }}</span>
+                  <span v-if="v.transcription" class="hidden text-sm text-[var(--muted)] sm:inline"
+                    >[{{ v.transcription }}]</span
+                  >
                   <SpeakButton :src="v.audio" :size="22" />
                 </span>
                 <span v-if="v.lesson" class="shrink-0 text-sm text-[var(--muted)]">урок {{ v.lesson }}</span>
               </div>
               <p class="text-sm">{{ v.ru }}</p>
+              <p v-if="v.transcription" class="text-xs text-[var(--muted)] sm:hidden">[{{ v.transcription }}]</p>
               <p v-if="v.note" class="mt-0.5 text-sm text-[var(--muted)]">{{ v.note }}</p>
             </div>
           </div>
@@ -206,10 +210,16 @@ function nextCard() {
             <WordMedia :image="f.image" :emoji="f.emoji" :alt="f.means" :size="48" class="mt-0.5 shrink-0" />
             <div class="min-w-0 flex-1">
               <div class="flex flex-wrap items-baseline justify-between gap-x-2 gap-y-0.5">
-                <span class="serbian text-lg font-semibold">{{ f.sr }}</span>
+                <span class="flex items-center gap-1.5">
+                  <span class="serbian text-sm font-semibold sm:text-lg">{{ f.sr }}</span>
+                  <span v-if="f.transcription" class="hidden text-sm text-[var(--muted)] sm:inline"
+                    >[{{ f.transcription }}]</span
+                  >
+                </span>
                 <span v-if="f.not" class="text-sm text-[var(--bad)]">≠ {{ f.not }}</span>
               </div>
               <p class="text-sm">{{ f.means }}</p>
+              <p v-if="f.transcription" class="text-xs text-[var(--muted)] sm:hidden">[{{ f.transcription }}]</p>
               <p v-if="f.correct" class="mt-0.5 text-sm text-[var(--muted)]">
                 «то самое» → <span class="serbian">{{ f.correct }}</span>
               </p>

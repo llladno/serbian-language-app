@@ -54,10 +54,13 @@ function retry() {
       <RefreshCw :size="15" :stroke-width="2.25" />
     </button>
 
-    <p class="mb-5 px-8 text-center">
-      <span class="serbian text-xl font-semibold">{{ prompt }}</span>
-      <span v-if="meta" class="ml-2 rounded bg-[var(--bg-soft)] px-1.5 py-0.5 text-xs text-[var(--muted)]">{{ meta }}</span>
-    </p>
+    <div class="mb-5 px-8 text-center">
+      <p class="mb-1.5 text-[10px] uppercase tracking-widest text-[var(--accent)]">напиши все формы</p>
+      <p>
+        <span class="serbian text-xl font-semibold">{{ prompt }}</span>
+        <span v-if="meta" class="ml-2 rounded bg-[var(--bg-soft)] px-1.5 py-0.5 text-xs text-[var(--muted)]">{{ meta }}</span>
+      </p>
+    </div>
 
     <div v-if="fromPrior" class="text-center text-sm">
       <p class="mb-1 font-semibold" :class="prior!.correct ? 'text-[var(--good)]' : 'text-[var(--bad)]'">
@@ -90,7 +93,7 @@ function retry() {
       <SerbianKeys v-if="!result" class="col-span-full justify-center" />
     </form>
     <BottomBar v-if="!fromPrior && !result">
-      <button class="btn btn-primary w-full disabled:opacity-50" :disabled="pending" @click="submit">
+      <button class="btn btn-primary w-full" :disabled="pending" @click="submit">
         Проверить
       </button>
     </BottomBar>

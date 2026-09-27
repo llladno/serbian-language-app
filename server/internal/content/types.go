@@ -10,6 +10,7 @@ type Course struct {
 	Exercises    map[string][]ExerciseBlock // key: lesson id
 	Vocab        []Vocab
 	FalseFriends []FalseFriend
+	Grammar      []GrammarCard
 
 	allowWords []string // flattened content/allow-words.yaml (lexicon guard)
 }
@@ -109,31 +110,63 @@ type Exercise struct {
 
 // Vocab is one dictionary entry.
 type Vocab struct {
-	ID        string
-	Latin     string
-	Cyrillic  string
-	RU        string
-	Note      string
-	Lesson    string
-	POS       string
-	Gender    string
-	Aspect    string
-	Tags      []string
-	Emoji     string // optional
-	Image     string // optional filename under content/images/
-	Audio     string // optional filename under content/audio/ (set when the file exists)
-	ExampleSR string // optional example sentence using the word, in Serbian
-	ExampleRU string // ExampleSR's Russian translation
+	ID            string
+	Latin         string
+	Cyrillic      string
+	Transcription string // optional Russian-letter phonetic transcription (with stress)
+	RU            string
+	Note          string
+	Lesson        string
+	POS           string
+	Gender        string
+	Aspect        string
+	Tags          []string
+	Emoji         string // optional
+	Image         string // optional filename under content/images/
+	Audio         string // optional filename under content/audio/ (set when the file exists)
+	ExampleSR     string // optional example sentence using the word, in Serbian
+	ExampleRU     string // ExampleSR's Russian translation
 }
 
 // FalseFriend is one RU↔SR false-friend entry.
 type FalseFriend struct {
-	ID      string
-	SR      string
-	Means   string
-	Not     string
-	Correct string
-	Group   string // top | shop | small
-	Emoji   string
-	Image   string
+	ID            string
+	SR            string
+	Transcription string
+	Means         string
+	Not           string
+	Correct       string
+	Group         string // top | shop | small
+	Emoji         string
+	Image         string
+}
+
+// GrammarCard is one spaced-repetition item for a grammar point (verb
+// conjugation type, case usage, question-word declension…), independent of
+// any single vocab word. Front is the card's title (e.g. an infinitive plus
+// which pattern it follows). Unlike a vocab card, a grammar card isn't
+// reviewed by flipping and self-grading the whole thing at once: each
+// review picks one Items entry and asks the learner to type that one form,
+// auto-graded like any other typed exercise — a full paradigm's worth of
+// forms would make "did I get this right" too coarse a signal, and reusing
+// the same paradigm every time never fully redrills prospects the learner
+// keeps missing individually. Lesson orders new-card introduction the same
+// way Vocab.Lesson does.
+type GrammarCard struct {
+	ID        string
+	Front     string
+	Note      string
+	Lesson    string
+	ExampleSR string
+	ExampleRU string
+	Items     []GrammarItem
+}
+
+// GrammarItem is one drillable question within a GrammarCard: a verb
+// person ("ti"), a gender ("твой + сестра"), a fill-in-the-blank cue
+// ("___ sobi") — whatever the card's Prompt style is — paired with the
+// accepted answer(s), checked the same way a fill_blank exercise is.
+type GrammarItem struct {
+	Prompt string
+	Accept []string
 }

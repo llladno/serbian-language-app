@@ -53,6 +53,58 @@ func TestLoadValidFixture(t *testing.T) {
 	if len(c.Vocab) != 4 || len(c.FalseFriends) != 1 {
 		t.Errorf("vocab=%d ff=%d", len(c.Vocab), len(c.FalseFriends))
 	}
+	if len(c.Grammar) != 1 {
+		t.Fatalf("grammar = %d, want 1", len(c.Grammar))
+	}
+	if g := c.Grammar[0]; g.ID != "prezent-am" || len(g.Items) != 2 || g.Items[0].Prompt != "ja (я)" || g.Items[0].Accept[0] != "radim" {
+		t.Errorf("grammar[0] = %+v", g)
+	}
+}
+
+// grammar.yaml is optional, like persona.yaml: a fixture predating it (no
+// file at all) must still load cleanly, with an empty Grammar slice.
+func TestLoadGrammarOptional(t *testing.T) {
+	dir := t.TempDir()
+	writeTree(t, dir, baseTree())
+	c, err := Load(dir)
+	if err != nil {
+		t.Fatalf("Load: %v", err)
+	}
+	if len(c.Grammar) != 0 {
+		t.Errorf("grammar = %+v, want empty", c.Grammar)
+	}
+}
+
+func TestLoadGrammarRejectsDuplicateID(t *testing.T) {
+	dir := t.TempDir()
+	tree := baseTree()
+	tree["grammar.yaml"] = "" +
+		"- id: \"x\"\n  front: \"a\"\n  lesson: \"01\"\n  items: [{prompt: \"p\", accept: [\"b\"]}]\n" +
+		"- id: \"x\"\n  front: \"c\"\n  lesson: \"01\"\n  items: [{prompt: \"p\", accept: [\"d\"]}]\n"
+	writeTree(t, dir, tree)
+	if _, err := Load(dir); err == nil {
+		t.Error("Load: want error for duplicate grammar id, got nil")
+	}
+}
+
+func TestLoadGrammarRejectsNoItems(t *testing.T) {
+	dir := t.TempDir()
+	tree := baseTree()
+	tree["grammar.yaml"] = "- id: \"x\"\n  front: \"a\"\n  lesson: \"01\"\n"
+	writeTree(t, dir, tree)
+	if _, err := Load(dir); err == nil {
+		t.Error("Load: want error for a grammar card with no items, got nil")
+	}
+}
+
+func TestLoadGrammarRejectsItemWithNoAccept(t *testing.T) {
+	dir := t.TempDir()
+	tree := baseTree()
+	tree["grammar.yaml"] = "- id: \"x\"\n  front: \"a\"\n  lesson: \"01\"\n  items: [{prompt: \"p\", accept: []}]\n"
+	writeTree(t, dir, tree)
+	if _, err := Load(dir); err == nil {
+		t.Error("Load: want error for a grammar item with no accept, got nil")
+	}
 }
 
 func baseTree() map[string]string {

@@ -199,6 +199,11 @@ body {
     background: var(--accent);
     color: #fff;
   }
+  .btn-primary:disabled {
+    background: var(--ring-track);
+    color: var(--muted);
+    cursor: not-allowed;
+  }
   .btn-ghost {
     background: var(--bg-soft);
     color: var(--fg);
@@ -249,10 +254,18 @@ body {
   border-radius: 8px;
 }
 
-/* per-view fade-in (non-blocking, no leave transition to deadlock) */
+/* per-view fade-in (non-blocking, no leave transition to deadlock).
+   Opacity only, deliberately no transform: this wraps every routed view
+   (App.vue), including ones with a `position: fixed` BottomBar - a
+   transform here gives that fixed descendant a new containing block for
+   the animation's duration, so it resolves against this (often short,
+   e.g. while a loading skeleton is all there is) wrapper instead of the
+   viewport and then visibly snaps to the real bottom once the transform
+   ends. Same reasoning as the `.step-enter-active` comment in
+   LessonView.vue - keep both opacity-only. */
 @keyframes viewIn {
-  from { opacity: 0; transform: translateY(5px); }
-  to { opacity: 1; transform: none; }
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 .view-in { animation: viewIn 0.16s ease-out; }
 

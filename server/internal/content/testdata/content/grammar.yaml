@@ -1,0 +1,11 @@
+- id: "prezent-am"
+  front: "презент, тип -am: raditi"
+  note: "тип -am"
+  lesson: "01"
+  example_sr: "Radim ceo dan."
+  example_ru: "Я работаю весь день."
+  items:
+    - prompt: "ja (я)"
+      accept: ["radim"]
+    - prompt: "ti (ты)"
+      accept: ["radiš"]
