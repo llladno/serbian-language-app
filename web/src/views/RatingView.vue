@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
+import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { api } from '../api'
 import { useSessionStore } from '../stores/session'
 import type { LeaderboardMe, LeaderRow } from '../types'
@@ -52,12 +52,18 @@ async function loadMe() {
   }
 }
 
-onMounted(async () => {
-  loadMe() // runs concurrently with the list below, not awaited
-  await loadMore()
-  loading.value = false
-  await nextTick() // the sentinel only exists once the v-else branch renders
-
+// The list sits behind a <Transition mode="out-in"> (skeleton -> list), which
+// mounts the new branch only after the skeleton's CSS leave-transition
+// actually finishes - a `nextTick()` after flipping `loading` resolves long
+// before that (it just waits for the next reactive flush, not a transition
+// event), so `sentinel.value` was still null when observe() used to run and
+// the observer silently watched nothing. Watching the ref itself instead
+// fires exactly when the element really lands in the DOM, however that
+// happens - including if the list ever unmounts and remounts later (error
+// retry, etc.), not just on first load.
+watch(sentinel, (el) => {
+  observer?.disconnect()
+  if (!el) return
   // Fetch the next 30 a bit before the sentinel actually reaches the
   // viewport, so scrolling doesn't stall waiting on the request.
   observer = new IntersectionObserver(
@@ -67,7 +73,13 @@ onMounted(async () => {
     },
     { rootMargin: '400px' },
   )
-  if (sentinel.value) observer.observe(sentinel.value)
+  observer.observe(el)
+})
+
+onMounted(async () => {
+  loadMe() // runs concurrently with the list below, not awaited
+  await loadMore()
+  loading.value = false
 })
 
 onBeforeUnmount(() => observer?.disconnect())
