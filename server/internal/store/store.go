@@ -484,11 +484,23 @@ type rankedUser struct {
 // stable). limit<=0 fetches the whole ranking unpaginated - used by
 // UserRank, which needs every account's position to find just one of them.
 func (s *Store) queryRanked(limit, offset int) ([]rankedUser, error) {
+	// The COALESCE columns below MUST be aliased. Postgres resolves an
+	// unaliased ORDER BY name against the nearest matching column anywhere
+	// in scope - including l.lessons_done / c.cards_known inside the joined
+	// subqueries - before it considers the SELECT list at all. Without the
+	// alias, it silently sorted by those *raw, nullable* join columns
+	// instead of the COALESCE'd ones: every account with 0 lessons/cards
+	// (no matching join row, so NULL) sorted as "highest" under DESC
+	// (Postgres's default NULLS FIRST for DESC), inverting the entire
+	// ranking. SQLite doesn't have this trap, which is why this only ever
+	// showed up on the Postgres-backed prod database, never in local/test
+	// runs against SQLite - always exercise ranking changes against
+	// TEST_DATABASE_URL, not just the default in-memory SQLite suite.
 	q := `
 		SELECT u.id, u.name,
-		       COALESCE(l.lessons_done, 0),
-		       COALESCE(c.cards_known, 0),
-		       COALESCE(c.total_cards, 0)
+		       COALESCE(l.lessons_done, 0) AS lessons_done,
+		       COALESCE(c.cards_known, 0) AS cards_known,
+		       COALESCE(c.total_cards, 0) AS total_cards
 		FROM users u
 		LEFT JOIN (
 			SELECT user_id, COUNT(*) AS lessons_done
