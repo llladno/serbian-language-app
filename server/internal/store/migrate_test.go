@@ -428,3 +428,13 @@ func TestMigration004RelabelsLessons(t *testing.T) {
 		t.Fatalf("lesson_progress rows after re-run = %d, want 2", n)
 	}
 }
+
+func TestMigration012Schema(t *testing.T) {
+	s := newStore(t)
+	if err := queryOK(s, `SELECT id, text, created_at FROM broadcasts LIMIT 1`); err != nil {
+		t.Fatalf("broadcasts table missing: %v", err)
+	}
+	if err := queryOK(s, `SELECT broadcast_id FROM bot_outbox LIMIT 1`); err != nil {
+		t.Fatalf("bot_outbox.broadcast_id missing: %v", err)
+	}
+}
