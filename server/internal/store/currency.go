@@ -237,3 +237,39 @@ func (s *Store) EconomySettings() (Settings, error) {
 		TelegramChannel: raw["telegram_channel"],
 	}, nil
 }
+
+// fallbackTZ is the course's home timezone: the audience is Serbia and
+// Russia, so it is never more than a couple of hours off, and it is what the
+// backfill uses for history where no real timezone is known.
+const fallbackTZ = "Europe/Belgrade"
+
+// UserLocation returns the user's timezone, never nil. An unknown user, an
+// unreadable row or a name the runtime cannot load all degrade to
+// Europe/Belgrade, and finally to UTC if even that is unavailable (a Go build
+// without tzdata).
+func (s *Store) UserLocation(userID string) *time.Location {
+	var name string
+	if err := s.db.QueryRow(`SELECT timezone FROM users WHERE id = ?`, userID).Scan(&name); err != nil {
+		name = fallbackTZ
+	}
+	if loc, err := time.LoadLocation(name); err == nil {
+		return loc
+	}
+	if loc, err := time.LoadLocation(fallbackTZ); err == nil {
+		return loc
+	}
+	return time.UTC
+}
+
+// SetUserTimezone stores an IANA timezone name after checking the runtime can
+// load it. Days already written to user_daily_activity are never recomputed,
+// so changing this cannot rewrite past streaks.
+func (s *Store) SetUserTimezone(userID, tz string) error {
+	if _, err := time.LoadLocation(tz); err != nil {
+		return fmt.Errorf("unknown timezone %q: %w", tz, err)
+	}
+	if _, err := s.db.Exec(`UPDATE users SET timezone = ? WHERE id = ?`, tz, userID); err != nil {
+		return fmt.Errorf("set timezone: %w", err)
+	}
+	return nil
+}

@@ -304,3 +304,33 @@ func TestEconomySettingsZeroRepairWindowIsHonored(t *testing.T) {
 		t.Fatalf("DailyGoal = %d, want fallback %d (0 is a misconfiguration)", set.DailyGoal, defaultDailyGoal)
 	}
 }
+
+func TestUserTimezone(t *testing.T) {
+	s := newStore(t)
+	id, _ := s.CreateUser("Пояс")
+
+	if loc := s.UserLocation(id); loc.String() != "Europe/Belgrade" {
+		t.Fatalf("default location = %q, want Europe/Belgrade", loc)
+	}
+
+	if err := s.SetUserTimezone(id, "Europe/Moscow"); err != nil {
+		t.Fatalf("set timezone: %v", err)
+	}
+	if loc := s.UserLocation(id); loc.String() != "Europe/Moscow" {
+		t.Fatalf("location = %q, want Europe/Moscow", loc)
+	}
+
+	if err := s.SetUserTimezone(id, "Mars/Olympus"); err == nil {
+		t.Fatal("bogus timezone accepted; want error")
+	}
+	if loc := s.UserLocation(id); loc.String() != "Europe/Moscow" {
+		t.Fatalf("location changed after a rejected write: %q", loc)
+	}
+}
+
+func TestUserLocationNeverNil(t *testing.T) {
+	s := newStore(t)
+	if loc := s.UserLocation("no-such-user"); loc == nil {
+		t.Fatal("UserLocation returned nil")
+	}
+}

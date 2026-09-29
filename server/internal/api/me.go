@@ -60,7 +60,8 @@ func (h handlers) patchMe(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var req struct {
-		Name string `json:"name"`
+		Name     string `json:"name"`
+		Timezone string `json:"timezone"`
 	}
 	if err := decode(r, &req); err != nil {
 		fail(w, http.StatusBadRequest, "bad request body")
@@ -75,6 +76,13 @@ func (h handlers) patchMe(w http.ResponseWriter, r *http.Request) {
 		log.Printf("patch me: rename: %v", err)
 		fail(w, http.StatusInternalServerError, "internal error")
 		return
+	}
+	// A bad timezone is not worth failing the whole request over — the client
+	// derives it from the browser and we simply keep the previous value.
+	if req.Timezone != "" {
+		if err := h.Store.SetUserTimezone(ac.UserID, req.Timezone); err != nil {
+			log.Printf("patch me: timezone %q: %v", req.Timezone, err)
+		}
 	}
 	sum, err := h.summaryFor(ac.UserID)
 	if err != nil {

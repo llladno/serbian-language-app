@@ -79,6 +79,34 @@ func TestPatchMeRenames(t *testing.T) {
 	}
 }
 
+func TestPatchMeAcceptsTimezone(t *testing.T) {
+	h, st, _ := newAuthAPI(t, nil)
+	uid := registerAndVerify(t, h, st, "bob@example.com", "password123", "Bob")
+	c := authed(t, st, uid)
+
+	rr := doCookie(h, c, "PATCH", "/api/me", `{"name":"Пояс","timezone":"Europe/Moscow"}`)
+	if rr.Code != http.StatusOK {
+		t.Fatalf("status = %d, want 200: %s", rr.Code, rr.Body)
+	}
+	if loc := st.UserLocation(uid); loc.String() != "Europe/Moscow" {
+		t.Fatalf("timezone not stored: %q", loc)
+	}
+}
+
+func TestPatchMeIgnoresBogusTimezone(t *testing.T) {
+	h, st, _ := newAuthAPI(t, nil)
+	uid := registerAndVerify(t, h, st, "bob@example.com", "password123", "Bob")
+	c := authed(t, st, uid)
+
+	rr := doCookie(h, c, "PATCH", "/api/me", `{"name":"Пояс","timezone":"Mars/Olympus"}`)
+	if rr.Code != http.StatusOK {
+		t.Fatalf("status = %d, want 200 (a bad timezone must not fail the rename)", rr.Code)
+	}
+	if loc := st.UserLocation(uid); loc.String() != "Europe/Belgrade" {
+		t.Fatalf("timezone = %q, want the default to survive", loc)
+	}
+}
+
 // ---- POST /me/password ----
 
 func TestChangePasswordWrongCurrent403(t *testing.T) {
