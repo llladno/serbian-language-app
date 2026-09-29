@@ -1707,7 +1707,9 @@ git commit -m "Track the consecutive-correct-answer streak on first attempts onl
 
 **Interfaces:**
 - Consumes: `attempts`, `reviews`, and the tables from Task 1.
-- Produces: `func migrate013(tx *dbtx, pg bool) error`, registered for version 13 so it runs inside migration 013's own transaction, after `013_currency.sql`.
+- Produces: `func migrate015(tx *dbtx, pg bool) error`, registered for version **15** — a hook-only migration (the runner synthesises `015_hook` for a registered hook with no matching `.sql`, see `loadMigrations`).
+
+**Why 15 and not a hook on 013** (controller ruling, recorded in the SDD ledger): migration 013 is applied back in Task 1, six tasks before this hook exists. Any database that boots the binary in between — including the dev `./data/app.db`, which persists across `make dev` runs — records version 13 as applied, and a hook added later would never fire for it. Version 15 always runs. The backfill only reads `attempts`, `reviews` and `economy_settings.daily_goal`, all present since 013, so running after the seed is safe.
 
 Without this, everyone's streak resets to zero on deploy day — the worst possible first contact with a currency that is supposed to reward consistency.
 
@@ -1717,10 +1719,10 @@ Append to `server/internal/store/activity_test.go`:
 
 ```go
 func TestBackfillReconstructsActivityAndAnswerStreak(t *testing.T) {
-	s := newStoreAtVersion(t, 12) // migrations 001..012 only
+	s := newStoreAtVersion(t, 14) // everything up to and including the seed, but not the backfill
 	id, _ := s.CreateUser("История")
 
-	// Two days of history written straight into the pre-013 tables: 10 first
+	// Two days of history, written before the backfill version runs: 10 first
 	// attempts on the 27th (one wrong at the end), 10 reviews on the 28th.
 	for i := 0; i < 10; i++ {
 		correct := 1
@@ -1790,18 +1792,23 @@ Expected: FAIL — `user_daily_activity` has no rows.
 
 - [ ] **Step 3: Implement the hook**
 
-In `server/internal/store/migration_hooks.go`, add `registerHook(13, migrate013)` to `init()` and append:
+In `server/internal/store/migration_hooks.go`, add `registerHook(15, migrate015)` to `init()` and append:
 
 ```go
-// migrate013 reconstructs the currency feature's derived history so nobody
-// starts at zero on deploy day. Runs inside migration 013's transaction,
-// after 013_currency.sql.
+// migrate015 reconstructs the currency feature's derived history so nobody
+// starts at zero on deploy day. A hook-only migration: it needs no schema of
+// its own, and its own version number guarantees it runs even on a database
+// that already applied 013.
+//
+// Deliberately a separate version from 013 rather than a hook on it — a
+// database that booted between the two would otherwise skip the backfill
+// forever.
 //
 // Days are reconstructed in Europe/Belgrade for everyone: no historical
 // timezone exists, and the rows written here are never recomputed afterwards.
 // Goals use the seeded daily_goal. Deliberately writes no ledger rows — this
 // reconstructs history, it does not pay for it.
-func migrate013(tx *dbtx, pg bool) error {
+func migrate015(tx *dbtx, pg bool) error {
 	loc, err := time.LoadLocation(fallbackTZ)
 	if err != nil {
 		loc = time.UTC
@@ -3942,12 +3949,14 @@ git commit -m "Add wallet, quest, shop, purchase and streak-repair endpoints"
 ### Task 13: Seed the starting economy and verify end to end
 
 **Files:**
-- Create: `server/internal/store/migrations/014_economy_seed.sql`
-- Modify: `server/internal/store/currency_test.go`
+- Create: `server/internal/store/seed.go`
+- Modify: `server/internal/store/currency_test.go`, `server/main.go`
 
 **Interfaces:**
-- Consumes: `quests` and `products` from Task 1.
-- Produces: the catalogue and quest list from the design doc's "Economy — starting numbers", so the feature is live on deploy without anyone opening the admin panel.
+- Consumes: `quests`, `products` and `economy_settings` from Task 1.
+- Produces: `func (s *Store) SeedEconomyDefaults(now time.Time) error` — idempotent, called once from `server/main.go` at startup, so the feature is live on deploy without anyone opening the admin panel.
+
+**Why a function and not a migration** (controller ruling, recorded in the SDD ledger): seeding through a migration puts 19 quests and 3 products into *every* store test. On SQLite each test opens a fresh in-memory database, migrations run, and the seeds are there — which breaks Task 8's `TestListQuestsRespectsActiveFlagAndOrder` (it asserts exactly 2 quests) and Task 10's product tests. On Postgres `newStore`'s TRUNCATE would wipe the seeds instead, so the same tests would behave differently on the two backends. An explicit call keeps tests on empty tables, keeps production seeded on first boot, and behaves identically on both.
 
 - [ ] **Step 1: Write the failing test**
 
@@ -3956,6 +3965,10 @@ Append to `server/internal/store/currency_test.go`:
 ```go
 func TestSeededEconomyMatchesTheDesign(t *testing.T) {
 	s := newStore(t)
+	now := time.Date(2026, 9, 29, 0, 0, 0, 0, time.UTC)
+	if err := s.SeedEconomyDefaults(now); err != nil {
+		t.Fatalf("seed: %v", err)
+	}
 
 	quests, err := s.ListQuests(true)
 	if err != nil {
@@ -3998,7 +4011,42 @@ func TestSeededEconomyMatchesTheDesign(t *testing.T) {
 		t.Fatalf("Level 5 costs %d, which the quest pool (%d) already covers", got["phase_unlock:5"], pool)
 	}
 }
+
+func TestSeedIsIdempotent(t *testing.T) {
+	s := newStore(t)
+	now := time.Date(2026, 9, 29, 0, 0, 0, 0, time.UTC)
+	for i := 0; i < 3; i++ {
+		if err := s.SeedEconomyDefaults(now); err != nil {
+			t.Fatalf("seed %d: %v", i, err)
+		}
+	}
+	quests, _ := s.ListQuests(false)
+	if len(quests) != 19 {
+		t.Fatalf("%d quests after three seed runs, want 19", len(quests))
+	}
+}
+
+func TestSeedDoesNotResurrectDeletedQuests(t *testing.T) {
+	s := newStore(t)
+	now := time.Date(2026, 9, 29, 0, 0, 0, 0, time.UTC)
+	if err := s.SeedEconomyDefaults(now); err != nil {
+		t.Fatalf("seed: %v", err)
+	}
+	if _, err := s.db.Exec(`DELETE FROM quests`); err != nil {
+		t.Fatalf("delete quests: %v", err)
+	}
+	if err := s.SeedEconomyDefaults(now); err != nil {
+		t.Fatalf("re-seed: %v", err)
+	}
+	quests, _ := s.ListQuests(false)
+	if len(quests) != 0 {
+		t.Fatalf("%d quests came back after being deleted in the admin; the seed guard did not hold", len(quests))
+	}
+}
 ```
+
+The third test is the one that matters operationally: once the owner curates
+the quest list in the admin panel, a restart must not undo their work.
 
 These last two assertions are the economy's shape expressed as a test: if someone later edits the seeds and breaks the relationship between the quest pool and the two prices, this fails loudly.
 
@@ -4007,19 +4055,142 @@ These last two assertions are the economy's shape expressed as a test: if someon
 Run: `go test ./server/internal/store/ -run TestSeededEconomy -v`
 Expected: FAIL — quest pool is 0.
 
-- [ ] **Step 3: Write the seed migration**
+- [ ] **Step 3: Write the seeding function**
 
-Create `server/internal/store/migrations/014_economy_seed.sql`:
+Create `server/internal/store/seed.go`. The whole thing runs in one
+transaction and writes the guard row **last**, so a boot that dies mid-seed
+leaves nothing marked done and the next boot retries cleanly:
+
+```go
+package store
+
+import (
+	"errors"
+	"database/sql"
+	"fmt"
+	"time"
+)
+
+// seededKey marks the economy defaults as already written. Checked and set
+// inside SeedEconomyDefaults' own transaction, so deleting every quest in the
+// admin panel does not resurrect them on the next restart.
+const seededKey = "economy_seeded"
+
+// SeedEconomyDefaults writes the starting quest list and product catalogue
+// from docs/superpowers/specs/2026-09-28-currency-design.md, once. Called
+// from main.go at startup; tests call it explicitly, which is why it is not
+// a migration (see the plan's Task 13 for the reasoning).
+//
+// Quest rewards total 638, which covers Level 4 (500) and deliberately does
+// not cover Level 5 (1000): Level 5 is what the daily streak drip is for.
+// Every number here is editable from the admin panel afterwards.
+func (s *Store) SeedEconomyDefaults(now time.Time) error {
+	tx, err := s.db.Begin()
+	if err != nil {
+		return fmt.Errorf("seed economy: %w", err)
+	}
+	defer tx.Rollback()
+
+	var marker string
+	err = tx.QueryRow(`SELECT value FROM economy_settings WHERE key = ?`, seededKey).Scan(&marker)
+	if err == nil {
+		return nil // already seeded
+	}
+	if !errors.Is(err, sql.ErrNoRows) {
+		return fmt.Errorf("seed economy: check marker: %w", err)
+	}
+
+	ts := now.UTC().Format(time.RFC3339)
+	type quest struct {
+		kind        string
+		target      int
+		param       string
+		title       string
+		description string
+		reward      int64
+		sortOrder   int
+	}
+	quests := []quest{
+		{"telegram_subscribed", 1, "", "Подписаться на канал", "Подпишись на наш Telegram-канал", 15, 10},
+		{"lessons_completed", 5, "", "Пройти 5 уроков", "", 5, 20},
+		{"lessons_completed", 10, "", "Пройти 10 уроков", "", 10, 21},
+		{"lessons_completed", 20, "", "Пройти 20 уроков", "", 20, 22},
+		{"lessons_completed", 30, "", "Пройти 30 уроков", "", 30, 23},
+		{"vocab_learned", 30, "", "Выучить 30 слов", "", 10, 30},
+		{"vocab_learned", 100, "", "Выучить 100 слов", "", 25, 31},
+		{"vocab_learned", 300, "", "Выучить 300 слов", "", 50, 32},
+		{"reviews_done", 100, "", "Сделать 100 повторений", "", 10, 40},
+		{"reviews_done", 500, "", "Сделать 500 повторений", "", 30, 41},
+		{"correct_in_row", 5, "", "5 правильных подряд", "", 3, 50},
+		{"correct_in_row", 10, "", "10 правильных подряд", "", 5, 51},
+		{"correct_in_row", 20, "", "20 правильных подряд", "", 15, 52},
+		{"streak_days", 7, "", "Стрик 7 дней", "Занимайся 7 дней подряд", 10, 60},
+		{"streak_days", 30, "", "Стрик 30 дней", "Занимайся 30 дней подряд", 40, 61},
+		{"streak_days", 100, "", "Стрик 100 дней", "Занимайся 100 дней подряд", 150, 62},
+		{"phase_completed", 100, "1", "Уровень 1 на 100%", "Пройди все уроки первого уровня", 50, 70},
+		{"phase_completed", 100, "2", "Уровень 2 на 100%", "Пройди все уроки второго уровня", 70, 71},
+		{"phase_completed", 100, "3", "Уровень 3 на 100%", "Пройди все уроки третьего уровня", 90, 72},
+	}
+	for _, q := range quests {
+		if _, err := tx.Exec(`INSERT INTO quests
+			(kind, target, param, title, description, reward, active, sort_order, created_at, updated_at)
+			VALUES (?, ?, ?, ?, ?, ?, 1, ?, ?, ?)`,
+			q.kind, q.target, q.param, q.title, q.description, q.reward, q.sortOrder, ts, ts); err != nil {
+			return fmt.Errorf("seed quest %q: %w", q.title, err)
+		}
+	}
+
+	type product struct {
+		kind        string
+		ref         string
+		title       string
+		description string
+		price       int64
+		sortOrder   int
+	}
+	products := []product{
+		{"phase_unlock", "4", "Уровень 4 — Мнения и жизнь", "Открывает уровень A2.2", 500, 10},
+		{"phase_unlock", "5", "Уровень 5 — Уверенно", "Открывает уровень B1.1", 1000, 11},
+		{"consumable", "streak_repair", "Восстановить стрик", "Вернёт сгоревший стрик в течение 48 часов", 25, 20},
+	}
+	for _, p := range products {
+		if _, err := tx.Exec(`INSERT INTO products
+			(kind, ref, title, description, price, discount_percent, discount_from, discount_to,
+			 grant_qty, active, sort_order, created_at, updated_at)
+			VALUES (?, ?, ?, ?, ?, 0, '', '', 1, 1, ?, ?, ?)
+			ON CONFLICT (kind, ref) DO NOTHING`,
+			p.kind, p.ref, p.title, p.description, p.price, p.sortOrder, ts, ts); err != nil {
+			return fmt.Errorf("seed product %s:%s: %w", p.kind, p.ref, err)
+		}
+	}
+
+	// Written last: a boot that dies mid-seed marks nothing done.
+	if _, err := tx.Exec(`INSERT INTO economy_settings (key, value, updated_at) VALUES (?, '1', ?)`,
+		seededKey, ts); err != nil {
+		return fmt.Errorf("seed economy: mark done: %w", err)
+	}
+	return tx.Commit()
+}
+```
+
+Then call it once from `server/main.go`, right after the store opens and
+before the HTTP server starts, logging and continuing on error rather than
+refusing to boot — a failed seed must not take the site down:
+
+```go
+	if err := st.SeedEconomyDefaults(time.Now()); err != nil {
+		log.Printf("seed economy defaults: %v", err)
+	}
+```
+
+Palettes are left out on purpose: the app has no shop screen yet, and a
+cosmetic nobody can see is a row that will drift out of date before it is
+ever used. Add them in the iteration that builds the shop UI.
+
+<details>
+<summary>The same data as SQL, for reference if you prefer a different shape</summary>
 
 ```sql
--- Migration 014: the starting economy from
--- docs/superpowers/specs/2026-09-28-currency-design.md. Seeds only — every
--- number here is editable from the admin panel afterwards, and this migration
--- never runs again.
---
--- Quest rewards total 638, which covers Level 4 (500) and deliberately does
--- not cover Level 5 (1000): Level 5 is what the daily streak drip is for.
-
 INSERT INTO quests (kind, target, param, title, description, reward, active, sort_order, created_at, updated_at) VALUES
 	('telegram_subscribed', 1,   '',  'Подписаться на канал',        'Подпишись на наш Telegram-канал',        15,  1,  10, '2026-09-29T00:00:00Z', '2026-09-29T00:00:00Z'),
 	('lessons_completed',   5,   '',  'Пройти 5 уроков',             '',                                       5,   1,  20, '2026-09-29T00:00:00Z', '2026-09-29T00:00:00Z'),
@@ -4048,14 +4219,14 @@ INSERT INTO products (kind, ref, title, description, price, discount_percent, di
 ON CONFLICT (kind, ref) DO NOTHING;
 ```
 
-Palettes are left out on purpose: the app has no shop screen yet, and a cosmetic nobody can see is a row that will drift out of date before it is ever used. Add them in the iteration that builds the shop UI.
+</details>
 
 - [ ] **Step 4: Run to verify it passes**
 
 Run: `go test ./server/internal/store/ -run TestSeededEconomy -v`
 Expected: PASS.
 
-Note the seed makes phases 4 and 5 **locked** from this deploy on. That is correct and currently invisible: neither has any lesson content. Verify in the same run that `GET /api/course` still returns phases 1–3 unlocked.
+Note the seed makes phases 4 and 5 **locked** from the first boot after this deploy. That is correct and currently invisible: neither has any lesson content. Verify in the same run that `GET /api/course` still returns phases 1–3 unlocked.
 
 - [ ] **Step 5: Run everything, both backends, both languages**
 
@@ -4072,8 +4243,8 @@ Expected: succeeds. Confirm tzdata is available in the built image (Task 4, Step
 - [ ] **Step 7: Commit**
 
 ```bash
-git add server/internal/store/migrations/014_economy_seed.sql server/internal/store/currency_test.go
-git commit -m "Seed the starting quest list and product catalogue"
+git add server/internal/store/seed.go server/internal/store/currency_test.go server/main.go
+git commit -m "Seed the starting quest list and product catalogue on first boot"
 ```
 
 ---
