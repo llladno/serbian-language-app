@@ -1,6 +1,10 @@
 package store
 
-import "testing"
+import (
+	"errors"
+	"testing"
+	"time"
+)
 
 func TestMigration013CreatesSchemaAndSeeds(t *testing.T) {
 	s := newStore(t)
@@ -43,5 +47,76 @@ func TestMigration013CreatesSchemaAndSeeds(t *testing.T) {
 	}
 	if tz != "Europe/Belgrade" {
 		t.Fatalf("timezone = %q, want Europe/Belgrade", tz)
+	}
+}
+
+func TestLedgerBalanceAndIdempotency(t *testing.T) {
+	s := newStore(t)
+	id, err := s.CreateUser("Ледж")
+	if err != nil {
+		t.Fatalf("create user: %v", err)
+	}
+	now := time.Date(2026, 9, 29, 12, 0, 0, 0, time.UTC)
+
+	if bal, err := s.Balance(id); err != nil || bal != 0 {
+		t.Fatalf("empty balance = %d, %v; want 0, nil", bal, err)
+	}
+
+	ledgerID, err := s.AddLedgerEntry(LedgerEntry{
+		UserID: id, Amount: 30, Kind: "quest_reward", Ref: "7",
+		IdempotencyKey: "quest:7:" + id,
+	}, now)
+	if err != nil {
+		t.Fatalf("first credit: %v", err)
+	}
+	// promo_redemptions.ledger_id (a later task) stores this id, so it must
+	// be a real row id, not a zero value silently returned on error.
+	if ledgerID == 0 {
+		t.Fatal("AddLedgerEntry returned id = 0, want a real row id")
+	}
+
+	// Same key again must be rejected and must not change the balance.
+	if _, err := s.AddLedgerEntry(LedgerEntry{
+		UserID: id, Amount: 30, Kind: "quest_reward", Ref: "7",
+		IdempotencyKey: "quest:7:" + id,
+	}, now); !errors.Is(err, ErrDuplicateEntry) {
+		t.Fatalf("second credit err = %v; want ErrDuplicateEntry", err)
+	}
+
+	if _, err := s.AddLedgerEntry(LedgerEntry{
+		UserID: id, Amount: -25, Kind: "purchase", Ref: "1",
+		IdempotencyKey: "purchase:" + id + ":1:1",
+	}, now); err != nil {
+		t.Fatalf("debit: %v", err)
+	}
+
+	bal, err := s.Balance(id)
+	if err != nil {
+		t.Fatalf("balance: %v", err)
+	}
+	if bal != 5 {
+		t.Fatalf("balance = %d, want 5", bal)
+	}
+
+	rows, err := s.ListLedger(id, 10, 0)
+	if err != nil {
+		t.Fatalf("list: %v", err)
+	}
+	if len(rows) != 2 {
+		t.Fatalf("len(rows) = %d, want 2", len(rows))
+	}
+	if rows[0].Kind != "purchase" {
+		t.Fatalf("rows[0].Kind = %q, want purchase (newest first)", rows[0].Kind)
+	}
+}
+
+func TestLedgerRejectsZeroAmount(t *testing.T) {
+	s := newStore(t)
+	id, _ := s.CreateUser("Ноль")
+	_, err := s.AddLedgerEntry(LedgerEntry{
+		UserID: id, Amount: 0, Kind: "quest_reward", IdempotencyKey: "zero",
+	}, time.Now())
+	if err == nil {
+		t.Fatal("zero-amount entry accepted; want error")
 	}
 }
