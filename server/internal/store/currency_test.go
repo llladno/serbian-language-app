@@ -179,3 +179,38 @@ func TestLedgerRejectsZeroAmount(t *testing.T) {
 		t.Fatal("zero-amount entry accepted; want error")
 	}
 }
+
+func TestEconomySettings(t *testing.T) {
+	s := newStore(t)
+	set, err := s.EconomySettings()
+	if err != nil {
+		t.Fatalf("settings: %v", err)
+	}
+	if set.DailyGoal != 10 {
+		t.Fatalf("DailyGoal = %d, want 10", set.DailyGoal)
+	}
+	if set.RepairWindowHours != 48 {
+		t.Fatalf("RepairWindowHours = %d, want 48", set.RepairWindowHours)
+	}
+	if got := set.Drip.DripFor(30); got != 2 {
+		t.Fatalf("Drip.DripFor(30) = %d, want 2", got)
+	}
+	if set.CurrencyNameMany != "монет" {
+		t.Fatalf("CurrencyNameMany = %q, want монет", set.CurrencyNameMany)
+	}
+}
+
+func TestEconomySettingsFallsBackOnGarbage(t *testing.T) {
+	s := newStore(t)
+	if _, err := s.db.Exec(`UPDATE economy_settings SET value = ? WHERE key = ?`,
+		"not-a-number", "daily_goal"); err != nil {
+		t.Fatalf("corrupt daily_goal: %v", err)
+	}
+	set, err := s.EconomySettings()
+	if err != nil {
+		t.Fatalf("settings: %v", err)
+	}
+	if set.DailyGoal != defaultDailyGoal {
+		t.Fatalf("DailyGoal = %d, want fallback %d", set.DailyGoal, defaultDailyGoal)
+	}
+}

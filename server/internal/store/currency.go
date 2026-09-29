@@ -4,7 +4,10 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"strconv"
 	"time"
+
+	"github.com/grisha/serbian-app/server/internal/economy"
 )
 
 // ErrDuplicateEntry is returned when a ledger row with the same
@@ -136,4 +139,65 @@ func (s *Store) ListLedger(userID string, limit, offset int) ([]LedgerEntry, err
 		out = append(out, e)
 	}
 	return out, rows.Err()
+}
+
+// Defaults used when a setting is missing or unparseable. The admin panel can
+// write anything into economy_settings, so every read falls back rather than
+// failing the request.
+const (
+	defaultDailyGoal         = 10
+	defaultRepairWindowHours = 48
+	defaultDrip              = `[[1,1],[30,2],[100,3]]`
+)
+
+// Settings is the parsed economy_settings table.
+type Settings struct {
+	CurrencyNameOne   string
+	CurrencyNameFew   string
+	CurrencyNameMany  string
+	DailyGoal         int
+	Drip              economy.Ladder
+	RepairWindowHours int
+	TelegramChannel   string
+}
+
+// EconomySettings reads and parses every setting in one query.
+func (s *Store) EconomySettings() (Settings, error) {
+	rows, err := s.db.Query(`SELECT key, value FROM economy_settings`)
+	if err != nil {
+		return Settings{}, fmt.Errorf("economy settings: %w", err)
+	}
+	defer rows.Close()
+	raw := map[string]string{}
+	for rows.Next() {
+		var k, v string
+		if err := rows.Scan(&k, &v); err != nil {
+			return Settings{}, fmt.Errorf("scan economy setting: %w", err)
+		}
+		raw[k] = v
+	}
+	if err := rows.Err(); err != nil {
+		return Settings{}, fmt.Errorf("iterate economy settings: %w", err)
+	}
+
+	atoi := func(key string, def int) int {
+		n, err := strconv.Atoi(raw[key])
+		if err != nil || n <= 0 {
+			return def
+		}
+		return n
+	}
+	ladder, err := economy.ParseLadder(raw["streak_drip"])
+	if err != nil {
+		ladder, _ = economy.ParseLadder(defaultDrip)
+	}
+	return Settings{
+		CurrencyNameOne:   raw["currency_name_one"],
+		CurrencyNameFew:   raw["currency_name_few"],
+		CurrencyNameMany:  raw["currency_name_many"],
+		DailyGoal:         atoi("daily_goal", defaultDailyGoal),
+		Drip:              ladder,
+		RepairWindowHours: atoi("streak_repair_window_hours", defaultRepairWindowHours),
+		TelegramChannel:   raw["telegram_channel"],
+	}, nil
 }
