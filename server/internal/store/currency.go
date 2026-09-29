@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"log"
 	"strconv"
 	"time"
 
@@ -246,10 +247,17 @@ const fallbackTZ = "Europe/Belgrade"
 // UserLocation returns the user's timezone, never nil. An unknown user, an
 // unreadable row or a name the runtime cannot load all degrade to
 // Europe/Belgrade, and finally to UTC if even that is unavailable (a Go build
-// without tzdata).
+// without tzdata). An unknown user (sql.ErrNoRows) is an ordinary, expected
+// miss and stays silent; any other scan error — a genuine connectivity or
+// driver failure — is logged before falling back, since this function backs
+// every counted action and a systemic DB read problem must leave a trace an
+// operator can find, not just a silently wrong date.
 func (s *Store) UserLocation(userID string) *time.Location {
 	var name string
 	if err := s.db.QueryRow(`SELECT timezone FROM users WHERE id = ?`, userID).Scan(&name); err != nil {
+		if !errors.Is(err, sql.ErrNoRows) {
+			log.Printf("user location: scan timezone for user %q: %v", userID, err)
+		}
 		name = fallbackTZ
 	}
 	if loc, err := time.LoadLocation(name); err == nil {

@@ -52,7 +52,13 @@ func (h handlers) getMe(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, dto)
 }
 
-// patchMe renames the account. {name}, normalized and capped like registration.
+// patchMe updates the account: an optional rename ({name}, normalized and
+// capped like registration) and/or an optional timezone refresh ({timezone}).
+// Both fields are independent — name is a *string so a timezone-only call
+// (e.g. a background refresh on login) can omit it entirely rather than
+// having to resend a possibly-stale cached display name, which could
+// otherwise silently revert a rename made from another device. At least one
+// of the two must be present.
 func (h handlers) patchMe(w http.ResponseWriter, r *http.Request) {
 	ac, ok := authFrom(r)
 	if !ok {
@@ -60,22 +66,28 @@ func (h handlers) patchMe(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var req struct {
-		Name     string `json:"name"`
-		Timezone string `json:"timezone"`
+		Name     *string `json:"name"`
+		Timezone string  `json:"timezone"`
 	}
 	if err := decode(r, &req); err != nil {
 		fail(w, http.StatusBadRequest, "bad request body")
 		return
 	}
-	name := store.NormalizeName(req.Name)
-	if name == "" || len([]rune(name)) > 40 {
-		fail(w, http.StatusBadRequest, "name must be 1 to 40 characters")
+	if req.Name == nil && req.Timezone == "" {
+		fail(w, http.StatusBadRequest, "name or timezone required")
 		return
 	}
-	if err := h.Store.RenameUser(ac.UserID, name); err != nil {
-		log.Printf("patch me: rename: %v", err)
-		fail(w, http.StatusInternalServerError, "internal error")
-		return
+	if req.Name != nil {
+		name := store.NormalizeName(*req.Name)
+		if name == "" || len([]rune(name)) > 40 {
+			fail(w, http.StatusBadRequest, "name must be 1 to 40 characters")
+			return
+		}
+		if err := h.Store.RenameUser(ac.UserID, name); err != nil {
+			log.Printf("patch me: rename: %v", err)
+			fail(w, http.StatusInternalServerError, "internal error")
+			return
+		}
 	}
 	// A bad timezone is not worth failing the whole request over — the client
 	// derives it from the browser and we simply keep the previous value.

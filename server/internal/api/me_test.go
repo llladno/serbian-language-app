@@ -79,6 +79,67 @@ func TestPatchMeRenames(t *testing.T) {
 	}
 }
 
+// TestPatchMeTimezoneOnlyLeavesNameUntouched covers I2: a timezone-only PATCH
+// (no name field at all) must not require a display name and must not touch
+// the stored one — the case a background "refresh my timezone on login"
+// client relies on, without risking a stale cached name reverting a rename
+// made from another device.
+func TestPatchMeTimezoneOnlyLeavesNameUntouched(t *testing.T) {
+	h, st, _ := newAuthAPI(t, nil)
+	uid := registerAndVerify(t, h, st, "bob@example.com", "password123", "Bob")
+	c := authed(t, st, uid)
+
+	rr := doCookie(h, c, "PATCH", "/api/me", `{"timezone":"Europe/Moscow"}`)
+	if rr.Code != http.StatusOK {
+		t.Fatalf("timezone-only patch = %d %s, want 200", rr.Code, rr.Body)
+	}
+	row, err := st.UserByID(uid)
+	if err != nil || row.Name != "Bob" {
+		t.Errorf("name changed by a timezone-only patch: row = %+v, err %v", row, err)
+	}
+	if loc := st.UserLocation(uid); loc.String() != "Europe/Moscow" {
+		t.Fatalf("timezone not stored: %q", loc)
+	}
+}
+
+// TestPatchMeEmptyBody400 covers I2: a request with neither name nor
+// timezone asks for nothing and must be rejected rather than silently
+// succeeding.
+func TestPatchMeEmptyBody400(t *testing.T) {
+	h, st, _ := newAuthAPI(t, nil)
+	uid := registerAndVerify(t, h, st, "bob@example.com", "password123", "Bob")
+	c := authed(t, st, uid)
+
+	rr := doCookie(h, c, "PATCH", "/api/me", `{}`)
+	if rr.Code != http.StatusBadRequest {
+		t.Fatalf("empty patch = %d, want 400", rr.Code)
+	}
+	row, err := st.UserByID(uid)
+	if err != nil || row.Name != "Bob" {
+		t.Errorf("empty patch changed the name: row = %+v, err %v", row, err)
+	}
+	if loc := st.UserLocation(uid); loc.String() != "Europe/Belgrade" {
+		t.Errorf("empty patch changed the timezone: %q", loc)
+	}
+}
+
+// TestPatchMeBlankNameStill400 covers I2: an explicitly present but blank
+// name must still 400, exactly as before name became optional.
+func TestPatchMeBlankNameStill400(t *testing.T) {
+	h, st, _ := newAuthAPI(t, nil)
+	uid := registerAndVerify(t, h, st, "bob@example.com", "password123", "Bob")
+	c := authed(t, st, uid)
+
+	rr := doCookie(h, c, "PATCH", "/api/me", `{"name":"   "}`)
+	if rr.Code != http.StatusBadRequest {
+		t.Fatalf("blank name = %d, want 400", rr.Code)
+	}
+	row, err := st.UserByID(uid)
+	if err != nil || row.Name != "Bob" {
+		t.Errorf("blank-name patch changed the name: row = %+v, err %v", row, err)
+	}
+}
+
 func TestPatchMeAcceptsTimezone(t *testing.T) {
 	h, st, _ := newAuthAPI(t, nil)
 	uid := registerAndVerify(t, h, st, "bob@example.com", "password123", "Bob")
