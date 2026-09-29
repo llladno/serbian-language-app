@@ -6,6 +6,29 @@ import (
 	"time"
 )
 
+// restoreEconomySettings resets economy_settings back to migration 013's
+// seed. economy_settings is deliberately left out of newStore's Postgres
+// TRUNCATE list (it's shared config, not per-test data, and truncating it
+// would strand it empty forever — migrations only seed once). So a test
+// that UPDATEs or DELETEs rows must put them back itself, or it leaks into
+// whichever test runs next in the same process. A no-op in effect on
+// SQLite, where each test already gets its own fresh in-memory db.
+func restoreEconomySettings(t *testing.T, s *Store) {
+	t.Helper()
+	_, err := s.db.Exec(`INSERT INTO economy_settings (key, value, updated_at) VALUES
+		('currency_name_one',          'монета',                 '2026-09-29T00:00:00Z'),
+		('currency_name_few',          'монеты',                 '2026-09-29T00:00:00Z'),
+		('currency_name_many',         'монет',                  '2026-09-29T00:00:00Z'),
+		('daily_goal',                 '10',                     '2026-09-29T00:00:00Z'),
+		('streak_drip',                '[[1,1],[30,2],[100,3]]', '2026-09-29T00:00:00Z'),
+		('streak_repair_window_hours', '48',                     '2026-09-29T00:00:00Z'),
+		('telegram_channel',           '',                       '2026-09-29T00:00:00Z')
+		ON CONFLICT (key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at`)
+	if err != nil {
+		t.Fatalf("restore economy_settings: %v", err)
+	}
+}
+
 func TestMigration013CreatesSchemaAndSeeds(t *testing.T) {
 	s := newStore(t)
 
@@ -202,6 +225,7 @@ func TestEconomySettings(t *testing.T) {
 
 func TestEconomySettingsFallsBackOnGarbage(t *testing.T) {
 	s := newStore(t)
+	t.Cleanup(func() { restoreEconomySettings(t, s) })
 	if _, err := s.db.Exec(`UPDATE economy_settings SET value = ? WHERE key = ?`,
 		"not-a-number", "daily_goal"); err != nil {
 		t.Fatalf("corrupt daily_goal: %v", err)
@@ -212,5 +236,71 @@ func TestEconomySettingsFallsBackOnGarbage(t *testing.T) {
 	}
 	if set.DailyGoal != defaultDailyGoal {
 		t.Fatalf("DailyGoal = %d, want fallback %d", set.DailyGoal, defaultDailyGoal)
+	}
+}
+
+// TestEconomySettingsOnEmptyTable is the regression test for review finding
+// I1: a table that lost every row (migration never ran, or an admin deleted
+// the rows) must behave exactly like a freshly seeded one, not return a
+// Settings{} with blank display strings that look like real configuration.
+func TestEconomySettingsOnEmptyTable(t *testing.T) {
+	s := newStore(t)
+	t.Cleanup(func() { restoreEconomySettings(t, s) })
+	if _, err := s.db.Exec(`DELETE FROM economy_settings`); err != nil {
+		t.Fatalf("empty economy_settings: %v", err)
+	}
+	set, err := s.EconomySettings()
+	if err != nil {
+		t.Fatalf("settings: %v", err)
+	}
+	if set.CurrencyNameOne != defaultCurrencyNameOne ||
+		set.CurrencyNameFew != defaultCurrencyNameFew ||
+		set.CurrencyNameMany != defaultCurrencyNameMany {
+		t.Fatalf("currency names = %q/%q/%q, want seeded-equivalent defaults %q/%q/%q",
+			set.CurrencyNameOne, set.CurrencyNameFew, set.CurrencyNameMany,
+			defaultCurrencyNameOne, defaultCurrencyNameFew, defaultCurrencyNameMany)
+	}
+	if set.DailyGoal != defaultDailyGoal {
+		t.Fatalf("DailyGoal = %d, want %d", set.DailyGoal, defaultDailyGoal)
+	}
+	if set.RepairWindowHours != defaultRepairWindowHours {
+		t.Fatalf("RepairWindowHours = %d, want %d", set.RepairWindowHours, defaultRepairWindowHours)
+	}
+	if got := set.Drip.DripFor(30); got != 2 {
+		t.Fatalf("Drip.DripFor(30) = %d, want 2 (default ladder)", got)
+	}
+	// Unlike the other fields, an empty channel is a meaningful value (a
+	// later task hides the subscription quest when it's blank), so it must
+	// stay blank rather than get a fallback.
+	if set.TelegramChannel != "" {
+		t.Fatalf("TelegramChannel = %q, want empty", set.TelegramChannel)
+	}
+}
+
+// TestEconomySettingsZeroRepairWindowIsHonored is the regression test for
+// review finding I2: streak_repair_window_hours = "0" is a deliberate admin
+// choice to disable repairs and must survive as 0, unlike daily_goal = "0"
+// which is a misconfiguration (a goal of 0 can never be met) and must still
+// be floored to the default.
+func TestEconomySettingsZeroRepairWindowIsHonored(t *testing.T) {
+	s := newStore(t)
+	t.Cleanup(func() { restoreEconomySettings(t, s) })
+	if _, err := s.db.Exec(`UPDATE economy_settings SET value = ? WHERE key = ?`,
+		"0", "streak_repair_window_hours"); err != nil {
+		t.Fatalf("set repair window to 0: %v", err)
+	}
+	if _, err := s.db.Exec(`UPDATE economy_settings SET value = ? WHERE key = ?`,
+		"0", "daily_goal"); err != nil {
+		t.Fatalf("set daily_goal to 0: %v", err)
+	}
+	set, err := s.EconomySettings()
+	if err != nil {
+		t.Fatalf("settings: %v", err)
+	}
+	if set.RepairWindowHours != 0 {
+		t.Fatalf("RepairWindowHours = %d, want 0 (deliberate disable honored)", set.RepairWindowHours)
+	}
+	if set.DailyGoal != defaultDailyGoal {
+		t.Fatalf("DailyGoal = %d, want fallback %d (0 is a misconfiguration)", set.DailyGoal, defaultDailyGoal)
 	}
 }

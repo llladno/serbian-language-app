@@ -143,11 +143,17 @@ func (s *Store) ListLedger(userID string, limit, offset int) ([]LedgerEntry, err
 
 // Defaults used when a setting is missing or unparseable. The admin panel can
 // write anything into economy_settings, so every read falls back rather than
-// failing the request.
+// failing the request. The currency-name defaults are exactly the values
+// migration 013 seeds, so a table that lost those rows (never migrated, or
+// an admin deleted them) behaves identically to a freshly seeded one instead
+// of surfacing blank display strings.
 const (
 	defaultDailyGoal         = 10
 	defaultRepairWindowHours = 48
 	defaultDrip              = `[[1,1],[30,2],[100,3]]`
+	defaultCurrencyNameOne   = "монета"
+	defaultCurrencyNameFew   = "монеты"
+	defaultCurrencyNameMany  = "монет"
 )
 
 // Settings is the parsed economy_settings table.
@@ -180,24 +186,54 @@ func (s *Store) EconomySettings() (Settings, error) {
 		return Settings{}, fmt.Errorf("iterate economy settings: %w", err)
 	}
 
-	atoi := func(key string, def int) int {
+	str := func(key, def string) string {
+		if v, ok := raw[key]; ok && v != "" {
+			return v
+		}
+		return def
+	}
+
+	// positiveOrDefault floors at def for anything <= 0. Used only for
+	// daily_goal: a goal of 0 can never be met, so a later task's "pay the
+	// drip when actions == goal" would silently never fire again. That
+	// makes 0 a misconfiguration to correct, not an intent to honor.
+	positiveOrDefault := func(key string, def int) int {
 		n, err := strconv.Atoi(raw[key])
 		if err != nil || n <= 0 {
 			return def
 		}
 		return n
 	}
+	// nonNegativeOrDefault accepts 0 — unlike daily_goal, a repair window of
+	// 0 hours is a coherent admin intent ("no repairs": the deadline is the
+	// end of the missed day, so every repair request is refused, which is
+	// exactly what disabling looks like). Only a negative or unparseable
+	// value is treated as a misconfiguration.
+	nonNegativeOrDefault := func(key string, def int) int {
+		n, err := strconv.Atoi(raw[key])
+		if err != nil || n < 0 {
+			return def
+		}
+		return n
+	}
+
 	ladder, err := economy.ParseLadder(raw["streak_drip"])
 	if err != nil {
 		ladder, _ = economy.ParseLadder(defaultDrip)
 	}
 	return Settings{
-		CurrencyNameOne:   raw["currency_name_one"],
-		CurrencyNameFew:   raw["currency_name_few"],
-		CurrencyNameMany:  raw["currency_name_many"],
-		DailyGoal:         atoi("daily_goal", defaultDailyGoal),
-		Drip:              ladder,
-		RepairWindowHours: atoi("streak_repair_window_hours", defaultRepairWindowHours),
-		TelegramChannel:   raw["telegram_channel"],
+		CurrencyNameOne:  str("currency_name_one", defaultCurrencyNameOne),
+		CurrencyNameFew:  str("currency_name_few", defaultCurrencyNameFew),
+		CurrencyNameMany: str("currency_name_many", defaultCurrencyNameMany),
+		DailyGoal:        positiveOrDefault("daily_goal", defaultDailyGoal),
+		Drip:             ladder,
+		RepairWindowHours: nonNegativeOrDefault(
+			"streak_repair_window_hours", defaultRepairWindowHours),
+		// No fallback: empty is already a meaningful value here — a later
+		// task treats an empty channel as "hide the subscription quest
+		// entirely", so inventing a default channel would be worse than
+		// leaving it blank. Do not "fix" this for consistency with the
+		// other string fields above.
+		TelegramChannel: raw["telegram_channel"],
 	}, nil
 }
