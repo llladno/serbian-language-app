@@ -110,6 +110,65 @@ func TestLedgerBalanceAndIdempotency(t *testing.T) {
 	}
 }
 
+// TestLedgerDuplicateLeavesTransactionUsable is the regression test for I2:
+// on Postgres, a driver-level unique-violation error poisons the whole
+// enclosing transaction, so any statement after it (including COMMIT) would
+// fail with "current transaction is aborted" unless the duplicate is
+// reported without failing the INSERT itself (ON CONFLICT DO NOTHING). This
+// is exactly the pattern a quest-claim/purchase handler relies on: catch
+// ErrDuplicateEntry, keep working on the same tx, commit successfully.
+func TestLedgerDuplicateLeavesTransactionUsable(t *testing.T) {
+	s := newStore(t)
+	id, err := s.CreateUser("Транза")
+	if err != nil {
+		t.Fatalf("create user: %v", err)
+	}
+	now := time.Date(2026, 9, 29, 12, 0, 0, 0, time.UTC)
+
+	tx, err := s.db.Begin()
+	if err != nil {
+		t.Fatalf("begin: %v", err)
+	}
+
+	if _, err := addLedgerEntryTx(tx, LedgerEntry{
+		UserID: id, Amount: 30, Kind: "quest_reward", Ref: "7",
+		IdempotencyKey: "quest:7:" + id,
+	}, now); err != nil {
+		tx.Rollback()
+		t.Fatalf("first credit: %v", err)
+	}
+
+	if _, err := addLedgerEntryTx(tx, LedgerEntry{
+		UserID: id, Amount: 30, Kind: "quest_reward", Ref: "7",
+		IdempotencyKey: "quest:7:" + id,
+	}, now); !errors.Is(err, ErrDuplicateEntry) {
+		tx.Rollback()
+		t.Fatalf("second credit err = %v; want ErrDuplicateEntry", err)
+	}
+
+	// More work on the same tx after the duplicate — this is the part that
+	// fails on Postgres if the duplicate poisoned the transaction.
+	if _, err := addLedgerEntryTx(tx, LedgerEntry{
+		UserID: id, Amount: 7, Kind: "bonus", Ref: "1",
+		IdempotencyKey: "bonus:" + id + ":1",
+	}, now); err != nil {
+		tx.Rollback()
+		t.Fatalf("follow-up entry on same tx: %v", err)
+	}
+
+	if err := tx.Commit(); err != nil {
+		t.Fatalf("commit after duplicate: %v", err)
+	}
+
+	bal, err := s.Balance(id)
+	if err != nil {
+		t.Fatalf("balance: %v", err)
+	}
+	if bal != 37 {
+		t.Fatalf("balance = %d, want 37 (30 + 7, duplicate not double-counted)", bal)
+	}
+}
+
 func TestLedgerRejectsZeroAmount(t *testing.T) {
 	s := newStore(t)
 	id, _ := s.CreateUser("Ноль")

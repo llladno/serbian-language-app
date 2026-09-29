@@ -1,9 +1,9 @@
 package store
 
 import (
+	"database/sql"
 	"errors"
 	"fmt"
-	"strings"
 	"time"
 )
 
@@ -45,7 +45,12 @@ func (s *Store) AddLedgerEntry(e LedgerEntry, now time.Time) (int64, error) {
 }
 
 // addLedgerEntryTx is the transaction-scoped form, used by claim and purchase
-// so the credit and its side effects commit together.
+// so the credit and its side effects commit together. A duplicate
+// idempotency_key is reported as ErrDuplicateEntry without failing the
+// INSERT statement itself (see the ON CONFLICT DO NOTHING below) — so, unlike
+// a driver-level constraint-violation error, it does not poison the
+// enclosing transaction on Postgres. A caller that gets ErrDuplicateEntry may
+// keep using tx afterwards and commit it.
 func addLedgerEntryTx(tx *dbtx, e LedgerEntry, now time.Time) (int64, error) {
 	if e.UserID == "" {
 		return 0, errors.New("ledger entry: empty user id")
@@ -57,32 +62,29 @@ func addLedgerEntryTx(tx *dbtx, e LedgerEntry, now time.Time) (int64, error) {
 		return 0, errors.New("ledger entry: empty idempotency key")
 	}
 
-	// RETURNING works via QueryRow on both backends (verified against
-	// modernc.org/sqlite v1.58.0 as well as Postgres), so no dialect branch
-	// is needed here.
+	// ON CONFLICT DO NOTHING means a duplicate key never fails the
+	// statement — it just returns no row, which we read as ErrDuplicateEntry
+	// below. currency_ledger has exactly one unique index (idempotency_key,
+	// whose entire purpose is this check), so DO NOTHING can't be hiding any
+	// other conflict. RETURNING works via QueryRow on both backends
+	// (verified against modernc.org/sqlite v1.58.0 as well as Postgres) even
+	// when combined with ON CONFLICT DO NOTHING, so no dialect branch is
+	// needed here.
 	var id int64
 	err := tx.QueryRow(`INSERT INTO currency_ledger
 		(user_id, amount, kind, ref, idempotency_key, comment, created_by, created_at)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?) RETURNING id`,
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+		ON CONFLICT (idempotency_key) DO NOTHING
+		RETURNING id`,
 		e.UserID, e.Amount, e.Kind, e.Ref, e.IdempotencyKey, e.Comment, e.CreatedBy,
 		now.UTC().Format(time.RFC3339)).Scan(&id)
 	if err != nil {
-		if isUniqueViolation(err) {
+		if errors.Is(err, sql.ErrNoRows) {
 			return 0, ErrDuplicateEntry
 		}
 		return 0, fmt.Errorf("insert ledger entry: %w", err)
 	}
 	return id, nil
-}
-
-// isUniqueViolation reports whether err is a unique-index conflict on either
-// backend. Both drivers only expose this in the message text, so match on it
-// rather than pulling in driver-specific error types.
-func isUniqueViolation(err error) bool {
-	msg := strings.ToLower(err.Error())
-	return strings.Contains(msg, "unique constraint") ||
-		strings.Contains(msg, "duplicate key") ||
-		strings.Contains(msg, "unique index")
 }
 
 // Balance is always computed, never stored. See the design doc.
