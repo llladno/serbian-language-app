@@ -10,8 +10,8 @@
     {
       "name": "landing",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["--prefix", "landing", "run", "dev"],
-      "port": 3000
+      "runtimeArgs": ["--prefix", "landing", "run", "dev", "--", "--port", "3010"],
+      "port": 3010
     }
   ]
 }
