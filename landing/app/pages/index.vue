@@ -354,6 +354,43 @@
       </div>
     </section>
 
+    <section id="reviews" class="section" aria-labelledby="reviews-title">
+      <h2 id="reviews-title" class="reveal">Что говорят ученики</h2>
+      <p class="section__lead reveal">
+        Настоящие комментарии из Instagram и TikTok — без редактуры,
+        орфография авторов сохранена.
+      </p>
+
+      <div class="reviews__slider reveal">
+        <div class="reviews__track" role="list">
+          <div
+            v-for="r in reviews"
+            :key="r.src"
+            class="review-card"
+            role="listitem"
+          >
+            <img
+              :src="r.src"
+              :width="r.width"
+              :height="r.height"
+              loading="lazy"
+              :alt="r.alt"
+            />
+          </div>
+        </div>
+
+        <div class="reviews__controls">
+          <button type="button" class="reviews__nav reviews__nav--prev" aria-label="Предыдущий отзыв">
+            ‹
+          </button>
+          <div class="reviews__dots"></div>
+          <button type="button" class="reviews__nav reviews__nav--next" aria-label="Следующий отзыв">
+            ›
+          </button>
+        </div>
+      </div>
+    </section>
+
     <section class="final-cta">
       <img
         class="reveal"
@@ -374,6 +411,43 @@
 </template>
 
 <script setup lang="ts">
+// Real screenshots of comments from Instagram/TikTok, as sent — shown as
+// images rather than retyped text/avatars. Add a new entry (photo under
+// public/reviews/, converted to webp with `cwebp -q 90`, matching every
+// other image in public/) as more come in.
+const reviews = [
+  {
+    src: '/reviews/review-notchristin.webp',
+    width: 1179,
+    height: 525,
+    alt: 'Отзыв в Instagram от notchristin: «чудесное приложение! спасибо вам за работу»',
+  },
+  {
+    src: '/reviews/review-p1gl1n.webp',
+    width: 1179,
+    height: 330,
+    alt: 'Отзыв в Instagram от p1gl1n: «кайф, развивайте проект»',
+  },
+  {
+    src: '/reviews/review-tombu.webp',
+    width: 1179,
+    height: 506,
+    alt: 'Отзывы в Instagram от Насти Томбу и «по лицу бытовыми ударами»: «я вас искала, спасибо» и «спасибо большое!!! давно хотела, но не знала с чего начать»',
+  },
+  {
+    src: '/reviews/review-helenabrus.webp',
+    width: 1179,
+    height: 472,
+    alt: 'Отзыв в Instagram от helenabrus: «Спасибо Вам огромное!!»',
+  },
+  {
+    src: '/reviews/review-kv.webp',
+    width: 1179,
+    height: 685,
+    alt: 'Отзыв в Instagram: «спасибо вам, только за сегодня прошла 4 ваших урока, также конспектирую их»',
+  },
+]
+
 const faq = [
   {
     q: 'С чего начать изучение сербского языка?',
@@ -487,6 +561,11 @@ useHead({
     {
       key: 'accordion',
       src: '/accordion.js',
+      defer: true,
+    },
+    {
+      key: 'reviews-slider',
+      src: '/reviews-slider.js',
       defer: true,
     },
   ],
@@ -978,6 +1057,98 @@ useHead({
   margin: 12px 0 0 20px;
   color: var(--color-muted);
   font-size: 15px;
+}
+
+.reviews__slider {
+  position: relative;
+}
+
+.reviews__track {
+  display: flex;
+  gap: 20px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-padding-left: 4px;
+  padding: 4px 4px 12px;
+  margin: 0 -4px;
+  /* Scrollbar stays hidden but the strip is still a native, fully
+     keyboard/touch/trackpad-scrollable list without any JS at all —
+     reviews-slider.js only adds the arrow buttons and dots on top. */
+  scrollbar-width: none;
+}
+
+.reviews__track::-webkit-scrollbar {
+  display: none;
+}
+
+.review-card {
+  scroll-snap-align: start;
+  flex: 0 0 auto;
+  width: min(340px, 82vw);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.review-card img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.reviews__controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.reviews__nav {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-primary-dark);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.15s ease, opacity 0.15s ease;
+}
+
+.reviews__nav:hover:not(:disabled) {
+  background: var(--color-primary-soft);
+}
+
+.reviews__nav:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+/* No JS: the buttons render (harmlessly inert) but the track above is
+   still fully swipeable/scrollable on its own, so nothing is lost. */
+.reviews__dots {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.reviews__dot {
+  width: 8px;
+  height: 8px;
+  padding: 0;
+  border-radius: 50%;
+  border: none;
+  background: var(--color-border);
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+
+.reviews__dot.is-active {
+  background: var(--color-primary);
+  transform: scale(1.3);
 }
 
 .final-cta {

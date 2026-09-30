@@ -5,6 +5,7 @@
       <nav class="header__nav" aria-label="Разделы страницы">
         <a href="/#how">Как это работает</a>
         <a href="/#roadmap">Программа курса</a>
+        <a href="/#reviews">Отзывы</a>
         <a href="/#faq">Вопросы</a>
         <NuxtLink to="/blog">Блог</NuxtLink>
       </nav>
