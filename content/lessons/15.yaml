@@ -35,6 +35,7 @@ steps:
         type: translate
         prompt: "Картой можно?"
         accept: ["Može karticom?", "Karticom, može?"]
+        explain: "«karticom» — через k: «kartica» (карта) в творительном падеже."
 
   - id: "15.2"
     kind: checkpoint
@@ -71,6 +72,7 @@ steps:
         type: fill_blank
         prompt: "«Работаю программистом» → Radim ___ programer."
         accept: ["kao"]
+        explain: "«radim kao + профессия» — «работаю кем-то», «kao» здесь обязателен."
       - id: "15.2.6"
         type: word_bank
         prompt: "Собери: «сколько стоит кофе?»"
@@ -80,6 +82,7 @@ steps:
         type: translate
         prompt: "Спасибо, до свидания!"
         accept: ["Hvala, doviđenja!"]
+        explain: "Нужны оба слова: «Hvala» и «doviđenja» — не забудь первое."
       - id: "15.2.8"
         type: translate
         prompt: "Сколько с меня?"

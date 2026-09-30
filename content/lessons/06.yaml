@@ -69,6 +69,7 @@ steps:
         type: fill_blank
         prompt: "У меня есть сын: «Imam ___.»"
         accept: ["sina"]
+        explain: "«sin» в винительном падеже — «sina»: «Imam sina»."
       - id: "06.4.4"
         type: word_bank
         prompt: "Собери: «у меня есть жена»"

@@ -346,7 +346,7 @@ func (h handlers) getExercises(w http.ResponseWriter, r *http.Request) {
 	for _, b := range h.Course().Exercises[id] {
 		bd := exerciseBlockDTO{ID: b.ID, Title: b.Title, Instruction: b.Instruction}
 		for _, e := range b.Exercises {
-			d := exerciseDTO{ID: e.ID, Type: e.Type, Prompt: e.Prompt, Forms: e.Forms, Meta: e.Meta, Audio: e.Audio}
+			d := exerciseDTO{ID: e.ID, Type: e.Type, Prompt: e.Prompt, Forms: e.Forms, Meta: e.Meta, Audio: e.Audio, Explain: e.Explain}
 			switch e.Type {
 			case "choice":
 				d.Options = e.Options

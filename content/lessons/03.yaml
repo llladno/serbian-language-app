@@ -61,6 +61,7 @@ steps:
         prompt: "Запиши, что слышишь."
         say: "Drago mi je."
         accept: ["Drago mi je."]
+        explain: "На слух «mi je» сливается почти в одно слово, но пишутся раздельно: «mi» и «je»."
       - id: "03.4.3"
         type: listen
         prompt: "Запиши, что слышишь."
@@ -88,6 +89,7 @@ steps:
         type: fill_blank
         prompt: "Вечер: «Dobro ___!»"
         accept: ["veče"]
+        explain: "«veče» — через č. «veće» (через ć) — другое слово, «совет/собрание»."
       - id: "03.5.4"
         type: word_bank
         prompt: "Собери приветствие: «добрый вечер»"
@@ -97,6 +99,7 @@ steps:
         type: translate
         prompt: "Спасибо, всего доброго!"
         accept: ["Hvala, prijatno!"]
+        explain: "«prijatno» — «всего доброго», отдельное слово от «doviđenja» (до свидания)."
       - id: "03.5.6"
         type: free
         prompt: "Ты встретил знакомого утром. Поздоровайся, спроси как дела, попрощайся (3 фразы)."

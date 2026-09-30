@@ -32,6 +32,7 @@ steps:
         type: fill_blank
         prompt: "«Он не студент» → On ___ student."
         accept: ["nije"]
+        explain: "«nije» — «не есть», одно слово: не «ne» + «je» отдельно."
       - id: "04.2.5"
         type: word_bank
         prompt: "Собери: «я не студент»"
@@ -41,6 +42,7 @@ steps:
         type: fix_error
         prompt: "Iz Rusije."
         accept: ["Ja sam iz Rusije.", "Iz Rusije sam."]
+        explain: "Без подлежащего и «sam» это не предложение — добавь «Ja sam» (или «sam» в конце)."
       - id: "04.2.7"
         type: conjugate
         prompt: "biti — быть"

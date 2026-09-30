@@ -18,7 +18,10 @@ function user(overrides: Partial<SessionUser> = {}): SessionUser {
   }
 }
 
-beforeEach(() => setActivePinia(createPinia()))
+beforeEach(() => {
+  localStorage.clear()
+  setActivePinia(createPinia())
+})
 afterEach(() => vi.restoreAllMocks())
 
 describe('useSessionStore', () => {
@@ -37,6 +40,31 @@ describe('useSessionStore', () => {
     await s.fetchSession()
     expect(s.user).toBeNull()
     expect(s.loading).toBe(false)
+  })
+
+  it('starts from a cached guess without waiting, and refreshes it in the background', async () => {
+    localStorage.setItem('ucimo_session_user', JSON.stringify(user({ name: 'Cached' })))
+    const s = useSessionStore()
+    expect(s.loading).toBe(false) // no wait — the cached guess is shown right away
+    expect(s.user?.name).toBe('Cached')
+
+    vi.spyOn(api, 'session').mockResolvedValue(user({ name: 'Fresh' }))
+    await s.fetchSession()
+    expect(s.user?.name).toBe('Fresh')
+    expect(JSON.parse(localStorage.getItem('ucimo_session_user')!).name).toBe('Fresh')
+  })
+
+  it('redirects to /login when a cached guess turns out to be stale', async () => {
+    localStorage.setItem('ucimo_session_user', JSON.stringify(user()))
+    vi.spyOn(api, 'session').mockRejectedValue(new ApiError(401, 'no session'))
+    const { default: router } = await import('../router')
+    const pushSpy = vi.spyOn(router, 'push')
+
+    const s = useSessionStore()
+    await s.fetchSession()
+    expect(s.user).toBeNull()
+    expect(localStorage.getItem('ucimo_session_user')).toBeNull()
+    expect(pushSpy).toHaveBeenCalledWith(expect.objectContaining({ path: '/login' }))
   })
 
   it('login sets user from the response', async () => {

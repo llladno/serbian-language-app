@@ -27,14 +27,44 @@ async function addToReview(vocabId: string) {
 const tokens = computed(() => tokenize(props.text))
 
 const open = ref(false)
-const pos = ref({ x: 0, y: 0 })
+// Pixel-exact placement (left/top-or-bottom/width/maxHeight), not a CSS
+// -translate-x-1/2 trick — that centers on the anchor with no idea how wide
+// the card actually is, so it happily runs off-screen for a word near
+// either edge (see computeCardStyle). Also clamps height so a long list of
+// matches scrolls inside the card instead of spilling past the viewport.
+const cardStyle = ref<Record<string, string>>({})
 const word = ref('')
 const loading = ref(false)
 const result = ref<LookupResult | null>(null)
 let anchor: HTMLElement | null = null
 
-// Keep the card pinned under its word as the page scrolls; dismiss it once the
-// word leaves the viewport.
+const CARD_MARGIN = 8
+const CARD_MAX_W = 320 // ~20rem
+const CARD_MIN_SIDE_SPACE = 140 // below this, flip to placing the card above the word
+
+function computeCardStyle(anchorEl: HTMLElement): Record<string, string> {
+  const r = anchorEl.getBoundingClientRect()
+  const vw = window.innerWidth
+  const vh = window.innerHeight
+
+  const width = Math.min(CARD_MAX_W, vw - CARD_MARGIN * 2)
+  const left = Math.max(CARD_MARGIN, Math.min(r.left + r.width / 2 - width / 2, vw - width - CARD_MARGIN))
+
+  const spaceBelow = vh - r.bottom - CARD_MARGIN
+  const spaceAbove = r.top - CARD_MARGIN
+  const below = spaceBelow >= CARD_MIN_SIDE_SPACE || spaceBelow >= spaceAbove
+  const maxHeight = Math.max(120, below ? spaceBelow : spaceAbove)
+
+  return {
+    left: `${left}px`,
+    width: `${width}px`,
+    maxHeight: `${maxHeight}px`,
+    ...(below ? { top: `${r.bottom + CARD_MARGIN}px` } : { bottom: `${vh - r.top + CARD_MARGIN}px` }),
+  }
+}
+
+// Keep the card pinned under (or above) its word as the page scrolls;
+// dismiss it once the word leaves the viewport.
 function reposition() {
   if (!open.value || !anchor) return
   const r = anchor.getBoundingClientRect()
@@ -42,13 +72,12 @@ function reposition() {
     close()
     return
   }
-  pos.value = { x: r.left + r.width / 2, y: r.bottom }
+  cardStyle.value = computeCardStyle(anchor)
 }
 
 async function onWordClick(w: string, e: MouseEvent) {
   anchor = e.target as HTMLElement
-  const r = anchor.getBoundingClientRect()
-  pos.value = { x: r.left + r.width / 2, y: r.bottom }
+  cardStyle.value = computeCardStyle(anchor)
   word.value = w
   open.value = true
   loading.value = true
@@ -98,8 +127,8 @@ onBeforeUnmount(() => {
     <!-- lookup popover -->
     <div v-if="open" class="fixed inset-0 z-40" @click="close">
       <div
-        class="card absolute z-50 max-w-[min(20rem,90vw)] -translate-x-1/2 p-3 text-sm shadow-lg"
-        :style="{ left: pos.x + 'px', top: pos.y + 8 + 'px' }"
+        class="card absolute z-50 overflow-y-auto p-3 text-sm shadow-lg"
+        :style="cardStyle"
         @click.stop
       >
         <p v-if="loading" class="text-[var(--muted)]">…</p>

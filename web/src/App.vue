@@ -12,9 +12,14 @@ onMounted(() => {
 </script>
 
 <template>
-  <div v-if="session.loading" class="flex min-h-screen items-center justify-center text-[var(--muted)]">
-    Загрузка…
-  </div>
+  <!--
+    Only reachable on a genuine cold start (no cached guess from a previous
+    session — see stores/session.ts readCachedUser()): we don't yet know
+    whether to show the app chrome or the login page, so there's nothing
+    honest to render but the bare background. A returning visit skips this
+    entirely — session.loading is already false from the cached guess.
+  -->
+  <div v-if="session.loading" class="min-h-screen"></div>
   <template v-else-if="session.user">
     <AppNav :name="session.user.name" :hide-tab-bar="!!route.meta?.hideTabBar" />
     <main

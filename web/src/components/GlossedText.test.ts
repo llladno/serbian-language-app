@@ -111,6 +111,72 @@ describe('GlossedText', () => {
     expect(w.findAll('button').some((b) => b.text().includes('в повторение'))).toBe(false)
   })
 
+  it('clamps the card horizontally so it never overflows the viewport', async () => {
+    vi.mocked(api.lookup).mockResolvedValue({
+      query: 'x',
+      partial: false,
+      matches: [{ id: 'x', latin: 'x', cyrillic: '', ru: 'икс' }],
+    })
+    Object.defineProperty(window, 'innerWidth', { value: 400, configurable: true })
+    Object.defineProperty(window, 'innerHeight', { value: 800, configurable: true })
+    const w = mountGT('x y')
+    const span = w.findAll('span.cursor-pointer').find((s) => s.text() === 'x')!
+    // A word hugging the right edge — the old -translate-x-1/2 centering
+    // would put the card's right edge well past window.innerWidth.
+    vi.spyOn(span.element, 'getBoundingClientRect').mockReturnValue({
+      left: 390,
+      right: 398,
+      top: 100,
+      bottom: 112,
+      width: 8,
+      height: 12,
+      x: 390,
+      y: 100,
+      toJSON: () => {},
+    } as DOMRect)
+    await span.trigger('click')
+    await flushPromises()
+
+    const card = w.find('.card.absolute').element as HTMLElement
+    const left = parseFloat(card.style.left)
+    const width = parseFloat(card.style.width)
+    expect(left).toBeGreaterThanOrEqual(8)
+    expect(left + width).toBeLessThanOrEqual(400 - 8)
+  })
+
+  it('flips the card above the word and caps its height when there is no room below', async () => {
+    vi.mocked(api.lookup).mockResolvedValue({
+      query: 'x',
+      partial: false,
+      matches: [{ id: 'x', latin: 'x', cyrillic: '', ru: 'икс' }],
+    })
+    Object.defineProperty(window, 'innerWidth', { value: 400, configurable: true })
+    Object.defineProperty(window, 'innerHeight', { value: 800, configurable: true })
+    const w = mountGT('x y')
+    const span = w.findAll('span.cursor-pointer').find((s) => s.text() === 'x')!
+    // A word right at the bottom of the screen — the old fixed "below the
+    // word" placement (with no max-height) would push the card past the
+    // viewport with no way to scroll to the rest of it.
+    vi.spyOn(span.element, 'getBoundingClientRect').mockReturnValue({
+      left: 100,
+      right: 108,
+      top: 780,
+      bottom: 792,
+      width: 8,
+      height: 12,
+      x: 100,
+      y: 780,
+      toJSON: () => {},
+    } as DOMRect)
+    await span.trigger('click')
+    await flushPromises()
+
+    const card = w.find('.card.absolute').element as HTMLElement
+    expect(card.style.top).toBe('')
+    expect(card.style.bottom).not.toBe('')
+    expect(parseFloat(card.style.maxHeight)).toBeGreaterThan(0)
+  })
+
   it('does not keep global listeners after the card is closed', async () => {
     vi.mocked(api.lookup).mockResolvedValue({ query: 'x', partial: false, matches: [] })
     const add = vi.spyOn(window, 'addEventListener')

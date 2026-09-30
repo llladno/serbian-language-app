@@ -1,35 +1,24 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
-import { api } from '../api'
+import { computed, onMounted } from 'vue'
 import { useCourseStore } from '../stores/course'
 import type { Progress, Vocab } from '../types'
 import ProgressRing from './ProgressRing.vue'
 import ActivityHeatmap from './ActivityHeatmap.vue'
 import WordMedia from './WordMedia.vue'
 
-const progress = ref<Progress | null>(null)
-const wotd = ref<Vocab | null>(null)
-const error = ref<string | null>(null)
+// progress/wotd are fetched once by ProfileView (alongside the account and
+// leaderboard) so all the profile's cards land together instead of each
+// popping in behind its own skeleton — see ProfileView's loadAll().
+const props = defineProps<{ progress: Progress; wotd: Vocab | null }>()
 const course = useCourseStore()
 
-onMounted(async () => {
-  course.load()
-  try {
-    progress.value = await api.progress()
-    const vocab = await api.vocab()
-    if (vocab.length) {
-      const now = new Date()
-      const doy = Math.floor((+now - +new Date(now.getFullYear(), 0, 0)) / 86400000)
-      wotd.value = vocab[doy % vocab.length]
-    }
-  } catch (e) {
-    error.value = (e as Error).message
-  }
-})
+// Not part of the shared skeleton gate: harmless if it resolves a beat
+// later, since it only affects the "continue lesson" card below, which
+// itself is v-if-gated and just pops in once ready.
+onMounted(() => course.load())
 
 const continueLesson = computed(() => {
-  const p = progress.value
-  if (!p) return null
+  const p = props.progress
   const inProgress = p.recent_lessons.find((l) => l.status === 'in_progress')
   if (inProgress) return { id: inProgress.lesson, title: inProgress.title, label: 'Продолжить урок' }
   const done = new Set(p.recent_lessons.filter((l) => l.status === 'done').map((l) => l.lesson))
@@ -37,53 +26,16 @@ const continueLesson = computed(() => {
   return next ? { id: next.id, title: next.title, label: 'Следующий урок' } : null
 })
 
-const totalDone = computed(() =>
-  progress.value ? progress.value.phases.reduce((a, p) => a + p.done, 0) : 0,
-)
+const totalDone = computed(() => props.progress.phases.reduce((a, p) => a + p.done, 0))
 const todayCount = computed(() => {
-  const p = progress.value
-  if (!p) return 0
   const today = new Date().toISOString().slice(0, 10)
-  return p.activity.find((a) => a.date === today)?.count ?? 0
+  return props.progress.activity.find((a) => a.date === today)?.count ?? 0
 })
-const dueTotal = computed(() =>
-  progress.value ? progress.value.srs.due_today + progress.value.srs.new_available : 0,
-)
+const dueTotal = computed(() => props.progress.srs.due_today + props.progress.srs.new_available)
 </script>
 
 <template>
-  <p v-if="error" class="card p-4 text-[var(--bad)]">{{ error }}</p>
-
-  <div v-else-if="!progress" class="space-y-4">
-    <div class="grid grid-cols-1 gap-4 xl:grid-cols-2">
-      <div class="card flex items-center gap-4 p-5">
-        <div class="skel h-20 w-20 shrink-0 rounded-full"></div>
-        <div class="min-w-0 flex-1 space-y-2">
-          <div class="skel h-5 w-3/5"></div>
-          <div class="skel h-3.5 w-4/5"></div>
-        </div>
-      </div>
-      <div class="card p-5">
-        <div class="skel mb-3 h-4 w-32"></div>
-        <div class="skel h-16 w-full"></div>
-      </div>
-    </div>
-    <div class="grid grid-cols-1 gap-4 xl:grid-cols-2">
-      <div class="card space-y-2 p-4">
-        <div class="skel h-3 w-24"></div>
-        <div class="skel h-5 w-3/5"></div>
-      </div>
-      <div class="card flex gap-4 p-4">
-        <div class="skel h-[72px] w-[72px] shrink-0 rounded-xl"></div>
-        <div class="min-w-0 flex-1 space-y-2">
-          <div class="skel h-3 w-20"></div>
-          <div class="skel h-6 w-2/5"></div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div v-else-if="progress" class="space-y-4">
+  <div class="space-y-4">
     <div class="grid grid-cols-1 gap-4 xl:grid-cols-2">
       <RouterLink
         to="/review"

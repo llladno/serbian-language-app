@@ -283,6 +283,26 @@ body {
 }
 .pop { animation: pop 0.18s ease-out; }
 
+/* SRS card swap: an overlapping crossfade so consecutive review cards blend
+   into each other instead of the old one vanishing and the new one popping
+   in cold. Needs `position: relative` on the wrapping element (see
+   ReviewView.vue) so the leaving card can float over the incoming one
+   without pushing layout - no `bottom`/height on the leave state, so it
+   keeps its own natural height instead of being stretched to match the
+   (possibly differently-sized) incoming card. */
+.card-swap-enter-active { transition: opacity 0.2s ease, transform 0.2s ease; }
+.card-swap-leave-active { transition: opacity 0.15s ease, transform 0.15s ease; position: absolute; top: 0; left: 0; right: 0; }
+.card-swap-enter-from { opacity: 0; transform: scale(0.97) translateY(4px); }
+.card-swap-leave-to { opacity: 0; transform: scale(1.02); }
+
+/* Profile's own skeleton<->loaded crossfade: a bit slower and with a small
+   rise than the shared .fade, since a whole-page swap reads as more abrupt
+   than a small in-place reveal. */
+.profile-fade-enter-active { transition: opacity 0.28s ease, transform 0.28s ease; }
+.profile-fade-leave-active { transition: opacity 0.18s ease; }
+.profile-fade-enter-from { opacity: 0; transform: translateY(6px); }
+.profile-fade-leave-to { opacity: 0; }
+
 .chunk-wrong {
   background: color-mix(in srgb, var(--bad) 22%, transparent);
   text-decoration: line-through;

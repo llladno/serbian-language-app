@@ -3,12 +3,14 @@ import { ref } from 'vue'
 import { RefreshCw } from 'lucide-vue-next'
 import { api } from '../../api'
 import type { CheckResult, LessonAttempt } from '../../types'
+import HintButton from '../HintButton.vue'
 
 const props = defineProps<{
   lesson: string
   exerciseId: string
   prompt: string
   options: string[]
+  explain?: string
   prior?: LessonAttempt
 }>()
 const emit = defineEmits<{ graded: [ok: boolean, result: CheckResult]; ungraded: [] }>()
@@ -50,7 +52,10 @@ function retry() {
       <RefreshCw :size="15" :stroke-width="2.25" />
     </button>
 
-    <p class="mb-5 whitespace-pre-wrap px-8 text-xl font-medium">{{ prompt }}</p>
+    <p class="mb-5 flex flex-wrap items-center justify-center gap-1.5 whitespace-pre-wrap px-8 text-xl font-medium">
+      {{ prompt }}
+      <HintButton v-if="explain && !result && !fromPrior" :text="explain" />
+    </p>
 
     <div class="flex flex-wrap justify-center gap-2.5">
       <button

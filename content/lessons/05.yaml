@@ -65,6 +65,7 @@ steps:
         prompt: "Запиши, что слышишь."
         say: "Ja sam iz Rusije."
         accept: ["Ja sam iz Rusije."]
+        explain: "«Rusije» — родительный падеж после «iz»: одно s и окончание -ije."
       - id: "05.4.2"
         type: listen
         prompt: "Запиши, что слышишь."
@@ -97,6 +98,7 @@ steps:
         type: fill_blank
         prompt: "«Ана не из Сербии, она из России» → Ana ___ iz Srbije."
         accept: ["nije"]
+        explain: "«nije» — та же форма для он/она/оно, одно слово."
       - id: "05.5.4"
         type: word_bank
         prompt: "Собери: «я работаю программистом»"
