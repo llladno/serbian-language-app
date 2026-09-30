@@ -43,6 +43,10 @@ function fmtInterval(days: number) {
 
 const done = computed(() => total.value > 0 && !current.value)
 const isQuiz = computed(() => current.value?.state === 'new' && !!current.value?.options?.length)
+// The "already-known" variant's grade buttons live outside the crossfaded
+// card (see template) since they're gated on local `revealed` state, not
+// card identity — this flags which of the three variants that is.
+const isKnownCard = computed(() => !!current.value && current.value.kind !== 'gram' && !isQuiz.value)
 const progressPct = computed(() =>
   total.value ? Math.round((sessionCount.value / total.value) * 100) : 0,
 )
@@ -180,8 +184,16 @@ onUnmounted(() => window.removeEventListener('keydown', onKey))
       </div>
       <p class="text-center text-xs text-[var(--muted)]">осталось {{ remaining }}</p>
 
+      <!-- The three card variants below share one crossfade: switching card
+           kind (or just the next card of the same kind) fades the old one
+           out while the new one fades in over it, instead of an abrupt
+           pop/vanish swap. `relative` lets the leaving card (position:
+           absolute, see .card-swap-leave-active) float over the incoming
+           one without pushing the layout. -->
+      <div class="relative">
+      <Transition name="card-swap">
       <!-- grammar item: type the asked form, checked for real -->
-      <div v-if="current.kind === 'gram'" class="card flex min-h-[13rem] flex-col items-center p-8 text-center pop" :key="current.card_id">
+      <div v-if="current.kind === 'gram'" class="card flex min-h-[13rem] flex-col items-center p-8 text-center" :key="current.card_id">
         <p class="mb-2 text-[10px] uppercase tracking-widest text-[var(--accent)]">грамматика</p>
         <p class="serbian text-lg font-semibold">{{ current.front }}</p>
         <p v-if="current.note" class="mt-1 text-sm text-[var(--muted)]">{{ current.note }}</p>
@@ -229,7 +241,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKey))
       </div>
 
       <!-- first encounter: pick 1 of 4 translations to learn the word -->
-      <div v-else-if="isQuiz" class="card flex min-h-[13rem] flex-col items-center p-8 text-center pop" :key="current.card_id">
+      <div v-else-if="isQuiz" class="card flex min-h-[13rem] flex-col items-center p-8 text-center" :key="current.card_id">
         <p class="mb-2 text-[10px] uppercase tracking-widest text-[var(--accent)]">новое слово</p>
         <div class="flex items-center gap-2">
           <p class="serbian text-4xl font-semibold">{{ current.front }}</p>
@@ -269,32 +281,35 @@ onUnmounted(() => window.removeEventListener('keydown', onKey))
       </div>
 
       <!-- already-known card: flip and self-grade -->
-      <template v-else>
-        <div
-          class="card flex min-h-[13rem] cursor-pointer flex-col items-center justify-center p-8 text-center pop"
-          :key="current.card_id"
-          @click="revealed = true"
-        >
-          <p v-if="current.kind === 'ff'" class="mb-2 text-[10px] uppercase tracking-widest text-[var(--accent)]">ложный друг</p>
-          <div class="flex items-center gap-2">
-            <p class="serbian text-4xl font-semibold">{{ current.front }}</p>
-            <SpeakButton :src="current.audio" :size="36" />
-          </div>
-          <p v-if="current.cyrillic" class="mt-1 text-sm text-[var(--muted)]">{{ current.cyrillic }}</p>
-          <p v-if="current.transcription" class="text-sm text-[var(--muted)]">[{{ current.transcription }}]</p>
-
-          <Transition name="fade">
-            <div v-if="revealed" class="mt-4 flex flex-col items-center border-t border-[var(--border)] pt-4">
-              <WordMedia :image="current.image" :emoji="current.emoji" :alt="current.back" :size="112" />
-              <p class="mt-3 text-xl">{{ current.back }}</p>
-              <p v-if="current.note" class="mt-1 text-sm text-[var(--muted)]">{{ current.note }}</p>
-              <p v-if="current.example_sr" class="serbian mt-2.5 text-[var(--fg)]">{{ current.example_sr }}</p>
-              <p v-if="current.example_ru" class="text-sm text-[var(--muted)]">{{ current.example_ru }}</p>
-            </div>
-          </Transition>
-          <p v-if="!revealed" class="mt-5 text-xs text-[var(--muted)]">нажми или пробел</p>
+      <div
+        v-else
+        class="card flex min-h-[13rem] cursor-pointer flex-col items-center justify-center p-8 text-center"
+        :key="current.card_id"
+        @click="revealed = true"
+      >
+        <p v-if="current.kind === 'ff'" class="mb-2 text-[10px] uppercase tracking-widest text-[var(--accent)]">ложный друг</p>
+        <div class="flex items-center gap-2">
+          <p class="serbian text-4xl font-semibold">{{ current.front }}</p>
+          <SpeakButton :src="current.audio" :size="36" />
         </div>
+        <p v-if="current.cyrillic" class="mt-1 text-sm text-[var(--muted)]">{{ current.cyrillic }}</p>
+        <p v-if="current.transcription" class="text-sm text-[var(--muted)]">[{{ current.transcription }}]</p>
 
+        <Transition name="fade">
+          <div v-if="revealed" class="mt-4 flex flex-col items-center border-t border-[var(--border)] pt-4">
+            <WordMedia :image="current.image" :emoji="current.emoji" :alt="current.back" :size="112" />
+            <p class="mt-3 text-xl">{{ current.back }}</p>
+            <p v-if="current.note" class="mt-1 text-sm text-[var(--muted)]">{{ current.note }}</p>
+            <p v-if="current.example_sr" class="serbian mt-2.5 text-[var(--fg)]">{{ current.example_sr }}</p>
+            <p v-if="current.example_ru" class="text-sm text-[var(--muted)]">{{ current.example_ru }}</p>
+          </div>
+        </Transition>
+        <p v-if="!revealed" class="mt-5 text-xs text-[var(--muted)]">нажми или пробел</p>
+      </div>
+      </Transition>
+      </div>
+
+      <template v-if="isKnownCard">
         <div v-if="revealed" class="grid grid-cols-4 gap-2 pop">
           <button
             v-for="b in GRADES"

@@ -12,14 +12,19 @@ import PhaseProgressCard from '../components/PhaseProgressCard.vue'
 import LeaderboardCard from '../components/LeaderboardCard.vue'
 import SupportCard from '../components/SupportCard.vue'
 import DonateCard from '../components/DonateCard.vue'
-import type { Me } from '../types'
+import type { LeaderRow, Me, Progress, Vocab } from '../types'
 
 const router = useRouter()
 const session = useSessionStore()
 
 const me = ref<Me | null>(null)
+const progress = ref<Progress | null>(null)
+const wotd = ref<Vocab | null>(null)
+const leaders = ref<LeaderRow[]>([])
 const loadError = ref<string | null>(null)
 
+// Refetches just the account (used after a settings change) — not the
+// dashboard data, which doesn't change from these actions.
 async function loadMe() {
   try {
     me.value = await api.getMe()
@@ -27,7 +32,31 @@ async function loadMe() {
     loadError.value = authErrorMessage(e)
   }
 }
-onMounted(loadMe)
+
+function pickWotd(vocab: Vocab[]): Vocab | null {
+  if (!vocab.length) return null
+  const now = new Date()
+  const doy = Math.floor((+now - +new Date(now.getFullYear(), 0, 0)) / 86400000)
+  return vocab[doy % vocab.length]
+}
+
+// Fires every request the profile page needs in parallel and reveals the
+// page only once they've all settled — so the dashboard/phases/leaderboard
+// cards never pop in one after another behind their own separate skeletons.
+async function loadAll() {
+  const [meRes, progressRes, vocabRes, leaderRes] = await Promise.allSettled([
+    api.getMe(),
+    api.progress(),
+    api.vocab(),
+    api.leaderboard({ limit: 3 }),
+  ])
+  if (meRes.status === 'fulfilled') me.value = meRes.value
+  else loadError.value = authErrorMessage(meRes.reason)
+  if (progressRes.status === 'fulfilled') progress.value = progressRes.value
+  if (vocabRes.status === 'fulfilled') wotd.value = pickWotd(vocabRes.value)
+  if (leaderRes.status === 'fulfilled') leaders.value = leaderRes.value.rows
+}
+onMounted(loadAll)
 
 const hasPassword = computed(() => !!me.value?.email)
 
@@ -116,7 +145,7 @@ async function logout() {
 
 <template>
   <div class="space-y-4">
-    <Transition name="fade" mode="out-in">
+    <Transition name="profile-fade" mode="out-in">
       <p v-if="loadError" key="error" class="card p-4 text-[var(--bad)]">{{ loadError }}</p>
 
       <div v-else-if="!me" key="skel" class="grid grid-cols-1 items-start gap-4 lg:grid-cols-3">
@@ -148,8 +177,8 @@ async function logout() {
 
       <div v-else key="loaded" class="grid grid-cols-1 items-start gap-4 lg:grid-cols-3">
         <div class="space-y-4 lg:col-span-2 lg:order-1">
-          <ProgressDashboard />
-          <PhaseProgressCard />
+          <ProgressDashboard v-if="progress" :progress="progress" :wotd="wotd" />
+          <PhaseProgressCard v-if="progress" :progress="progress" />
         </div>
 
         <div class="space-y-4 lg:sticky lg:top-20 lg:order-2 lg:col-span-1">
@@ -186,7 +215,7 @@ async function logout() {
             </div>
           </div>
 
-          <LeaderboardCard :name="me.name" />
+          <LeaderboardCard :name="me.name" :leaders="leaders" />
         </div>
       </div>
     </Transition>

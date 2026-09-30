@@ -86,6 +86,7 @@ export interface Exercise {
   bank?: string[]
   left?: string[]
   right?: string[]
+  explain?: string
 }
 
 export interface ExerciseBlock {

@@ -143,6 +143,7 @@ steps:
         type: translate
         prompt: "Сколько с меня?"
         accept: ["Koliko dugujem?"]
+        explain: "«dugujem» — «я должен» (от «dug» — долг), спрашивают при оплате."
       - id: "10.7.6"
         type: free
         prompt: "Ты в пекаре: спроси цену кофе, скажи, сколько тебе лет, и спроси который час — 3 фразы."

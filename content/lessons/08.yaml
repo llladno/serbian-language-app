@@ -71,6 +71,7 @@ steps:
         type: fill_blank
         prompt: "«40» словом — ___"
         accept: ["četrdeset"]
+        explain: "Не «четири+десет»: гласная выпадает — «čet(i)rdeset»."
       - id: "08.4.5"
         type: word_bank
         prompt: "Собери «35»"
@@ -116,3 +117,4 @@ steps:
         type: fix_error
         prompt: "Dve kafa."
         accept: ["Dve kafe."]
+        explain: "После «dva/dve/tri/četiri» женские слова на -a меняют окончание на -e: «kafa» → «kafe»."

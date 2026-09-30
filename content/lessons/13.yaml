@@ -28,6 +28,7 @@ steps:
         type: fill_blank
         prompt: "«Где написан срок годности?» → Gde piše rok ___?"
         accept: ["trajanja"]
+        explain: "«rok trajanja» — буквально «срок длительности», это и есть «срок годности»."
       - id: "13.2.4"
         type: word_bank
         prompt: "Собери: «могу поменять?»"

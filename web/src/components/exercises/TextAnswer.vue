@@ -7,6 +7,7 @@ import SerbianKeys from '../SerbianKeys.vue'
 import SpeakButton from '../SpeakButton.vue'
 import GlossedText from '../GlossedText.vue'
 import BottomBar from '../BottomBar.vue'
+import HintButton from '../HintButton.vue'
 
 const props = defineProps<{
   lesson: string
@@ -14,6 +15,7 @@ const props = defineProps<{
   type: 'translate' | 'fill_blank' | 'fix_error' | 'listen'
   prompt: string
   audio?: string
+  explain?: string
   prior?: LessonAttempt
 }>()
 
@@ -63,7 +65,10 @@ function retry() {
 
     <div v-if="type === 'listen'" class="mb-5 flex flex-col items-center gap-3 px-8">
       <SpeakButton :src="audio" :size="52" />
-      <span class="text-sm text-[var(--muted)]">{{ prompt || 'Напиши, что слышишь' }}</span>
+      <span class="flex items-center gap-1.5 text-sm text-[var(--muted)]">
+        {{ prompt || 'Напиши, что слышишь' }}
+        <HintButton v-if="explain && !fromPrior && !result" :text="explain" />
+      </span>
       <button
         v-if="!fromPrior && !result"
         type="button"
@@ -77,9 +82,10 @@ function retry() {
       <p v-if="type === 'fix_error'" class="mb-1.5 text-[10px] uppercase tracking-widest text-[var(--accent)]">
         найди и исправь ошибку
       </p>
-      <p class="whitespace-pre-wrap text-xl font-medium">
+      <p class="flex flex-wrap items-center justify-center gap-1.5 whitespace-pre-wrap text-xl font-medium">
         <GlossedText v-if="glossPrompt" :text="prompt" />
         <template v-else>{{ prompt }}</template>
+        <HintButton v-if="explain && !fromPrior && !result" :text="explain" />
       </p>
     </div>
 

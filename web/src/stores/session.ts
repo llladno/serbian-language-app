@@ -4,21 +4,60 @@ import { api } from '../api'
 import type { SessionUser } from '../types'
 import { isTelegram, initData } from '../telegram'
 
+// A guess for the very first paint of a reload: who was logged in last time,
+// so App.vue can show the real header/nav immediately instead of a blank
+// "Загрузка…" screen while fetchSession() confirms it against the server.
+// Purely a display cache — access is still decided by the httpOnly session
+// cookie on every actual API call, never by this.
+const CACHE_KEY = 'ucimo_session_user'
+
+function readCachedUser(): SessionUser | null {
+  try {
+    const raw = localStorage.getItem(CACHE_KEY)
+    return raw ? (JSON.parse(raw) as SessionUser) : null
+  } catch {
+    return null
+  }
+}
+
+function writeCachedUser(u: SessionUser | null) {
+  try {
+    if (u) localStorage.setItem(CACHE_KEY, JSON.stringify(u))
+    else localStorage.removeItem(CACHE_KEY)
+  } catch {
+    // private browsing / storage full — it's only a display cache, fine to skip
+  }
+}
+
 export const useSessionStore = defineStore('session', () => {
-  const user = ref<SessionUser | null>(null)
-  const loading = ref(true)
+  const user = ref<SessionUser | null>(readCachedUser())
+  // Only true when we have no guess to show at all — see readCachedUser().
+  const loading = ref(!user.value)
 
   async function fetchSession() {
-    loading.value = true
+    const hadGuess = !!user.value
     try {
       user.value = await api.session()
+      writeCachedUser(user.value)
     } catch {
       user.value = null
+      writeCachedUser(null)
       if (isTelegram() && initData()) {
         try {
           user.value = await api.telegramLogin({ init_data: initData() })
+          writeCachedUser(user.value)
         } catch {
           user.value = null
+        }
+      }
+      // The optimistic guess above turned out wrong (cookie expired or was
+      // cleared elsewhere) — the authed shell is already showing over
+      // content that will just 401 on every request, so bounce to login
+      // instead of leaving it stuck.
+      if (hadGuess && !user.value) {
+        const { default: router } = await import('../router')
+        if (router.currentRoute.value.path !== '/login') {
+          router.push({ path: '/login', query: { next: router.currentRoute.value.fullPath } })
         }
       }
     } finally {
@@ -28,6 +67,7 @@ export const useSessionStore = defineStore('session', () => {
 
   async function login(email: string, password: string) {
     user.value = await api.login(email, password)
+    writeCachedUser(user.value)
   }
 
   async function register(email: string, password: string, name: string) {
@@ -37,11 +77,13 @@ export const useSessionStore = defineStore('session', () => {
   async function logout() {
     await api.logout()
     user.value = null
+    writeCachedUser(null)
   }
 
   async function logoutAll() {
     await api.logoutAll()
     user.value = null
+    writeCachedUser(null)
   }
 
   async function forgot(email: string) {
@@ -50,6 +92,7 @@ export const useSessionStore = defineStore('session', () => {
 
   async function reset(token: string, password: string) {
     user.value = await api.resetPassword(token, password)
+    writeCachedUser(user.value)
   }
 
   async function resendVerification(email: string) {

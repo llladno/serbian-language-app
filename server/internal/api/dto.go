@@ -83,6 +83,11 @@ type exerciseDTO struct {
 	Bank    []string `json:"bank,omitempty"`    // word_bank chips (accept omitted)
 	Left    []string `json:"left,omitempty"`    // match: left column
 	Right   []string `json:"right,omitempty"`   // match: right column (client shuffles)
+	// Explain is an optional nudge, not the answer itself (that's still only
+	// in `accept`/`answer`/`pairs`, never sent here) - safe to send upfront
+	// so the client can offer it as a pre-answer hint, not just a post-check
+	// explanation.
+	Explain string `json:"explain,omitempty"`
 }
 
 type attemptDTO struct {

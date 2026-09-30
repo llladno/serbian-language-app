@@ -38,10 +38,12 @@ steps:
           - ["čitaš", "ты читаешь"]
           - ["čita", "он читает"]
           - ["čitamo", "мы читаем"]
+        explain: "Окончания: -m (я), -š (ты), -Ø (он/она), -mo (мы)."
       - id: "16.2.4"
         type: fill_blank
         prompt: "«мы работаем» → Mi ___."
         accept: ["radimo"]
+        explain: "«raditi»: мы → radimo, окончание -imo."
       - id: "16.2.5"
         type: fix_error
         prompt: "On čitam."

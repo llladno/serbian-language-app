@@ -86,6 +86,7 @@ steps:
         type: translate
         prompt: "У меня нет сестры."
         accept: ["Nemam sestru."]
+        explain: "После «nemam» падеж как после «imam» — винительный «sestru», а не родительный, как в русском «нет сестры»."
 
   - id: "14.4"
     kind: practice
@@ -118,3 +119,4 @@ steps:
         type: translate
         prompt: "Который час?"
         accept: ["Koliko je sati?"]
+        explain: "«Koliko je sati?» — устойчивая фраза целиком, «sati» не выбрасывается."

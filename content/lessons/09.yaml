@@ -27,6 +27,7 @@ steps:
         type: fill_blank
         prompt: "«Сколько с меня?» → Koliko ___?"
         accept: ["dugujem"]
+        explain: "«dugujem» — «я должен» (от «dug» — долг): «Koliko dugujem?»."
       - id: "09.2.4"
         type: word_bank
         prompt: "Собери: «сколько стоит кофе?»"
@@ -65,6 +66,7 @@ steps:
         type: fix_error
         prompt: "Imam trideset godinu."
         accept: ["Imam trideset godina."]
+        explain: "После «trideset» — родительный множественный «godina», не «godinu»/«godine» (как после 2,3,4)."
       - id: "09.4.6"
         type: fix_error
         prompt: "Imam dvadeset dve godina."

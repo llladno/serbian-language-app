@@ -37,6 +37,7 @@ steps:
         type: fix_error
         prompt: "Moj mama."
         accept: ["Moja mama."]
+        explain: "«mama» женского рода — притяжательное тоже женского рода: «moja», не «moj»."
       - id: "07.2.6"
         type: fix_error
         prompt: "Tvoja brat."

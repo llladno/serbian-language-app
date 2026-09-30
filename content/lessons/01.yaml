@@ -41,6 +41,7 @@ steps:
         type: fill_blank
         prompt: "Любовь по-сербски — ___"
         accept: ["ljubav"]
+        explain: "«ljubav» — окончание -av, а не -ov, как в русском «любовь»."
       - id: "01.2.6"
         type: listen
         prompt: "Запиши, что слышишь."
@@ -60,10 +61,12 @@ steps:
         type: translate
         prompt: "Как по-сербски «варенье»?"
         accept: ["džem"]
+        explain: "«džem» — через «dž», а не «đ»: похожие на слух, но разные буквы."
       - id: "01.2.10"
         type: translate
         prompt: "Как по-сербски «шляпа»?"
         accept: ["šešir"]
+        explain: "«šešir» — обе буквы š, ш-е-ш-и-р."
       - id: "01.2.11"
         type: free
         prompt: "Прочитай вслух все слова урока — проверь č, ć, š, ž, đ, dž, lj, nj."

@@ -10,11 +10,14 @@ vi.mock('vue-router', () => ({
   useRoute: () => ({ path: '/profile' }),
 }))
 
-beforeEach(() => setActivePinia(createPinia()))
+beforeEach(() => {
+  localStorage.clear()
+  setActivePinia(createPinia())
+})
 afterEach(() => vi.restoreAllMocks())
 
 describe('App', () => {
-  it('shows a loading state, then the nav once a session resolves', async () => {
+  it('shows a bare shell (no nav) on a cold start, then the nav once a session resolves', async () => {
     const session = useSessionStore()
     vi.spyOn(session, 'fetchSession').mockImplementation(async () => {
       session.user = {
@@ -27,9 +30,27 @@ describe('App', () => {
       session.loading = false
     })
     const w = mount(App)
-    expect(w.text()).toContain('Загрузка')
+    expect(w.findComponent({ name: 'AppNav' }).exists()).toBe(false)
     await flushPromises()
     expect(w.findComponent({ name: 'AppNav' }).exists()).toBe(true)
+  })
+
+  it('shows the nav immediately from a cached guess, without waiting for fetchSession', async () => {
+    localStorage.setItem(
+      'ucimo_session_user',
+      JSON.stringify({
+        id: '1',
+        name: 'Гриша',
+        email: '',
+        email_verified: true,
+        telegram: { linked: false, username: '' },
+      }),
+    )
+    const session = useSessionStore()
+    vi.spyOn(session, 'fetchSession').mockImplementation(async () => {}) // never resolves the real check in this test
+    const w = mount(App)
+    expect(w.findComponent({ name: 'AppNav' }).exists()).toBe(true)
+    expect(w.text()).toContain('Гриша')
   })
 
   it('renders no nav chrome when logged out', async () => {

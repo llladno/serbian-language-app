@@ -8,15 +8,24 @@ export const useReviewStore = defineStore('review', () => {
   const index = ref(0)
   const sessionCount = ref(0)
   const tally = ref<[number, number, number, number]>([0, 0, 0, 0])
-  const loading = ref(false)
+  // Starts true so the very first render (before onMounted's load() call
+  // lands) shows the skeleton instead of a flash of "nothing due today" —
+  // `current` is undefined until the first fetch resolves either way.
+  const loading = ref(true)
   const error = ref<string | null>(null)
 
   const current = computed<ReviewCard | undefined>(() => queue.value[index.value])
   const remaining = computed(() => Math.max(0, queue.value.length - index.value))
   const total = computed(() => queue.value.length)
 
+  // load() re-runs on every ReviewView mount (a fresh review session each
+  // visit). The store is a singleton, so a revisit after the first one
+  // already has a card on screen — only show the full skeleton when there's
+  // truly nothing to show yet; otherwise keep the stale card visible and
+  // swap it for the new queue once it lands (the card's own :key/`.pop`
+  // handles the transition, see ReviewView).
   async function load() {
-    loading.value = true
+    if (queue.value.length === 0) loading.value = true
     error.value = null
     index.value = 0
     sessionCount.value = 0
