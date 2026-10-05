@@ -170,3 +170,79 @@
       accept: ["čija"]
     - prompt: "чей — ср.р."
       accept: ["čije"]
+
+- id: "perfekt"
+  front: "перфект — прошедшее время: raditi (работать)"
+  note: "sam/si/je (урок 04) + причастие: инфинитив без -ti + -o/-la/-lo, по роду того, о ком речь"
+  lesson: "30"
+  example_sr: "Radio sam juče."
+  example_ru: "Я работал вчера."
+  items:
+    - prompt: "ja, radio je muškarac (я, говорит мужчина)"
+      accept: ["radio sam"]
+    - prompt: "ja, radila je žena (я, говорит женщина)"
+      accept: ["radila sam"]
+    - prompt: "ti, muškarac (ты, о мужчине)"
+      accept: ["radio si"]
+    - prompt: "ti, žena (ты, о женщине)"
+      accept: ["radila si"]
+    - prompt: "on (он)"
+      accept: ["radio je"]
+    - prompt: "ona (она)"
+      accept: ["radila je"]
+
+- id: "vid-glagola"
+  front: "вид глагола: kupovati / kupiti — покупать / купить"
+  note: "несовершенный (процесс) vs. совершенный (законченное действие) — как в русском; в перфекте спрягаются одинаково"
+  lesson: "30"
+  example_sr: "Kupovao sam hleb. Kupio sam hleb."
+  example_ru: "Я покупал хлеб (процесс). Я купил хлеб (сделано)."
+  items:
+    - prompt: "покупал (процесс, муж.)"
+      accept: ["kupovao sam"]
+    - prompt: "купил (результат, муж.)"
+      accept: ["kupio sam"]
+    - prompt: "покупала (процесс, жен.)"
+      accept: ["kupovala sam"]
+    - prompt: "купила (результат, жен.)"
+      accept: ["kupila sam"]
+
+- id: "futur"
+  front: "футур — будущее время: raditi (работать)"
+  note: "ću/ćeš/će/ćemo/ćete/će + da + наст. время (ću da radim) или + инфинитив (ću raditi, слитно — radiću)"
+  lesson: "33"
+  example_sr: "Sutra ću da radim."
+  example_ru: "Я буду работать завтра."
+  items:
+    - prompt: "ja (я)"
+      accept: ["ću da radim", "radiću", "ću raditi"]
+    - prompt: "ti (ты)"
+      accept: ["ćeš da radiš", "radićeš", "ćeš raditi"]
+    - prompt: "on/ona (он/она)"
+      accept: ["će da radi", "radiće", "će raditi"]
+    - prompt: "mi (мы)"
+      accept: ["ćemo da radimo", "radićemo", "ćemo raditi"]
+    - prompt: "vi (вы)"
+      accept: ["ćete da radite", "radićete", "ćete raditi"]
+    - prompt: "oni (они)"
+      accept: ["će da rade", "radiće", "će raditi"]
+
+- id: "instrumental-transport"
+  front: "инструментал транспорта: autobus → autobusom"
+  note: "к основе добавь -om (или -em после č/ć/š/ž/j/lj/nj); у слов на -a/-o окончание заменяется: sestra → sestrom, auto → autom"
+  lesson: "34"
+  example_sr: "Idem autobusom."
+  example_ru: "Я еду на автобусе."
+  items:
+    - prompt: "voz (поезд)"
+      accept: ["vozom"]
+    - prompt: "avion (самолёт)"
+      accept: ["avionom"]
+    - prompt: "auto (машина)"
+      accept: ["autom"]
+    - prompt: "bicikl (велосипед)"
+      accept: ["biciklom"]
+    - prompt: "taksi (такси)"
+      accept: ["taksijem"]
+    - prompt: "sestra (сестра) — «с сестрой»"
+      accept: ["sestrom", "sa sestrom"]

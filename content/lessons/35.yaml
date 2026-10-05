@@ -1,0 +1,128 @@
+lesson: "35"
+title: "Вывески и транспорт (Natpisi i prevoz)"
+subtitle: "вывески, следующий автобус, направления"
+teaches:
+  [izlaz, gurni, vuci, zabranjeno-pusenje, toalet, parking, sledeci, dolaziti, minut]
+
+steps:
+  - id: "35.1"
+    kind: teach
+    title: "Натписи"
+    md: "35/1-natpisi.md"
+
+  - id: "35.2"
+    kind: practice
+    title: "Вывески"
+    exercises:
+      - id: "35.2.1"
+        type: choice
+        prompt: "«Выход» —"
+        options: ["izlaz", "ulaz", "parking"]
+        answer: "izlaz"
+      - id: "35.2.2"
+        type: choice
+        prompt: "На двери написано «Gurni». Что делать?"
+        options: ["Gurni vrata.", "Vuci vrata.", "Čekaj."]
+        answer: "Gurni vrata."
+      - id: "35.2.3"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["izlaz", "выход"]
+          - ["toalet", "туалет"]
+          - ["parking", "парковка"]
+          - ["zabranjeno pušenje", "курение запрещено"]
+      - id: "35.2.4"
+        type: fill_blank
+        prompt: "«Выход налево» → Izlaz je ___."
+        accept: ["levo"]
+      - id: "35.2.5"
+        type: translate
+        prompt: "Где туалет?"
+        accept: ["Gde je toalet?"]
+
+  - id: "35.3"
+    kind: teach
+    title: "Који превоз?"
+    md: "35/3-koji-prevoz.md"
+
+  - id: "35.4"
+    kind: dialogue
+    title: "На станици"
+    scene: "Ты на автобусной остановке, спрашиваешь прохожего про автобус."
+    voice: f
+    also_ok: ["vrata"]
+    turns:
+      - who: me
+        sr: "Izvinite, koji autobus ide do centra?"
+        ru: "Извините, какой автобус идёт до центра?"
+        exercise:
+          id: "35.4.1"
+          type: choice
+          prompt: "Спроси, какой автобус идёт до центра"
+          options:
+            - "Izvinite, koji autobus ide do centra?"
+            - "Izvinite, gde je centar?"
+            - "Izvinite, kada je autobus?"
+          answer: "Izvinite, koji autobus ide do centra?"
+
+      - who: npc
+        sr: "Broj sedam ide do centra."
+        ru: "Номер семь идёт до центра."
+
+      - who: me
+        sr: "Da li je ovo stanica za broj sedam?"
+        ru: "Это остановка для седьмого номера?"
+        exercise:
+          id: "35.4.2"
+          type: fill_blank
+          prompt: "«Это остановка для седьмого номера?» → Da li je ovo stanica ___ broj sedam?"
+          accept: ["za"]
+
+      - who: npc
+        sr: "Da, ova je stanica za broj sedam."
+        ru: "Да, это остановка для седьмого номера."
+
+      - who: me
+        sr: "Kad dolazi sledeći autobus?"
+        ru: "Когда приходит следующий автобус?"
+        exercise:
+          id: "35.4.3"
+          type: translate
+          prompt: "Когда приходит следующий автобус?"
+          accept: ["Kad dolazi sledeći autobus?"]
+
+      - who: npc
+        sr: "Za pet minuta."
+        ru: "Через пять минут."
+
+      - who: me
+        sr: "Hvala, doviđenja!"
+        ru: "Спасибо, до свидания!"
+        exercise:
+          id: "35.4.4"
+          type: choice
+          prompt: "Поблагодари и попрощайся"
+          options: ["Hvala, doviđenja!", "Izvinite, doviđenja!", "Hvala, zdravo!"]
+          answer: "Hvala, doviđenja!"
+
+  - id: "35.5"
+    kind: reading
+    title: "Na stanici"
+    md: "35/5-citanje.md"
+    exercises:
+      - id: "35.5.1"
+        type: choice
+        prompt: "Что написано на стене?"
+        options: ["Zabranjeno pušenje.", "Ulaz.", "Parking."]
+        answer: "Zabranjeno pušenje."
+      - id: "35.5.2"
+        type: choice
+        prompt: "Какой автобус идёт до центра?"
+        options: ["Broj sedam.", "Broj pet.", "Broj deset."]
+        answer: "Broj sedam."
+      - id: "35.5.3"
+        type: choice
+        prompt: "Автобус опоздал?"
+        options: ["Da, kasnio je malo.", "Ne, nije kasnio.", "Nije dolazio."]
+        answer: "Da, kasnio je malo."

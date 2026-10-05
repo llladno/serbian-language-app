@@ -10,7 +10,7 @@ Usage:
     python3 scripts/translit_ru.py molim 1
         -> мо́лим
     python3 scripts/translit_ru.py "kako da dođem" 1 0 1
-        -> ка́ко да до́дем   (0/None skips stress on that word, e.g. clitics)
+        -> ка́ко да до́дьжэм   (0/None skips stress on that word, e.g. clitics)
     python3 scripts/translit_ru.py --self-test
 
 Import from Python for batch use:
@@ -85,14 +85,26 @@ def translit_word(latin: str, stress_idx):
         lc = c.lower()
 
         if lc == 'đ':
-            # đ collapses onto dž's "дж" -- standard practical transliteration
-            # doesn't distinguish them (unlike a phonology lesson's prose might).
-            out.append('дж')
+            # đ is a soft, fused sound, written "дьжь" (srpski.ru: дови́дьжэня,
+            # дьжо́рдьжэ). The trailing ь only stays when no vowel follows;
+            # unlike dž ("дж", hard) it is NOT collapsed onto it.
+            nxt = s[i + 1].lower() if i + 1 < n else ''
+            out.append('дьж' if nxt in VOWELS else 'дьжь')
             i += 1
             continue
 
         if lc == 'j':
             nxt = s[i + 1].lower() if i + 1 < n else ''
+            if nxt == 'i':
+                # "ји" can't be written with the iotated "и" -- that would
+                # lose the й (koji -> "кои" reads /koi/). Keep it explicit.
+                event += 1
+                out.append('й')
+                pos = len(out)
+                out.append('и')
+                vowel_positions.append((event, pos))
+                i += 2
+                continue
             if nxt in VOWELS:
                 event += 1
                 pos = len(out)
@@ -107,12 +119,10 @@ def translit_word(latin: str, stress_idx):
         if lc in VOWELS:
             event += 1
             pos = len(out)
-            # word-initial or post-vowel bare 'e' -> э (no preceding consonant
-            # to soften); after a consonant -> е. Only matters for 'e'.
-            if lc == 'e' and (i == 0 or s[i - 1].lower() in VOWELS):
-                out.append('э')
-            else:
-                out.append(PLAIN_VOWEL[lc])
+            # Serbian e never softens the consonant before it, so it is
+            # always "э" (не -> нэ, лево -> лэ́во, može -> мо́жэ, centar ->
+            # цэ́нтар). The only "е" comes from je / lje / nje (handled above).
+            out.append('э' if lc == 'e' else PLAIN_VOWEL[lc])
             vowel_positions.append((event, pos))
             i += 1
             continue
@@ -128,7 +138,10 @@ def translit_word(latin: str, stress_idx):
             syllabic = prev not in VOWELS and nxt not in VOWELS
             out.append('р')
             if syllabic:
-                event += 1  # nucleus, but there's no way to accent a bare consonant
+                # a syllabic r is a nucleus and can carry the stress
+                # (Srbija -> "Ср́бия"): the acute goes on the р itself.
+                event += 1
+                vowel_positions.append((event, len(out) - 1))
             i += 1
             continue
 
@@ -169,15 +182,41 @@ def translit_phrase_auto(text: str, stresses):
 SELF_TESTS = [
     ('molim', 1, 'мо́лим'),
     ('hvala', 1, 'хва́ла'),
-    ('izvolite', 2, 'изво́лите'),
-    ('izvinite', 2, 'изви́ните'),
-    ('nema', 1, 'не́ма'),
-    ('čemu', 1, 'че́му'),
+    ('izvolite', 2, 'изво́литэ'),
+    ('izvinite', 2, 'изви́нитэ'),
+    ('nema', 1, 'нэ́ма'),
+    ('čemu', 1, 'чэ́му'),
     ('ljubav', 1, 'лю́бав'),
     ('konj', None, 'конь'),
-    ('doviđenja', 2, 'дови́дженя'),
-    ('engleski', 1, 'э́нглески'),
+    ('engleski', 1, 'э́нглэски'),
     ('evo', 1, 'э́во'),
+    # --- examples taken from srpski.ru/2026/09/kak-chitat-po-serbski/ ---
+    ('Beograd', 2, 'бэо́град'),
+    ('Srbija', 1, 'ср́бия'),          # accent on the syllabic р
+    ('zdravo', 1, 'здра́во'),
+    ('račun', 1, 'ра́чун'),
+    ('kuća', 1, 'ку́ча'),
+    ('pomoć', 1, 'по́моч'),
+    ('desno', 1, 'дэ́сно'),
+    ('levo', 1, 'лэ́во'),
+    ('džem', None, 'джэм'),
+    ('doviđenja', 2, 'дови́дьжэня'),  # đ = soft, fused "дьж"
+    ('Đorđe', 1, 'дьжо́рдьжэ'),
+    ('može', 1, 'мо́жэ'),
+    ('centar', 1, 'цэ́нтар'),
+    ('gde', None, 'гдэ'),
+    ('je', None, 'е'),                # je is the one е
+    # nj/lj + e stays "не"/"ле": Russian н/л before е is already soft, which is
+    # exactly the Serbian sound. (srpski.ru writes both бо́ле and ньэ́га -- we
+    # use the shorter one consistently.)
+    ('njega', 1, 'не́га'),
+    ('bolje', 1, 'бо́ле'),
+    # --- numerals (respect.rs/facts/grammar): e after a vowel is still э ---
+    ('jedanaest', 3, 'едана́эст'),
+    ('četiri', 1, 'чэ́тири'),
+    # --- our own rule: ji keeps the й, otherwise koji would read /koi/ ---
+    ('koji', 1, 'ко́йи'),
+    ('čiji', 1, 'чи́йи'),
 ]
 
 

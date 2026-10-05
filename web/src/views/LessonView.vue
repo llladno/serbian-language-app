@@ -275,8 +275,8 @@ function closeLesson() {
     <div v-else-if="lesson.planned" key="planned">
       <RouterLink to="/course" class="text-sm text-[var(--muted)] hover:text-[var(--fg)]">← к курсу</RouterLink>
       <div class="card mt-4 border-dashed p-8 text-center">
-        <h1 class="text-xl font-bold">{{ lesson.title }}</h1>
-        <p class="mt-1 text-[var(--muted)]">{{ lesson.subtitle }}</p>
+        <h1 class="text-lg font-bold sm:text-xl">{{ lesson.title }}</h1>
+        <p class="mt-1 text-sm text-[var(--muted)] sm:text-base">{{ lesson.subtitle }}</p>
         <p class="mt-4 text-sm text-[var(--muted)]">Урок ещё не готов — скоро появится.</p>
       </div>
     </div>
@@ -287,11 +287,11 @@ function closeLesson() {
           <button class="icon-btn shrink-0" title="Назад" aria-label="Назад" @click="goBack">
             <ArrowLeft :size="20" :stroke-width="2.5" />
           </button>
-          <div>
-            <p class="text-[14px]">
+          <div class="min-w-0 flex-1">
+            <p class="truncate text-[12px] sm:text-[14px]">
               {{ lesson.title }}
             </p>
-            <p class="text-[10px] text-[var(--muted)]">
+            <p class="truncate text-[9px] text-[var(--muted)] sm:text-[10px]">
               {{ lesson.subtitle }}
             </p>
           </div>

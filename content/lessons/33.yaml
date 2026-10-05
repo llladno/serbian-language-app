@@ -1,0 +1,186 @@
+lesson: "33"
+title: "Планы (Planovi)"
+subtitle: "футур ću/ćeš, da-конструкция, čim/kad"
+teaches: [planirati, cim]
+
+steps:
+  - id: "33.1"
+    kind: teach
+    title: "Футур"
+    md: "33/1-futur.md"
+
+  - id: "33.2"
+    kind: practice
+    title: "Ću da radim"
+    also_ok: ["piše", "kupujem"]
+    exercises:
+      - id: "33.2.1"
+        type: choice
+        prompt: "«Я буду работать завтра» —"
+        options: ["Sutra ću da radim.", "Sutra sam radio.", "Juče ću da radim."]
+        answer: "Sutra ću da radim."
+      - id: "33.2.2"
+        type: choice
+        prompt: "«Она будет писать» —"
+        options: ["Ona će da piše.", "Ona je pisala.", "Ona piše."]
+        answer: "Ona će da piše."
+      - id: "33.2.3"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["ću", "я буду"]
+          - ["ćeš", "ты будешь"]
+          - ["će", "он/она будет"]
+          - ["ćemo", "мы будем"]
+      - id: "33.2.4"
+        type: fill_blank
+        prompt: "«Вы будете читать?» → Da li ___ da čitate?"
+        accept: ["ćete"]
+      - id: "33.2.5"
+        type: word_bank
+        prompt: "Собери: «мы будем работать завтра»"
+        bank: ["Mi", "ćemo", "da", "radimo", "sutra"]
+        accept: ["Mi ćemo da radimo sutra.", "Mi ćemo sutra da radimo."]
+      - id: "33.2.6"
+        type: fix_error
+        prompt: "Ja ću radim sutra."
+        accept: ["Ja ću da radim sutra.", "Radiću sutra.", "Ja ću raditi sutra."]
+        explain: "после «ću» нужен либо «da» + наст. время («ću da radim»), либо инфинитив («ću raditi» или слитно «radiću») — просто «ću radim» не бывает."
+      - id: "33.2.7"
+        type: translate
+        prompt: "Я не буду покупать хлеб завтра."
+        accept: ["Neću da kupujem hleb sutra.", "Sutra neću da kupujem hleb.", "Neću kupovati hleb sutra.", "Sutra neću kupovati hleb."]
+
+  - id: "33.3"
+    kind: teach
+    title: "Планови"
+    md: "33/3-planovi.md"
+
+  - id: "33.4"
+    kind: practice
+    title: "Planiraš li?"
+    exercises:
+      - id: "33.4.1"
+        type: choice
+        prompt: "«Я буду работать» (слитная форма) —"
+        options: ["Radiću.", "Radio sam.", "Radim."]
+        answer: "Radiću."
+      - id: "33.4.2"
+        type: choice
+        prompt: "«Что ты планируешь на выходных?» —"
+        options: ["Šta planiraš za vikend?", "Šta si planirao za vikend?", "Šta planira za vikend?"]
+        answer: "Šta planiraš za vikend?"
+      - id: "33.4.3"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["planirati", "планировать"]
+          - ["sutra", "завтра"]
+          - ["kad", "когда"]
+          - ["čim", "как только"]
+      - id: "33.4.4"
+        type: fill_blank
+        prompt: "«Когда ты будешь в городе?» → ___ ćeš biti u gradu?"
+        accept: ["Kad", "Kada"]
+      - id: "33.4.5"
+        type: word_bank
+        prompt: "Собери: «я буду писать завтра»"
+        bank: ["Pisaću", "sutra"]
+        accept: ["Pisaću sutra."]
+      - id: "33.4.6"
+        type: translate
+        prompt: "Что ты будешь делать на выходных?"
+        accept: ["Šta ćeš da radiš za vikend?", "Šta ćeš raditi za vikend?"]
+      - id: "33.4.7"
+        type: free
+        prompt: "Расскажи о своих планах на выходные: 2–3 фразы."
+        sample: "U subotu ću da radim. U nedelju ću da čitam i pišem."
+
+  - id: "33.5"
+    kind: reading
+    title: "Анин викенд"
+    md: "33/5-citanje.md"
+    also_ok: ["kafu"]
+    exercises:
+      - id: "33.5.1"
+        type: choice
+        prompt: "Что Ана будет делать в субботу?"
+        options: ["Radiće na poslu.", "Biće u gradu.", "Čitaće."]
+        answer: "Radiće na poslu."
+      - id: "33.5.2"
+        type: choice
+        prompt: "Что она сделает, как только окажется в городе?"
+        options: ["Kupiće hleb i kafu.", "Radiće.", "Čitaće."]
+        answer: "Kupiće hleb i kafu."
+      - id: "33.5.3"
+        type: choice
+        prompt: "Будет ли она работать в воскресенье?"
+        options: ["Ne, neće.", "Da, hoće.", "Samo ujutru."]
+        answer: "Ne, neće."
+
+  - id: "33.6"
+    kind: dialogue
+    title: "Šta ćeš da radiš sutra?"
+    scene: "Друг спрашивает про твои планы на завтра."
+    voice: m
+    turns:
+      - who: npc
+        sr: "Šta ćeš da radiš sutra?"
+        ru: "Что ты будешь делать завтра?"
+
+      - who: me
+        sr: "Sutra ću da radim ujutru."
+        ru: "Завтра я буду работать утром."
+        exercise:
+          id: "33.6.1"
+          type: choice
+          prompt: "Скажи, что завтра утром будешь работать"
+          options: ["Sutra ću da radim ujutru.", "Juče sam radio ujutru.", "Sutra radio sam ujutru."]
+          answer: "Sutra ću da radim ujutru."
+
+      - who: npc
+        sr: "A popodne?"
+        ru: "А днём?"
+
+      - who: me
+        sr: "Popodne ću da kupim hleb."
+        ru: "Днём я куплю хлеб."
+        exercise:
+          id: "33.6.2"
+          type: translate
+          prompt: "Днём я куплю хлеб."
+          accept: ["Popodne ću da kupim hleb.", "Popodne ću kupiti hleb.", "Kupiću hleb popodne."]
+
+      - who: npc
+        sr: "Kad ćeš biti u gradu?"
+        ru: "Когда ты будешь в городе?"
+
+      - who: me
+        sr: "Biću u gradu u pet."
+        ru: "Я буду в городе в пять."
+        exercise:
+          id: "33.6.3"
+          type: fill_blank
+          prompt: "«Я буду в городе в пять» → ___ u gradu u pet."
+          accept: ["Biću"]
+
+  - id: "33.7"
+    kind: practice
+    title: "Диктант"
+    mixed: true
+    exercises:
+      - id: "33.7.1"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Šta ćeš da radiš za vikend?"
+        accept: ["Šta ćeš da radiš za vikend?"]
+      - id: "33.7.2"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Neću da radim sutra."
+        accept: ["Neću da radim sutra."]
+      - id: "33.7.3"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Biću u gradu u pet."
+        accept: ["Biću u gradu u pet."]

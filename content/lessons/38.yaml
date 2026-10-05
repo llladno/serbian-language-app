@@ -1,0 +1,233 @@
+lesson: "38"
+title: "Отмена и извинения (Otkazivanje i izvinjenje)"
+subtitle: "перенести, отменить, извиниться"
+teaches:
+  [
+    otkazati, pomeriti, nazalost, hitno, bolestan, pitanje, problem,
+    zao-mi-je, greska, obavestiti, zaboraviti, zakasniti, ponovo, vazno,
+  ]
+
+steps:
+  - id: "38.1"
+    kind: teach
+    title: "Отменить, перенести"
+    md: "38/1-otkazivanje.md"
+
+  - id: "38.2"
+    kind: practice
+    title: "Nažalost…"
+    exercises:
+      - id: "38.2.1"
+        type: choice
+        prompt: "«К сожалению, я болен» —"
+        options: ["Nažalost, bolestan sam.", "Nažalost, zauzet sam.", "Hitno sam bolestan."]
+        answer: "Nažalost, bolestan sam."
+      - id: "38.2.2"
+        type: choice
+        prompt: "«Мне нужно отменить приём» —"
+        options: ["Moram da otkažem termin.", "Moram da zakažem termin.", "Moram da pomerim sastanak."]
+        answer: "Moram da otkažem termin."
+      - id: "38.2.3"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["otkazati", "отменить"]
+          - ["pomeriti", "перенести"]
+          - ["problem", "проблема"]
+          - ["hitno", "срочно"]
+      - id: "38.2.4"
+        type: fill_blank
+        prompt: "«Перенести приём на пятницу» → ___ termin za petak."
+        accept: ["Pomeriti"]
+      - id: "38.2.5"
+        type: word_bank
+        prompt: "Собери: «у меня срочный вопрос»"
+        bank: ["Imam", "hitno", "pitanje"]
+        accept: ["Imam hitno pitanje."]
+      - id: "38.2.6"
+        type: translate
+        prompt: "Извини, у меня проблема."
+        accept: ["Izvini, imam problem."]
+
+  - id: "38.3"
+    kind: dialogue
+    title: "Zvoni telefon"
+    scene: "Ты звонишь в поликлинику, чтобы перенести приём."
+    voice: f
+    turns:
+      - who: npc
+        sr: "Izvolite?"
+        ru: "Слушаю вас?"
+
+      - who: me
+        sr: "Dobar dan. Imam termin sutra, ali sam bolestan. Mogu li da pomerim termin?"
+        ru: "Добрый день. У меня завтра приём, но я болен. Могу я перенести приём?"
+        exercise:
+          id: "38.3.1"
+          type: choice
+          prompt: "Скажи, что болен, и спроси, можно ли перенести приём"
+          options:
+            - "Dobar dan. Imam termin sutra, ali sam bolestan. Mogu li da pomerim termin?"
+            - "Dobar dan. Hoću da zakažem termin."
+            - "Dobar dan. Gde je termin sutra?"
+          answer: "Dobar dan. Imam termin sutra, ali sam bolestan. Mogu li da pomerim termin?"
+
+      - who: npc
+        sr: "Naravno. Kad Vam odgovara?"
+        ru: "Конечно. Когда вам удобно?"
+
+      - who: me
+        sr: "Petak mi odgovara."
+        ru: "Мне подходит пятница."
+        exercise:
+          id: "38.3.2"
+          type: translate
+          prompt: "Мне подходит пятница."
+          accept: ["Petak mi odgovara."]
+
+      - who: npc
+        sr: "Može, petak u tri."
+        ru: "Хорошо, пятница в три."
+
+      - who: me
+        sr: "Hvala vam! Izvinjavam se zbog problema."
+        ru: "Спасибо! Извините за проблему."
+        exercise:
+          id: "38.3.3"
+          type: choice
+          prompt: "Поблагодари и извинись за проблему"
+          options: ["Hvala vam! Izvinjavam se zbog problema.", "Hvala! Vidimo se sutra.", "Hvala! Nemam problem."]
+          answer: "Hvala vam! Izvinjavam se zbog problema."
+
+  - id: "38.4"
+    kind: teach
+    title: "Извиниться и предупредить"
+    md: "38/4-izvinjenje.md"
+
+  - id: "38.5"
+    kind: practice
+    title: "Žao mi je"
+    exercises:
+      - id: "38.5.1"
+        type: choice
+        prompt: "«Мне жаль» —"
+        options: ["Žao mi je.", "Žao me je.", "Mi je žao se."]
+        answer: "Žao mi je."
+      - id: "38.5.2"
+        type: choice
+        prompt: "«Я опоздал» (говорит мужчина) —"
+        options: ["Zakasnio sam.", "Kasnim sam.", "Zakasnim sam."]
+        answer: "Zakasnio sam."
+      - id: "38.5.3"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["zaboraviti", "забыть"]
+          - ["zakasniti", "опоздать (факт)"]
+          - ["greška", "ошибка"]
+          - ["ponovo", "снова"]
+      - id: "38.5.4"
+        type: fill_blank
+        prompt: "«Я забыл» (муж.) → ___ sam."
+        accept: ["Zaboravio"]
+      - id: "38.5.5"
+        type: word_bank
+        prompt: "Собери: «это моя ошибка»"
+        bank: ["To", "je", "moja", "greška"]
+        accept: ["To je moja greška."]
+      - id: "38.5.6"
+        type: translate
+        prompt: "Извините, я опоздал."
+        accept: ["Izvinite, zakasnio sam."]
+      - id: "38.5.7"
+        type: translate
+        prompt: "Я забыл, мне жаль."
+        accept: ["Zaboravio sam, žao mi je.", "Žao mi je, zaboravio sam."]
+
+  - id: "38.6"
+    kind: reading
+    title: "Сообщение другу"
+    md: "38/6-citanje.md"
+    exercises:
+      - id: "38.6.1"
+        type: choice
+        prompt: "Почему человек опоздает?"
+        options: ["Autobus je zakasnio.", "Bio je bolestan.", "Zaboravio je hleb."]
+        answer: "Autobus je zakasnio."
+      - id: "38.6.2"
+        type: choice
+        prompt: "Что он забыл?"
+        options: ["Telefon.", "Hleb.", "Kafu."]
+        answer: "Telefon."
+      - id: "38.6.3"
+        type: choice
+        prompt: "На сколько он опоздает?"
+        options: ["Petnaest minuta.", "Pet minuta.", "Sat vremena."]
+        answer: "Petnaest minuta."
+
+  - id: "38.7"
+    kind: dialogue
+    title: "Kasnim"
+    scene: "Друг ждёт тебя, а ты опаздываешь."
+    voice: m
+    turns:
+      - who: npc
+        sr: "Gde si? Čekam te."
+        ru: "Ты где? Я тебя жду."
+
+      - who: me
+        sr: "Žao mi je, zakasniću."
+        ru: "Мне жаль, я опоздаю."
+        exercise:
+          id: "38.7.1"
+          type: choice
+          prompt: "Скажи, что тебе жаль и ты опоздаешь"
+          options: ["Žao mi je, zakasniću.", "Žao mi je, zakasnio sam.", "Žao me je, kasnim."]
+          answer: "Žao mi je, zakasniću."
+
+      - who: npc
+        sr: "Koliko ćeš da kasniš?"
+        ru: "На сколько ты опоздаешь?"
+
+      - who: me
+        sr: "Petnaest minuta. Autobus je zakasnio."
+        ru: "Пятнадцать минут. Автобус опоздал."
+        exercise:
+          id: "38.7.2"
+          type: translate
+          prompt: "Пятнадцать минут. Автобус опоздал."
+          accept: ["Petnaest minuta. Autobus je zakasnio."]
+
+      - who: npc
+        sr: "U redu. Nema problema."
+        ru: "Хорошо. Нет проблем."
+
+      - who: me
+        sr: "Hvala! Javiću ti se čim stignem."
+        ru: "Спасибо! Дам знать, как только приеду."
+        exercise:
+          id: "38.7.3"
+          type: fill_blank
+          prompt: "«Дам знать, как только приеду» → Javiću ti se ___ stignem."
+          accept: ["čim"]
+
+  - id: "38.8"
+    kind: practice
+    title: "Диктант"
+    mixed: true
+    exercises:
+      - id: "38.8.1"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Žao mi je."
+        accept: ["Žao mi je."]
+      - id: "38.8.2"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Zakasnio sam."
+        accept: ["Zakasnio sam."]
+      - id: "38.8.3"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "To je moja greška."
+        accept: ["To je moja greška."]

@@ -1,0 +1,252 @@
+lesson: "34"
+title: "Передвижение (Kretanje)"
+subtitle: "транспорт, instrumental, прошедшее: išao, došao, mogao"
+teaches:
+  [
+    auto, voz, avion, tramvaj, taksi, bicikl, aerodrom, peron,
+    karta-voznja, pesice, brzo, sporo, skupo, jeftino, voziti-se,
+    leteti, kasniti, doci, otici,
+  ]
+
+steps:
+  - id: "34.1"
+    kind: teach
+    title: "Виды транспорта"
+    md: "34/1-transport.md"
+
+  - id: "34.2"
+    kind: practice
+    title: "Транспорт"
+    exercises:
+      - id: "34.2.1"
+        type: choice
+        prompt: "«Поезд» —"
+        options: ["voz", "avion", "tramvaj"]
+        answer: "voz"
+      - id: "34.2.2"
+        type: choice
+        prompt: "«Дёшево» —"
+        options: ["jeftino", "skupo", "brzo"]
+        answer: "jeftino"
+      - id: "34.2.3"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["avion", "самолёт"]
+          - ["bicikl", "велосипед"]
+          - ["taksi", "такси"]
+          - ["aerodrom", "аэропорт"]
+      - id: "34.2.4"
+        type: fill_blank
+        prompt: "«Платформа» → ___"
+        accept: ["peron"]
+      - id: "34.2.5"
+        type: word_bank
+        prompt: "Собери: «я иду пешком»"
+        bank: ["Idem", "pešice"]
+        accept: ["Idem pešice."]
+      - id: "34.2.6"
+        type: translate
+        prompt: "Это быстро, но дорого."
+        accept: ["To je brzo, ali skupo.", "Brzo je, ali skupo."]
+
+  - id: "34.3"
+    kind: teach
+    title: "Инструментал"
+    md: "34/3-instrumental.md"
+
+  - id: "34.4"
+    kind: practice
+    title: "Autobusom, vozom…"
+    also_ok: ["leti", "letimo"]
+    exercises:
+      - id: "34.4.1"
+        type: choice
+        prompt: "«Я еду на поезде» —"
+        options: ["Idem vozom.", "Idem voz.", "Idem u voz."]
+        answer: "Idem vozom."
+      - id: "34.4.2"
+        type: choice
+        prompt: "«Она летит на самолёте» —"
+        options: ["Ona leti avionom.", "Ona leti avion.", "Ona ide avionom."]
+        answer: "Ona leti avionom."
+      - id: "34.4.3"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["autobusom", "на автобусе"]
+          - ["vozom", "на поезде"]
+          - ["avionom", "на самолёте"]
+          - ["biciklom", "на велосипеде"]
+      - id: "34.4.4"
+        type: fill_blank
+        prompt: "«Он едет на такси» → On se vozi ___."
+        accept: ["taksijem"]
+      - id: "34.4.5"
+        type: word_bank
+        prompt: "Собери: «мы летим на самолёте»"
+        bank: ["Mi", "letimo", "avionom"]
+        accept: ["Mi letimo avionom."]
+      - id: "34.4.6"
+        type: fix_error
+        prompt: "Idem autobus."
+        accept: ["Idem autobusom."]
+        explain: "транспорт — в инструментале, с окончанием -om: autobusom, не autobus."
+      - id: "34.4.7"
+        type: translate
+        prompt: "Ты едешь на велосипеде?"
+        accept: ["Voziš li se biciklom?", "Da li se voziš biciklom?", "Ideš li biciklom?", "Da li ideš biciklom?"]
+
+  - id: "34.5"
+    kind: reading
+    title: "Kako idem na posao"
+    md: "34/5-citanje.md"
+    also_ok: ["taksijem", "sporiji", "jeftin"]
+    exercises:
+      - id: "34.5.1"
+        type: choice
+        prompt: "Как едет человек, когда не опаздывает?"
+        options: ["Ide pešice.", "Vozi se taksijem.", "Leti avionom."]
+        answer: "Ide pešice."
+      - id: "34.5.2"
+        type: choice
+        prompt: "Чем едет по выходным к сестре?"
+        options: ["Vozom.", "Avionom.", "Biciklom."]
+        answer: "Vozom."
+      - id: "34.5.3"
+        type: choice
+        prompt: "Каким было путешествие на самолёте?"
+        options: ["Brzo, ali skupo.", "Sporo, ali jeftino.", "Brzo i jeftino."]
+        answer: "Brzo, ali skupo."
+
+  - id: "34.6"
+    kind: teach
+    title: "Прошедшее: išao, došao, mogao"
+    md: "34/6-neprav.md"
+
+  - id: "34.7"
+    kind: practice
+    title: "Išao sam, došla je"
+    exercises:
+      - id: "34.7.1"
+        type: choice
+        prompt: "«Я ехал на поезде» (говорит мужчина) —"
+        options: ["Išao sam vozom.", "Idem vozom.", "Ići ću vozom."]
+        answer: "Išao sam vozom."
+      - id: "34.7.2"
+        type: choice
+        prompt: "«Она пришла вчера» —"
+        options: ["Ona je došla juče.", "Ona je došao juče.", "Ona ide juče."]
+        answer: "Ona je došla juče."
+      - id: "34.7.3"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["išao", "ходил/ехал (муж.)"]
+          - ["išla", "ходила/ехала (жен.)"]
+          - ["došao", "пришёл"]
+          - ["mogao", "мог (муж.)"]
+      - id: "34.7.4"
+        type: fill_blank
+        prompt: "«Я не смог прийти» (муж.) → Nisam ___ da dođem."
+        accept: ["mogao"]
+      - id: "34.7.5"
+        type: word_bank
+        prompt: "Собери: «мы пришли в центр»"
+        bank: ["Došli", "smo", "u", "centar"]
+        accept: ["Došli smo u centar."]
+      - id: "34.7.6"
+        type: fix_error
+        prompt: "Ona je išao u grad."
+        accept: ["Ona je išla u grad."]
+        explain: "«ona» — женский род, причастие на -la: išla, не išao."
+      - id: "34.7.7"
+        type: translate
+        prompt: "Автобус уже приехал."
+        accept: ["Autobus je stigao.", "Autobus je došao."]
+      - id: "34.7.8"
+        type: translate
+        prompt: "Вчера я пешком ходил на работу."
+        accept: ["Juče sam išao na posao pešice.", "Juče sam pešice išao na posao."]
+
+  - id: "34.8"
+    kind: dialogue
+    title: "Gde si bio?"
+    scene: "Друг спрашивает, где ты был вчера."
+    voice: m
+    also_ok: ["kupujem"]
+    turns:
+      - who: npc
+        sr: "Gde si bio juče?"
+        ru: "Где ты был вчера?"
+
+      - who: me
+        sr: "Išao sam u grad."
+        ru: "Я ездил в город."
+        exercise:
+          id: "34.8.1"
+          type: choice
+          prompt: "Скажи, что ездил в город"
+          options: ["Išao sam u grad.", "Idem u grad.", "Biću u gradu."]
+          answer: "Išao sam u grad."
+
+      - who: npc
+        sr: "Kako si išao?"
+        ru: "Как ты ехал?"
+
+      - who: me
+        sr: "Išao sam autobusom."
+        ru: "Я ехал на автобусе."
+        exercise:
+          id: "34.8.2"
+          type: fill_blank
+          prompt: "«Я ехал на автобусе» → Išao sam ___."
+          accept: ["autobusom"]
+
+      - who: npc
+        sr: "Jesi li stigao na vreme?"
+        ru: "Ты приехал вовремя?"
+
+      - who: me
+        sr: "Nisam. Autobus je kasnio."
+        ru: "Нет. Автобус опоздал."
+        exercise:
+          id: "34.8.3"
+          type: translate
+          prompt: "Нет. Автобус опоздал."
+          accept: ["Nisam. Autobus je kasnio.", "Ne, autobus je kasnio."]
+
+      - who: npc
+        sr: "Razumem. A šta si radio u gradu?"
+        ru: "Понятно. А что ты делал в городе?"
+
+      - who: me
+        sr: "Kupio sam hleb i kafu."
+        ru: "Я купил хлеб и кофе."
+        exercise:
+          id: "34.8.4"
+          type: choice
+          prompt: "Скажи, что купил хлеб и кофе"
+          options: ["Kupio sam hleb i kafu.", "Kupujem hleb i kafu.", "Kupiću hleb i kafu."]
+          answer: "Kupio sam hleb i kafu."
+
+  - id: "34.9"
+    kind: practice
+    title: "Диктант"
+    mixed: true
+    exercises:
+      - id: "34.9.1"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Išao sam autobusom."
+        accept: ["Išao sam autobusom."]
+      - id: "34.9.2"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Ona je došla juče."
+        accept: ["Ona je došla juče."]
+      - id: "34.9.3"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Nisam mogao da dođem."
+        accept: ["Nisam mogao da dođem."]

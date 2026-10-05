@@ -1,0 +1,164 @@
+lesson: "30"
+title: "Прошлое I (Prošlost I)"
+subtitle: "перфект — ja/ti/on, глаголы на -o/-la/-lo"
+teaches: [kupiti]
+
+steps:
+  - id: "30.1"
+    kind: teach
+    title: "Перфект"
+    md: "30/1-perfekt.md"
+
+  - id: "30.2"
+    kind: practice
+    title: "Radio sam / radila sam"
+    exercises:
+      - id: "30.2.1"
+        type: choice
+        prompt: "«Я работал» (говорит мужчина) —"
+        options: ["Radio sam.", "Radim.", "Radiću."]
+        answer: "Radio sam."
+      - id: "30.2.2"
+        type: choice
+        prompt: "«Она смотрела» —"
+        options: ["Gledala je.", "Gledao je.", "Gleda."]
+        answer: "Gledala je."
+      - id: "30.2.3"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["radio", "работал (муж.)"]
+          - ["radila", "работала (жен.)"]
+          - ["pisao", "писал (муж.)"]
+          - ["čitala", "читала (жен.)"]
+      - id: "30.2.4"
+        type: fill_blank
+        prompt: "«Я смотрел вчера» → Gledao ___ juče."
+        accept: ["sam"]
+      - id: "30.2.5"
+        type: word_bank
+        prompt: "Собери: «она вчера писала»"
+        bank: ["Ona", "je", "pisala", "juče"]
+        accept: ["Ona je pisala juče.", "Ona je juče pisala."]
+      - id: "30.2.6"
+        type: fix_error
+        prompt: "Ja si radio."
+        accept: ["Ja sam radio."]
+        explain: "«sam» — только для «я», «si» — для «ты». Ошибка частая, потому что обе формы короткие и безударные."
+      - id: "30.2.7"
+        type: translate
+        prompt: "Я вчера читал."
+        accept: ["Čitao sam juče.", "Juče sam čitao.", "Ja sam čitao juče.", "Ja sam juče čitao."]
+
+  - id: "30.3"
+    kind: teach
+    title: "Вид глагола"
+    md: "30/3-vid.md"
+
+  - id: "30.4"
+    kind: practice
+    title: "Kupovao / kupio"
+    also_ok: ["kupujem"]
+    exercises:
+      - id: "30.4.1"
+        type: choice
+        prompt: "«Я покупал хлеб» (процесс, результат не важен) —"
+        options: ["Kupovao sam hleb.", "Kupio sam hleb.", "Kupujem hleb."]
+        answer: "Kupovao sam hleb."
+      - id: "30.4.2"
+        type: choice
+        prompt: "«Я купил хлеб» (уже сделано) —"
+        options: ["Kupio sam hleb.", "Kupovao sam hleb.", "Kupujem hleb."]
+        answer: "Kupio sam hleb."
+      - id: "30.4.3"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["kupovati", "покупать (процесс)"]
+          - ["kupiti", "купить (результат)"]
+          - ["pisati", "писать (процесс)"]
+          - ["raditi", "работать / делать"]
+      - id: "30.4.4"
+        type: fill_blank
+        prompt: "«Она купила кофе» → Ona je ___ kafu."
+        accept: ["kupila"]
+      - id: "30.4.5"
+        type: word_bank
+        prompt: "Собери: «я вчера купил хлеб»"
+        bank: ["Juče", "sam", "kupio", "hleb"]
+        accept: ["Juče sam kupio hleb.", "Kupio sam hleb juče.", "Kupio sam juče hleb."]
+      - id: "30.4.6"
+        type: translate
+        prompt: "Ты вчера работал?"
+        accept: ["Da li si radio juče?", "Da li si juče radio?", "Jesi li radio juče?", "Jesi li juče radio?"]
+      - id: "30.4.7"
+        type: free
+        prompt: "Расскажи, что ты вчера делал(а) и купил(а) ли что-нибудь: 2–3 фразы."
+        sample: "Juče sam radio. Kupio sam hleb i kafu."
+
+  - id: "30.5"
+    kind: dialogue
+    title: "Šta si radio juče?"
+    scene: "Друг спрашивает, что ты делал вчера."
+    voice: m
+    turns:
+      - who: npc
+        sr: "Šta si radio juče?"
+        ru: "Что ты делал вчера?"
+
+      - who: me
+        sr: "Radio sam. A ti?"
+        ru: "Работал. А ты?"
+        exercise:
+          id: "30.5.1"
+          type: choice
+          prompt: "Скажи, что работал, и спроси «а ты?»"
+          options: ["Radio sam. A ti?", "Radim juče. A ti?", "Radiću juče. A ti?"]
+          answer: "Radio sam. A ti?"
+
+      - who: npc
+        sr: "Ja sam kupio hleb i kafu."
+        ru: "А я купил хлеб и кофе."
+
+      - who: me
+        sr: "Jesi li čitao juče?"
+        ru: "Ты вчера читал?"
+        exercise:
+          id: "30.5.2"
+          type: translate
+          prompt: "Ты вчера читал?"
+          accept: ["Jesi li čitao juče?", "Da li si čitao juče?", "Jesi li juče čitao?", "Da li si juče čitao?"]
+
+      - who: npc
+        sr: "Nisam. Pisao sam."
+        ru: "Нет. Я писал."
+
+      - who: me
+        sr: "Kupio sam kafu juče."
+        ru: "Я вчера купил кофе."
+        exercise:
+          id: "30.5.3"
+          type: fill_blank
+          prompt: "«Я вчера купил кофе» → ___ sam kafu juče."
+          accept: ["Kupio"]
+
+  - id: "30.6"
+    kind: practice
+    title: "Диктант"
+    mixed: true
+    exercises:
+      - id: "30.6.1"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Radila sam juče."
+        accept: ["Radila sam juče."]
+      - id: "30.6.2"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Šta si radio juče?"
+        accept: ["Šta si radio juče?"]
+      - id: "30.6.3"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Kupio sam hleb."
+        accept: ["Kupio sam hleb."]
