@@ -40,6 +40,10 @@ particles:
   - nisam
   - nisi
   - nije
+  # полные (ударные) формы jesam — для вопросов «Jesi li…?»
+  - jesi
+  - jesmo
+  - jeste
   - nismo
   - niste
   - nisu
@@ -53,6 +57,7 @@ particles:
   - s
   - sa
   - po
+  - bez
   - pa
   - te
   - to
@@ -63,6 +68,8 @@ particles:
   - one
   - mi
   - vi
+  - vas
+  - vam
   - ja
   - ti
   - me
@@ -111,6 +118,21 @@ verb_forms:
   - nećeš
   - neće
   - nece
+  - nećemo
+  - necemo
+  - nećete
+  - necete
+  # футур — клитики hteti (как sam/si/je, своя лексика не нужна)
+  - ću
+  - cu
+  - ćeš
+  - ces
+  - će
+  - ce
+  - ćemo
+  - cemo
+  - ćete
+  - cete
   - mogu
   - možeš
   - mozes
@@ -130,4 +152,71 @@ verb_forms:
   - pijemo
   - pijete
   - piju
+  # причастие и футур biti — короткий корень, эвристика префикса не покрывает
+  - bio
+  - bila
+  - bilo
+  - bili
+  - bile
+  - biću
+  - bicu
+  - bićeš
+  - biceš
+  - biće
+  - bice
+  - bićemo
+  - bicemo
+  - bićete
+  - bicete
+  # форма budem после kad/čim (бытовая экспозиция, не отрабатывается отдельно)
+  - budem
+  - budeš
+  - bude
+  - budemo
+  - budete
+  - budu
+  # znati — короткая основа, не покрывается эвристикой префикса
+  - znam
+  - znaš
+  - znas
+  - zna
+  - znamo
+  - znate
+  - znaju
+  - kafu
+  # неправильные причастия перфекта (основа не совпадает с инфинитивом)
+  - išao
+  - isao
+  - išla
+  - išlo
+  - išli
+  - išle
+  - otišao
+  - otišla
+  - otišlo
+  - otišli
+  - otišle
+  - došao
+  - došla
+  - došlo
+  - došli
+  - došle
+  - mogao
+  - mogla
+  - moglo
+  - mogli
+  - mogle
+  - jeo
+  - jela
+  - jeli
+  - jele
+  - stigao
+  - stigla
+  - stigli
+  - stigle
 digits: ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]
+# posao теряет гласную во всех падежах кроме им.: posla, poslu, poslom…
+noun_forms:
+  - posla
+  - poslu
+  - poslom

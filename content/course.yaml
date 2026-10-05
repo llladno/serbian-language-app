@@ -17,219 +17,241 @@ phases:
       ]
   - id: "3"
     title: "Уровень 3 — Связная речь (A2.1)"
-    lessons: ["30", "31", "32", "33", "34", "35", "36", "37", "38", "39"]
+    lessons:
+      [
+        "30", "31", "32", "33", "34", "35", "36", "37", "38", "39", "40",
+        "41",
+      ]
   - id: "4"
     title: "Уровень 4 — Мнения и жизнь (A2.2)"
-    lessons: ["40", "41", "42", "43", "44", "45", "46", "47", "48", "49"]
+    lessons: ["42", "43", "44", "45", "46", "47", "48", "49", "50", "51"]
   - id: "5"
     title: "Уровень 5 — Уверенно (B1.1)"
-    lessons: ["50", "51", "52", "53", "54", "55", "56", "57", "58"]
+    lessons: ["52", "53", "54", "55", "56", "57", "58", "59", "60"]
 
 lessons:
   "00":
-    title: "Ћирилица и латиница"
+    title: "Кириллица и латиница (Ćirilica i latinica)"
     subtitle: "два писма, једно произношење"
     file: "lessons/00.yaml"
   "01":
-    title: "Специфични гласови"
+    title: "Особые звуки (Specifični glasovi)"
     subtitle: "особые буквы č ć š ž đ dž lj nj, проверка"
     file: "lessons/01.yaml"
   "02":
-    title: "Здраво!"
+    title: "Привет! (Zdravo!)"
     subtitle: "приветствия, как дела, ты/вы"
     file: "lessons/02.yaml"
   "03":
-    title: "Молим, хвала"
+    title: "Пожалуйста, спасибо (Molim, hvala)"
     subtitle: "вежливые слова, текст, диктант, проверка"
     file: "lessons/03.yaml"
   "04":
-    title: "Jesam ja"
+    title: "Это я (Jesam ja)"
     subtitle: "глагол быть, откуда я, где живу"
     file: "lessons/04.yaml"
   "05":
-    title: "Говорим и работаем"
+    title: "Говорим и работаем (Govorimo i radimo)"
     subtitle: "языки, профессии, текст, диалог, проверка"
     file: "lessons/05.yaml"
   "06":
-    title: "Породица"
+    title: "Семья (Porodica)"
     subtitle: "семья, imam / nemam"
     file: "lessons/06.yaml"
   "07":
-    title: "Мој, твој"
+    title: "Мой, твой (Moj, tvoj)"
     subtitle: "притяжательные, текст, проверка"
     file: "lessons/07.yaml"
   "08":
-    title: "Бројеви"
+    title: "Числа (Brojevi)"
     subtitle: "числа 0–100 и число+существительное"
     file: "lessons/08.yaml"
   "09":
-    title: "Цена и године"
+    title: "Цена и возраст (Cena i godine)"
     subtitle: "цена, возраст"
     file: "lessons/09.yaml"
   "10":
-    title: "Сати и телефон"
+    title: "Часы и телефон (Sati i telefon)"
     subtitle: "часы, телефон, текст, проверка"
     file: "lessons/10.yaml"
   "11":
-    title: "У продавницу"
+    title: "В магазин (U prodavnicu)"
     subtitle: "магазин, первые слова"
     file: "lessons/11.yaml"
   "12":
-    title: "Количина и плаћање"
+    title: "Количество и оплата (Količina i plaćanje)"
     subtitle: "сколько, ещё что-нибудь, оплата"
     file: "lessons/12.yaml"
   "13":
-    title: "Рекламација"
+    title: "Возврат товара (Reklamacija)"
     subtitle: "возврат, очередь, текст, диалог, проверка"
     file: "lessons/13.yaml"
   "14":
-    title: "Провера 1а"
+    title: "Проверка 1а (Provera 1a)"
     subtitle: "приветствия, семья, числа/цена/время"
     file: "lessons/14.yaml"
   "15":
-    title: "Провера 1б"
+    title: "Проверка 1б (Provera 1b)"
     subtitle: "в магазине, ролёвки"
     file: "lessons/15.yaml"
   "16":
-    title: "Свакодневница"
+    title: "Повседневность (Svakodnevnica)"
     subtitle: "настоящее время, мой день, дни недели"
     file: "lessons/16.yaml"
   "17":
-    title: "Навике"
+    title: "Привычки (Navike)"
     subtitle: "как часто, volim / moram da, проверка"
     file: "lessons/17.yaml"
   "18":
-    title: "Стан"
+    title: "Квартира (Stan)"
     subtitle: "дом, комнаты, вещи"
     file: "lessons/18.yaml"
   "19":
-    title: "У / на"
+    title: "В / на (U / na)"
     subtitle: "предлоги места, ima/nema, проверка"
     file: "lessons/19.yaml"
   "20":
-    title: "Храна код куће"
+    title: "Еда дома (Hrana kod kuće)"
     subtitle: "еда, напитки"
     file: "lessons/20.yaml"
   "21":
-    title: "Гладан сам"
+    title: "Я голоден (Gladan sam)"
     subtitle: "голоден / хочу пить, в кафе"
     file: "lessons/21.yaml"
   "22":
-    title: "Рачун, молим"
+    title: "Счёт, пожалуйста (Račun, molim)"
     subtitle: "счёт, вкусно?, проверка"
     file: "lessons/22.yaml"
   "23":
-    title: "Питања 1"
+    title: "Вопросы 1 (Pitanja 1)"
     subtitle: "да/нет-вопрос, вопросительные слова, koji/kakav/čiji"
     file: "lessons/23.yaml"
   "24":
-    title: "Зашто?"
+    title: "Почему? (Zašto?)"
     subtitle: "почему, переспрос"
     file: "lessons/24.yaml"
   "25":
-    title: "Град"
+    title: "Город (Grad)"
     subtitle: "где что, как пройти, проверка"
     file: "lessons/25.yaml"
   "26":
-    title: "Време"
+    title: "Погода (Vreme)"
     subtitle: "погода, тепло/холодно, времена года"
     file: "lessons/26.yaml"
   "27":
-    title: "Свиђа ми се"
+    title: "Мне нравится (Sviđa mi se)"
     subtitle: "нравится, природа, проверка"
     file: "lessons/27.yaml"
   "28":
-    title: "Провера 2а"
+    title: "Проверка 2а (Provera 2a)"
     subtitle: "мой день, дом, еда/кафе"
     file: "lessons/28.yaml"
   "29":
-    title: "Провера 2б"
+    title: "Проверка 2б (Provera 2b)"
     subtitle: "город, погода, ролёвки"
     file: "lessons/29.yaml"
   "30":
-    title: "Прошлост I"
-    subtitle: "перфект — radio sam, bila sam"
+    title: "Прошлое I (Prošlost I)"
+    subtitle: "перфект — ja/ti/on, глаголы на -o/-la/-lo"
+    file: "lessons/30.yaml"
   "31":
-    title: "Прошлост II"
-    subtitle: "порядок слов, отрицание, вид глагола в прошлом"
+    title: "Прошлое II (Prošlost II)"
+    subtitle: "перфект — mi/vi/oni, отрицание, порядок слов"
+    file: "lessons/31.yaml"
   "32":
-    title: "Планови"
-    subtitle: "футур ću/ćeš, da-конструкция, čim/kad"
+    title: "Проверка: прошлое (Provera: prošlost)"
+    subtitle: "перфект, вид глагола, текст, рассказ о вчера"
+    file: "lessons/32.yaml"
   "33":
-    title: "Кретање"
-    subtitle: "транспорт, ići/voziti se/leteti, instrumental"
+    title: "Планы (Planovi)"
+    subtitle: "футур ću/ćeš, da-конструкция, čim/kad"
+    file: "lessons/33.yaml"
   "34":
-    title: "Направления"
-    subtitle: "levo/desno/pravo, kako da dođem, вывески"
+    title: "Передвижение (Kretanje)"
+    subtitle: "транспорт, instrumental, прошедшее: išao, došao, mogao"
+    file: "lessons/34.yaml"
   "35":
-    title: "Договори и термини"
-    subtitle: "записаться, позвать, договориться о времени"
+    title: "Вывески и транспорт (Natpisi i prevoz)"
+    subtitle: "вывески, следующий автобус, направления"
+    file: "lessons/35.yaml"
   "36":
-    title: "Отказивање и извињење"
-    subtitle: "перенести, отменить, извиниться"
+    title: "Проверка: планы и передвижение (Provera: planovi i kretanje)"
+    subtitle: "футур, инструментал, план на выходные"
+    file: "lessons/36.yaml"
   "37":
-    title: "Тело и здравље"
-    subtitle: "части тела, самочувствие, у врача"
+    title: "Договорённости и приёмы (Dogovori i termini)"
+    subtitle: "записаться, позвать, договориться о времени"
+    file: "lessons/37.yaml"
   "38":
-    title: "У апотеци"
-    subtitle: "симптомы, boli me, рецепт, лекарства"
+    title: "Отмена и извинения (Otkazivanje i izvinjenje)"
+    subtitle: "перенести, отменить, извиниться"
+    file: "lessons/38.yaml"
   "39":
-    title: "Провера 3"
-    subtitle: "повторение уровня 3"
+    title: "Тело и здоровье (Telo i zdravlje)"
+    subtitle: "части тела, самочувствие, у врача"
+    file: "lessons/39.yaml"
   "40":
+    title: "В аптеке (U apoteci)"
+    subtitle: "симптомы, boli me, рецепт, лекарства"
+    file: "lessons/40.yaml"
+  "41":
+    title: "Проверка 3 (Provera 3)"
+    subtitle: "весь уровень 3, большие ролёвки"
+    file: "lessons/41.yaml"
+  "42":
     title: "Осећања"
     subtitle: "как ты себя чувствуешь, базовые эмоции"
-  "41":
+  "43":
     title: "Мишљења"
     subtitle: "mislim da, slažem se, нравится/раздражает"
-  "42":
+  "44":
     title: "Прича о себи I"
     subtitle: "биография, детство, школа"
-  "43":
+  "45":
     title: "Прича о себи II"
     subtitle: "взрослая жизнь, odrastao sam, планы"
-  "44":
+  "46":
     title: "Телефон"
     subtitle: "звонки, javiću se, договориться о звонке"
-  "45":
+  "47":
     title: "Поруке"
     subtitle: "переписка, голосовые сообщения"
-  "46":
+  "48":
     title: "Проблеми"
     subtitle: "жалоба, что сломалось, pokvarilo se, kvar"
-  "47":
+  "49":
     title: "Решења"
     subtitle: "вызвать мастера, договориться о ремонте, сроки"
-  "48":
+  "50":
     title: "Слободно време"
     subtitle: "хобби, спорт, приглашения, hajde da"
-  "49":
+  "51":
     title: "Провера 4"
     subtitle: "повторение уровня 4"
-  "50":
+  "52":
     title: "Посао I"
     subtitle: "рабочее место, задачи, коллеги, rok"
-  "51":
+  "53":
     title: "Посао II"
     subtitle: "собеседование базово, резюме, sastanak"
-  "52":
+  "54":
     title: "Папирологија"
     subtitle: "банк, карта, boravak"
-  "53":
+  "55":
     title: "МУП и адреса"
     subtitle: "prijava adrese, документы (личный слой)"
-  "54":
+  "56":
     title: "Standard vs. novosadski"
     subtitle: "войводинские словечки, кофейная культура"
-  "55":
+  "57":
     title: "Small talk"
     subtitle: "поддержать беседу, реагировать, вставные фразы"
-  "56":
+  "58":
     title: "Дуги разговор"
     subtitle: "рассказать историю целиком, беглость"
-  "57":
+  "59":
     title: "Читање и слух"
     subtitle: "новости, вывески, сериалы без субтитров"
-  "58":
+  "60":
     title: "Велика провера"
     subtitle: "итоговые ролёвки, план дальше"

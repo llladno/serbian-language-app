@@ -1,0 +1,188 @@
+lesson: "31"
+title: "Прошлое II (Prošlost II)"
+subtitle: "перфект — mi/vi/oni, отрицание, порядок слов"
+teaches: []
+
+steps:
+  - id: "31.1"
+    kind: teach
+    title: "Местоимения, mi/vi/oni"
+    md: "31/1-mi-vi-oni.md"
+
+  - id: "31.2"
+    kind: practice
+    title: "Radili smo"
+    also_ok: ["kafu"]
+    exercises:
+      - id: "31.2.1"
+        type: choice
+        prompt: "«Мы работали» —"
+        options: ["Radili smo.", "Radimo.", "Radićemo."]
+        answer: "Radili smo."
+      - id: "31.2.2"
+        type: choice
+        prompt: "«Они (женщины) купили кофе» —"
+        options: ["One su kupile kafu.", "Oni su kupili kafu.", "One su kupili kafu."]
+        answer: "One su kupile kafu."
+      - id: "31.2.3"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["radili", "работали (муж./смеш.)"]
+          - ["radile", "работали (жен.)"]
+          - ["kupili", "купили (муж./смеш.)"]
+          - ["kupile", "купили (жен.)"]
+      - id: "31.2.4"
+        type: fill_blank
+        prompt: "«Вы работали в городе?» → Vi ___ radili u gradu?"
+        accept: ["ste"]
+      - id: "31.2.5"
+        type: word_bank
+        prompt: "Собери: «мы купили хлеб вчера»"
+        bank: ["Mi", "smo", "kupili", "hleb", "juče"]
+        accept: ["Mi smo kupili hleb juče.", "Mi smo juče kupili hleb."]
+      - id: "31.2.6"
+        type: fix_error
+        prompt: "One su radili juče."
+        accept: ["One su radile juče.", "Oni su radili juče."]
+        explain: "«one» — только женщины, причастие на -e: radile, не radili. (Или смени местоимение: «oni» — мужчины или смешанная группа — radili.)"
+      - id: "31.2.7"
+        type: translate
+        prompt: "Они (мужчины) работали в ресторане."
+        accept: ["Oni su radili u restoranu.", "Radili su u restoranu."]
+
+  - id: "31.3"
+    kind: teach
+    title: "Nisam radio"
+    md: "31/3-odricanje.md"
+
+  - id: "31.4"
+    kind: practice
+    title: "Отрицание"
+    also_ok: ["kupuje"]
+    exercises:
+      - id: "31.4.1"
+        type: choice
+        prompt: "«Я не работал вчера» —"
+        options: ["Nisam radio juče.", "Ne radim juče.", "Nisam radim juče."]
+        answer: "Nisam radio juče."
+      - id: "31.4.2"
+        type: choice
+        prompt: "«Она не купила хлеб» —"
+        options: ["Nije kupila hleb.", "Nije kupio hleb.", "Ne kupuje hleb."]
+        answer: "Nije kupila hleb."
+      - id: "31.4.3"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["nisam radio", "я не работал (муж.)"]
+          - ["nisi radila", "ты не работала (жен.)"]
+          - ["nismo kupili", "мы не купили"]
+          - ["nisu radile", "они (жен.) не работали"]
+      - id: "31.4.4"
+        type: fill_blank
+        prompt: "«Мы не купили хлеб» → ___ kupili hleb."
+        accept: ["Nismo"]
+      - id: "31.4.5"
+        type: word_bank
+        prompt: "Собери: «вчера мы не работали»"
+        bank: ["Juče", "nismo", "radili"]
+        accept: ["Juče nismo radili.", "Nismo radili juče."]
+      - id: "31.4.6"
+        type: fix_error
+        prompt: "Ne sam radio juče."
+        accept: ["Nisam radio juče."]
+        explain: "отрицание перфекта — слитное «nisam», не «ne sam»."
+      - id: "31.4.7"
+        type: translate
+        prompt: "Ты не работал вчера?"
+        accept: ["Nisi radio juče?", "Nisi juče radio?", "Da li nisi radio juče?"]
+
+  - id: "31.5"
+    kind: reading
+    title: "Мой вчерашний день"
+    md: "31/5-citanje.md"
+    also_ok: ["mamom"]
+    exercises:
+      - id: "31.5.1"
+        type: choice
+        prompt: "Где автор была вечером?"
+        options: ["U restoranu.", "Na pijaci.", "U gradu."]
+        answer: "U restoranu."
+      - id: "31.5.2"
+        type: choice
+        prompt: "С кем?"
+        options: ["Sa sestrom.", "Sa bratom.", "Sa mamom."]
+        answer: "Sa sestrom."
+      - id: "31.5.3"
+        type: choice
+        prompt: "Почему не пили вино?"
+        options: ["Sestra ne voli vino.", "Restoran nema vino.", "Mama ne voli vino."]
+        answer: "Sestra ne voli vino."
+
+  - id: "31.6"
+    kind: dialogue
+    title: "Jeste li radili?"
+    scene: "Знакомый спрашивает, как вы с друзьями провели вчерашний день."
+    voice: m
+    turns:
+      - who: npc
+        sr: "Jeste li juče radili?"
+        ru: "Вы вчера работали?"
+
+      - who: me
+        sr: "Jesmo. Radili smo ujutru."
+        ru: "Да. Мы работали утром."
+        exercise:
+          id: "31.6.1"
+          type: choice
+          prompt: "Скажи, что да, вы работали утром"
+          options: ["Jesmo. Radili smo ujutru.", "Nismo. Radili smo ujutru.", "Jesmo. Radimo ujutru."]
+          answer: "Jesmo. Radili smo ujutru."
+
+      - who: npc
+        sr: "A popodne?"
+        ru: "А днём?"
+
+      - who: me
+        sr: "Popodne nismo radili. Bili smo u gradu."
+        ru: "Днём мы не работали. Мы были в городе."
+        exercise:
+          id: "31.6.2"
+          type: translate
+          prompt: "Днём мы не работали. Мы были в городе."
+          accept: ["Popodne nismo radili. Bili smo u gradu.", "Nismo radili popodne. Bili smo u gradu."]
+
+      - who: npc
+        sr: "Jeste li kupili hleb?"
+        ru: "Вы купили хлеб?"
+
+      - who: me
+        sr: "Jesmo, kupili smo hleb i sir."
+        ru: "Да, мы купили хлеб и сыр."
+        exercise:
+          id: "31.6.3"
+          type: fill_blank
+          prompt: "«Да, мы купили хлеб и сыр» → Jesmo, ___ smo hleb i sir."
+          accept: ["kupili"]
+
+  - id: "31.7"
+    kind: practice
+    title: "Диктант"
+    mixed: true
+    exercises:
+      - id: "31.7.1"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Nismo radili juče."
+        accept: ["Nismo radili juče."]
+      - id: "31.7.2"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "One su kupile kafu."
+        accept: ["One su kupile kafu."]
+      - id: "31.7.3"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Jeste li radili?"
+        accept: ["Jeste li radili?"]

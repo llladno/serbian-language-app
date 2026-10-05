@@ -1,0 +1,241 @@
+lesson: "37"
+title: "Договорённости и приёмы (Dogovori i termini)"
+subtitle: "записаться, позвать, договориться о времени"
+teaches:
+  [
+    zakazati, termin, sastanak, slobodan, zauzet, dogovoriti-se, odgovarati,
+    pozvati, rezervisati, rezervacija, ranije, kasnije, potvrditi,
+    sledece-nedelje, prosle-nedelje,
+  ]
+
+steps:
+  - id: "37.1"
+    kind: teach
+    title: "Договор о встрече"
+    md: "37/1-termin.md"
+
+  - id: "37.2"
+    kind: practice
+    title: "Slobodan ili zauzet?"
+    exercises:
+      - id: "37.2.1"
+        type: choice
+        prompt: "«Ты свободен в пятницу?» —"
+        options: ["Jesi li slobodan u petak?", "Gde si u petak?", "Šta radiš u petak?"]
+        answer: "Jesi li slobodan u petak?"
+      - id: "37.2.2"
+        type: choice
+        prompt: "«Мне не подходит суббота» —"
+        options: ["Subota mi ne odgovara.", "Subota me ne odgovara.", "Ne volim subotu."]
+        answer: "Subota mi ne odgovara."
+      - id: "37.2.3"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["slobodan", "свободен"]
+          - ["zauzet", "занят"]
+          - ["termin", "приём"]
+          - ["sastanak", "встреча"]
+      - id: "37.2.4"
+        type: fill_blank
+        prompt: "«Мы договорились» → ___ smo se."
+        accept: ["Dogovorili"]
+      - id: "37.2.5"
+        type: word_bank
+        prompt: "Собери: «хочу записаться на приём»"
+        bank: ["Hoću", "da", "zakažem", "termin"]
+        accept: ["Hoću da zakažem termin."]
+      - id: "37.2.6"
+        type: translate
+        prompt: "Тебе подходит завтра в пять?"
+        accept: ["Da li ti odgovara sutra u pet?", "Odgovara li ti sutra u pet?"]
+        explain: "«odgovara» — подходит"
+
+  - id: "37.3"
+    kind: dialogue
+    title: "Договариваемся"
+    scene: "Друг спрашивает, когда ты свободен на этой неделе."
+    voice: m
+    turns:
+      - who: npc
+        sr: "Da li si slobodan u petak?"
+        ru: "Ты свободен в пятницу?"
+
+      - who: me
+        sr: "Ne, u petak sam zauzet. Da li ti odgovara subota?"
+        ru: "Нет, в пятницу я занят. Тебе подходит суббота?"
+        exercise:
+          id: "37.3.1"
+          type: choice
+          prompt: "Скажи, что в пятницу занят, и предложи субботу"
+          options:
+            - "Ne, u petak sam zauzet. Da li ti odgovara subota?"
+            - "Da, u petak sam slobodan."
+            - "Ne znam kad sam slobodan."
+          answer: "Ne, u petak sam zauzet. Da li ti odgovara subota?"
+
+      - who: npc
+        sr: "Subota mi odgovara. U koliko sati?"
+        ru: "Суббота мне подходит. Во сколько?"
+
+      - who: me
+        sr: "U pet popodne?"
+        ru: "В пять вечера?"
+        exercise:
+          id: "37.3.2"
+          type: translate
+          prompt: "В пять вечера?"
+          accept: ["U pet popodne?", "U pet uveče?"]
+
+      - who: npc
+        sr: "Može. Dogovorili smo se."
+        ru: "Можно. Договорились."
+
+      - who: me
+        sr: "Vidimo se u subotu!"
+        ru: "Увидимся в субботу!"
+        exercise:
+          id: "37.3.3"
+          type: choice
+          prompt: "Попрощайся до субботы"
+          options: ["Vidimo se u subotu!", "Vidimo se sutra!", "Zdravo, zauzet sam!"]
+          answer: "Vidimo se u subotu!"
+
+  - id: "37.4"
+    kind: teach
+    title: "Когда и что забронировать"
+    md: "37/4-vreme.md"
+
+  - id: "37.5"
+    kind: practice
+    title: "Раньше, позже, бронь"
+    exercises:
+      - id: "37.5.1"
+        type: choice
+        prompt: "«Мне подходит позже» —"
+        options: ["Kasnije mi odgovara.", "Ranije mi odgovara.", "Kasnije me odgovara."]
+        answer: "Kasnije mi odgovara."
+      - id: "37.5.2"
+        type: choice
+        prompt: "«на следующей неделе» —"
+        options: ["sledeće nedelje", "prošle nedelje", "sledeći nedelja"]
+        answer: "sledeće nedelje"
+      - id: "37.5.3"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["pozvati", "позвать"]
+          - ["rezervisati", "забронировать"]
+          - ["potvrditi", "подтвердить"]
+          - ["ranije", "раньше"]
+      - id: "37.5.4"
+        type: fill_blank
+        prompt: "«Хочу подтвердить запись» → Hoću da ___ termin."
+        accept: ["potvrdim"]
+      - id: "37.5.5"
+        type: word_bank
+        prompt: "Собери: «мы договорились на субботу»"
+        bank: ["Dogovorili", "smo", "se", "za", "subotu"]
+        accept: ["Dogovorili smo se za subotu."]
+      - id: "37.5.6"
+        type: fix_error
+        prompt: "Ana je pozvao sestru."
+        accept: ["Ana je pozvala sestru."]
+        explain: "Ана — женщина, причастие на -la: pozvala."
+      - id: "37.5.7"
+        type: translate
+        prompt: "Тебе подходит позже?"
+        accept: ["Da li ti odgovara kasnije?", "Odgovara li ti kasnije?"]
+
+  - id: "37.6"
+    kind: reading
+    title: "Марко и приём у врача"
+    md: "37/6-citanje.md"
+    also_ok: ["sledeće"]
+    exercises:
+      - id: "37.6.1"
+        type: choice
+        prompt: "Почему Марко перенёс приём?"
+        options: ["Morao je da radi.", "Bio je u gradu.", "Kasnio je."]
+        answer: "Morao je da radi."
+      - id: "37.6.2"
+        type: choice
+        prompt: "Когда новый приём?"
+        options: ["Sledeće nedelje u utorak.", "U petak u deset.", "U subotu."]
+        answer: "Sledeće nedelje u utorak."
+      - id: "37.6.3"
+        type: choice
+        prompt: "На какой день они с сестрой договорились?"
+        options: ["U subotu.", "U petak.", "U nedelju."]
+        answer: "U subotu."
+
+  - id: "37.7"
+    kind: dialogue
+    title: "Potvrda rezervacije"
+    scene: "Ты звонишь в ресторан, чтобы подтвердить бронь."
+    voice: f
+    turns:
+      - who: npc
+        sr: "Izvolite?"
+        ru: "Слушаю вас?"
+
+      - who: me
+        sr: "Dobar dan. Hoću da potvrdim rezervaciju za petak."
+        ru: "Добрый день. Хочу подтвердить бронь на пятницу."
+        exercise:
+          id: "37.7.1"
+          type: choice
+          prompt: "Скажи, что хочешь подтвердить бронь на пятницу"
+          options:
+            - "Dobar dan. Hoću da potvrdim rezervaciju za petak."
+            - "Dobar dan. Hoću da zakažem rezervaciju za petak."
+            - "Dobar dan. Imam rezervaciju u petak ujutru."
+          answer: "Dobar dan. Hoću da potvrdim rezervaciju za petak."
+
+      - who: npc
+        sr: "U koliko sati?"
+        ru: "На какое время?"
+
+      - who: me
+        sr: "U sedam uveče."
+        ru: "В семь вечера."
+        exercise:
+          id: "37.7.2"
+          type: translate
+          prompt: "В семь вечера."
+          accept: ["U sedam uveče."]
+
+      - who: npc
+        sr: "U redu. Čekamo vas u petak u sedam."
+        ru: "Хорошо. Ждём вас в пятницу в семь."
+
+      - who: me
+        sr: "Hvala, doviđenja!"
+        ru: "Спасибо, до свидания!"
+        exercise:
+          id: "37.7.3"
+          type: choice
+          prompt: "Поблагодари и попрощайся"
+          options: ["Hvala, doviđenja!", "Izvini, doviđenja!", "Hvala, zauzeto je!"]
+          answer: "Hvala, doviđenja!"
+
+  - id: "37.8"
+    kind: practice
+    title: "Диктант"
+    mixed: true
+    exercises:
+      - id: "37.8.1"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Da li ti odgovara kasnije?"
+        accept: ["Da li ti odgovara kasnije?"]
+      - id: "37.8.2"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Hoću da potvrdim rezervaciju."
+        accept: ["Hoću da potvrdim rezervaciju."]
+      - id: "37.8.3"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Vidimo se sledeće nedelje."
+        accept: ["Vidimo se sledeće nedelje."]

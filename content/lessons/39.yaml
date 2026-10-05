@@ -1,0 +1,144 @@
+lesson: "39"
+title: "Тело и здоровье (Telo i zdravlje)"
+subtitle: "части тела, самочувствие, у врача"
+teaches:
+  [glava, grlo, stomak, zub, ledja, ruka, noga, boleti, osecati-se, temperatura, prehlada, kasalj, doktor]
+
+steps:
+  - id: "39.1"
+    kind: teach
+    title: "Части тела"
+    md: "39/1-telo.md"
+
+  - id: "39.2"
+    kind: practice
+    title: "Тело"
+    exercises:
+      - id: "39.2.1"
+        type: choice
+        prompt: "«Голова» —"
+        options: ["glava", "noga", "ruka"]
+        answer: "glava"
+      - id: "39.2.2"
+        type: choice
+        prompt: "«Спина» —"
+        options: ["leđa", "grlo", "stomak"]
+        answer: "leđa"
+      - id: "39.2.3"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["zub", "зуб"]
+          - ["ruka", "рука"]
+          - ["noga", "нога"]
+          - ["stomak", "живот"]
+      - id: "39.2.4"
+        type: fill_blank
+        prompt: "«Горло» → ___"
+        accept: ["grlo"]
+      - id: "39.2.5"
+        type: word_bank
+        prompt: "Собери: «это моя нога»"
+        bank: ["Ovo", "je", "moja", "noga"]
+        accept: ["Ovo je moja noga."]
+      - id: "39.2.6"
+        type: translate
+        prompt: "Это моя спина."
+        accept: ["Ovo su moja leđa.", "To su moja leđa."]
+
+  - id: "39.3"
+    kind: teach
+    title: "Boli me…"
+    md: "39/3-boli-me.md"
+
+  - id: "39.4"
+    kind: practice
+    title: "Самочувствие"
+    also_ok: ["noge", "glavu"]
+    exercises:
+      - id: "39.4.1"
+        type: choice
+        prompt: "«У меня болит голова» —"
+        options: ["Boli me glava.", "Bolim glavu.", "Imam glavu."]
+        answer: "Boli me glava."
+      - id: "39.4.2"
+        type: choice
+        prompt: "«У меня болят ноги» —"
+        options: ["Bole me noge.", "Boli me noge.", "Bole me noga."]
+        answer: "Bole me noge."
+      - id: "39.4.3"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["boli me", "у меня болит"]
+          - ["bole me", "у меня болят"]
+          - ["osećam se", "я чувствую себя"]
+          - ["temperatura", "температура"]
+      - id: "39.4.4"
+        type: fill_blank
+        prompt: "«У меня болит горло» → Boli me ___."
+        accept: ["grlo"]
+      - id: "39.4.5"
+        type: word_bank
+        prompt: "Собери: «я неважно себя чувствую»"
+        bank: ["Ne", "osećam", "se", "dobro"]
+        accept: ["Ne osećam se dobro."]
+      - id: "39.4.6"
+        type: translate
+        prompt: "У меня температура и кашель."
+        accept: ["Imam temperaturu i kašalj."]
+      - id: "39.4.7"
+        type: free
+        prompt: "Опиши, что у тебя болит и как ты себя чувствуешь: 2–3 фразы."
+        sample: "Boli me glava i boli me grlo. Ne osećam se dobro. Imam temperaturu."
+
+  - id: "39.5"
+    kind: dialogue
+    title: "Kod lekara"
+    scene: "Ты у врача, описываешь симптомы."
+    voice: m
+    also_ok: ["tako"]
+    turns:
+      - who: npc
+        sr: "Šta Vas boli?"
+        ru: "Что у вас болит?"
+
+      - who: me
+        sr: "Boli me grlo i imam temperaturu."
+        ru: "У меня болит горло и температура."
+        exercise:
+          id: "39.5.1"
+          type: choice
+          prompt: "Скажи, что болит горло и есть температура"
+          options:
+            - "Boli me grlo i imam temperaturu."
+            - "Boli me noga i imam kašalj."
+            - "Osećam se dobro."
+          answer: "Boli me grlo i imam temperaturu."
+
+      - who: npc
+        sr: "Od kada se tako osećate?"
+        ru: "С каких пор вы так себя чувствуете?"
+
+      - who: me
+        sr: "Od juče."
+        ru: "Со вчерашнего дня."
+        exercise:
+          id: "39.5.2"
+          type: translate
+          prompt: "Со вчерашнего дня."
+          accept: ["Od juče."]
+
+      - who: npc
+        sr: "Imate prehladu. Treba da pijete čaj i da se odmarate."
+        ru: "У вас простуда. Нужно пить чай и отдыхать."
+
+      - who: me
+        sr: "Hvala, doktore!"
+        ru: "Спасибо, доктор!"
+        exercise:
+          id: "39.5.3"
+          type: choice
+          prompt: "Поблагодари доктора"
+          options: ["Hvala, doktore!", "Izvinite, doktore!", "Hvala, prijatno!"]
+          answer: "Hvala, doktore!"

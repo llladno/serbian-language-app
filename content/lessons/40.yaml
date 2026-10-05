@@ -1,0 +1,260 @@
+lesson: "40"
+title: "В аптеке (U apoteci)"
+subtitle: "симптомы, boli me, рецепт, лекарства"
+teaches:
+  [
+    recept, lek, tableta, sirup, uzimati, dnevno, put-puta, jelo,
+    glavobolja, grlobolja, bol, kapi, mast, alergican, protiv, kutija, nos,
+    zacepljen-nos,
+  ]
+
+steps:
+  - id: "40.1"
+    kind: teach
+    title: "В аптеке"
+    md: "40/1-apoteka.md"
+
+  - id: "40.2"
+    kind: practice
+    title: "Лекарства"
+    also_ok: ["potreban"]
+    exercises:
+      - id: "40.2.1"
+        type: choice
+        prompt: "«Таблетка» —"
+        options: ["tableta", "sirup", "recept"]
+        answer: "tableta"
+      - id: "40.2.2"
+        type: choice
+        prompt: "«У вас есть что-нибудь от кашля?» —"
+        options: ["Imate li nešto za kašalj?", "Imate li kašalj?", "Da li vam je hladno?"]
+        answer: "Imate li nešto za kašalj?"
+      - id: "40.2.3"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["lek", "лекарство"]
+          - ["recept", "рецепт"]
+          - ["tableta", "таблетка"]
+          - ["sirup", "сироп"]
+      - id: "40.2.4"
+        type: fill_blank
+        prompt: "«Принимать два раза в день» → Uzimati dva ___ dnevno."
+        accept: ["puta"]
+      - id: "40.2.5"
+        type: word_bank
+        prompt: "Собери: «нужен ли рецепт?»"
+        bank: ["Da", "li", "je", "potreban", "recept"]
+        accept: ["Da li je potreban recept?"]
+      - id: "40.2.6"
+        type: translate
+        prompt: "У меня есть рецепт."
+        accept: ["Imam recept."]
+
+  - id: "40.3"
+    kind: dialogue
+    title: "У апотеци"
+    scene: "Ты в аптеке с рецептом от врача."
+    voice: f
+    turns:
+      - who: npc
+        sr: "Izvolite?"
+        ru: "Слушаю вас?"
+
+      - who: me
+        sr: "Imam recept za lek."
+        ru: "У меня рецепт на лекарство."
+        exercise:
+          id: "40.3.1"
+          type: choice
+          prompt: "Скажи, что у тебя есть рецепт на лекарство"
+          options:
+            - "Imam recept za lek."
+            - "Imam prehladu."
+            - "Treba mi tableta."
+          answer: "Imam recept za lek."
+
+      - who: npc
+        sr: "Evo Vam lek. Uzimajte dva puta dnevno, posle jela."
+        ru: "Вот ваше лекарство. Принимайте два раза в день, после еды."
+
+      - who: me
+        sr: "Da li treba recept za sirup?"
+        ru: "Нужен ли рецепт на сироп?"
+        exercise:
+          id: "40.3.2"
+          type: translate
+          prompt: "Нужен ли рецепт на сироп?"
+          accept: ["Da li treba recept za sirup?"]
+
+      - who: npc
+        sr: "Ne, sirup možete kupiti bez recepta."
+        ru: "Нет, сироп можете купить без рецепта."
+
+      - who: me
+        sr: "Hvala, doviđenja!"
+        ru: "Спасибо, до свидания!"
+        exercise:
+          id: "40.3.3"
+          type: choice
+          prompt: "Поблагодари и попрощайся"
+          options: ["Hvala, doviđenja!", "Izvinite, doviđenja!", "Hvala, zauzeto je!"]
+          answer: "Hvala, doviđenja!"
+
+  - id: "40.4"
+    kind: teach
+    title: "Что болит и от чего"
+    md: "40/4-simptomi.md"
+
+  - id: "40.5"
+    kind: practice
+    title: "Симптомы и упаковка"
+    also_ok: ["kašlja", "tablete", "glavobolju"]
+    exercises:
+      - id: "40.5.1"
+        type: choice
+        prompt: "«У меня головная боль» —"
+        options: ["Imam glavobolju.", "Imam glavobolja.", "Boli glavobolju."]
+        answer: "Imam glavobolju."
+      - id: "40.5.2"
+        type: choice
+        prompt: "«таблетки от боли» —"
+        options: ["tablete protiv bolova", "tablete protiv bol", "tablete bez bolova"]
+        answer: "tablete protiv bolova"
+      - id: "40.5.3"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["mast", "мазь"]
+          - ["kapi", "капли"]
+          - ["kutija", "коробка"]
+          - ["nos", "нос"]
+      - id: "40.5.4"
+        type: fill_blank
+        prompt: "«У меня аллергия на лекарство» (муж.) → ___ sam na lek."
+        accept: ["Alergičan"]
+      - id: "40.5.5"
+        type: word_bank
+        prompt: "Собери: «сироп от кашля»"
+        bank: ["Sirup", "protiv", "kašlja"]
+        accept: ["Sirup protiv kašlja."]
+      - id: "40.5.6"
+        type: fix_error
+        prompt: "Imam glavobolja."
+        accept: ["Imam glavobolju."]
+        explain: "после «imam» — винительный: glavobolja → glavobolju."
+      - id: "40.5.7"
+        type: translate
+        prompt: "У меня простуда и головная боль."
+        accept: ["Imam prehladu i glavobolju."]
+      - id: "40.5.8"
+        type: translate
+        prompt: "Дайте мне одну коробку."
+        accept: ["Dajte mi jednu kutiju."]
+
+  - id: "40.6"
+    kind: reading
+    title: "Ана в аптеке"
+    md: "40/6-citanje.md"
+    exercises:
+      - id: "40.6.1"
+        type: choice
+        prompt: "Что болит у Ани?"
+        options: ["Grlo.", "Noga.", "Zub."]
+        answer: "Grlo."
+      - id: "40.6.2"
+        type: choice
+        prompt: "Есть ли у Ани аллергия на лекарства?"
+        options: ["Ne, nije.", "Da, jeste.", "Ne zna."]
+        answer: "Ne, nije."
+      - id: "40.6.3"
+        type: choice
+        prompt: "Что она получила в аптеке?"
+        options: ["Sirup, kapi i tablete.", "Samo recept.", "Mast."]
+        answer: "Sirup, kapi i tablete."
+
+  - id: "40.7"
+    kind: dialogue
+    title: "Glavobolja"
+    scene: "Ты в аптеке: болит голова, нужны таблетки."
+    voice: f
+    also_ok: ["neki"]
+    turns:
+      - who: npc
+        sr: "Izvolite?"
+        ru: "Слушаю вас?"
+
+      - who: me
+        sr: "Dobar dan. Imam glavobolju. Imate li nešto protiv bolova?"
+        ru: "Добрый день. У меня болит голова. Есть что-нибудь от боли?"
+        exercise:
+          id: "40.7.1"
+          type: choice
+          prompt: "Скажи, что болит голова, и спроси что-нибудь от боли"
+          options:
+            - "Dobar dan. Imam glavobolju. Imate li nešto protiv bolova?"
+            - "Dobar dan. Imam recept za glavobolju."
+            - "Dobar dan. Imam kašalj. Imate li sirup?"
+          answer: "Dobar dan. Imam glavobolju. Imate li nešto protiv bolova?"
+
+      - who: npc
+        sr: "Imam tablete. Da li ste alergični na neki lek?"
+        ru: "Есть таблетки. У вас есть аллергия на какое-нибудь лекарство?"
+
+      - who: me
+        sr: "Ne, nisam alergičan."
+        ru: "Нет, у меня нет аллергии."
+        exercise:
+          id: "40.7.2"
+          type: fill_blank
+          prompt: "«Нет, у меня нет аллергии» (муж.) → Ne, nisam ___."
+          accept: ["alergičan"]
+
+      - who: npc
+        sr: "U redu. Jedna kutija košta sto dvadeset dinara."
+        ru: "Хорошо. Одна коробка стоит сто двадцать динаров."
+
+      - who: me
+        sr: "Dobro. Dajte mi jednu kutiju, molim."
+        ru: "Хорошо. Дайте мне одну коробку, пожалуйста."
+        exercise:
+          id: "40.7.3"
+          type: translate
+          prompt: "Хорошо. Дайте мне одну коробку, пожалуйста."
+          accept: ["Dobro. Dajte mi jednu kutiju, molim.", "Dobro. Dajte mi jednu kutiju, molim vas."]
+
+      - who: npc
+        sr: "Izvolite. Uzimajte jednu tabletu kad vas boli glava."
+        ru: "Пожалуйста. Принимайте по таблетке, когда болит голова."
+
+      - who: me
+        sr: "Hvala, doviđenja!"
+        ru: "Спасибо, до свидания!"
+        exercise:
+          id: "40.7.4"
+          type: choice
+          prompt: "Поблагодари и попрощайся"
+          options: ["Hvala, doviđenja!", "Izvinite, doviđenja!", "Hvala, zauzeto je!"]
+          answer: "Hvala, doviđenja!"
+
+  - id: "40.8"
+    kind: practice
+    title: "Диктант"
+    mixed: true
+    also_ok: ["kašlja"]
+    exercises:
+      - id: "40.8.1"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Imam glavobolju."
+        accept: ["Imam glavobolju."]
+      - id: "40.8.2"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Alergičan sam na lek."
+        accept: ["Alergičan sam na lek."]
+      - id: "40.8.3"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Sirup protiv kašlja."
+        accept: ["Sirup protiv kašlja."]

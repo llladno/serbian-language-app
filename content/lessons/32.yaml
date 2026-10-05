@@ -1,0 +1,113 @@
+lesson: "32"
+title: "Проверка: прошлое (Provera: prošlost)"
+subtitle: "перфект, вид глагола, текст, рассказ о вчера"
+teaches: []
+
+steps:
+  - id: "32.1"
+    kind: reading
+    title: "Марко и Ана вчера"
+    md: "32/1-citanje.md"
+    exercises:
+      - id: "32.1.1"
+        type: choice
+        prompt: "Что делала Ана утром?"
+        options: ["Pisala je.", "Radila je.", "Kupovala je."]
+        answer: "Pisala je."
+      - id: "32.1.2"
+        type: choice
+        prompt: "Кто не работал вчера?"
+        options: ["Ana.", "Marko.", "I Marko i Ana."]
+        answer: "Ana."
+      - id: "32.1.3"
+        type: choice
+        prompt: "Купили ли хлеб?"
+        options: ["Da, kupili su hleb.", "Ne, nisu kupili hleb.", "Kupovali su hleb."]
+        answer: "Da, kupili su hleb."
+
+  - id: "32.2"
+    kind: practice
+    title: "Формы перфекта"
+    mixed: true
+    also_ok: ["restoranu", "pišem"]
+    exercises:
+      - id: "32.2.1"
+        type: choice
+        prompt: "«Я писала» (говорит женщина) —"
+        options: ["Pisala sam.", "Pisao sam.", "Pišem."]
+        answer: "Pisala sam."
+      - id: "32.2.2"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["radio", "он работал"]
+          - ["radila", "она работала"]
+          - ["radili", "мы/вы/они (муж.) работали"]
+          - ["radile", "они (жен.) работали"]
+      - id: "32.2.3"
+        type: fill_blank
+        prompt: "«Вы читали?» → Da li ___ čitali?"
+        accept: ["ste"]
+      - id: "32.2.4"
+        type: word_bank
+        prompt: "Собери: «она была в ресторане»"
+        bank: ["Ona", "je", "bila", "u", "restoranu"]
+        accept: ["Ona je bila u restoranu."]
+      - id: "32.2.5"
+        type: translate
+        prompt: "Мы вчера писали."
+        accept: ["Pisali smo juče.", "Juče smo pisali.", "Mi smo juče pisali.", "Mi smo pisali juče."]
+
+  - id: "32.3"
+    kind: practice
+    title: "Отрицание и вид"
+    mixed: true
+    also_ok: ["kupuje"]
+    exercises:
+      - id: "32.3.1"
+        type: choice
+        prompt: "«Он не купил хлеб» —"
+        options: ["Nije kupio hleb.", "Nije kupila hleb.", "Ne kupuje hleb."]
+        answer: "Nije kupio hleb."
+      - id: "32.3.2"
+        type: fix_error
+        prompt: "Ona ne kupila hleb."
+        accept: ["Ona nije kupila hleb."]
+        explain: "отрицание перфекта — «nije», не «ne»."
+      - id: "32.3.3"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["kupovati", "покупать (процесс)"]
+          - ["kupiti", "купить (результат)"]
+          - ["nisam", "я не + причастие"]
+          - ["juče", "вчера"]
+      - id: "32.3.4"
+        type: translate
+        prompt: "Я вчера не покупал хлеб."
+        accept: ["Nisam kupovao hleb juče.", "Juče nisam kupovao hleb.", "Nisam kupio hleb juče.", "Juče nisam kupio hleb."]
+      - id: "32.3.5"
+        type: free
+        prompt: "Расскажи, что ты делал(а) вчера: 3–4 фразы (утром, днём, вечером)."
+        sample: "Ujutru sam radio. Popodne sam kupio hleb. Uveče sam bio u restoranu."
+
+  - id: "32.4"
+    kind: practice
+    title: "Диктант"
+    mixed: true
+    exercises:
+      - id: "32.4.1"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Radio sam juče."
+        accept: ["Radio sam juče."]
+      - id: "32.4.2"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Ona nije radila."
+        accept: ["Ona nije radila."]
+      - id: "32.4.3"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Kupili smo hleb."
+        accept: ["Kupili smo hleb."]

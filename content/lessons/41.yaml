@@ -1,0 +1,174 @@
+lesson: "41"
+title: "Проверка 3 (Provera 3)"
+subtitle: "весь уровень 3, большие ролёвки"
+teaches: []
+
+steps:
+  - id: "41.1"
+    kind: reading
+    title: "Прошлая неделя, следующая неделя"
+    md: "41/1-citanje.md"
+    exercises:
+      - id: "41.1.1"
+        type: choice
+        prompt: "Почему автор отменил встречу?"
+        options: ["Bio je bolestan.", "Bio je zauzet.", "Kasnio je."]
+        answer: "Bio je bolestan."
+      - id: "41.1.2"
+        type: choice
+        prompt: "Что у него болело?"
+        options: ["Grlo i glava.", "Noga i ruka.", "Stomak."]
+        answer: "Grlo i glava."
+      - id: "41.1.3"
+        type: choice
+        prompt: "На чём он поедет к сестре завтра?"
+        options: ["Vozom.", "Autobusom.", "Avionom."]
+        answer: "Vozom."
+      - id: "41.1.4"
+        type: choice
+        prompt: "Как он дойдёт до станции?"
+        options: ["Pešice.", "Biciklom.", "Taksijem."]
+        answer: "Pešice."
+
+  - id: "41.2"
+    kind: practice
+    title: "Прошлост и футур"
+    mixed: true
+    also_ok: ["putujemo"]
+    exercises:
+      - id: "41.2.1"
+        type: choice
+        prompt: "«Я был болен» (говорит мужчина) —"
+        options: ["Bio sam bolestan.", "Biću bolestan.", "Bolestan sam."]
+        answer: "Bio sam bolestan."
+      - id: "41.2.2"
+        type: choice
+        prompt: "«Завтра я буду работать» —"
+        options: ["Sutra ću da radim.", "Juče sam radio.", "Sutra sam radio."]
+        answer: "Sutra ću da radim."
+      - id: "41.2.3"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["radio sam", "я работал"]
+          - ["radiću", "я буду работать"]
+          - ["nisam radio", "я не работал"]
+          - ["neću da radim", "я не буду работать"]
+      - id: "41.2.4"
+        type: fill_blank
+        prompt: "«Она не работала вчера» → Ona ___ radila juče."
+        accept: ["nije"]
+      - id: "41.2.5"
+        type: word_bank
+        prompt: "Собери: «мы будем путешествовать в субботу»"
+        bank: ["Mi", "ćemo", "da", "putujemo", "u", "subotu"]
+        accept: ["Mi ćemo da putujemo u subotu.", "Mi ćemo u subotu da putujemo."]
+      - id: "41.2.6"
+        type: translate
+        prompt: "Я купил лекарство вчера."
+        accept: ["Kupio sam lek juče.", "Juče sam kupio lek."]
+
+  - id: "41.3"
+    kind: practice
+    title: "Кретање"
+    mixed: true
+    exercises:
+      - id: "41.3.1"
+        type: choice
+        prompt: "«Еду на поезде» —"
+        options: ["Idem vozom.", "Idem voz.", "Idem u voz."]
+        answer: "Idem vozom."
+      - id: "41.3.2"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["izlaz", "выход"]
+          - ["sledeći", "следующий"]
+          - ["peron", "платформа"]
+          - ["toalet", "туалет"]
+      - id: "41.3.3"
+        type: fill_blank
+        prompt: "«Лечу на самолёте» → Letim ___."
+        accept: ["avionom"]
+      - id: "41.3.4"
+        type: fix_error
+        prompt: "Idem autobus."
+        accept: ["Idem autobusom."]
+      - id: "41.3.5"
+        type: translate
+        prompt: "Когда приходит следующий автобус?"
+        accept: ["Kad dolazi sledeći autobus?"]
+
+  - id: "41.4"
+    kind: practice
+    title: "Термини и здравље"
+    mixed: true
+    exercises:
+      - id: "41.4.1"
+        type: choice
+        prompt: "«Мне нужно отменить приём» —"
+        options: ["Moram da otkažem termin.", "Moram da zakažem termin.", "Moram da pomerim termin."]
+        answer: "Moram da otkažem termin."
+      - id: "41.4.2"
+        type: choice
+        prompt: "«У меня болит голова» —"
+        options: ["Boli me glava.", "Bolim glavu.", "Imam glavu."]
+        answer: "Boli me glava."
+      - id: "41.4.3"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["slobodan", "свободен"]
+          - ["zauzet", "занят"]
+          - ["recept", "рецепт"]
+          - ["tableta", "таблетка"]
+      - id: "41.4.4"
+        type: fill_blank
+        prompt: "«Принимать два раза в день» → Uzimati dva ___ dnevno."
+        accept: ["puta"]
+      - id: "41.4.5"
+        type: translate
+        prompt: "Тебе подходит пятница?"
+        accept: ["Da li ti odgovara petak?", "Odgovara li ti petak?"]
+
+  - id: "41.5"
+    kind: checkpoint
+    title: "Ролёвки"
+    exercises:
+      - id: "41.5.1"
+        type: free
+        prompt: "Расскажи, что ты делал(а) на прошлой неделе и что будешь делать на следующей: 4–5 фраз (прошедшее и будущее время)."
+        sample: "Prošle nedelje sam radio. Kupio sam hleb i kafu. Sledeće nedelje ću da putujem vozom kod sestre."
+      - id: "41.5.2"
+        type: free
+        prompt: "Разыграй: звонишь, чтобы перенести встречу, потому что заболел(а) — 3–4 фразы."
+        sample: "Dobar dan. Imam sastanak sutra, ali sam bolestan. Mogu li da pomerim sastanak? Hvala!"
+      - id: "41.5.3"
+        type: free
+        prompt: "Разыграй: ты на автобусной остановке — спроси, какой автобус идёт до центра и когда он придёт — 3–4 фразы."
+        sample: "Izvinite, koji autobus ide do centra? Kad dolazi sledeći autobus? Hvala!"
+      - id: "41.5.4"
+        type: free
+        prompt: "Разыграй: ты в аптеке покупаешь лекарство от простуды — 3–4 фразы."
+        sample: "Dobar dan. Imam recept za lek. Da li treba recept za sirup? Hvala, doviđenja!"
+
+  - id: "41.6"
+    kind: practice
+    title: "Диктант"
+    mixed: true
+    exercises:
+      - id: "41.6.1"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Bio sam bolestan juče."
+        accept: ["Bio sam bolestan juče."]
+      - id: "41.6.2"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Sutra ću da putujem vozom."
+        accept: ["Sutra ću da putujem vozom."]
+      - id: "41.6.3"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Boli me glava."
+        accept: ["Boli me glava."]

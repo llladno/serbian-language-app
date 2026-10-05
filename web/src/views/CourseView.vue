@@ -63,8 +63,8 @@ function badgeClass(lesson?: LessonRef) {
               {{ lid }}
             </span>
             <span class="min-w-0 flex-1">
-              <span class="block font-semibold">{{ byId.get(lid)?.title || 'Урок ' + lid }}</span>
-              <span class="block truncate text-sm text-[var(--muted)]">{{ byId.get(lid)?.subtitle }}</span>
+              <span class="block text-sm font-semibold leading-snug sm:text-base">{{ byId.get(lid)?.title || 'Урок ' + lid }}</span>
+              <span class="block truncate text-xs text-[var(--muted)] sm:text-sm">{{ byId.get(lid)?.subtitle }}</span>
             </span>
             <StatusBadge
               v-if="byId.get(lid)"
