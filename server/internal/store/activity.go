@@ -29,7 +29,8 @@ func lockUserTx(tx *dbtx, userID string) error {
 // the day is converted to half-open UTC bounds and compared as text. This is
 // what limits a card to one counted review per day: Again leaves a card due
 // today, so "the queue would serve it" alone would let one card be graded over
-// and over.
+// and over. The lookup is covered by the reviews_user_card_time index
+// (user_id, card_id, reviewed_at) from migration 016; keep the two in step.
 func cardReviewedOnDayTx(q querier, userID, cardID string, loc *time.Location, now time.Time) (bool, error) {
 	y, m, d := now.In(loc).Date()
 	start := time.Date(y, m, d, 0, 0, 0, 0, loc).UTC().Format(time.RFC3339)
