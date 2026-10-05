@@ -508,7 +508,7 @@ func (s *Store) queryRanked(limit, offset int) ([]rankedUser, error) {
 		) l ON l.user_id = u.id
 		LEFT JOIN (
 			SELECT user_id, COUNT(*) AS total_cards,
-			       SUM(CASE WHEN state='review' AND interval_days>=7 THEN 1 ELSE 0 END) AS cards_known
+			       SUM(CASE WHEN state='review' THEN 1 ELSE 0 END) AS cards_known
 			FROM srs_cards GROUP BY user_id
 		) c ON c.user_id = u.id
 		ORDER BY lessons_done DESC, cards_known DESC, u.created_at ASC`
@@ -865,9 +865,13 @@ func (u *UserStore) ReviewedToday(today time.Time) (int, error) {
 	return n, err
 }
 
-// StreakDays counts consecutive days (ending today) with at least one review.
+// StreakDays counts consecutive active days. A day is active if the learner
+// reviewed a card or answered an exercise. The streak ends today if today is
+// active, otherwise yesterday: it only breaks once a whole day has passed with
+// nothing done, so it does not read 0 before the first action of the day.
 func (u *UserStore) StreakDays(today time.Time) (int, error) {
-	rows, err := u.db.Query(`SELECT DISTINCT substr(reviewed_at,1,10) AS d FROM reviews WHERE user_id = ? ORDER BY d DESC`, u.user)
+	rows, err := u.db.Query(`SELECT substr(reviewed_at,1,10) FROM reviews WHERE user_id = ?
+		UNION SELECT substr(attempted_at,1,10) FROM attempts WHERE user_id = ?`, u.user, u.user)
 	if err != nil {
 		return 0, err
 	}
@@ -880,8 +884,15 @@ func (u *UserStore) StreakDays(today time.Time) (int, error) {
 		}
 		days[d] = true
 	}
+	if err := rows.Err(); err != nil {
+		return 0, err
+	}
+	cur := today
+	if !days[cur.Format(dateFmt)] {
+		cur = cur.AddDate(0, 0, -1)
+	}
 	streak := 0
-	for cur := today; days[cur.Format(dateFmt)]; cur = cur.AddDate(0, 0, -1) {
+	for ; days[cur.Format(dateFmt)]; cur = cur.AddDate(0, 0, -1) {
 		streak++
 	}
 	return streak, nil
@@ -1124,6 +1135,6 @@ func (u *UserStore) CardStats() (total, known int, err error) {
 	if err = u.db.QueryRow(`SELECT COUNT(*) FROM srs_cards WHERE user_id = ?`, u.user).Scan(&total); err != nil {
 		return
 	}
-	err = u.db.QueryRow(`SELECT COUNT(*) FROM srs_cards WHERE user_id = ? AND state = 'review' AND interval_days >= 7`, u.user).Scan(&known)
+	err = u.db.QueryRow(`SELECT COUNT(*) FROM srs_cards WHERE user_id = ? AND state = 'review'`, u.user).Scan(&known)
 	return
 }

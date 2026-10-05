@@ -508,6 +508,31 @@ func TestStreakDays(t *testing.T) {
 	}
 }
 
+func TestStreakDaysGraceAndExercises(t *testing.T) {
+	_, u := newUser(t)
+	// Exercise-only days count, and the streak survives until today ends.
+	u.AddAttempt(Attempt{"01-A-1", "01", "A", "z", true}, day0.AddDate(0, 0, -2))
+	u.AddAttempt(Attempt{"01-A-2", "01", "A", "z", true}, day0.AddDate(0, 0, -1))
+	if got, _ := u.StreakDays(day0); got != 2 {
+		t.Errorf("streak before today's first action = %d, want 2", got)
+	}
+	u.AddAttempt(Attempt{"01-A-3", "01", "A", "z", true}, day0)
+	if got, _ := u.StreakDays(day0); got != 3 {
+		t.Errorf("streak with today active = %d, want 3", got)
+	}
+}
+
+func TestCardStatsKnownIsGraduated(t *testing.T) {
+	_, u := newUser(t)
+	u.EnsureCards([]CardSeed{{"vocab:x", "vocab", "x"}})
+	if _, err := u.db.Exec(`UPDATE srs_cards SET state='review', interval_days=1 WHERE user_id=?`, u.user); err != nil {
+		t.Fatal(err)
+	}
+	if _, known, _ := u.CardStats(); known != 1 {
+		t.Errorf("known = %d, want 1 for a graduated card with a 1-day interval", known)
+	}
+}
+
 func TestMigrationV1toV2(t *testing.T) {
 	if IsPostgresDSN(testDSN()) {
 		t.Skip("v1->v2 migration is a SQLite-only legacy path")
