@@ -168,9 +168,21 @@ type Settings struct {
 	TelegramChannel   string
 }
 
+// querier is the read/write surface shared by *database and *dbtx, so helpers
+// can run either standalone or inside someone else's transaction.
+type querier interface {
+	Exec(q string, a ...any) (sql.Result, error)
+	Query(q string, a ...any) (*sql.Rows, error)
+	QueryRow(q string, a ...any) *sql.Row
+}
+
 // EconomySettings reads and parses every setting in one query.
-func (s *Store) EconomySettings() (Settings, error) {
-	rows, err := s.db.Query(`SELECT key, value FROM economy_settings`)
+func (s *Store) EconomySettings() (Settings, error) { return economySettings(s.db) }
+
+// economySettings is EconomySettings against any querier, so a counted action
+// can read the settings inside its own transaction.
+func economySettings(q querier) (Settings, error) {
+	rows, err := q.Query(`SELECT key, value FROM economy_settings`)
 	if err != nil {
 		return Settings{}, fmt.Errorf("economy settings: %w", err)
 	}
@@ -253,8 +265,14 @@ const fallbackTZ = "Europe/Belgrade"
 // every counted action and a systemic DB read problem must leave a trace an
 // operator can find, not just a silently wrong date.
 func (s *Store) UserLocation(userID string) *time.Location {
+	return userLocation(s.db, userID)
+}
+
+// userLocation is UserLocation against any querier, so a counted action can
+// resolve the timezone inside its own transaction. Same fallbacks.
+func userLocation(q querier, userID string) *time.Location {
 	var name string
-	if err := s.db.QueryRow(`SELECT timezone FROM users WHERE id = ?`, userID).Scan(&name); err != nil {
+	if err := q.QueryRow(`SELECT timezone FROM users WHERE id = ?`, userID).Scan(&name); err != nil {
 		if !errors.Is(err, sql.ErrNoRows) {
 			log.Printf("user location: scan timezone for user %q: %v", userID, err)
 		}

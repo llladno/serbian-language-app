@@ -1,6 +1,7 @@
 package store
 
 import (
+	"fmt"
 	"os"
 	"testing"
 	"time"
@@ -489,12 +490,28 @@ func TestActivityByDay(t *testing.T) {
 	}
 }
 
+// meetDailyGoal does the ten counted actions that make a day active: ten
+// distinct first attempts, tagged so several days can share one user.
+func meetDailyGoal(t *testing.T, u *UserStore, tag string, at time.Time) {
+	t.Helper()
+	for i := 0; i < 10; i++ {
+		if err := u.AddAttempt(Attempt{fmt.Sprintf("01-%s-%d", tag, i), "01", "A", "z", true}, at); err != nil {
+			t.Fatal(err)
+		}
+	}
+}
+
 func TestStreakDays(t *testing.T) {
 	_, u := newUser(t)
 	u.EnsureCards([]CardSeed{{"vocab:x", "vocab", "x"}})
-	u.GradeCard("vocab:x", srs.Good, day0)
-	if _, err := u.db.Exec(`INSERT INTO reviews (user_id, card_id, grade, reviewed_at) VALUES (?, 'vocab:x', 2, '2026-09-05T09:00:00Z')`, u.user); err != nil {
-		t.Fatal(err)
+	// A day is active once it has met the daily goal (10 counted actions); every
+	// SRS review counts, so ten reviews of one card make a day.
+	for _, d := range []time.Time{day0.AddDate(0, 0, -1), day0} {
+		for i := 0; i < 10; i++ {
+			if _, err := u.GradeCard("vocab:x", srs.Good, d); err != nil {
+				t.Fatal(err)
+			}
+		}
 	}
 	streak, err := u.StreakDays(day0)
 	if err != nil {
@@ -510,13 +527,21 @@ func TestStreakDays(t *testing.T) {
 
 func TestStreakDaysGraceAndExercises(t *testing.T) {
 	_, u := newUser(t)
-	// Exercise-only days count, and the streak survives until today ends.
-	u.AddAttempt(Attempt{"01-A-1", "01", "A", "z", true}, day0.AddDate(0, 0, -2))
-	u.AddAttempt(Attempt{"01-A-2", "01", "A", "z", true}, day0.AddDate(0, 0, -1))
+	// Exercise-only days count once they meet the goal, and the streak survives
+	// until today ends: it must not read 0 before today's first action.
+	meetDailyGoal(t, u, "a", day0.AddDate(0, 0, -2))
+	meetDailyGoal(t, u, "b", day0.AddDate(0, 0, -1))
 	if got, _ := u.StreakDays(day0); got != 2 {
 		t.Errorf("streak before today's first action = %d, want 2", got)
 	}
-	u.AddAttempt(Attempt{"01-A-3", "01", "A", "z", true}, day0)
+	// Nine of today's ten actions: today is not active yet, the grace holds.
+	for i := 0; i < 9; i++ {
+		u.AddAttempt(Attempt{fmt.Sprintf("01-c-%d", i), "01", "A", "z", true}, day0)
+	}
+	if got, _ := u.StreakDays(day0); got != 2 {
+		t.Errorf("streak with today under goal = %d, want 2", got)
+	}
+	u.AddAttempt(Attempt{"01-c-9", "01", "A", "z", true}, day0)
 	if got, _ := u.StreakDays(day0); got != 3 {
 		t.Errorf("streak with today active = %d, want 3", got)
 	}

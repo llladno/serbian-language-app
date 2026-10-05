@@ -820,6 +820,9 @@ func (u *UserStore) GradeCard(cardID string, g srs.Grade, now time.Time) (srs.Ca
 		u.user, cardID, int(g), now.UTC().Format(time.RFC3339)); err != nil {
 		return srs.Card{}, err
 	}
+	if err := recordActionTx(tx, u.user, now); err != nil {
+		return srs.Card{}, err
+	}
 	return updated, tx.Commit()
 }
 
@@ -865,49 +868,42 @@ func (u *UserStore) ReviewedToday(today time.Time) (int, error) {
 	return n, err
 }
 
-// StreakDays counts consecutive active days. A day is active if the learner
-// reviewed a card or answered an exercise. The streak ends today if today is
-// active, otherwise yesterday: it only breaks once a whole day has passed with
-// nothing done, so it does not read 0 before the first action of the day.
-func (u *UserStore) StreakDays(today time.Time) (int, error) {
-	rows, err := u.db.Query(`SELECT substr(reviewed_at,1,10) FROM reviews WHERE user_id = ?
-		UNION SELECT substr(attempted_at,1,10) FROM attempts WHERE user_id = ?`, u.user, u.user)
-	if err != nil {
-		return 0, err
-	}
-	defer rows.Close()
-	days := map[string]bool{}
-	for rows.Next() {
-		var d string
-		if err := rows.Scan(&d); err != nil {
-			return 0, err
-		}
-		days[d] = true
-	}
-	if err := rows.Err(); err != nil {
-		return 0, err
-	}
-	cur := today
-	if !days[cur.Format(dateFmt)] {
-		cur = cur.AddDate(0, 0, -1)
-	}
-	streak := 0
-	for ; days[cur.Format(dateFmt)]; cur = cur.AddDate(0, 0, -1) {
-		streak++
-	}
-	return streak, nil
-}
-
-// AddAttempt records one exercise answer.
+// AddAttempt records one exercise answer. The first attempt at a given
+// exercise also counts as an action toward the daily goal and moves the
+// answer streak; repeats record the answer and nothing else.
 func (u *UserStore) AddAttempt(a Attempt, now time.Time) error {
+	tx, err := u.db.Begin()
+	if err != nil {
+		return fmt.Errorf("add attempt: %w", err)
+	}
+	defer tx.Rollback()
+
+	var prior int
+	if err := tx.QueryRow(`SELECT COUNT(*) FROM attempts WHERE user_id = ? AND exercise_id = ?`,
+		u.user, a.ExerciseID).Scan(&prior); err != nil {
+		return fmt.Errorf("add attempt: count prior: %w", err)
+	}
+
 	correct := 0
 	if a.Correct {
 		correct = 1
 	}
-	_, err := u.db.Exec(`INSERT INTO attempts (user_id, exercise_id, lesson, block, answer, correct, attempted_at)
+	if _, err := tx.Exec(`INSERT INTO attempts (user_id, exercise_id, lesson, block, answer, correct, attempted_at)
 		VALUES (?, ?, ?, ?, ?, ?, ?)`,
-		u.user, a.ExerciseID, a.Lesson, a.Block, a.Answer, correct, now.UTC().Format(time.RFC3339))
-	return err
+		u.user, a.ExerciseID, a.Lesson, a.Block, a.Answer, correct,
+		now.UTC().Format(time.RFC3339)); err != nil {
+		return fmt.Errorf("add attempt: %w", err)
+	}
+
+	if prior == 0 {
+		if err := recordActionTx(tx, u.user, now); err != nil {
+			return err
+		}
+		if err := recordAnswerTx(tx, u.user, a.Correct, now); err != nil {
+			return err
+		}
+	}
+	return tx.Commit()
 }
 
 // WeakExercises returns exercises failed at least half the time (>= 2 attempts).
