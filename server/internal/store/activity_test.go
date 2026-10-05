@@ -638,3 +638,60 @@ func TestConcurrentGradesOfOneCardCountOnce(t *testing.T) {
 		t.Fatalf("actions = %d after %d simultaneous grades of one card, want 1", actions, taps)
 	}
 }
+
+func TestAnswerStreakTracksCurrentAndBest(t *testing.T) {
+	s := newStore(t)
+	loc := belgrade(t)
+	id, _ := s.CreateUser("Серия")
+	u := s.User(id)
+	at := time.Date(2026, 9, 29, 10, 0, 0, 0, loc)
+
+	answer(t, u, "01.1", true, at)
+	answer(t, u, "01.2", true, at)
+	answer(t, u, "01.3", true, at)
+
+	cur, best, err := u.AnswerStreak()
+	if err != nil {
+		t.Fatalf("answer streak: %v", err)
+	}
+	if cur != 3 || best != 3 {
+		t.Fatalf("current, best = %d, %d; want 3, 3", cur, best)
+	}
+
+	answer(t, u, "01.4", false, at) // breaks the run
+	cur, best, _ = u.AnswerStreak()
+	if cur != 0 || best != 3 {
+		t.Fatalf("after a wrong answer: current, best = %d, %d; want 0, 3", cur, best)
+	}
+
+	answer(t, u, "01.5", true, at)
+	cur, best, _ = u.AnswerStreak()
+	if cur != 1 || best != 3 {
+		t.Fatalf("after restarting: current, best = %d, %d; want 1, 3", cur, best)
+	}
+}
+
+func TestAnswerStreakIgnoresRepeatsAndReviews(t *testing.T) {
+	s := newStore(t)
+	loc := belgrade(t)
+	id, _ := s.CreateUser("Повтор")
+	u := s.User(id)
+	at := time.Date(2026, 9, 29, 10, 0, 0, 0, loc)
+
+	answer(t, u, "01.1", true, at)
+	answer(t, u, "01.1", true, at) // repeat
+	answer(t, u, "01.1", true, at) // repeat
+
+	// An SRS review is not an answer either, whatever the grade.
+	if err := u.EnsureCards([]CardSeed{{CardID: "vocab:x", Kind: "vocab", RefID: "x"}}); err != nil {
+		t.Fatalf("seed card: %v", err)
+	}
+	if _, err := u.GradeCard("vocab:x", srs.Again, at); err != nil {
+		t.Fatalf("grade: %v", err)
+	}
+
+	cur, best, _ := u.AnswerStreak()
+	if cur != 1 || best != 1 {
+		t.Fatalf("repeats or a review moved the streak: current, best = %d, %d; want 1, 1", cur, best)
+	}
+}

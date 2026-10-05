@@ -104,9 +104,49 @@ func recordActionTx(tx *dbtx, userID string, now time.Time) error {
 	return nil
 }
 
-// recordAnswerTx is replaced by the answer-streak implementation in a later
-// task; until then a first attempt only counts toward the daily goal.
-func recordAnswerTx(tx *dbtx, userID string, correct bool, now time.Time) error { return nil }
+// recordAnswerTx moves the consecutive-correct-answer counter. Only called for
+// first attempts (see AddAttempt): repeats and SRS reviews never touch it, so
+// the "N правильных подряд" quests cannot be farmed by re-solving lesson 00.
+func recordAnswerTx(tx *dbtx, userID string, correct bool, now time.Time) error {
+	ts := now.UTC().Format(time.RFC3339)
+	if !correct {
+		if _, err := tx.Exec(`INSERT INTO user_answer_streak (user_id, current, best, updated_at)
+			VALUES (?, 0, 0, ?)
+			ON CONFLICT (user_id) DO UPDATE SET current = 0, updated_at = ?`,
+			userID, ts, ts); err != nil {
+			return fmt.Errorf("reset answer streak: %w", err)
+		}
+		return nil
+	}
+	if _, err := tx.Exec(`INSERT INTO user_answer_streak (user_id, current, best, updated_at)
+		VALUES (?, 1, 1, ?)
+		ON CONFLICT (user_id) DO UPDATE SET
+			current = user_answer_streak.current + 1,
+			best = CASE WHEN user_answer_streak.current + 1 > user_answer_streak.best
+			            THEN user_answer_streak.current + 1
+			            ELSE user_answer_streak.best END,
+			updated_at = ?`,
+		userID, ts, ts); err != nil {
+		return fmt.Errorf("advance answer streak: %w", err)
+	}
+	return nil
+}
+
+// AnswerStreak returns the user's current and best runs of consecutive
+// correct first answers. Quests check best, so a broken run never takes back
+// a quest that was already earned.
+func (u *UserStore) AnswerStreak() (int, int, error) {
+	var cur, best int
+	err := u.db.QueryRow(`SELECT current, best FROM user_answer_streak WHERE user_id = ?`,
+		u.user).Scan(&cur, &best)
+	if errors.Is(err, sql.ErrNoRows) {
+		return 0, 0, nil
+	}
+	if err != nil {
+		return 0, 0, fmt.Errorf("answer streak: %w", err)
+	}
+	return cur, best, nil
+}
 
 // streakDaysTx counts consecutive active days in the user's own timezone. A day
 // is active when it met that day's goal or when a purchased repair covers it.
