@@ -818,12 +818,28 @@ func (u *UserStore) GradeCard(cardID string, g srs.Grade, now time.Time) (srs.Ca
 	}
 	defer tx.Rollback()
 
+	// Serialise this learner's grades: the "already reviewed this card today"
+	// check below is check-then-write, and two simultaneous grades of one card
+	// (a double tap) would otherwise both find no earlier review and both count.
+	if err := lockUserTx(tx, u.user); err != nil {
+		return srs.Card{}, fmt.Errorf("grade card: %w", err)
+	}
+
 	c, err := scanCard(tx.QueryRow(`SELECT `+cardCols+` FROM srs_cards WHERE user_id = ? AND card_id = ?`, u.user, cardID))
 	if err != nil {
 		return srs.Card{}, fmt.Errorf("load card %s: %w", cardID, err)
 	}
-	// Decided on the card as it was before this grade moves it.
+	// Decided on the card as it was before this grade moves it, and on the
+	// reviews table before this grade's own row is written (or it would count
+	// itself out).
 	counts := servedByQueue(c.Card, now)
+	if counts {
+		done, err := cardReviewedOnDayTx(tx, u.user, cardID, userLocation(tx, u.user), now)
+		if err != nil {
+			return srs.Card{}, err
+		}
+		counts = !done
+	}
 	updated := srs.Schedule(c.Card, g, now)
 
 	var dueStr any
@@ -839,9 +855,9 @@ func (u *UserStore) GradeCard(cardID string, g srs.Grade, now time.Time) (srs.Ca
 		u.user, cardID, int(g), now.UTC().Format(time.RFC3339)); err != nil {
 		return srs.Card{}, err
 	}
-	// Grading ahead of schedule is allowed and is recorded and scheduled like any
-	// other review, but it earns nothing: otherwise grading one card ten times
-	// would meet the daily goal.
+	// A review that does not count is recorded and scheduled like any other: it
+	// is grading ahead of schedule, or a repeat grade of a card already reviewed
+	// today. Otherwise grading one card ten times would meet the daily goal.
 	if counts {
 		if err := recordActionTx(tx, u.user, now); err != nil {
 			return srs.Card{}, err

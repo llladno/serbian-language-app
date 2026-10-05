@@ -24,18 +24,37 @@ func lockUserTx(tx *dbtx, userID string) error {
 	return nil
 }
 
+// cardReviewedOnDayTx reports whether the card already has a review inside the
+// learner's local day containing now. reviewed_at is an RFC3339 UTC string, so
+// the day is converted to half-open UTC bounds and compared as text. This is
+// what limits a card to one counted review per day: Again leaves a card due
+// today, so "the queue would serve it" alone would let one card be graded over
+// and over.
+func cardReviewedOnDayTx(q querier, userID, cardID string, loc *time.Location, now time.Time) (bool, error) {
+	y, m, d := now.In(loc).Date()
+	start := time.Date(y, m, d, 0, 0, 0, 0, loc).UTC().Format(time.RFC3339)
+	end := time.Date(y, m, d+1, 0, 0, 0, 0, loc).UTC().Format(time.RFC3339)
+	var n int
+	if err := q.QueryRow(`SELECT COUNT(*) FROM reviews
+		WHERE user_id = ? AND card_id = ? AND reviewed_at >= ? AND reviewed_at < ?`,
+		userID, cardID, start, end).Scan(&n); err != nil {
+		return false, fmt.Errorf("check earlier review of %s: %w", cardID, err)
+	}
+	return n > 0, nil
+}
+
 // recordActionTx counts one action toward the user's daily goal and, if this
 // action is the one that met the goal, pays the streak drip — in the caller's
 // transaction, so the action and its payout commit together.
 //
 // "One action" is deliberately narrow: the first attempt at a given exercise
 // (see AddAttempt) and an SRS review of a card the review queue would have
-// served at that moment (see GradeCard and servedByQueue). Re-solving a
-// finished lesson and grading a card ahead of its schedule are worth nothing,
-// which is what stops the daily goal, the answer streak and every counting
-// quest from being farmed. Note the limit of the second rule: it follows the
-// queue's own definition of "due", so a card that is still due after a grade
-// (Again on a learning card stays due today) can count again.
+// served at that moment, the first such review of that card in the learner's
+// local day (see GradeCard, servedByQueue and cardReviewedOnDayTx). Re-solving
+// a finished lesson, grading a card ahead of its schedule and grading it again
+// the same day are worth nothing, which is what stops the daily goal, the
+// answer streak and every counting quest from being farmed. The once-a-day
+// rule is needed on top of "due" because a card graded Again stays due today.
 func recordActionTx(tx *dbtx, userID string, now time.Time) error {
 	set, err := economySettings(tx)
 	if err != nil {

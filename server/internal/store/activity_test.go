@@ -464,3 +464,177 @@ func TestServedByQueue(t *testing.T) {
 		}
 	}
 }
+
+// Again leaves a card due today, so the queue keeps serving it: "due" alone
+// would let one card be graded Again over and over. Regression guard for that.
+func TestRepeatedAgainOnOneCardCountsOnce(t *testing.T) {
+	s := newStore(t)
+	loc := belgrade(t)
+	id, _ := s.CreateUser("Снова")
+	u := s.User(id)
+	at := time.Date(2026, 9, 29, 10, 0, 0, 0, loc)
+	if err := u.EnsureCards([]CardSeed{{CardID: "vocab:x", Kind: "vocab", RefID: "x"}}); err != nil {
+		t.Fatal(err)
+	}
+
+	for i := 0; i < 10; i++ {
+		c, err := u.GradeCard("vocab:x", srs.Again, at)
+		if err != nil {
+			t.Fatalf("grade %d: %v", i, err)
+		}
+		if c.State != srs.Learning {
+			t.Fatalf("grade %d: state %q, want the card to stay learning (due today)", i, c.State)
+		}
+	}
+
+	var actions int
+	if err := s.db.QueryRow(`SELECT actions FROM user_daily_activity WHERE user_id = ? AND day = ?`,
+		id, "2026-09-29").Scan(&actions); err != nil {
+		t.Fatalf("activity row: %v", err)
+	}
+	if actions != 1 {
+		t.Fatalf("actions = %d after ten Again grades of one card, want exactly 1", actions)
+	}
+	if got, _ := u.StreakDays(at); got != 0 {
+		t.Fatalf("streak = %d, want 0", got)
+	}
+	var reviews int
+	s.db.QueryRow(`SELECT COUNT(*) FROM reviews WHERE user_id = ?`, id).Scan(&reviews)
+	if reviews != 10 {
+		t.Fatalf("%d reviews recorded, want 10: uncounted grades are still recorded", reviews)
+	}
+}
+
+// A learner who genuinely fails a hard card has done real work: the single
+// Again still counts.
+func TestAgainOnAHardCardStillCounts(t *testing.T) {
+	s := newStore(t)
+	loc := belgrade(t)
+	id, _ := s.CreateUser("Трудное")
+	u := s.User(id)
+	if err := u.EnsureCards([]CardSeed{{CardID: "vocab:x", Kind: "vocab", RefID: "x"}}); err != nil {
+		t.Fatal(err)
+	}
+	// Learned earlier, now a due review card that the learner gets wrong.
+	if _, err := u.GradeCard("vocab:x", srs.Good, time.Date(2026, 9, 28, 10, 0, 0, 0, loc)); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := u.GradeCard("vocab:x", srs.Again, time.Date(2026, 9, 29, 10, 0, 0, 0, loc)); err != nil {
+		t.Fatal(err)
+	}
+	var actions int
+	if err := s.db.QueryRow(`SELECT actions FROM user_daily_activity WHERE user_id = ? AND day = ?`,
+		id, "2026-09-29").Scan(&actions); err != nil {
+		t.Fatalf("activity row: %v", err)
+	}
+	if actions != 1 {
+		t.Fatalf("actions = %d, want 1 for a failed due review", actions)
+	}
+}
+
+func TestTenDifferentCardsGradedAgainMeetTheGoal(t *testing.T) {
+	s := newStore(t)
+	loc := belgrade(t)
+	id, _ := s.CreateUser("Десять")
+	u := s.User(id)
+	at := time.Date(2026, 9, 29, 10, 0, 0, 0, loc)
+	var seeds []CardSeed
+	for i := 0; i < 10; i++ {
+		w := "w" + strconv.Itoa(i)
+		seeds = append(seeds, CardSeed{CardID: "vocab:" + w, Kind: "vocab", RefID: w})
+	}
+	if err := u.EnsureCards(seeds); err != nil {
+		t.Fatal(err)
+	}
+	for _, c := range seeds {
+		if _, err := u.GradeCard(c.CardID, srs.Again, at); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if got, _ := u.StreakDays(at); got != 1 {
+		t.Fatalf("streak = %d, want 1: ten different due cards meet the goal", got)
+	}
+	if bal, _ := s.Balance(id); bal != 1 {
+		t.Fatalf("balance = %d, want the day-one drip of 1", bal)
+	}
+}
+
+// The once-a-day limit is per learner-local day, not per UTC day and not
+// forever: the same card counts once on each of two consecutive days, even
+// when 23:30 and 00:30 local fall on the same UTC date.
+func TestSameCardCountsOncePerLocalDay(t *testing.T) {
+	s := newStore(t)
+	loc := belgrade(t)
+	id, _ := s.CreateUser("Два дня")
+	u := s.User(id)
+	if err := u.EnsureCards([]CardSeed{{CardID: "vocab:x", Kind: "vocab", RefID: "x"}}); err != nil {
+		t.Fatal(err)
+	}
+	grades := []time.Time{
+		time.Date(2026, 9, 29, 22, 0, 0, 0, loc),
+		time.Date(2026, 9, 29, 23, 30, 0, 0, loc), // same local day: uncounted
+		time.Date(2026, 9, 30, 0, 30, 0, 0, loc),  // next local day, same UTC day
+		time.Date(2026, 9, 30, 9, 0, 0, 0, loc),   // uncounted
+	}
+	for _, at := range grades {
+		if _, err := u.GradeCard("vocab:x", srs.Again, at); err != nil {
+			t.Fatal(err)
+		}
+	}
+	for _, day := range []string{"2026-09-29", "2026-09-30"} {
+		var actions int
+		if err := s.db.QueryRow(`SELECT actions FROM user_daily_activity WHERE user_id = ? AND day = ?`,
+			id, day).Scan(&actions); err != nil {
+			t.Fatalf("activity row %s: %v", day, err)
+		}
+		if actions != 1 {
+			t.Fatalf("%s: actions = %d, want 1", day, actions)
+		}
+	}
+}
+
+// Postgres only, for the same reason as the first-attempt race: two
+// simultaneous grades of one card must not both find "no review today".
+func TestConcurrentGradesOfOneCardCountOnce(t *testing.T) {
+	if !IsPostgresDSN(testDSN()) {
+		t.Skip("the race needs concurrent writers; SQLite serialises them")
+	}
+	s := newStore(t)
+	loc := belgrade(t)
+	id, _ := s.CreateUser("Двойное касание")
+	u := s.User(id)
+	at := time.Date(2026, 9, 29, 10, 0, 0, 0, loc)
+	if err := u.EnsureCards([]CardSeed{{CardID: "vocab:x", Kind: "vocab", RefID: "x"}}); err != nil {
+		t.Fatal(err)
+	}
+
+	const taps = 12
+	var wg sync.WaitGroup
+	errs := make(chan error, taps)
+	start := make(chan struct{})
+	for i := 0; i < taps; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			<-start
+			_, err := u.GradeCard("vocab:x", srs.Again, at)
+			errs <- err
+		}()
+	}
+	close(start)
+	wg.Wait()
+	close(errs)
+	for err := range errs {
+		if err != nil {
+			t.Fatalf("grade: %v", err)
+		}
+	}
+	var actions int
+	if err := s.db.QueryRow(`SELECT actions FROM user_daily_activity WHERE user_id = ? AND day = ?`,
+		id, "2026-09-29").Scan(&actions); err != nil {
+		t.Fatalf("activity row: %v", err)
+	}
+	if actions != 1 {
+		t.Fatalf("actions = %d after %d simultaneous grades of one card, want 1", actions, taps)
+	}
+}
