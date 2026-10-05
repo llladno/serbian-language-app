@@ -878,6 +878,13 @@ func (u *UserStore) AddAttempt(a Attempt, now time.Time) error {
 	}
 	defer tx.Rollback()
 
+	// Serialise this learner's attempts: without the lock two concurrent first
+	// submissions of one exercise (a double-clicked "check") both read prior = 0
+	// and both count an action.
+	if err := lockUserTx(tx, u.user); err != nil {
+		return fmt.Errorf("add attempt: %w", err)
+	}
+
 	var prior int
 	if err := tx.QueryRow(`SELECT COUNT(*) FROM attempts WHERE user_id = ? AND exercise_id = ?`,
 		u.user, a.ExerciseID).Scan(&prior); err != nil {

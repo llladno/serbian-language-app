@@ -2,6 +2,7 @@ package store
 
 import (
 	"strconv"
+	"sync"
 	"testing"
 	"time"
 
@@ -309,5 +310,53 @@ func TestRepairIsOnlyForPastDays(t *testing.T) {
 	s.db.QueryRow(`SELECT COUNT(*) FROM streak_repairs WHERE user_id = ?`, id).Scan(&n)
 	if n != 1 {
 		t.Fatalf("%d repair rows, want 1", n)
+	}
+}
+
+// Meaningful on Postgres only: SQLite serialises writers, so the race this
+// guards against cannot occur there.
+func TestConcurrentFirstAttemptsCountOnce(t *testing.T) {
+	if !IsPostgresDSN(testDSN()) {
+		t.Skip("the first-attempt race needs concurrent writers; SQLite serialises them")
+	}
+	s := newStore(t)
+	loc := belgrade(t)
+	id, _ := s.CreateUser("Двойной клик")
+	u := s.User(id)
+	at := time.Date(2026, 9, 29, 10, 0, 0, 0, loc)
+
+	const clicks = 12
+	var wg sync.WaitGroup
+	errs := make(chan error, clicks)
+	start := make(chan struct{})
+	for i := 0; i < clicks; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			<-start
+			errs <- u.AddAttempt(Attempt{ExerciseID: "01.1", Lesson: "01", Block: "a", Answer: "x", Correct: true}, at)
+		}()
+	}
+	close(start)
+	wg.Wait()
+	close(errs)
+	for err := range errs {
+		if err != nil {
+			t.Fatalf("attempt: %v", err)
+		}
+	}
+
+	var actions int
+	if err := s.db.QueryRow(`SELECT actions FROM user_daily_activity WHERE user_id = ? AND day = ?`,
+		id, "2026-09-29").Scan(&actions); err != nil {
+		t.Fatalf("activity row: %v", err)
+	}
+	if actions != 1 {
+		t.Fatalf("actions = %d after %d simultaneous first attempts at one exercise, want 1", actions, clicks)
+	}
+	var rows int
+	s.db.QueryRow(`SELECT COUNT(*) FROM attempts WHERE user_id = ?`, id).Scan(&rows)
+	if rows != clicks {
+		t.Fatalf("%d attempt rows, want %d (every answer is still recorded)", rows, clicks)
 	}
 }

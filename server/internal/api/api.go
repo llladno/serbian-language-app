@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
+	"log"
 	"math/rand"
 	"net/http"
 	"sort"
@@ -470,9 +471,19 @@ func (h handlers) checkExercise(w http.ResponseWriter, r *http.Request) {
 		correct = res.OK
 	}
 
-	_ = us.AddAttempt(store.Attempt{
+	// The check result is already computed and correct; a failure to record it
+	// (or to count it toward the daily goal, which happens in the same
+	// transaction) must not turn a good answer into an error page. It must not
+	// be silent either: the learner's progress is not being saved.
+	if err := us.AddAttempt(store.Attempt{
 		ExerciseID: exID, Lesson: lesson, Block: block, Answer: recordAnswer, Correct: correct,
-	}, now)
+	}, now); err != nil {
+		uid := ""
+		if ac, ok := authFrom(r); ok {
+			uid = ac.UserID
+		}
+		log.Printf("check: record attempt: user %q exercise %q lesson %q: %v", uid, exID, lesson, err)
+	}
 	if st, _ := us.LessonStatus(lesson); st != "done" {
 		_ = us.SetLessonStatus(lesson, "in_progress", now)
 	}

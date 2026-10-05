@@ -7,6 +7,23 @@ import (
 	"time"
 )
 
+// lockUserTx takes a row lock on the user for the rest of the transaction, so
+// two transactions for the same learner run one after the other. It is how a
+// check-then-write on per-user state (is this the first attempt? is the balance
+// enough?) stays correct under concurrent requests. Postgres only: SQLite
+// already serialises writers. No table references users, so nothing else can
+// be waiting on this row while holding a lock this transaction needs.
+func lockUserTx(tx *dbtx, userID string) error {
+	if !tx.pg {
+		return nil
+	}
+	var id string
+	if err := tx.QueryRow(`SELECT id FROM users WHERE id = ? FOR UPDATE`, userID).Scan(&id); err != nil {
+		return fmt.Errorf("lock user %s: %w", userID, err)
+	}
+	return nil
+}
+
 // recordActionTx counts one action toward the user's daily goal and, if this
 // action is the one that met the goal, pays the streak drip — in the caller's
 // transaction, so the action and its payout commit together.
