@@ -18,6 +18,7 @@ func init() {
 	registerHook(3, migrate003)
 	registerHook(4, migrate004)
 	registerHook(7, migrate007)
+	registerHook(15, migrate015)
 }
 
 // migrate002 fills users_new with a generated id per legacy row, re-keys the
@@ -489,5 +490,174 @@ func migrate007(tx *dbtx, pg bool) error {
 			return fmt.Errorf("seed bot message %s: %w", key, err)
 		}
 	}
+	return nil
+}
+
+// migrate015 reconstructs the currency feature's derived history
+// (user_daily_activity and user_answer_streak) from attempts and reviews, so
+// nobody starts at zero on deploy day. A hook-only migration: it needs no
+// schema of its own, and a version of its own guarantees it runs even on a
+// database that already applied 013 (the dev ./data/app.db did, long before
+// this hook existed); the runner applies every unrecorded version in
+// ascending order, so it also runs on a database already at 016.
+//
+// WRITES NO LEDGER ROWS, deliberately. This reconstructs history; it does not
+// pay for it. Retroactive streak drip handed to every account on deploy day
+// is exactly the mistake an append-only ledger cannot undo. Do not "complete"
+// the backfill by crediting anything.
+//
+// Which counting rule is applied. Going forward a review counts as an action
+// only when (a) the review queue would have served the card at that moment and
+// (b) no earlier review of that card exists in the learner's local day. This
+// backfill applies (b) only. (a) is NOT applied, and that is a deliberate gap,
+// not an oversight: it is not derivable from stored data. srs_cards keeps only
+// a card's current due date; its due date at each historical grade was never
+// stored, and approximating it from today's srs_cards state would silently
+// mis-credit whole histories according to where a card happens to sit now,
+// which is worse than skipping the check. The cap (b) is the half that prevents
+// gifting inflated streaks; the due check mostly excluded farming, and before
+// this feature nobody had a reason to farm: the UI only ever offered cards
+// from the queue, so nearly every historical review was of a due card.
+//
+// Days are cut in Europe/Belgrade for everyone, since no historical timezone
+// exists, and the same zone buckets both the per-day action counts and the
+// per-card-per-day cap so the two agree. Goals are the current daily_goal
+// setting, frozen into each row exactly as a live first action would.
+//
+// Existing rows are never overwritten (ON CONFLICT DO NOTHING): anything the
+// live code already wrote on a database that ran it before this hook is
+// authoritative.
+func migrate015(tx *dbtx, pg bool) error {
+	loc, err := time.LoadLocation(fallbackTZ)
+	if err != nil {
+		// A Go build without tzdata; same degradation as userLocation.
+		loc = time.UTC
+	}
+	set, err := economySettings(tx)
+	if err != nil {
+		return fmt.Errorf("backfill: %w", err)
+	}
+
+	// counts[userID][day] = actions
+	counts := map[string]map[string]int{}
+	bump := func(userID, day string) {
+		if counts[userID] == nil {
+			counts[userID] = map[string]int{}
+		}
+		counts[userID][day]++
+	}
+	localDay := func(iso string) (string, bool) {
+		ts, err := time.Parse(time.RFC3339, iso)
+		if err != nil {
+			return "", false
+		}
+		return ts.In(loc).Format(dateFmt), true
+	}
+	unparseable := 0
+
+	// Attempts, oldest first per user. id is the insertion order AddAttempt
+	// relied on for "first", and the answer streak is a sequence, so one scan
+	// serves both: the first occurrence of an exercise is the counted action
+	// and the one that moves the streak; later ones are skipped.
+	type run struct{ current, best int }
+	runs := map[string]*run{}
+	seen := map[string]map[string]bool{}
+	rows, err := tx.Query(`SELECT user_id, exercise_id, correct, attempted_at FROM attempts
+		ORDER BY user_id, id`)
+	if err != nil {
+		return fmt.Errorf("backfill: read attempts: %w", err)
+	}
+	for rows.Next() {
+		var userID, exID, at string
+		var correct int
+		if err := rows.Scan(&userID, &exID, &correct, &at); err != nil {
+			rows.Close()
+			return fmt.Errorf("backfill: scan attempt: %w", err)
+		}
+		if seen[userID] == nil {
+			seen[userID] = map[string]bool{}
+		}
+		if seen[userID][exID] {
+			continue
+		}
+		seen[userID][exID] = true
+
+		if day, ok := localDay(at); ok {
+			bump(userID, day)
+		} else {
+			unparseable++
+		}
+		r := runs[userID]
+		if r == nil {
+			r = &run{}
+			runs[userID] = r
+		}
+		if correct == 1 {
+			r.current++
+			if r.current > r.best {
+				r.best = r.current
+			}
+		} else {
+			r.current = 0
+		}
+	}
+	if err := rows.Err(); err != nil {
+		rows.Close()
+		return fmt.Errorf("backfill: iterate attempts: %w", err)
+	}
+	rows.Close()
+
+	// Reviews: one counted per (user, card, local day). See the rule above.
+	type cardDay struct{ userID, cardID, day string }
+	counted := map[cardDay]bool{}
+	revs, err := tx.Query(`SELECT user_id, card_id, reviewed_at FROM reviews`)
+	if err != nil {
+		return fmt.Errorf("backfill: read reviews: %w", err)
+	}
+	for revs.Next() {
+		var userID, cardID, at string
+		if err := revs.Scan(&userID, &cardID, &at); err != nil {
+			revs.Close()
+			return fmt.Errorf("backfill: scan review: %w", err)
+		}
+		day, ok := localDay(at)
+		if !ok {
+			unparseable++
+			continue
+		}
+		k := cardDay{userID, cardID, day}
+		if counted[k] {
+			continue
+		}
+		counted[k] = true
+		bump(userID, day)
+	}
+	if err := revs.Err(); err != nil {
+		revs.Close()
+		return fmt.Errorf("backfill: iterate reviews: %w", err)
+	}
+	revs.Close()
+
+	for userID, days := range counts {
+		for day, n := range days {
+			if _, err := tx.Exec(`INSERT INTO user_daily_activity (user_id, day, actions, goal)
+				VALUES (?, ?, ?, ?) ON CONFLICT (user_id, day) DO NOTHING`,
+				userID, day, n, set.DailyGoal); err != nil {
+				return fmt.Errorf("backfill: write activity %s/%s: %w", userID, day, err)
+			}
+		}
+	}
+
+	now := time.Now().UTC().Format(time.RFC3339)
+	for userID, r := range runs {
+		if _, err := tx.Exec(`INSERT INTO user_answer_streak (user_id, current, best, updated_at)
+			VALUES (?, ?, ?, ?) ON CONFLICT (user_id) DO NOTHING`,
+			userID, r.current, r.best, now); err != nil {
+			return fmt.Errorf("backfill: write answer streak %s: %w", userID, err)
+		}
+	}
+
+	log.Printf("migrate015: backfilled activity for %d users and answer streaks for %d users (%d rows with an unparseable timestamp skipped from day counts)",
+		len(counts), len(runs), unparseable)
 	return nil
 }

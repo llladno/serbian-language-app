@@ -28,17 +28,25 @@ func mustExec(t *testing.T, s *Store, q string, a ...any) {
 }
 
 // openPreMigration002Store returns a Store whose database has migration 001
-// applied but not 002, on whichever backend testDSN() selects. On Postgres it
-// drops and recreates the "public" schema first, so migrate002's row-copy path
-// (the []any scan-then-reinsert) is exercised against a real pgx connection; a
-// t.Cleanup rebuilds the full schema afterwards for the rest of the suite.
+// applied but not 002. See openStoreAtVersion.
 func openPreMigration002Store(t *testing.T) *Store {
+	t.Helper()
+	return openStoreAtVersion(t, 1)
+}
+
+// openStoreAtVersion returns a Store whose database has every migration with
+// version <= max applied and nothing later, on whichever backend testDSN()
+// selects, so a test can seed rows and then run the remaining migrations. On
+// Postgres it drops and recreates the "public" schema first, so a migration's
+// hook runs against a real pgx connection; a t.Cleanup rebuilds the full
+// schema afterwards for the rest of the suite.
+func openStoreAtVersion(t *testing.T, max int) *Store {
 	t.Helper()
 	dsn := testDSN()
 	if !IsPostgresDSN(dsn) {
 		s := &Store{db: mustOpenRaw(t)}
-		if err := s.runMigrationsUpTo(1); err != nil {
-			t.Fatalf("migrate up to 1: %v", err)
+		if err := s.runMigrationsUpTo(max); err != nil {
+			t.Fatalf("migrate up to %d: %v", max, err)
 		}
 		return s
 	}
@@ -59,7 +67,7 @@ func openPreMigration002Store(t *testing.T) *Store {
 	reset()
 	t.Cleanup(func() {
 		reset()
-		restored, err := Open(dsn) // reapplies 001+002 for the next test
+		restored, err := Open(dsn) // reapplies every migration for the next test
 		if err != nil {
 			t.Fatalf("restore schema: %v", err)
 		}
@@ -67,8 +75,8 @@ func openPreMigration002Store(t *testing.T) *Store {
 		db.Close()
 	})
 	s := &Store{db: &database{sqlDB: db, pg: true}}
-	if err := s.runMigrationsUpTo(1); err != nil {
-		t.Fatalf("migrate up to 1: %v", err)
+	if err := s.runMigrationsUpTo(max); err != nil {
+		t.Fatalf("migrate up to %d: %v", max, err)
 	}
 	return s
 }

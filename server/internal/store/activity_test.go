@@ -1,6 +1,9 @@
 package store
 
 import (
+	"database/sql"
+	"errors"
+	"fmt"
 	"strconv"
 	"sync"
 	"testing"
@@ -693,5 +696,253 @@ func TestAnswerStreakIgnoresRepeatsAndReviews(t *testing.T) {
 	cur, best, _ := u.AnswerStreak()
 	if cur != 1 || best != 1 {
 		t.Fatalf("repeats or a review moved the streak: current, best = %d, %d; want 1, 1", cur, best)
+	}
+}
+
+// seedAttempt inserts a raw attempt row, as history written before the
+// currency feature existed (no counting, no streak bookkeeping).
+func seedAttempt(t *testing.T, s *Store, userID, exID string, correct bool, at string) {
+	t.Helper()
+	c := 0
+	if correct {
+		c = 1
+	}
+	mustExec(t, s, `INSERT INTO attempts (user_id, exercise_id, lesson, block, answer, correct, attempted_at)
+		VALUES (?, ?, '01', 'a', 'x', ?, ?)`, userID, exID, c, at)
+}
+
+// seedReview inserts a raw review row for the same purpose.
+func seedReview(t *testing.T, s *Store, userID, cardID, at string) {
+	t.Helper()
+	mustExec(t, s, `INSERT INTO reviews (user_id, card_id, grade, reviewed_at) VALUES (?, ?, 3, ?)`,
+		userID, cardID, at)
+}
+
+// activityOn returns the backfilled action count for a day, or -1 when there
+// is no row at all.
+func activityOn(t *testing.T, s *Store, userID, day string) int {
+	t.Helper()
+	var n int
+	err := s.db.QueryRow(`SELECT actions FROM user_daily_activity WHERE user_id = ? AND day = ?`,
+		userID, day).Scan(&n)
+	if errors.Is(err, sql.ErrNoRows) {
+		return -1
+	}
+	if err != nil {
+		t.Fatalf("activity on %s: %v", day, err)
+	}
+	return n
+}
+
+func TestBackfillReconstructsActivityAndAnswerStreak(t *testing.T) {
+	s := openStoreAtVersion(t, 14) // everything up to and including the seed, but not the backfill
+	id, _ := s.CreateUser("История")
+
+	// Two days of history, written before the backfill version runs: 10 first
+	// attempts on the 27th (one wrong at the end), 10 reviews on the 28th.
+	for i := 0; i < 10; i++ {
+		seedAttempt(t, s, id, "01."+strconv.Itoa(i), i != 9, "2026-09-27T09:00:00Z")
+	}
+	for i := 0; i < 10; i++ {
+		seedReview(t, s, id, "vocab:"+strconv.Itoa(i), "2026-09-28T09:00:00Z")
+	}
+
+	if err := s.runMigrations(); err != nil {
+		t.Fatalf("migrate to head: %v", err)
+	}
+
+	if got := activityOn(t, s, id, "2026-09-27"); got != 10 {
+		t.Fatalf("27th actions = %d, want 10", got)
+	}
+	if got := activityOn(t, s, id, "2026-09-28"); got != 10 {
+		t.Fatalf("28th actions = %d, want 10", got)
+	}
+
+	u := s.User(id)
+	cur, best, err := u.AnswerStreak()
+	if err != nil {
+		t.Fatalf("answer streak: %v", err)
+	}
+	if best != 9 {
+		t.Fatalf("best = %d, want 9 (nine correct, then one wrong)", best)
+	}
+	if cur != 0 {
+		t.Fatalf("current = %d, want 0 (the last answer was wrong)", cur)
+	}
+
+	// The point of the backfill: two goal-meeting days are a two-day streak,
+	// not zero, on the first day the feature is live.
+	streak, err := u.StreakDays(time.Date(2026, 9, 29, 10, 0, 0, 0, belgrade(t)))
+	if err != nil {
+		t.Fatalf("streak days: %v", err)
+	}
+	if streak != 2 {
+		t.Fatalf("streak = %d, want 2", streak)
+	}
+
+	// The backfill must not mint currency: it reconstructs history only. Check
+	// the ledger itself, not just the balance, so a +N/-N pair cannot hide.
+	if bal, _ := s.Balance(id); bal != 0 {
+		t.Fatalf("balance = %d after backfill, want 0", bal)
+	}
+	var ledgerRows int
+	if err := s.db.QueryRow(`SELECT COUNT(*) FROM currency_ledger`).Scan(&ledgerRows); err != nil {
+		t.Fatalf("count ledger: %v", err)
+	}
+	if ledgerRows != 0 {
+		t.Fatalf("currency_ledger has %d rows after backfill, want 0", ledgerRows)
+	}
+}
+
+// Ten reviews of one card on one day are one action, not ten: the per-card,
+// per-local-day cap is the half of the live counting rule the backfill can
+// reconstruct, and the half that stops inflated streaks being gifted.
+func TestBackfillCountsOneReviewPerCardPerDay(t *testing.T) {
+	s := openStoreAtVersion(t, 14)
+	id, _ := s.CreateUser("Зубрила")
+	for i := 0; i < 10; i++ {
+		seedReview(t, s, id, "vocab:1", "2026-09-28T09:"+fmt.Sprintf("%02d", i)+":00Z")
+	}
+	// A second card the same day adds one more; the same card on the next day
+	// is a new day's action.
+	seedReview(t, s, id, "vocab:2", "2026-09-28T10:00:00Z")
+	seedReview(t, s, id, "vocab:1", "2026-09-29T09:00:00Z")
+
+	if err := s.runMigrations(); err != nil {
+		t.Fatalf("migrate to head: %v", err)
+	}
+	if got := activityOn(t, s, id, "2026-09-28"); got != 2 {
+		t.Fatalf("28th actions = %d, want 2 (ten grades of one card + one of another)", got)
+	}
+	if got := activityOn(t, s, id, "2026-09-29"); got != 1 {
+		t.Fatalf("29th actions = %d, want 1", got)
+	}
+}
+
+// The per-card buckets are cut at Belgrade midnight, the same zone the day
+// rows use, so the two halves of the reconstruction agree on where a day ends.
+// Belgrade is UTC+2 in September: 22:30Z on the 27th is already the 28th.
+func TestBackfillBucketsReviewsInBelgradeDays(t *testing.T) {
+	s := openStoreAtVersion(t, 14)
+	id, _ := s.CreateUser("Полуночник")
+
+	// Same UTC day, different Belgrade days: two actions.
+	seedReview(t, s, id, "vocab:1", "2026-09-27T21:30:00Z") // 27th 23:30 local
+	seedReview(t, s, id, "vocab:1", "2026-09-27T22:30:00Z") // 28th 00:30 local
+	// Different UTC days, same Belgrade day (the 29th): one action.
+	seedReview(t, s, id, "vocab:2", "2026-09-28T22:30:00Z") // 29th 00:30 local
+	seedReview(t, s, id, "vocab:2", "2026-09-29T21:30:00Z") // 29th 23:30 local
+
+	if err := s.runMigrations(); err != nil {
+		t.Fatalf("migrate to head: %v", err)
+	}
+	if got := activityOn(t, s, id, "2026-09-27"); got != 1 {
+		t.Fatalf("27th actions = %d, want 1", got)
+	}
+	if got := activityOn(t, s, id, "2026-09-28"); got != 1 {
+		t.Fatalf("28th actions = %d, want 1", got)
+	}
+	if got := activityOn(t, s, id, "2026-09-29"); got != 1 {
+		t.Fatalf("29th actions = %d, want 1 (two grades of one card inside one local day)", got)
+	}
+}
+
+// Only the first attempt at an exercise counts, for the day count and for the
+// answer streak alike, and "first" means the earliest attempt, not the one with
+// the lowest correct flag.
+func TestBackfillReplaysFirstAttemptsOnly(t *testing.T) {
+	s := openStoreAtVersion(t, 14)
+	id, _ := s.CreateUser("Повторщик")
+
+	seedAttempt(t, s, id, "01.1", true, "2026-09-27T09:00:00Z")
+	seedAttempt(t, s, id, "01.2", true, "2026-09-27T09:01:00Z")
+	seedAttempt(t, s, id, "01.3", true, "2026-09-27T09:02:00Z")
+	// Re-solves: 01.1 gets answered wrong afterwards, on a later day too. A
+	// MIN(correct) over the exercise would read 01.1 as wrong and break the run.
+	seedAttempt(t, s, id, "01.1", false, "2026-09-27T09:03:00Z")
+	seedAttempt(t, s, id, "01.2", true, "2026-09-28T09:00:00Z")
+	// And the reverse: wrong first, right on the retry — the first one stands.
+	seedAttempt(t, s, id, "01.4", false, "2026-09-28T10:00:00Z")
+	seedAttempt(t, s, id, "01.4", true, "2026-09-28T10:01:00Z")
+
+	if err := s.runMigrations(); err != nil {
+		t.Fatalf("migrate to head: %v", err)
+	}
+	if got := activityOn(t, s, id, "2026-09-27"); got != 3 {
+		t.Fatalf("27th actions = %d, want 3 (re-solves do not count)", got)
+	}
+	if got := activityOn(t, s, id, "2026-09-28"); got != 1 {
+		t.Fatalf("28th actions = %d, want 1 (only 01.4's first attempt)", got)
+	}
+	cur, best, err := s.User(id).AnswerStreak()
+	if err != nil {
+		t.Fatalf("answer streak: %v", err)
+	}
+	if best != 3 || cur != 0 {
+		t.Fatalf("streak = (cur %d, best %d), want (0, 3)", cur, best)
+	}
+}
+
+// Frozen goals come from the seeded daily_goal, the same value a live first
+// action of the day would freeze into its row, and users without any history
+// get no rows at all.
+func TestBackfillFreezesTheConfiguredGoalAndSkipsEmptyUsers(t *testing.T) {
+	s := openStoreAtVersion(t, 14)
+	t.Cleanup(func() { restoreEconomySettings(t, s) })
+	mustExec(t, s, `UPDATE economy_settings SET value = '3' WHERE key = 'daily_goal'`)
+	id, _ := s.CreateUser("Целеустремлённый")
+	idle, _ := s.CreateUser("Тихоня")
+	seedReview(t, s, id, "vocab:1", "2026-09-28T09:00:00Z")
+
+	if err := s.runMigrations(); err != nil {
+		t.Fatalf("migrate to head: %v", err)
+	}
+	var goal int
+	if err := s.db.QueryRow(`SELECT goal FROM user_daily_activity WHERE user_id = ? AND day = ?`,
+		id, "2026-09-28").Scan(&goal); err != nil {
+		t.Fatalf("read goal: %v", err)
+	}
+	if goal != 3 {
+		t.Fatalf("goal = %d, want the configured 3", goal)
+	}
+	var rows int
+	if err := s.db.QueryRow(`SELECT COUNT(*) FROM user_daily_activity WHERE user_id = ?`, idle).Scan(&rows); err != nil {
+		t.Fatal(err)
+	}
+	if rows != 0 {
+		t.Fatalf("idle user has %d activity rows, want 0", rows)
+	}
+}
+
+// Version 15 must run on a database that has already moved past it: the dev
+// database applied 013 and 016 long before the backfill existed. The runner
+// applies every unrecorded version in ascending order, so 015 still fires.
+func TestBackfillRunsOnADatabaseAlreadyAtVersion016(t *testing.T) {
+	s := openStoreAtVersion(t, 14)
+	// Apply 016 by hand, out of order, exactly as that database got it.
+	body, err := migrationFS.ReadFile("migrations/016_reviews_card_day_idx.sql")
+	if err != nil {
+		t.Fatalf("read 016: %v", err)
+	}
+	for _, stmt := range splitSQL(string(body)) {
+		mustExec(t, s, stmt)
+	}
+	mustExec(t, s, `INSERT INTO schema_migrations (version, applied_at) VALUES (16, '2026-09-30T00:00:00Z')`)
+
+	id, _ := s.CreateUser("Старожил")
+	seedReview(t, s, id, "vocab:1", "2026-09-28T09:00:00Z")
+
+	if err := s.runMigrations(); err != nil {
+		t.Fatalf("migrate to head: %v", err)
+	}
+	var applied int
+	if err := s.db.QueryRow(`SELECT COUNT(*) FROM schema_migrations WHERE version = 15`).Scan(&applied); err != nil {
+		t.Fatal(err)
+	}
+	if applied != 1 {
+		t.Fatalf("version 15 recorded %d times, want 1", applied)
+	}
+	if got := activityOn(t, s, id, "2026-09-28"); got != 1 {
+		t.Fatalf("28th actions = %d, want 1", got)
 	}
 }
