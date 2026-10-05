@@ -29,9 +29,13 @@ func lockUserTx(tx *dbtx, userID string) error {
 // transaction, so the action and its payout commit together.
 //
 // "One action" is deliberately narrow: the first attempt at a given exercise
-// (see AddAttempt) and every SRS review (see GradeCard). Re-solving a finished
-// lesson is worth nothing, which is what stops the daily goal, the answer
-// streak and every counting quest from being farmed on lesson 00.
+// (see AddAttempt) and an SRS review of a card the review queue would have
+// served at that moment (see GradeCard and servedByQueue). Re-solving a
+// finished lesson and grading a card ahead of its schedule are worth nothing,
+// which is what stops the daily goal, the answer streak and every counting
+// quest from being farmed. Note the limit of the second rule: it follows the
+// queue's own definition of "due", so a card that is still due after a grade
+// (Again on a learning card stays due today) can count again.
 func recordActionTx(tx *dbtx, userID string, now time.Time) error {
 	set, err := economySettings(tx)
 	if err != nil {

@@ -3,6 +3,7 @@ package api
 import (
 	"fmt"
 	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/grisha/serbian-app/server/internal/content"
@@ -174,5 +175,16 @@ func TestReviewGradeGramRejectsBadItemIndex(t *testing.T) {
 	rr := do(h, "POST", "/api/review/grade-gram", `{"card_id":"gram:prezent-am","item_index":99,"answer":"x"}`)
 	if rr.Code != 404 {
 		t.Fatalf("code = %d, want 404: %s", rr.Code, rr.Body)
+	}
+}
+
+// A valid grammar card the learner does not hold (the queue was never fetched,
+// so nothing was seeded) is still the learner's "unknown card", not a fault.
+func TestReviewGradeGramUnheldCardIs404(t *testing.T) {
+	h, _ := newTestAPI(t)
+
+	rr := do(h, "POST", "/api/review/grade-gram", `{"card_id":"gram:prezent-am","item_index":0,"answer":"x"}`)
+	if rr.Code != 404 || !strings.Contains(rr.Body.String(), "unknown card") {
+		t.Fatalf("%d %s, want 404 unknown card", rr.Code, rr.Body)
 	}
 }

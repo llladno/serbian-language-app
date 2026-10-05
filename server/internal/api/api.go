@@ -2,6 +2,7 @@
 package api
 
 import (
+	"database/sql"
 	"encoding/json"
 	"errors"
 	"io"
@@ -917,7 +918,7 @@ func (h handlers) reviewGrade(w http.ResponseWriter, r *http.Request) {
 	}
 	card, err := us.GradeCard(req.CardID, srs.Grade(req.Grade), h.Now())
 	if err != nil {
-		fail(w, 404, "unknown card")
+		failGrade(w, r, req.CardID, err)
 		return
 	}
 	due := ""
@@ -925,6 +926,23 @@ func (h handlers) reviewGrade(w http.ResponseWriter, r *http.Request) {
 		due = card.Due.Format("2006-01-02")
 	}
 	writeJSON(w, 200, gradeResultDTO{Due: due, IntervalDays: card.IntervalDays, State: string(card.State)})
+}
+
+// failGrade answers a failed GradeCard. Only a missing card is the learner's
+// problem (404); GradeCard also counts the review toward the daily goal in the
+// same transaction, so any other error is a server fault. It is logged with
+// enough to find the learner and the card, never reported as a missing card.
+func failGrade(w http.ResponseWriter, r *http.Request, cardID string, err error) {
+	if errors.Is(err, sql.ErrNoRows) {
+		fail(w, 404, "unknown card")
+		return
+	}
+	uid := ""
+	if ac, ok := authFrom(r); ok {
+		uid = ac.UserID
+	}
+	log.Printf("review: grade card: user %q card %q: %v", uid, cardID, err)
+	fail(w, 500, "could not record the review")
 }
 
 type gramCheckRequest struct {
@@ -974,7 +992,7 @@ func (h handlers) reviewGradeGram(w http.ResponseWriter, r *http.Request) {
 	}
 	updated, err := us.GradeCard(req.CardID, grade, h.Now())
 	if err != nil {
-		fail(w, 404, "unknown card")
+		failGrade(w, r, req.CardID, err)
 		return
 	}
 	due := ""

@@ -503,12 +503,20 @@ func meetDailyGoal(t *testing.T, u *UserStore, tag string, at time.Time) {
 
 func TestStreakDays(t *testing.T) {
 	_, u := newUser(t)
-	u.EnsureCards([]CardSeed{{"vocab:x", "vocab", "x"}})
-	// A day is active once it has met the daily goal (10 counted actions); every
-	// SRS review counts, so ten reviews of one card make a day.
+	// A day is active once it has met the daily goal (10 counted actions). A
+	// review counts only when the queue would have served the card, so ten
+	// actions need ten different cards: learned yesterday, they are due today.
+	var seeds []CardSeed
+	for i := 0; i < 10; i++ {
+		id := fmt.Sprintf("w%d", i)
+		seeds = append(seeds, CardSeed{CardID: "vocab:" + id, Kind: "vocab", RefID: id})
+	}
+	if err := u.EnsureCards(seeds); err != nil {
+		t.Fatal(err)
+	}
 	for _, d := range []time.Time{day0.AddDate(0, 0, -1), day0} {
-		for i := 0; i < 10; i++ {
-			if _, err := u.GradeCard("vocab:x", srs.Good, d); err != nil {
+		for _, c := range seeds {
+			if _, err := u.GradeCard(c.CardID, srs.Good, d); err != nil {
 				t.Fatal(err)
 			}
 		}

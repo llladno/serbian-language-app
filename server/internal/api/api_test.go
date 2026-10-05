@@ -1,10 +1,16 @@
 package api
 
 import (
+	"context"
+	"database/sql"
 	"encoding/json"
+	"errors"
+	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"strings"
 	"testing"
 	"time"
@@ -718,5 +724,39 @@ func TestCheckOutsideDialogueHasNoLine(t *testing.T) {
 		"/api/lessons/90/exercises/90.2.1/check", `{"answer":"Da"}`))
 	if res.Line != "" || res.LineRU != "" {
 		t.Errorf("plain exercise leaked a dialogue line: %q / %q", res.Line, res.LineRU)
+	}
+}
+
+// failGrade is the one place a failed GradeCard becomes a response. Only a
+// missing card is a 404; anything else (GradeCard also counts the review in
+// the same transaction) must be a 500 and must be logged. A real database
+// fault cannot be induced from this package without fault injection, so the
+// mapping is exercised directly.
+func TestFailGradeMapsErrors(t *testing.T) {
+	var logged strings.Builder
+	log.SetOutput(&logged)
+	t.Cleanup(func() { log.SetOutput(os.Stderr) })
+
+	r := httptest.NewRequest("POST", "/api/review/grade", nil)
+	r = r.WithContext(context.WithValue(r.Context(), authCtxKey, authCtx{UserID: "usr_abc"}))
+
+	rr := httptest.NewRecorder()
+	failGrade(rr, r, "vocab:nope", fmt.Errorf("load card vocab:nope: %w", sql.ErrNoRows))
+	if rr.Code != 404 || !strings.Contains(rr.Body.String(), "unknown card") {
+		t.Fatalf("missing card: %d %s, want 404 unknown card", rr.Code, rr.Body.String())
+	}
+	if logged.Len() != 0 {
+		t.Fatalf("a missing card was logged as a fault: %q", logged.String())
+	}
+
+	rr = httptest.NewRecorder()
+	failGrade(rr, r, "vocab:zdravo", errors.New("insert ledger entry: boom"))
+	if rr.Code != 500 || strings.Contains(rr.Body.String(), "unknown card") {
+		t.Fatalf("server fault: %d %s, want 500 and not 'unknown card'", rr.Code, rr.Body.String())
+	}
+	for _, want := range []string{"usr_abc", "vocab:zdravo", "boom"} {
+		if !strings.Contains(logged.String(), want) {
+			t.Errorf("log %q lacks %q", logged.String(), want)
+		}
 	}
 }

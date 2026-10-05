@@ -31,7 +31,7 @@ func answer(t *testing.T, u *UserStore, exID string, correct bool, at time.Time)
 	}
 }
 
-func TestDayCountsOnlyFirstAttemptsAndAllReviews(t *testing.T) {
+func TestDayCountsFirstAttemptsAndDueReviewsOnly(t *testing.T) {
 	s := newStore(t)
 	loc := belgrade(t)
 	id, _ := s.CreateUser("Актив")
@@ -42,8 +42,10 @@ func TestDayCountsOnlyFirstAttemptsAndAllReviews(t *testing.T) {
 	answer(t, u, "01.1", true, at) // same exercise again: must not count
 	answer(t, u, "01.2", false, at)
 
-	// Every SRS review counts, including repeated reviews of the same card:
-	// the scheduler decides when a card is due, so they cannot be farmed.
+	// A review counts only when the queue would have served the card. The first
+	// grade of a new card does; grading the same card again straight away is
+	// ahead of its schedule (Good moved it to tomorrow) and earns nothing,
+	// though it is still recorded.
 	if err := u.EnsureCards([]CardSeed{{CardID: "vocab:x", Kind: "vocab", RefID: "x"}}); err != nil {
 		t.Fatalf("seed card: %v", err)
 	}
@@ -60,11 +62,90 @@ func TestDayCountsOnlyFirstAttemptsAndAllReviews(t *testing.T) {
 	if err != nil {
 		t.Fatalf("activity row: %v", err)
 	}
-	if actions != 4 {
-		t.Fatalf("actions = %d, want 4 (two first attempts + two reviews; the repeated attempt must not count)", actions)
+	if actions != 3 {
+		t.Fatalf("actions = %d, want 3 (two first attempts + the due review; the repeated attempt and the early re-grade must not count)", actions)
 	}
 	if goal != 10 {
 		t.Fatalf("goal = %d, want the seeded 10", goal)
+	}
+	var reviews int
+	if err := s.db.QueryRow(`SELECT COUNT(*) FROM reviews WHERE user_id = ?`, id).Scan(&reviews); err != nil {
+		t.Fatalf("count reviews: %v", err)
+	}
+	if reviews != 2 {
+		t.Fatalf("%d reviews recorded, want 2: an uncounted review is still a review", reviews)
+	}
+}
+
+// The regression guard for review farming: ten grades of one card must not
+// meet the daily goal, extend the streak or pay the drip, yet each grade is
+// still recorded and the schedule still advances.
+func TestGradingOneCardRepeatedlyDoesNotMeetTheGoal(t *testing.T) {
+	s := newStore(t)
+	loc := belgrade(t)
+	id, _ := s.CreateUser("Фермер")
+	u := s.User(id)
+	at := time.Date(2026, 9, 29, 10, 0, 0, 0, loc)
+	if err := u.EnsureCards([]CardSeed{{CardID: "vocab:x", Kind: "vocab", RefID: "x"}}); err != nil {
+		t.Fatalf("seed card: %v", err)
+	}
+
+	var last srs.Card
+	for i := 0; i < 10; i++ {
+		c, err := u.GradeCard("vocab:x", srs.Good, at)
+		if err != nil {
+			t.Fatalf("grade %d: %v", i, err)
+		}
+		last = c
+	}
+
+	var actions int
+	if err := s.db.QueryRow(`SELECT actions FROM user_daily_activity WHERE user_id = ? AND day = ?`,
+		id, "2026-09-29").Scan(&actions); err != nil {
+		t.Fatalf("activity row: %v", err)
+	}
+	if actions != 1 {
+		t.Fatalf("actions = %d after ten grades of one card, want 1 (only the first, new-card grade counts)", actions)
+	}
+	if got, _ := u.StreakDays(at); got != 0 {
+		t.Fatalf("streak = %d, want 0", got)
+	}
+	if bal, _ := s.Balance(id); bal != 0 {
+		t.Fatalf("balance = %d, want 0", bal)
+	}
+	var reviews int
+	s.db.QueryRow(`SELECT COUNT(*) FROM reviews WHERE user_id = ?`, id).Scan(&reviews)
+	if reviews != 10 {
+		t.Fatalf("%d reviews recorded, want 10: grading ahead of schedule stays permitted", reviews)
+	}
+	if last.State != srs.Review || last.Reps != 10 {
+		t.Fatalf("schedule did not advance as before: state %q reps %d, want review/10", last.State, last.Reps)
+	}
+}
+
+func TestOverdueReviewCounts(t *testing.T) {
+	s := newStore(t)
+	loc := belgrade(t)
+	id, _ := s.CreateUser("Долг")
+	u := s.User(id)
+	if err := u.EnsureCards([]CardSeed{{CardID: "vocab:x", Kind: "vocab", RefID: "x"}}); err != nil {
+		t.Fatalf("seed card: %v", err)
+	}
+	// Learned on the 20th, due the 21st, reviewed on the 29th: overdue, so the
+	// queue serves it and the review counts.
+	if _, err := u.GradeCard("vocab:x", srs.Good, time.Date(2026, 9, 20, 10, 0, 0, 0, loc)); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := u.GradeCard("vocab:x", srs.Good, time.Date(2026, 9, 29, 10, 0, 0, 0, loc)); err != nil {
+		t.Fatal(err)
+	}
+	var actions int
+	if err := s.db.QueryRow(`SELECT actions FROM user_daily_activity WHERE user_id = ? AND day = ?`,
+		id, "2026-09-29").Scan(&actions); err != nil {
+		t.Fatalf("activity row: %v", err)
+	}
+	if actions != 1 {
+		t.Fatalf("actions = %d, want 1 for an overdue review", actions)
 	}
 }
 
@@ -358,5 +439,28 @@ func TestConcurrentFirstAttemptsCountOnce(t *testing.T) {
 	s.db.QueryRow(`SELECT COUNT(*) FROM attempts WHERE user_id = ?`, id).Scan(&rows)
 	if rows != clicks {
 		t.Fatalf("%d attempt rows, want %d (every answer is still recorded)", rows, clicks)
+	}
+}
+
+func TestServedByQueue(t *testing.T) {
+	now := time.Date(2026, 9, 29, 10, 0, 0, 0, time.UTC)
+	day := func(d int) time.Time { return time.Date(2026, 9, d, 0, 0, 0, 0, time.UTC) }
+	cases := []struct {
+		name string
+		c    srs.Card
+		want bool
+	}{
+		{"new card", srs.Card{State: srs.New}, true},
+		{"learning, due today", srs.Card{State: srs.Learning, Due: day(29)}, true},
+		{"learning, no due date", srs.Card{State: srs.Learning}, true},
+		{"review, overdue", srs.Card{State: srs.Review, Due: day(20)}, true},
+		{"review, due today", srs.Card{State: srs.Review, Due: day(29)}, true},
+		{"review, due tomorrow", srs.Card{State: srs.Review, Due: day(30)}, false},
+		{"learning, due tomorrow", srs.Card{State: srs.Learning, Due: day(30)}, false},
+	}
+	for _, tc := range cases {
+		if got := servedByQueue(tc.c, now); got != tc.want {
+			t.Errorf("%s: servedByQueue = %v, want %v", tc.name, got, tc.want)
+		}
 	}
 }

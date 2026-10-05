@@ -697,6 +697,23 @@ func scanCard(row interface {
 
 const cardCols = `card_id, kind, ref_id, ease, interval_days, reps, lapses, state, due`
 
+// servedByQueue reports whether the review queue would have offered this card
+// on the day of now: a card that has not been started yet, or a learning or
+// review card that is due today or overdue. It mirrors the WHERE clause in
+// DueQueue (state IN ('learning','review') AND (due IS NULL OR due <= today)),
+// plus the new cards the queue introduces separately; keep the two in step.
+// GradeCard uses it so only a review the learner could legitimately have been
+// asked for counts toward the daily goal.
+func servedByQueue(c srs.Card, now time.Time) bool {
+	switch c.State {
+	case srs.New:
+		return true
+	case srs.Learning, srs.Review:
+		return c.Due.IsZero() || c.Due.Format(dateFmt) <= now.Format(dateFmt)
+	}
+	return false
+}
+
 // DueQueue returns due learning/review cards, plus the vocab cards the
 // caller has decided are next in line (in the given order — the gated,
 // lesson-ordered "new word" introduction lives in the api layer, see
@@ -805,6 +822,8 @@ func (u *UserStore) GradeCard(cardID string, g srs.Grade, now time.Time) (srs.Ca
 	if err != nil {
 		return srs.Card{}, fmt.Errorf("load card %s: %w", cardID, err)
 	}
+	// Decided on the card as it was before this grade moves it.
+	counts := servedByQueue(c.Card, now)
 	updated := srs.Schedule(c.Card, g, now)
 
 	var dueStr any
@@ -820,8 +839,13 @@ func (u *UserStore) GradeCard(cardID string, g srs.Grade, now time.Time) (srs.Ca
 		u.user, cardID, int(g), now.UTC().Format(time.RFC3339)); err != nil {
 		return srs.Card{}, err
 	}
-	if err := recordActionTx(tx, u.user, now); err != nil {
-		return srs.Card{}, err
+	// Grading ahead of schedule is allowed and is recorded and scheduled like any
+	// other review, but it earns nothing: otherwise grading one card ten times
+	// would meet the daily goal.
+	if counts {
+		if err := recordActionTx(tx, u.user, now); err != nil {
+			return srs.Card{}, err
+		}
 	}
 	return updated, tx.Commit()
 }
