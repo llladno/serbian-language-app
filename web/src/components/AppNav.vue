@@ -1,24 +1,17 @@
 <script setup lang="ts">
 import { RouterLink, useRoute } from 'vue-router'
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
-import {
-  GraduationCap,
-  Headphones,
-  Languages,
-  MonitorSmartphone,
-  Moon,
-  Repeat,
-  SunMedium,
-  Trophy,
-  User,
-} from 'lucide-vue-next'
-import { theme, cycleTheme, THEME_META } from '../theme'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { GraduationCap, Headphones, Languages, Repeat, Trophy, User } from 'lucide-vue-next'
 import { useSupportModal } from '../lib/supportModal'
+import { useWalletStore } from '../stores/wallet'
 import SupportModal from './SupportModal.vue'
 import DonateModal from './DonateModal.vue'
+import RewardModal from './RewardModal.vue'
 import NotificationBell from './NotificationBell.vue'
+import FeatherIcon from './FeatherIcon.vue'
 
 const { openModal } = useSupportModal()
+const wallet = useWalletStore()
 
 defineProps<{ name: string; hideTabBar?: boolean }>()
 
@@ -62,9 +55,11 @@ function isActive(to: string) {
   return active.value.startsWith(to)
 }
 
-const THEME_ICON = { system: MonitorSmartphone, light: SunMedium, dark: Moon }
-const themeMeta = computed(() => THEME_META[theme.value])
-const themeIcon = computed(() => THEME_ICON[theme.value])
+// The balance is refetched on every navigation, not just on mount: finishing
+// a lesson or a review can credit the daily drip, and the chip would otherwise
+// still show what the balance was when the app booted.
+onMounted(() => wallet.refresh())
+watch(() => route.path, () => wallet.refresh())
 </script>
 
 <template>
@@ -88,13 +83,15 @@ const themeIcon = computed(() => THEME_ICON[theme.value])
 
       <span class="serbian text-lg font-semibold sm:hidden">ucimo</span>
 
-      <button
-        class="ml-auto flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-[var(--muted)] transition hover:bg-[var(--bg-soft)] hover:text-[var(--fg)]"
-        :title="`Тема: ${themeMeta.label}`"
-        @click="cycleTheme()"
+      <RouterLink
+        to="/quests"
+        class="ml-auto flex h-9 shrink-0 items-center gap-1.5 rounded-full bg-[var(--bg-soft)] px-2.5 text-sm font-bold transition hover:bg-[var(--accent-soft)]"
+        title="Задания и пёрышки"
+        data-test="wallet-chip"
       >
-        <component :is="themeIcon" :size="17" :stroke-width="2.25" />
-      </button>
+        <FeatherIcon :size="15" />
+        <span class="tabular-nums">{{ wallet.balance }}</span>
+      </RouterLink>
 
       <NotificationBell />
 
@@ -137,4 +134,5 @@ const themeIcon = computed(() => THEME_ICON[theme.value])
 
   <SupportModal />
   <DonateModal />
+  <RewardModal />
 </template>

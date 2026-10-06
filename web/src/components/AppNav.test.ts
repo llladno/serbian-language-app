@@ -1,7 +1,10 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { mount } from '@vue/test-utils'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
+import { mount, flushPromises } from '@vue/test-utils'
+import { setActivePinia, createPinia } from 'pinia'
 import AppNav from './AppNav.vue'
 import { useSupportModal } from '../lib/supportModal'
+import { useRewardModal } from '../lib/rewardModal'
+import { api } from '../api'
 
 vi.mock('vue-router', () => ({
   useRoute: () => ({ path: '/profile', meta: {} }),
@@ -9,12 +12,22 @@ vi.mock('vue-router', () => ({
 }))
 
 beforeEach(() => {
+  setActivePinia(createPinia())
   const { open, message, error, sent } = useSupportModal()
   open.value = false
   message.value = ''
   error.value = null
   sent.value = false
+  useRewardModal().closeModal()
+  vi.spyOn(api, 'wallet').mockResolvedValue({
+    balance: 137,
+    currency_one: 'пёрышко',
+    currency_few: 'пёрышка',
+    currency_many: 'пёрышек',
+    streak_days: 4,
+  })
 })
+afterEach(() => vi.restoreAllMocks())
 
 function mountNav() {
   // Teleport's real target (document.body) is outside the wrapper's DOM tree;
@@ -30,5 +43,24 @@ describe('AppNav', () => {
     await w.find('[data-test="open-support"]').trigger('click')
 
     expect(w.find('textarea').exists()).toBe(true)
+  })
+
+  it('shows the wallet balance in the header', async () => {
+    const w = mountNav()
+    await flushPromises()
+
+    expect(w.find('[data-test="wallet-chip"]').text()).toBe('137')
+  })
+
+  it('renders the reward modal, so a claim from any screen can celebrate', async () => {
+    const w = mountNav()
+    await flushPromises()
+    expect(w.find('[data-test="reward-amount"]').exists()).toBe(false)
+
+    useRewardModal().celebrate(15, 'Пройти 5 уроков')
+    await flushPromises()
+
+    expect(w.find('[data-test="reward-quest"]').text()).toBe('Пройти 5 уроков')
+    expect(w.find('[data-test="reward-amount"]').text()).toBe('+15 пёрышек')
   })
 })

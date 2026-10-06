@@ -23,6 +23,7 @@ import LessonView from './views/LessonView.vue'
 import ReviewView from './views/ReviewView.vue'
 import VocabView from './views/VocabView.vue'
 import RatingView from './views/RatingView.vue'
+import QuestsView from './views/QuestsView.vue'
 import { useSessionStore } from './stores/session'
 
 const PUBLIC_AUTH_ROUTES = new Set(['login', 'register', 'verify', 'forgot', 'reset'])
@@ -78,6 +79,7 @@ const router = createRouter({
     { path: '/vocab', name: 'vocab', component: VocabView },
     { path: '/false-friends', redirect: { path: '/vocab', query: { tab: 'traps' } } },
     { path: '/rating', name: 'rating', component: RatingView },
+    { path: '/quests', name: 'quests', component: QuestsView },
   ],
 })
 

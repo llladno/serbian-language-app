@@ -314,3 +314,34 @@ export type TelegramPoll =
   | { status: 'pending' }
   | { status: 'ok'; user?: SessionUser }
   | { status: 'error'; error: string }
+
+// -- Экономика (пёрышки) --
+
+export interface Wallet {
+  balance: number
+  // Three Russian forms of the currency name, straight from the admin panel:
+  // "1 пёрышко", "2 пёрышка", "5 пёрышек". See lib/plural.ts.
+  currency_one: string
+  currency_few: string
+  currency_many: string
+  streak_days: number
+}
+
+export interface Quest {
+  id: number
+  kind: string
+  title: string
+  description: string
+  target: number
+  // Where the learner is now; the server recomputes it on every request, so
+  // it is never behind what the ledger thinks.
+  value: number
+  reward: number
+  done: boolean
+  claimed: boolean
+}
+
+export interface ClaimResult {
+  reward: number
+  balance: number
+}

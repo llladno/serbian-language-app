@@ -1,10 +1,13 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, type Component } from 'vue'
 import { useRouter } from 'vue-router'
-import { Check, Settings, X } from 'lucide-vue-next'
+import { RouterLink } from 'vue-router'
+import { Check, MonitorSmartphone, Moon, Settings, SunMedium, X } from 'lucide-vue-next'
 import { api } from '../api'
 import { palette, setPalette, PALETTE_META, type Palette } from '../palette'
+import { theme, setTheme, THEME_META, type Theme } from '../theme'
 import { useSessionStore } from '../stores/session'
+import { useWalletStore } from '../stores/wallet'
 import { authErrorMessage } from '../lib/authErrors'
 import { useTelegramStart } from '../lib/telegramStart'
 import ProgressDashboard from '../components/ProgressDashboard.vue'
@@ -12,10 +15,13 @@ import PhaseProgressCard from '../components/PhaseProgressCard.vue'
 import LeaderboardCard from '../components/LeaderboardCard.vue'
 import SupportCard from '../components/SupportCard.vue'
 import DonateCard from '../components/DonateCard.vue'
+import FeatherIcon from '../components/FeatherIcon.vue'
+import { pluralRu } from '../lib/plural'
 import type { LeaderRow, Me, Progress, Vocab } from '../types'
 
 const router = useRouter()
 const session = useSessionStore()
+const wallet = useWalletStore()
 
 const me = ref<Me | null>(null)
 const progress = ref<Progress | null>(null)
@@ -49,6 +55,10 @@ async function loadAll() {
     api.progress(),
     api.vocab(),
     api.leaderboard({ limit: 3 }),
+    // The quests teaser is part of the same first paint; its failure is not
+    // worth blocking the page, so it rides along in the same allSettled.
+    wallet.refresh(),
+    wallet.loadQuests(),
   ])
   if (meRes.status === 'fulfilled') me.value = meRes.value
   else loadError.value = authErrorMessage(meRes.reason)
@@ -59,6 +69,23 @@ async function loadAll() {
 onMounted(loadAll)
 
 const hasPassword = computed(() => !!me.value?.email)
+
+// -- тема (светлая/тёмная) --
+const THEME_ICON: Record<Theme, Component> = {
+  system: MonitorSmartphone,
+  light: SunMedium,
+  dark: Moon,
+}
+const THEME_SHORT: Record<Theme, string> = { system: 'Авто', light: 'Светлая', dark: 'Тёмная' }
+
+// -- задания --
+const questsHint = computed(() => {
+  const n = wallet.claimable
+  if (n > 0) return `${n} ${pluralRu(n, 'задание', 'задания', 'заданий')} можно забрать`
+  if (!wallet.questsLoaded) return 'Награды за уроки, слова и серию'
+  const done = wallet.quests.filter((q) => q.claimed).length
+  return `Выполнено ${done} из ${wallet.quests.length}`
+})
 
 const showSettings = ref(false)
 
@@ -215,6 +242,20 @@ async function logout() {
             </div>
           </div>
 
+          <RouterLink
+            to="/quests"
+            class="card flex items-center justify-between gap-3 p-5 transition hover:bg-[var(--bg-soft)]"
+            data-test="quests-card"
+          >
+            <div>
+              <p class="font-bold">Задания</p>
+              <p class="text-sm text-[var(--muted)]">{{ questsHint }}</p>
+            </div>
+            <span class="flex shrink-0 items-center gap-1.5 text-lg font-extrabold">
+              <FeatherIcon :size="18" />{{ wallet.balance }}
+            </span>
+          </RouterLink>
+
           <LeaderboardCard :name="me.name" :leaders="leaders" />
         </div>
       </div>
@@ -254,7 +295,30 @@ async function logout() {
           </div>
 
           <div class="border-t border-[var(--border)] pt-3">
-            <p class="mb-2 text-sm text-[var(--muted)]">Цвет темы</p>
+            <p class="mb-2 text-sm text-[var(--muted)]">Тема</p>
+            <div class="flex gap-2">
+              <button
+                v-for="(meta, key) in THEME_META"
+                :key="key"
+                type="button"
+                class="flex flex-1 items-center justify-center gap-1.5 rounded-full px-3 py-2 text-sm font-semibold transition"
+                :class="
+                  theme === key
+                    ? 'bg-[var(--accent)] text-white'
+                    : 'bg-[var(--bg-soft)] text-[var(--muted)] hover:text-[var(--fg)]'
+                "
+                :title="meta.label"
+                :data-test="'theme-' + key"
+                @click="setTheme(key as Theme)"
+              >
+                <component :is="THEME_ICON[key as Theme]" :size="15" :stroke-width="2.25" />
+                {{ THEME_SHORT[key as Theme] }}
+              </button>
+            </div>
+          </div>
+
+          <div class="border-t border-[var(--border)] pt-3">
+            <p class="mb-2 text-sm text-[var(--muted)]">Цвет</p>
             <div class="flex gap-3">
               <button
                 v-for="(meta, key) in PALETTE_META"
