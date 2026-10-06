@@ -3,6 +3,8 @@ import { computed, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { api } from '../api'
 import { useCourseStore } from '../stores/course'
+import { useWalletStore } from '../stores/wallet'
+import { useRewardModal } from '../lib/rewardModal'
 import type { Lesson, ExerciseBlock, LessonAttempts, Step } from '../types'
 import MarkdownView from '../components/MarkdownView.vue'
 import ReadingText from '../components/ReadingText.vue'
@@ -16,6 +18,7 @@ import { ArrowLeft, ArrowRight, CircleCheckBig, X } from 'lucide-vue-next'
 const route = useRoute()
 const router = useRouter()
 const store = useCourseStore()
+const wallet = useWalletStore()
 
 const lesson = ref<Lesson | null>(null)
 const blocks = ref<ExerciseBlock[]>([])
@@ -229,12 +232,24 @@ function goBack() {
 
 async function finish() {
   if (!lesson.value) return
-  if (lesson.value.status !== 'done') {
+  const wasOpen = lesson.value.status !== 'done'
+  if (wasOpen) {
     await store.markDone(lesson.value.id)
     lesson.value.status = 'done'
   }
   celebrate.value = true
   setTimeout(() => (celebrate.value = false), 3500)
+  // This lesson may have been the one that finished the level — and it moved
+  // the counters behind the lesson quests either way, which is what raises
+  // their "задание выполнено" toast. Rewards are the lesson's reward, not its
+  // job: a failure here must not touch the screen the learner is looking at.
+  if (!wasOpen) return
+  try {
+    const paid = await wallet.claimFinishedPhases()
+    if (paid) useRewardModal().celebrate(paid.reward, paid.title, true)
+  } catch {
+    /* the quests screen will show it */
+  }
 }
 
 // Progress is already saved step by step as the learner goes (each answered

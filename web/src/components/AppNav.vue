@@ -7,8 +7,11 @@ import { useWalletStore } from '../stores/wallet'
 import SupportModal from './SupportModal.vue'
 import DonateModal from './DonateModal.vue'
 import RewardModal from './RewardModal.vue'
+import ToastStack from './ToastStack.vue'
 import NotificationBell from './NotificationBell.vue'
 import FeatherIcon from './FeatherIcon.vue'
+import AnimatedNumber from './AnimatedNumber.vue'
+import ClaimableStar from './ClaimableStar.vue'
 
 const { openModal } = useSupportModal()
 const wallet = useWalletStore()
@@ -55,11 +58,18 @@ function isActive(to: string) {
   return active.value.startsWith(to)
 }
 
-// The balance is refetched on every navigation, not just on mount: finishing
-// a lesson or a review can credit the daily drip, and the chip would otherwise
-// still show what the balance was when the app booted.
-onMounted(() => wallet.refresh())
-watch(() => route.path, () => wallet.refresh())
+// Refetched on every navigation, not just on mount: finishing a lesson or a
+// review credits the drip and finishes quests, and a chip still showing what
+// was true when the app booted is worse than no chip. The quests go with it —
+// the star on the chip is the only place a finished quest is visible from
+// another screen — except on the quests screen itself, which loads them its
+// own way and would otherwise be told about its own contents twice.
+function refreshWallet(path: string) {
+  wallet.refresh()
+  if (path !== '/quests') wallet.loadQuests().catch(() => {})
+}
+onMounted(() => refreshWallet(route.path))
+watch(() => route.path, refreshWallet)
 </script>
 
 <template>
@@ -85,12 +95,13 @@ watch(() => route.path, () => wallet.refresh())
 
       <RouterLink
         to="/quests"
-        class="ml-auto flex h-9 shrink-0 items-center gap-1.5 rounded-full bg-[var(--bg-soft)] px-2.5 text-sm font-bold transition hover:bg-[var(--accent-soft)]"
-        title="Задания и пёрышки"
+        class="relative ml-auto flex h-9 shrink-0 items-center gap-1.5 rounded-full bg-[var(--bg-soft)] px-2.5 text-sm font-bold transition hover:bg-[var(--accent-soft)]"
+        :title="wallet.claimable > 0 ? 'Есть выполненные задания' : 'Задания и пёрышки'"
         data-test="wallet-chip"
       >
         <FeatherIcon :size="15" />
-        <span class="tabular-nums">{{ wallet.balance }}</span>
+        <AnimatedNumber :value="wallet.balance" />
+        <ClaimableStar v-if="wallet.claimable > 0" class="absolute -right-1.5 -top-1.5" />
       </RouterLink>
 
       <NotificationBell />
@@ -135,4 +146,5 @@ watch(() => route.path, () => wallet.refresh())
   <SupportModal />
   <DonateModal />
   <RewardModal />
+  <ToastStack />
 </template>

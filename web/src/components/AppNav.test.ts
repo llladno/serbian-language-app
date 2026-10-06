@@ -4,7 +4,9 @@ import { setActivePinia, createPinia } from 'pinia'
 import AppNav from './AppNav.vue'
 import { useSupportModal } from '../lib/supportModal'
 import { useRewardModal } from '../lib/rewardModal'
+import { useWalletStore } from '../stores/wallet'
 import { api } from '../api'
+import type { Quest } from '../types'
 
 vi.mock('vue-router', () => ({
   useRoute: () => ({ path: '/profile', meta: {} }),
@@ -12,6 +14,14 @@ vi.mock('vue-router', () => ({
 }))
 
 beforeEach(() => {
+  // The chip counts up to its value; AnimatedNumber's own test covers the
+  // counting, and here it only gets in the way of reading the number.
+  vi.stubGlobal('matchMedia', (query: string) => ({
+    matches: query.includes('prefers-reduced-motion'),
+    media: query,
+    addEventListener: () => {},
+    removeEventListener: () => {},
+  }))
   setActivePinia(createPinia())
   const { open, message, error, sent } = useSupportModal()
   open.value = false
@@ -19,6 +29,7 @@ beforeEach(() => {
   error.value = null
   sent.value = false
   useRewardModal().closeModal()
+  vi.spyOn(api, 'quests').mockResolvedValue({ quests: [] })
   vi.spyOn(api, 'wallet').mockResolvedValue({
     balance: 137,
     currency_one: 'пёрышко',
@@ -27,7 +38,10 @@ beforeEach(() => {
     streak_days: 4,
   })
 })
-afterEach(() => vi.restoreAllMocks())
+afterEach(() => {
+  vi.unstubAllGlobals()
+  vi.restoreAllMocks()
+})
 
 function mountNav() {
   // Teleport's real target (document.body) is outside the wrapper's DOM tree;
@@ -50,6 +64,44 @@ describe('AppNav', () => {
     await flushPromises()
 
     expect(w.find('[data-test="wallet-chip"]').text()).toBe('137')
+  })
+
+  it('marks the chip with a star while a finished quest is waiting', async () => {
+    const finished: Quest = {
+      id: 1,
+      kind: 'lessons_completed',
+      title: 'Пройти 5 уроков',
+      description: '',
+      target: 5,
+      value: 5,
+      reward: 15,
+      done: true,
+      claimed: false,
+    }
+    vi.mocked(api.quests).mockResolvedValue({ quests: [finished] })
+    const w = mountNav()
+    await flushPromises()
+
+    expect(w.findComponent({ name: 'ClaimableStar' }).exists()).toBe(true)
+
+    // Taking it puts the star away.
+    useWalletStore().quests[0].claimed = true
+    await flushPromises()
+    expect(w.findComponent({ name: 'ClaimableStar' }).exists()).toBe(false)
+  })
+
+  it('offers the way to the quests only for a reward that paid itself out', async () => {
+    const w = mountNav()
+    await flushPromises()
+
+    useRewardModal().celebrate(50, 'Уровень 1 на 100%', true)
+    await flushPromises()
+    expect(w.find('[data-test="reward-to-quests"]').exists()).toBe(true)
+
+    useRewardModal().closeModal()
+    useRewardModal().celebrate(15, 'Пройти 5 уроков')
+    await flushPromises()
+    expect(w.find('[data-test="reward-to-quests"]').exists()).toBe(false)
   })
 
   it('renders the reward modal, so a claim from any screen can celebrate', async () => {

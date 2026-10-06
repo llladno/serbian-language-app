@@ -2,13 +2,14 @@
 // Shown right after a quest pays out. Mounted once, in AppNav, and opened
 // through lib/rewardModal.ts from wherever the payment happened.
 import { computed } from 'vue'
+import { RouterLink } from 'vue-router'
 import { X } from 'lucide-vue-next'
 import { useRewardModal } from '../lib/rewardModal'
 import { useWalletStore } from '../stores/wallet'
 import { pileFor } from '../lib/feathers'
 import SparkleBurst from './SparkleBurst.vue'
 
-const { open, reward, title, closeModal } = useRewardModal()
+const { open, reward, title, questsLink, closeModal } = useRewardModal()
 const wallet = useWalletStore()
 
 // The heap grows with what the learner now has, so the picture itself is a
@@ -41,7 +42,23 @@ const pile = computed(() => pileFor(wallet.balance))
           </p>
           <p class="mt-1 text-sm text-[var(--muted)]">Всего: {{ wallet.amount(wallet.balance) }}</p>
 
-          <button class="btn btn-primary mt-4 w-full" data-test="reward-ok" @click="closeModal">Отлично</button>
+          <RouterLink
+            v-if="questsLink"
+            to="/quests"
+            class="btn btn-primary mt-4 w-full"
+            data-test="reward-to-quests"
+            @click="closeModal"
+          >
+            К заданиям
+          </RouterLink>
+          <button
+            class="btn mt-2 w-full"
+            :class="questsLink ? 'btn-ghost' : 'btn-primary mt-4'"
+            data-test="reward-ok"
+            @click="closeModal"
+          >
+            Отлично
+          </button>
         </div>
       </div>
     </Transition>

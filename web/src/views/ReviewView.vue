@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import { CircleQuestionMark } from 'lucide-vue-next'
 import { useReviewStore } from '../stores/review'
+import { useWalletStore } from '../stores/wallet'
 import WordMedia from '../components/WordMedia.vue'
 import SpeakButton from '../components/SpeakButton.vue'
 import SerbianKeys from '../components/SerbianKeys.vue'
@@ -10,6 +11,7 @@ import BottomBar from '../components/BottomBar.vue'
 import type { GramCheckResult } from '../types'
 
 const store = useReviewStore()
+const wallet = useWalletStore()
 const { current, remaining, total, sessionCount, tally, loading, error } = storeToRefs(store)
 const revealed = ref(false)
 const showHelp = ref(false)
@@ -42,6 +44,16 @@ function fmtInterval(days: number) {
 }
 
 const done = computed(() => total.value > 0 && !current.value)
+// Reviews move the word, review and streak counters, and they are paid for by
+// the daily drip — but the learner is here, not on the quests screen. One
+// refresh at the end of the session is enough to raise the toast and move the
+// balance; doing it per card would be a request per answer.
+watch(done, (finished) => {
+  if (!finished) return
+  wallet.refresh()
+  wallet.loadQuests().catch(() => {})
+})
+
 const isQuiz = computed(() => current.value?.state === 'new' && !!current.value?.options?.length)
 // The "already-known" variant's grade buttons live outside the crossfaded
 // card (see template) since they're gated on local `revealed` state, not

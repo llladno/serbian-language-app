@@ -41,8 +41,15 @@ describe('QuestsView', () => {
     vi.spyOn(api, 'quests').mockResolvedValue({
       quests: [
         quest({ id: 1 }),
-        quest({ id: 2, title: 'Выучить 30 слов', target: 30, value: 12, done: false }),
-        quest({ id: 3, title: 'Подписка на канал', target: 1, value: 1, claimed: true }),
+        quest({ id: 2, kind: 'vocab_learned', title: 'Выучить 30 слов', target: 30, value: 12, done: false }),
+        quest({
+          id: 3,
+          kind: 'telegram_subscribed',
+          title: 'Подписка на канал',
+          target: 1,
+          value: 1,
+          claimed: true,
+        }),
       ],
     })
     const w = mount(QuestsView)

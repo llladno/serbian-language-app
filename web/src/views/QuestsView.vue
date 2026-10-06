@@ -9,6 +9,7 @@ import { useRewardModal } from '../lib/rewardModal'
 import { authErrorMessage } from '../lib/authErrors'
 import { pileFor } from '../lib/feathers'
 import { pluralRu } from '../lib/plural'
+import { groupQuests } from '../lib/questGroups'
 import FeatherIcon from '../components/FeatherIcon.vue'
 import type { Quest } from '../types'
 
@@ -22,16 +23,19 @@ const busyId = ref<number | null>(null)
 async function load() {
   loadError.value = null
   try {
-    await Promise.all([wallet.refresh(), wallet.loadQuests()])
+    await Promise.all([wallet.refresh(), wallet.loadQuests(true)])
   } catch (e) {
     loadError.value = authErrorMessage(e)
   }
 }
 onMounted(load)
 
-const ready = computed(() => wallet.quests.filter((q) => q.done && !q.claimed))
-const active = computed(() => wallet.quests.filter((q) => !q.done))
-const claimed = computed(() => wallet.quests.filter((q) => q.claimed))
+// A ladder (5 → 10 → 20 уроков) shows only the rung in progress, so finishing
+// one visibly turns the card into the next.
+const groups = computed(() => groupQuests(wallet.quests))
+const ready = computed(() => groups.value.ready)
+const active = computed(() => groups.value.active)
+const claimed = computed(() => groups.value.done)
 
 const pile = computed(() => pileFor(wallet.balance))
 const streakText = computed(

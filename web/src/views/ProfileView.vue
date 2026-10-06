@@ -55,10 +55,6 @@ async function loadAll() {
     api.progress(),
     api.vocab(),
     api.leaderboard({ limit: 3 }),
-    // The quests teaser is part of the same first paint; its failure is not
-    // worth blocking the page, so it rides along in the same allSettled.
-    wallet.refresh(),
-    wallet.loadQuests(),
   ])
   if (meRes.status === 'fulfilled') me.value = meRes.value
   else loadError.value = authErrorMessage(meRes.reason)
