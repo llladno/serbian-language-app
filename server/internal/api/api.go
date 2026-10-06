@@ -285,6 +285,37 @@ func (h handlers) phaseAccess(us *store.UserStore) (map[string]bool, map[string]
 	return locked, info, nil
 }
 
+// lockedLessonIDs is the set of lessons sitting in phases this user has not
+// unlocked. Used to keep a locked phase's words and grammar out of bulk
+// content responses, not just its lessons: a paid phase whose whole vocabulary
+// can still be listed and taught through the review queue is not gated in any
+// sense the buyer would recognise.
+//
+// Two content paths are deliberately left open. /api/lookup resolves one word
+// a learner has just met in a text they already have access to, and gating it
+// would break reading a free lesson whose text happens to use a word catalogued
+// against a later one. False friends carry no lesson at all — they are
+// cross-cutting content, not part of any phase.
+func (h handlers) lockedLessonIDs(us *store.UserStore) (map[string]bool, error) {
+	locked, _, err := h.phaseAccess(us)
+	if err != nil {
+		return nil, err
+	}
+	if len(locked) == 0 {
+		return nil, nil
+	}
+	out := map[string]bool{}
+	for _, p := range h.Course().Phases {
+		if !locked[p.ID] {
+			continue
+		}
+		for _, id := range p.Lessons {
+			out[id] = true
+		}
+	}
+	return out, nil
+}
+
 // lessonLocked reports whether lessonID sits inside a phase this user has not
 // unlocked. A lesson belonging to no phase is never locked.
 func (h handlers) lessonLocked(us *store.UserStore, lessonID string) (bool, error) {
@@ -694,10 +725,22 @@ func (h handlers) completeLesson(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h handlers) getVocab(w http.ResponseWriter, r *http.Request) {
+	us, ok := h.user(w, r)
+	if !ok {
+		return
+	}
+	lockedLessons, err := h.lockedLessonIDs(us)
+	if err != nil {
+		fail(w, 500, err.Error())
+		return
+	}
 	q := r.URL.Query()
 	lesson, tag, term := q.Get("lesson"), q.Get("tag"), q.Get("q")
 	out := []vocabDTO{}
 	for _, v := range h.Course().Vocab {
+		if lockedLessons[v.Lesson] {
+			continue
+		}
 		if lesson != "" && v.Lesson != lesson {
 			continue
 		}
@@ -870,6 +913,31 @@ func (h handlers) dueQueueRows(us *store.UserStore, now time.Time) ([]store.Card
 	}
 	c := h.Course()
 
+	// New cards are the app teaching something. Teaching a locked phase's
+	// words would hand over the paid content a word at a time, so they are
+	// dropped from the candidate pool. Cards the learner already has keep
+	// coming up for review: they were legitimately earned, and dropping them
+	// would quietly delete progress if a phase were ever put behind a price.
+	lockedLessons, err := h.lockedLessonIDs(us)
+	if err != nil {
+		return nil, err
+	}
+	vocabPool, grammarPool := c.Vocab, c.Grammar
+	if len(lockedLessons) > 0 {
+		vocabPool = make([]content.Vocab, 0, len(c.Vocab))
+		for _, v := range c.Vocab {
+			if !lockedLessons[v.Lesson] {
+				vocabPool = append(vocabPool, v)
+			}
+		}
+		grammarPool = make([]content.GrammarCard, 0, len(c.Grammar))
+		for _, g := range c.Grammar {
+			if !lockedLessons[g.Lesson] {
+				grammarPool = append(grammarPool, g)
+			}
+		}
+	}
+
 	passedVocab, err := us.PassedCardIDs("vocab:")
 	if err != nil {
 		return nil, err
@@ -885,7 +953,7 @@ func (h handlers) dueQueueRows(us *store.UserStore, now time.Time) ([]store.Card
 	if !beginner {
 		vocabBudget = newPerDay / 2
 	}
-	allowedNewVocab := nextNewVocabCardIDs(c.Vocab, passedVocab, vocabBudget)
+	allowedNewVocab := nextNewVocabCardIDs(vocabPool, passedVocab, vocabBudget)
 
 	ffNewLimit := 0
 	if !beginner {
@@ -896,7 +964,7 @@ func (h handlers) dueQueueRows(us *store.UserStore, now time.Time) ([]store.Card
 	if err != nil {
 		return nil, err
 	}
-	allowedNewGrammar := nextNewGrammarCardIDs(c.Grammar, passedGrammar, gramPerDay)
+	allowedNewGrammar := nextNewGrammarCardIDs(grammarPool, passedGrammar, gramPerDay)
 
 	// DueQueue's "allowed new ids" parameter isn't vocab-specific — it just
 	// admits explicitly listed new cards by id, whatever their kind — so

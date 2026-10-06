@@ -926,3 +926,74 @@ func testUserID(t *testing.T, st *store.Store) string {
 	}
 	return row.ID
 }
+
+// A paid phase whose entire vocabulary can still be listed, and taught through
+// the review queue, is not gated in any sense the buyer would recognise. Every
+// fixture word and grammar card belongs to lesson 01, which gatedAPI puts in
+// the lockable phase.
+func TestLockedPhaseContentStaysOutOfVocabAndTheQueue(t *testing.T) {
+	h, st := gatedAPI(t)
+	seedPhaseProduct(t, st, "B", 500)
+
+	res := do(h, "GET", "/api/vocab", "")
+	if res.Code != 200 {
+		t.Fatalf("GET /api/vocab = %d", res.Code)
+	}
+	words := decodeBody[[]struct {
+		ID     string `json:"id"`
+		Lesson string `json:"lesson"`
+	}](t, res)
+	for _, w := range words {
+		if w.Lesson == "01" {
+			t.Fatalf("locked lesson's word %q served from /api/vocab", w.ID)
+		}
+	}
+
+	res = do(h, "GET", "/api/review/queue", "")
+	if res.Code != 200 {
+		t.Fatalf("GET queue = %d", res.Code)
+	}
+	queue := decodeBody[[]struct {
+		ID   string `json:"id"`
+		Kind string `json:"kind"`
+	}](t, res)
+	for _, c := range queue {
+		if c.Kind == "vocab" || c.Kind == "gram" {
+			t.Fatalf("locked phase's %s card %q offered as new work", c.Kind, c.ID)
+		}
+	}
+
+	// Buying the phase hands all of it over.
+	if err := st.User(testUserID(t, st)).GrantEntitlement(economy.ProductPhaseUnlock, "B", 1, fixedNow); err != nil {
+		t.Fatalf("grant: %v", err)
+	}
+	res = do(h, "GET", "/api/vocab", "")
+	words = decodeBody[[]struct {
+		ID     string `json:"id"`
+		Lesson string `json:"lesson"`
+	}](t, res)
+	if len(words) == 0 {
+		t.Fatal("no words served after the phase was unlocked")
+	}
+}
+
+// Looking one word up is reading support, not bulk delivery: a free lesson's
+// text can use a word catalogued against a later lesson, and refusing it there
+// would break reading the free content.
+func TestLookupStaysOpenAcrossLockedPhases(t *testing.T) {
+	h, st := gatedAPI(t)
+	seedPhaseProduct(t, st, "B", 500)
+
+	res := do(h, "GET", "/api/lookup?q=zdravo", "")
+	if res.Code != 200 {
+		t.Fatalf("GET /api/lookup = %d, want 200", res.Code)
+	}
+	out := decodeBody[struct {
+		Matches []struct {
+			ID string `json:"id"`
+		} `json:"matches"`
+	}](t, res)
+	if len(out.Matches) == 0 {
+		t.Fatal("lookup returned nothing for a word in a locked phase")
+	}
+}
