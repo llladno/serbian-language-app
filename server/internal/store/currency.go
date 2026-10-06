@@ -145,16 +145,16 @@ func (s *Store) ListLedger(userID string, limit, offset int) ([]LedgerEntry, err
 // Defaults used when a setting is missing or unparseable. The admin panel can
 // write anything into economy_settings, so every read falls back rather than
 // failing the request. The currency-name defaults are exactly the values
-// migration 013 seeds, so a table that lost those rows (never migrated, or
-// an admin deleted them) behaves identically to a freshly seeded one instead
-// of surfacing blank display strings.
+// migrations 013 + 017 leave behind, so a table that lost those rows (never
+// migrated, or an admin deleted them) behaves identically to a freshly seeded
+// one instead of surfacing blank display strings.
 const (
 	defaultDailyGoal         = 10
 	defaultRepairWindowHours = 48
 	defaultDrip              = `[[1,1],[30,2],[100,3]]`
-	defaultCurrencyNameOne   = "монета"
-	defaultCurrencyNameFew   = "монеты"
-	defaultCurrencyNameMany  = "монет"
+	defaultCurrencyNameOne   = "пёрышко"
+	defaultCurrencyNameFew   = "пёрышка"
+	defaultCurrencyNameMany  = "пёрышек"
 )
 
 // Settings is the parsed economy_settings table.

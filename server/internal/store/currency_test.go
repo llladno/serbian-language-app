@@ -27,9 +27,9 @@ func restoreEconomySettings(t *testing.T, s *Store) {
 		t.Fatalf("drop extra economy_settings keys: %v", err)
 	}
 	_, err := s.db.Exec(`INSERT INTO economy_settings (key, value, updated_at) VALUES
-		('currency_name_one',          'монета',                 '2026-09-29T00:00:00Z'),
-		('currency_name_few',          'монеты',                 '2026-09-29T00:00:00Z'),
-		('currency_name_many',         'монет',                  '2026-09-29T00:00:00Z'),
+		('currency_name_one',          'пёрышко',                '2026-10-06T00:00:00Z'),
+		('currency_name_few',          'пёрышка',                '2026-10-06T00:00:00Z'),
+		('currency_name_many',         'пёрышек',                '2026-10-06T00:00:00Z'),
 		('daily_goal',                 '10',                     '2026-09-29T00:00:00Z'),
 		('streak_drip',                '[[1,1],[30,2],[100,3]]', '2026-09-29T00:00:00Z'),
 		('streak_repair_window_hours', '48',                     '2026-09-29T00:00:00Z'),
@@ -229,8 +229,8 @@ func TestEconomySettings(t *testing.T) {
 	if got := set.Drip.DripFor(30); got != 2 {
 		t.Fatalf("Drip.DripFor(30) = %d, want 2", got)
 	}
-	if set.CurrencyNameMany != "монет" {
-		t.Fatalf("CurrencyNameMany = %q, want монет", set.CurrencyNameMany)
+	if set.CurrencyNameMany != "пёрышек" {
+		t.Fatalf("CurrencyNameMany = %q, want пёрышек", set.CurrencyNameMany)
 	}
 }
 

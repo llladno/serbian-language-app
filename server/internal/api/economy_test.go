@@ -58,8 +58,8 @@ func TestWalletReportsBalanceAndCurrencyName(t *testing.T) {
 	if out.Balance != 42 {
 		t.Fatalf("balance = %d, want 42", out.Balance)
 	}
-	if out.CurrencyMany != "монет" {
-		t.Fatalf("currency_many = %q, want монет", out.CurrencyMany)
+	if out.CurrencyMany != "пёрышек" {
+		t.Fatalf("currency_many = %q, want пёрышек", out.CurrencyMany)
 	}
 }
 
