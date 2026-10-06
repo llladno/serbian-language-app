@@ -269,3 +269,69 @@ func TestIsBareStart(t *testing.T) {
 		}
 	}
 }
+
+func TestGetChatMember(t *testing.T) {
+	cases := []struct {
+		name, body string
+		want       string
+		wantMember bool
+		wantErr    bool
+	}{
+		{"member", `{"ok":true,"result":{"status":"member"}}`, "member", true, false},
+		{"admin", `{"ok":true,"result":{"status":"administrator"}}`, "administrator", true, false},
+		{"creator", `{"ok":true,"result":{"status":"creator"}}`, "creator", true, false},
+		{"left", `{"ok":true,"result":{"status":"left"}}`, "left", false, false},
+		{"kicked", `{"ok":true,"result":{"status":"kicked"}}`, "kicked", false, false},
+		// A restricted user who is still in the chat is subscribed; one who is
+		// not is reported as "left", because "restricted" alone would otherwise
+		// pay out the quest to someone who has left.
+		{"restricted and present", `{"ok":true,"result":{"status":"restricted","is_member":true}}`, "restricted", true, false},
+		{"restricted and gone", `{"ok":true,"result":{"status":"restricted","is_member":false}}`, "left", false, false},
+		{"not found", `{"ok":false,"error_code":400,"description":"Bad Request: user not found"}`, "", false, true},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			withTestServer(t, func(w http.ResponseWriter, r *http.Request) {
+				w.Header().Set("Content-Type", "application/json")
+				w.Write([]byte(c.body))
+			})
+
+			status, err := GetChatMember("token", "@ucimo", 12345)
+			if c.wantErr {
+				if err == nil {
+					t.Fatal("expected an error")
+				}
+				return
+			}
+			if err != nil {
+				t.Fatalf("GetChatMember: %v", err)
+			}
+			if status != c.want {
+				t.Fatalf("status = %q, want %q", status, c.want)
+			}
+			if IsMember(status) != c.wantMember {
+				t.Fatalf("IsMember(%q) = %v, want %v", status, IsMember(status), c.wantMember)
+			}
+		})
+	}
+}
+
+func TestGetChatMemberSendsChatAndUser(t *testing.T) {
+	var gotPath, gotBody string
+	withTestServer(t, func(w http.ResponseWriter, r *http.Request) {
+		r.ParseForm()
+		gotPath, gotBody = r.URL.Path, r.Form.Encode()
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte(`{"ok":true,"result":{"status":"member"}}`))
+	})
+
+	if _, err := GetChatMember("test-token", "@ucimo", 12345); err != nil {
+		t.Fatalf("GetChatMember: %v", err)
+	}
+	if gotPath != "/bottest-token/getChatMember" {
+		t.Errorf("path = %q, want /bottest-token/getChatMember", gotPath)
+	}
+	if !strings.Contains(gotBody, "chat_id=%40ucimo") || !strings.Contains(gotBody, "user_id=12345") {
+		t.Errorf("body = %q, want the chat and user id", gotBody)
+	}
+}

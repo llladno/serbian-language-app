@@ -12,6 +12,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -208,4 +209,48 @@ func IsBareStart(text string) bool {
 	}
 	cmd := fields[0]
 	return cmd == "/start" || strings.HasPrefix(cmd, "/start@")
+}
+
+// GetChatMember returns a user's membership status in a chat, e.g. "member",
+// "administrator", "creator", "left", "kicked", "restricted". The bot must be
+// an administrator of the channel for this to work.
+//
+// One normalisation: Telegram reports a user who has been restricted and has
+// also left as status "restricted" with is_member false, so this returns
+// "left" for that case. Without it IsMember would treat someone who is no
+// longer in the channel as subscribed, and the subscription quest would pay
+// out. Restrictions only apply to supergroups, so a channel should never
+// produce this, but the quest's reward should not depend on that holding.
+//
+// Like every other call here it goes through apiBase, so production's
+// TELEGRAM_API_BASE proxy covers it — the Dokploy host cannot reach
+// api.telegram.org directly.
+func GetChatMember(botToken, chat string, userID int64) (string, error) {
+	var out struct {
+		Status   string `json:"status"`
+		IsMember *bool  `json:"is_member"`
+	}
+	params := url.Values{}
+	params.Set("chat_id", chat)
+	params.Set("user_id", strconv.FormatInt(userID, 10))
+	if err := call(botToken, "getChatMember", params, &out); err != nil {
+		return "", fmt.Errorf("get chat member: %w", err)
+	}
+	if out.Status == "restricted" && out.IsMember != nil && !*out.IsMember {
+		return "left", nil
+	}
+	return out.Status, nil
+}
+
+// IsMember reports whether a getChatMember status means the user is currently
+// subscribed. "restricted" counts: such a user is in the channel, just limited
+// — GetChatMember has already rewritten the restricted-but-gone case to
+// "left", so a "restricted" reaching here really is present.
+func IsMember(status string) bool {
+	switch status {
+	case "creator", "administrator", "member", "restricted":
+		return true
+	default:
+		return false
+	}
 }
