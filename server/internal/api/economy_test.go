@@ -123,6 +123,51 @@ func TestQuestListAndClaimFlow(t *testing.T) {
 	}
 }
 
+func TestClaimedQuestStaysDoneWhenItsCounterFallsBack(t *testing.T) {
+	// Counters are not monotonic. A streak quest paid at seven days reads zero
+	// the morning after the streak breaks, and an admin can raise a target
+	// after the fact — as here, which needs no clock. Either way the quest was
+	// paid, and a paid quest that reads "not finished" would be shown as still
+	// in progress and would hide the next rung of its ladder.
+	h, st, id, c := economyAPI(t)
+	q := seedQuestRow(t, st, economy.QuestLessonsCompleted, 1, 30)
+
+	if res := doCookie(h, c, "POST", "/api/lessons/01/complete", ""); res.Code != 200 {
+		t.Fatalf("complete lesson = %d", res.Code)
+	}
+	if res := doCookie(h, c, "POST", "/api/me/quests/"+strconv.FormatInt(q.ID, 10)+"/claim", ""); res.Code != 200 {
+		t.Fatalf("claim = %d: %s", res.Code, res.Body.String())
+	}
+
+	q.Target = 10
+	if err := st.UpsertQuest(q, fixedNow); err != nil {
+		t.Fatalf("raise target: %v", err)
+	}
+
+	res := doCookie(h, c, "GET", "/api/me/quests", "")
+	list := decodeBody[struct {
+		Quests []struct {
+			Value   int  `json:"value"`
+			Target  int  `json:"target"`
+			Done    bool `json:"done"`
+			Claimed bool `json:"claimed"`
+		} `json:"quests"`
+	}](t, res)
+	if len(list.Quests) != 1 {
+		t.Fatalf("quests = %+v; want one", list.Quests)
+	}
+	got := list.Quests[0]
+	if got.Value >= got.Target {
+		t.Fatalf("value %d / target %d: the counter was supposed to fall short", got.Value, got.Target)
+	}
+	if !got.Done || !got.Claimed {
+		t.Fatalf("quest = %+v; want done and claimed", got)
+	}
+	if bal, _ := st.Balance(id); bal != 30 {
+		t.Fatalf("balance = %d, want 30 — nothing should have been paid twice", bal)
+	}
+}
+
 func TestShopReportsEffectivePriceAndOwnership(t *testing.T) {
 	h, st, id, c := economyAPI(t)
 	if _, err := st.UpsertProduct(economy.Product{

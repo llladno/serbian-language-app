@@ -180,15 +180,19 @@ func (h handlers) listQuests(w http.ResponseWriter, r *http.Request) {
 		fail(w, 500, "internal error")
 		return
 	}
-	counters, err := h.questCounters(ac.UserID, quests)
-	if err != nil {
-		log.Printf("quests: counters: %v", err)
-		fail(w, 500, "internal error")
-		return
-	}
 	claimed, err := h.Store.User(ac.UserID).ClaimedQuestIDs()
 	if err != nil {
 		log.Printf("quests: claimed: %v", err)
+		fail(w, 500, "internal error")
+		return
+	}
+	// Counters only answer "how far along is this quest", which is settled for
+	// the claimed ones. Passing just the open quests also keeps the Bot API out
+	// of the request once the subscription quest is paid: the screen asks for
+	// this list on every navigation.
+	counters, err := h.questCounters(ac.UserID, openQuests(quests, claimed))
+	if err != nil {
+		log.Printf("quests: counters: %v", err)
 		fail(w, 500, "internal error")
 		return
 	}
@@ -197,14 +201,30 @@ func (h handlers) listQuests(w http.ResponseWriter, r *http.Request) {
 		Quests []questDTO `json:"quests"`
 	}{Quests: []questDTO{}}
 	for _, q := range quests {
+		// A claimed quest is finished by definition — the server checked it
+		// when it paid — and some counters fall back afterwards: break a streak
+		// and streak_days drops to 0. Recomputing "done" from the counter alone
+		// would make a paid quest look unfinished for ever.
+		done := claimed[q.ID] || economy.QuestDone(q, counters, phases)
 		out.Quests = append(out.Quests, questDTO{
 			ID: q.ID, Kind: q.Kind, Title: q.Title, Description: q.Description,
 			Target: q.Target, Value: economy.QuestValue(q, counters, phases),
-			Reward: q.Reward, Done: economy.QuestDone(q, counters, phases),
+			Reward: q.Reward, Done: done,
 			Claimed: claimed[q.ID],
 		})
 	}
 	writeJSON(w, 200, out)
+}
+
+// openQuests drops the ones this user has already been paid for.
+func openQuests(quests []economy.Quest, claimed map[int64]bool) []economy.Quest {
+	out := make([]economy.Quest, 0, len(quests))
+	for _, q := range quests {
+		if !claimed[q.ID] {
+			out = append(out, q)
+		}
+	}
+	return out
 }
 
 func (h handlers) claimQuest(w http.ResponseWriter, r *http.Request) {
