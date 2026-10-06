@@ -18,6 +18,7 @@ import (
 	"github.com/grisha/serbian-app/server/internal/auth"
 	"github.com/grisha/serbian-app/server/internal/config"
 	"github.com/grisha/serbian-app/server/internal/content"
+	"github.com/grisha/serbian-app/server/internal/economy"
 	"github.com/grisha/serbian-app/server/internal/store"
 )
 
@@ -759,4 +760,169 @@ func TestFailGradeMapsErrors(t *testing.T) {
 			t.Errorf("log %q lacks %q", logged.String(), want)
 		}
 	}
+}
+
+// gatedAPI reshapes the fixture course into two phases: "A" holding lesson 02,
+// which stays free, and "B" holding 01, 90 and 91, which a product can lock.
+// The fixture ships one phase, which cannot show a free phase staying open
+// while a paid one closes. Lesson 01 has to be the locked one: it is the only
+// lesson the fixture gives exercises, so without it the check endpoint's gate
+// could not be exercised at all.
+func gatedAPI(t *testing.T) (http.Handler, *store.Store) {
+	t.Helper()
+	return newTestAPIWith(t, func(d *Deps) {
+		base := d.Course()
+		two := *base
+		two.Phases = []content.Phase{
+			{ID: "A", Title: "Фаза A", Lessons: []string{"02"}},
+			{ID: "B", Title: "Фаза B", Lessons: []string{"01", "90", "91"}},
+		}
+		d.Course = func() *content.Course { return &two }
+	})
+}
+
+func seedPhaseProduct(t *testing.T, st *store.Store, ref string, price int64) {
+	t.Helper()
+	if _, err := st.UpsertProduct(economy.Product{
+		Kind: economy.ProductPhaseUnlock, Ref: ref, Title: "Фаза " + ref,
+		Price: price, GrantQty: 1, Active: true,
+	}, fixedNow); err != nil {
+		t.Fatalf("seed phase product %s: %v", ref, err)
+	}
+}
+
+func TestLockedPhaseIsMarkedAndItsLessonsAre403(t *testing.T) {
+	h, st := gatedAPI(t)
+	seedPhaseProduct(t, st, "B", 500)
+
+	res := do(h, "GET", "/api/course", "")
+	if res.Code != 200 {
+		t.Fatalf("course status = %d", res.Code)
+	}
+	var course struct {
+		Phases []struct {
+			ID              string `json:"id"`
+			Locked          bool   `json:"locked"`
+			Price           int64  `json:"price"`
+			PriceEffective  int64  `json:"price_effective"`
+			DiscountPercent int    `json:"discount_percent"`
+		} `json:"phases"`
+	}
+	if err := json.Unmarshal(res.Body.Bytes(), &course); err != nil {
+		t.Fatalf("decode course: %v", err)
+	}
+	var found bool
+	for _, p := range course.Phases {
+		switch p.ID {
+		case "B":
+			found = true
+			if !p.Locked || p.Price != 500 || p.PriceEffective != 500 {
+				t.Fatalf("phase B = %+v; want locked with price 500", p)
+			}
+		case "A":
+			if p.Locked {
+				t.Fatal("phase A has no product and must stay unlocked")
+			}
+		}
+	}
+	if !found {
+		t.Fatal("phase B missing from the course response")
+	}
+
+	// Hiding it in the UI is not gating: nothing inside the phase may be
+	// reachable by direct request.
+	for _, c := range []struct {
+		method, path, body string
+	}{
+		{"GET", "/api/lessons/01", ""},
+		{"GET", "/api/lessons/01/exercises", ""},
+		{"POST", "/api/lessons/01/exercises/01-A-1/check", `{"answer":"Zdravo! Kako si?"}`},
+		{"POST", "/api/lessons/01/steps/theory", `{"status":"done"}`},
+		{"POST", "/api/lessons/01/complete", ""},
+	} {
+		if res := do(h, c.method, c.path, c.body); res.Code != 403 {
+			t.Errorf("%s %s = %d, want 403", c.method, c.path, res.Code)
+		}
+	}
+
+	// A lesson in the free phase is still fine.
+	if res := do(h, "GET", "/api/lessons/02", ""); res.Code != 200 {
+		t.Fatalf("GET /api/lessons/02 = %d, want 200", res.Code)
+	}
+}
+
+// Completing a lesson is the gating hole that matters most: a phase_completed
+// quest pays currency, so an ungated POST .../complete over a locked phase's
+// lessons would mint coins for content the buyer never unlocked.
+func TestLockedPhaseCannotBeCompletedForQuestCredit(t *testing.T) {
+	h, st := gatedAPI(t)
+	seedPhaseProduct(t, st, "B", 500)
+
+	for _, id := range []string{"01", "90", "91"} {
+		if res := do(h, "POST", "/api/lessons/"+id+"/complete", ""); res.Code != 403 {
+			t.Fatalf("POST /api/lessons/%s/complete = %d, want 403", id, res.Code)
+		}
+	}
+	u := st.User(testUserID(t, st))
+	c, err := u.QuestCounters(fixedNow)
+	if err != nil {
+		t.Fatalf("counters: %v", err)
+	}
+	if c.LessonsCompleted != 0 {
+		t.Fatalf("LessonsCompleted = %d after refused completions, want 0", c.LessonsCompleted)
+	}
+}
+
+func TestOwnedPhaseUnlocks(t *testing.T) {
+	h, st := gatedAPI(t)
+	seedPhaseProduct(t, st, "B", 500)
+	if err := st.User(testUserID(t, st)).GrantEntitlement(economy.ProductPhaseUnlock, "B", 1, fixedNow); err != nil {
+		t.Fatalf("grant: %v", err)
+	}
+
+	if res := do(h, "GET", "/api/lessons/01", ""); res.Code != 200 {
+		t.Fatalf("GET /api/lessons/01 = %d, want 200 after purchase", res.Code)
+	}
+	if res := do(h, "GET", "/api/lessons/01/exercises", ""); res.Code != 200 {
+		t.Fatalf("GET exercises = %d, want 200 after purchase", res.Code)
+	}
+	if res := do(h, "POST", "/api/lessons/01/complete", ""); res.Code != 200 {
+		t.Fatalf("POST complete = %d, want 200 after purchase", res.Code)
+	}
+}
+
+func TestPhaseWithZeroPriceIsFree(t *testing.T) {
+	h, st := gatedAPI(t)
+	seedPhaseProduct(t, st, "B", 0)
+
+	if res := do(h, "GET", "/api/lessons/01", ""); res.Code != 200 {
+		t.Fatalf("GET /api/lessons/01 = %d, want 200 for a zero-price phase", res.Code)
+	}
+}
+
+// Deactivating a product takes a phase off sale. It must not lock the phase:
+// locked-with-nothing-to-buy is a dead end for the learner, while free is only
+// a lost sale.
+func TestInactivePhaseProductLeavesThePhaseOpen(t *testing.T) {
+	h, st := gatedAPI(t)
+	seedPhaseProduct(t, st, "B", 500)
+	if _, err := st.UpsertProduct(economy.Product{
+		Kind: economy.ProductPhaseUnlock, Ref: "B", Title: "Фаза B",
+		Price: 500, GrantQty: 1, Active: false,
+	}, fixedNow); err != nil {
+		t.Fatalf("deactivate: %v", err)
+	}
+
+	if res := do(h, "GET", "/api/lessons/01", ""); res.Code != 200 {
+		t.Fatalf("GET /api/lessons/01 = %d, want 200 when the product is off sale", res.Code)
+	}
+}
+
+func testUserID(t *testing.T, st *store.Store) string {
+	t.Helper()
+	row, err := st.EnsureUserByName("tester")
+	if err != nil {
+		t.Fatalf("tester id: %v", err)
+	}
+	return row.ID
 }

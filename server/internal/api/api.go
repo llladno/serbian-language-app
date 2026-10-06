@@ -18,6 +18,7 @@ import (
 	"github.com/grisha/serbian-app/server/internal/checker"
 	"github.com/grisha/serbian-app/server/internal/config"
 	"github.com/grisha/serbian-app/server/internal/content"
+	"github.com/grisha/serbian-app/server/internal/economy"
 	"github.com/grisha/serbian-app/server/internal/ratelimit"
 	"github.com/grisha/serbian-app/server/internal/srs"
 	"github.com/grisha/serbian-app/server/internal/store"
@@ -247,6 +248,82 @@ func (h handlers) health(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+// phaseAccess reports, per phase id, whether it is locked for this user and
+// what it would cost. A phase is free unless an active phase_unlock product
+// prices it above zero — which is how phases 1..3 stay open with no catalogue
+// rows at all, and why taking a product off sale opens its phase rather than
+// sealing it: locked with nothing to buy is a dead end for the learner, while
+// free is only a lost sale.
+func (h handlers) phaseAccess(us *store.UserStore) (map[string]bool, map[string]phaseDTO, error) {
+	products, err := h.Store.ListProducts(true)
+	if err != nil {
+		return nil, nil, err
+	}
+	owned, err := us.Entitlements()
+	if err != nil {
+		return nil, nil, err
+	}
+	now := h.Now()
+	locked := map[string]bool{}
+	info := map[string]phaseDTO{}
+	for _, p := range products {
+		if p.Kind != economy.ProductPhaseUnlock || p.Price <= 0 {
+			continue
+		}
+		if owned[economy.ProductPhaseUnlock+":"+p.Ref] > 0 {
+			continue
+		}
+		sale := p.SalePercent(now)
+		effective, _ := economy.EffectivePrice(p.Price, sale, 0)
+		locked[p.Ref] = true
+		info[p.Ref] = phaseDTO{
+			Price:           p.Price,
+			PriceEffective:  effective,
+			DiscountPercent: sale,
+		}
+	}
+	return locked, info, nil
+}
+
+// lessonLocked reports whether lessonID sits inside a phase this user has not
+// unlocked. A lesson belonging to no phase is never locked.
+func (h handlers) lessonLocked(us *store.UserStore, lessonID string) (bool, error) {
+	locked, _, err := h.phaseAccess(us)
+	if err != nil {
+		return false, err
+	}
+	if len(locked) == 0 {
+		return false, nil
+	}
+	for _, p := range h.Course().Phases {
+		for _, id := range p.Lessons {
+			if id == lessonID {
+				return locked[p.ID], nil
+			}
+		}
+	}
+	return false, nil
+}
+
+// denyLockedLesson writes the response and reports true when the caller must
+// stop: either the phase is locked, or the check itself failed. Every endpoint
+// that reveals a lesson's content or writes progress against it calls this —
+// hiding a phase in the UI is not gating, and POST .../complete in particular
+// would otherwise satisfy a phase_completed quest and pay out currency for a
+// phase the user never unlocked.
+func (h handlers) denyLockedLesson(w http.ResponseWriter, us *store.UserStore, lessonID string) bool {
+	lockedPhase, err := h.lessonLocked(us, lessonID)
+	if err != nil {
+		fail(w, 500, err.Error())
+		return true
+	}
+	if lockedPhase {
+		fail(w, 403, "phase locked")
+		return true
+	}
+	return false
+}
+
 func (h handlers) getCourse(w http.ResponseWriter, r *http.Request) {
 	us, ok := h.user(w, r)
 	if !ok {
@@ -258,9 +335,18 @@ func (h handlers) getCourse(w http.ResponseWriter, r *http.Request) {
 		fail(w, 500, err.Error())
 		return
 	}
+	lockedPhases, priced, err := h.phaseAccess(us)
+	if err != nil {
+		fail(w, 500, err.Error())
+		return
+	}
 	out := courseDTO{Title: c.Title, Phases: []phaseDTO{}, Lessons: []lessonRefDTO{}}
 	for _, p := range c.Phases {
-		out.Phases = append(out.Phases, phaseDTO{ID: p.ID, Title: p.Title, Lessons: p.Lessons})
+		dto := phaseDTO{ID: p.ID, Title: p.Title, Lessons: p.Lessons, Locked: lockedPhases[p.ID]}
+		if extra, ok := priced[p.ID]; ok {
+			dto.Price, dto.PriceEffective, dto.DiscountPercent = extra.Price, extra.PriceEffective, extra.DiscountPercent
+		}
+		out.Phases = append(out.Phases, dto)
 		for _, id := range p.Lessons {
 			l := c.Lessons[id]
 			if l == nil {
@@ -287,6 +373,9 @@ func (h handlers) getLesson(w http.ResponseWriter, r *http.Request) {
 	l := h.Course().Lessons[id]
 	if l == nil {
 		fail(w, 404, "unknown lesson")
+		return
+	}
+	if h.denyLockedLesson(w, us, id) {
 		return
 	}
 	st, err := us.LessonStatus(id)
@@ -339,9 +428,16 @@ func (h handlers) getLesson(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h handlers) getExercises(w http.ResponseWriter, r *http.Request) {
+	us, ok := h.user(w, r)
+	if !ok {
+		return
+	}
 	id := r.PathValue("id")
 	if h.Course().Lessons[id] == nil {
 		fail(w, 404, "unknown lesson")
+		return
+	}
+	if h.denyLockedLesson(w, us, id) {
 		return
 	}
 	out := []exerciseBlockDTO{}
@@ -411,6 +507,9 @@ func (h handlers) checkExercise(w http.ResponseWriter, r *http.Request) {
 	ex, block, found := h.findExercise(lesson, exID)
 	if !found {
 		fail(w, 404, "unknown exercise")
+		return
+	}
+	if h.denyLockedLesson(w, us, lesson) {
 		return
 	}
 	var req checkRequest
@@ -553,6 +652,9 @@ func (h handlers) setStepStatus(w http.ResponseWriter, r *http.Request) {
 		fail(w, 404, "unknown lesson")
 		return
 	}
+	if h.denyLockedLesson(w, us, id) {
+		return
+	}
 	var req struct {
 		Status string `json:"status"`
 	}
@@ -579,6 +681,9 @@ func (h handlers) completeLesson(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
 	if h.Course().Lessons[id] == nil {
 		fail(w, 404, "unknown lesson")
+		return
+	}
+	if h.denyLockedLesson(w, us, id) {
 		return
 	}
 	if err := us.SetLessonStatus(id, "done", h.Now()); err != nil {

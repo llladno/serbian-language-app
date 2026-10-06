@@ -14,6 +14,13 @@ type phaseDTO struct {
 	ID      string   `json:"id"`
 	Title   string   `json:"title"`
 	Lessons []string `json:"lessons"`
+	// Locked is always serialised: its absence would be indistinguishable from
+	// false, and a client defaulting an unknown phase to unlocked is the wrong
+	// failure. Price fields are omitted for free phases, which have none.
+	Locked          bool  `json:"locked"`
+	Price           int64 `json:"price,omitempty"`
+	PriceEffective  int64 `json:"price_effective,omitempty"`
+	DiscountPercent int   `json:"discount_percent,omitempty"`
 }
 
 type lessonRefDTO struct {

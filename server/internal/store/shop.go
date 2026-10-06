@@ -327,3 +327,48 @@ func (u *UserStore) SpendStreakRepair(day string, now time.Time) error {
 	}
 	return tx.Commit()
 }
+
+// UpsertProduct creates or replaces a catalogue row, keyed by (kind, ref) —
+// the pair that uniquely identifies what is being sold — and returns its id.
+// The admin panel's product editor and the starting-catalogue seed both go
+// through here, so there is one definition of a valid product row.
+func (s *Store) UpsertProduct(p economy.Product, now time.Time) (int64, error) {
+	active := 0
+	if p.Active {
+		active = 1
+	}
+	iso := now.UTC().Format(time.RFC3339)
+	var id int64
+	err := s.db.QueryRow(`INSERT INTO products
+		(kind, ref, title, description, price, discount_percent, discount_from, discount_to,
+		 grant_qty, active, sort_order, created_at, updated_at)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+		ON CONFLICT (kind, ref) DO UPDATE SET
+			title = excluded.title, description = excluded.description,
+			price = excluded.price, discount_percent = excluded.discount_percent,
+			discount_from = excluded.discount_from, discount_to = excluded.discount_to,
+			grant_qty = excluded.grant_qty, active = excluded.active,
+			sort_order = excluded.sort_order, updated_at = excluded.updated_at
+		RETURNING id`,
+		p.Kind, p.Ref, p.Title, p.Description, p.Price, p.DiscountPercent,
+		p.DiscountFrom, p.DiscountTo, p.GrantQty, active, p.SortOrder, iso, iso).Scan(&id)
+	if err != nil {
+		return 0, fmt.Errorf("upsert product %s:%s: %w", p.Kind, p.Ref, err)
+	}
+	return id, nil
+}
+
+// GrantEntitlement adds qty to what the user owns without charging for it —
+// how an admin hands someone a course, and how a test sets up an owner. A
+// purchase goes through Purchase instead, which also writes the ledger.
+func (u *UserStore) GrantEntitlement(kind, ref string, qty int64, now time.Time) error {
+	iso := now.UTC().Format(time.RFC3339)
+	if _, err := u.db.Exec(`INSERT INTO user_entitlements (user_id, kind, ref, qty, updated_at)
+		VALUES (?, ?, ?, ?, ?)
+		ON CONFLICT (user_id, kind, ref) DO UPDATE SET
+			qty = user_entitlements.qty + ?, updated_at = ?`,
+		u.user, kind, ref, qty, iso, qty, iso); err != nil {
+		return fmt.Errorf("grant entitlement %s:%s: %w", kind, ref, err)
+	}
+	return nil
+}
