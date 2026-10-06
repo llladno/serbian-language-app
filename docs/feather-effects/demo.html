@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sparkles demo</title>
+<style>
+  :root {
+    --bg: #F7F9F7;
+    --fg: #0B3F3D;
+    --panel: rgba(255,255,255,.85);
+    --panel-fg: #0B3F3D;
+    --accent: #176B68;
+  }
+  [data-bg="dark"]  { --bg: #0E2423; --fg: #E7EFEE; --panel: rgba(10,30,29,.82); --panel-fg: #E7EFEE; }
+  [data-bg="teal"]  { --bg: #176B68; --fg: #F7F9F7; --panel: rgba(11,63,61,.82); --panel-fg: #F7F9F7; }
+
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    font: 15px/1.4 system-ui, -apple-system, "Segoe UI", sans-serif;
+    overflow: hidden;
+    transition: background .25s;
+  }
+
+  /* Sparkle layer sits behind the UI. */
+  #sky { position: fixed; inset: 0; pointer-events: none; overflow: hidden; }
+  .spark { position: absolute; }
+  .spark img {
+    display: block;
+    image-rendering: pixelated;
+    transform: scale(0);
+    /* Stepped keyframes below keep the scale on whole-pixel multiples. */
+    animation: twinkle var(--dur) step-end var(--delay) 1 both;
+  }
+  .spark.drift { animation: drift var(--dur) linear var(--delay) 1 both; }
+
+  /* base render is 4x native; .5 -> 2x, .25 -> 1x, so pixels stay crisp */
+  @keyframes twinkle {
+    0%   { transform: scale(0); }
+    12%  { transform: scale(.25); }
+    28%  { transform: scale(.5); }
+    45%  { transform: scale(1); }
+    62%  { transform: scale(.5); }
+    80%  { transform: scale(.25); }
+    100% { transform: scale(0); }
+  }
+  @keyframes drift {
+    from { transform: translateY(0); }
+    to   { transform: translateY(var(--rise)); }
+  }
+
+  /* Controls */
+  .panel {
+    position: fixed; left: 16px; top: 16px; z-index: 2;
+    background: var(--panel); color: var(--panel-fg);
+    backdrop-filter: blur(6px);
+    border-radius: 14px; padding: 14px 16px;
+    box-shadow: 0 2px 14px rgba(0,0,0,.18);
+    max-width: calc(100vw - 32px);
+  }
+  .panel h1 { font-size: 15px; margin: 0 0 10px; }
+  .row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 6px 0; }
+  .row > span { opacity: .7; min-width: 78px; }
+  .seg button {
+    font: inherit; color: inherit; cursor: pointer;
+    background: transparent; border: 0; border-radius: 8px;
+    padding: 5px 10px; box-shadow: inset 0 0 0 1px rgba(127,127,127,.4);
+  }
+  .seg button[aria-pressed="true"] {
+    background: #E3B04B; color: #3a2606; box-shadow: none; font-weight: 600;
+  }
+  input[type=range] { accent-color: #E3B04B; width: 140px; }
+
+  /* Palette gallery, bottom */
+  .gallery {
+    position: fixed; right: 16px; bottom: 16px; z-index: 2;
+    background: var(--panel); color: var(--panel-fg);
+    border-radius: 14px; padding: 12px 14px;
+    box-shadow: 0 2px 14px rgba(0,0,0,.18);
+  }
+  .gallery .grid { display: grid; grid-template-columns: repeat(4, 56px); gap: 6px; justify-items: center; align-items: center; }
+  .gallery img { image-rendering: pixelated; }
+  .gallery small { display: block; opacity: .7; margin-bottom: 8px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .spark img { animation-duration: 0s !important; }
+  }
+</style>
+</head>
+<body data-bg="light">
+<div id="sky" aria-hidden="true"></div>
+
+<div class="panel">
+  <h1>Пёрышки: фоновые звёздочки</h1>
+  <div class="row seg" id="modes">
+    <span>Анимация</span>
+    <button data-v="twinkle" aria-pressed="true">Мерцание на месте</button>
+    <button data-v="drift" aria-pressed="false">Дрейф вверх</button>
+  </div>
+  <div class="row seg" id="bgs">
+    <span>Фон</span>
+    <button data-v="light" aria-pressed="true">Светлый</button>
+    <button data-v="dark" aria-pressed="false">Тёмный</button>
+    <button data-v="teal" aria-pressed="false">Teal</button>
+  </div>
+  <div class="row">
+    <span>Плотность</span>
+    <input id="density" type="range" min="6" max="60" value="26">
+  </div>
+</div>
+
+<div class="gallery">
+  <small>Набор: 4 размера × 4 цвета</small>
+  <div class="grid" id="grid"></div>
+</div>
+
+<script>
+  // Sprites are inlined (generated from sparkles/*.png) so this file works on its own.
+  const SPRITES = {"l-amber": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAkAAAAJCAYAAADgkQYQAAAARUlEQVR4nGNgQAMn+/X+o4sxMRABmLCZgm4aXBFMQkpRFsNaRmQOTAEIPLv/GM5mxGYSTIF54SWwPFwRuhUwBVgB2UEAAFJcIAc7kw2rAAAAAElFTkSuQmCC", "l-cream": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAkAAAAJCAYAAADgkQYQAAAAQ0lEQVR4nGNgQAP/P1/8jy7GxEAEYMJmCrppcEVwCR49DGsZUXRBFYDBl0twJiNWk6AKGHn1wfJwRRhWQBVgBWQHAQA6fCaUBgDCAQAAAABJRU5ErkJggg==", "l-gold": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAkAAAAJCAYAAADgkQYQAAAARUlEQVR4nGNgQAOPN3j/RxdjYiACMGEzBd00uCKYhLCGPYa1jMgcmAIQeHvjIJzNiM0kmALZgK1gebgidCtgCrACsoMAAGrUIpFhl8NKAAAAAElFTkSuQmCC", "l-pale": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAkAAAAJCAYAAADgkQYQAAAARUlEQVR4nGNgQAPfbnT9RxdjYiACMGEzBd00uCKYBKe0O4a1jMgcmAIQ+P50J5zNiM0kmAIujTKwPFwRuhUwBVgB2UEAABw/JdiSFfKCAAAAAElFTkSuQmCC", "m-amber": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAcAAAAHCAYAAADEUlfTAAAANklEQVR4nGNgQAIn+/X+I/OZkDnoAC4J0iWlKIuimxHGAUnAwLP7jyGS6DpBEuaFl+Di5DkIADgMFvp+rPpuAAAAAElFTkSuQmCC", "m-cream": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAcAAAAHCAYAAADEUlfTAAAALElEQVR4nGNgQAL/P1/8j8xnQubgBCBdYICkmxHO4dFDqPxyibBODAVEOwgA8qkkTAK+zKUAAAAASUVORK5CYII=", "m-gold": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAcAAAAHCAYAAADEUlfTAAAANklEQVR4nGNgQAKPN3j/R+YzIXPQAVwSpEtYwx5FNyOMA5KAgbc3DqIaAVL07UbXf3R7yXMQALzBGuRaN79fAAAAAElFTkSuQmCC", "m-pale": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAcAAAAHCAYAAADEUlfTAAAAMUlEQVR4nGNgQALfbnT9R+YzIXNwApCu/58v/kfWzQjjcEq7wxV+f7qTsE4MBUQ7CADsKyHrHK1MKgAAAABJRU5ErkJggg==", "s-amber": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAJElEQVR4nGNggIKT/Xr/YWwmGAMZMMJUSCnKMjy7/xhVlqB2AGt7CpVV2lDCAAAAAElFTkSuQmCC", "s-cream": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAI0lEQVR4nGNggIL/ny/+h7GZYAxkwAhXwaPHwPDlEqosQe0AIJcNTNSAqScAAAAASUVORK5CYII=", "s-gold": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAJElEQVR4nGNggILHG7z/w9hMMAYyYIGpENawZ3i8gQGumjjtAK5cC6znIWlWAAAAAElFTkSuQmCC", "s-pale": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAJElEQVR4nGNggIJvN7r+w9hMMAYyYIGp4JR2Z/h2gwGumjjtAA+wDUabMZMjAAAAAElFTkSuQmCC", "xl-amber": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA0AAAANCAYAAABy6+R8AAAAT0lEQVR4nGNgwAFO9uv9xyXHxEAGYKKappNQp+FyIlk2MWKzQUpRFi727P5jMG1eeAmulhGbE6SwaKLcJgYs4CSS7ciKYYCsgMAJBkeKAADp1CGstjS/RAAAAABJRU5ErkJggg==", "xl-cream": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA0AAAANCAYAAABy6+R8AAAAVElEQVR4nGNgwAH+f774H5ccEwMZgIlqmv5DnYbLiWTZxIjNBgYePYTgl0sQhbz6cLUs+EIJGSCrY0E24T8eA5DVoTiPAYtmZMUwQFZA4ASDI0UAAA5tJOOcE19KAAAAAElFTkSuQmCC", "xl-gold": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA0AAAANCAYAAABy6+R8AAAAUklEQVR4nGNgwAEeb/D+j0uOiYEMwEQ1TY+hTsPlRLJsYsFmg7CGPZIYA1hMNmArI1wTvlBCBsjqWJBNeIzHAGR1jIRMlUVSDANkBQROMDhSBADPySF58lr3TAAAAABJRU5ErkJggg==", "xl-pale": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA0AAAANCAYAAABy6+R8AAAAUklEQVR4nGNgwAG+3ej6j0uOiYEMwEQ1Td+gTsPlRLJsYsFmA6e0O5IYA1iMS6OMEa4JXyghA2R1LMgmfMNjALI6RkKmciEphgGyAgInGBwpAgBDuSQHbcefuwAAAABJRU5ErkJggg=="};
+  const SIZES = { s: 5, m: 7, l: 9, xl: 13 };         // native pixels
+  const COLORS = ['pale', 'gold', 'amber', 'cream'];
+  const BASE = 4;                                      // on-screen px per sprite pixel
+
+  const sky = document.getElementById('sky');
+  let mode = 'twinkle';
+  let target = 26;
+  let alive = 0;
+
+  const rnd = (a, b) => a + Math.random() * (b - a);
+  const pick = a => a[Math.floor(Math.random() * a.length)];
+
+  // Small sizes are more common, so big ones feel like accents.
+  const sizeBag = ['s', 's', 's', 'm', 'm', 'm', 'l', 'l', 'xl'];
+
+  function spawn(firstWave) {
+    if (alive >= target) return;
+    alive++;
+
+    const size = pick(sizeBag);
+    const px = SIZES[size] * BASE;
+    const dur = rnd(1.6, 3.4);
+    const delay = firstWave ? rnd(0, 3) : 0;
+
+    const wrap = document.createElement('div');
+    wrap.className = 'spark' + (mode === 'drift' ? ' drift' : '');
+    wrap.style.left = rnd(0, 100) + 'vw';
+    wrap.style.top = rnd(4, 100) + 'vh';
+    wrap.style.setProperty('--dur', dur + 's');
+    wrap.style.setProperty('--delay', delay + 's');
+    wrap.style.setProperty('--rise', -Math.round(rnd(40, 110)) + 'px');
+    // Centre the sprite on the random point.
+    wrap.style.marginLeft = -px / 2 + 'px';
+    wrap.style.marginTop = -px / 2 + 'px';
+
+    const img = new Image();
+    img.src = SPRITES[`${size}-${pick(COLORS)}`];
+    img.width = px;
+    img.height = px;
+    img.alt = '';
+    img.style.setProperty('--dur', dur + 's');
+    img.style.setProperty('--delay', delay + 's');
+    wrap.appendChild(img);
+    sky.appendChild(wrap);
+
+    img.addEventListener('animationend', () => {
+      wrap.remove();
+      alive--;
+      setTimeout(() => spawn(false), rnd(0, 700));
+    }, { once: true });
+  }
+
+  function refill(firstWave) {
+    for (let i = alive; i < target; i++) spawn(firstWave);
+  }
+
+  function restart() {
+    sky.textContent = '';
+    alive = 0;
+    refill(true);
+  }
+
+  function bindSeg(id, onPick) {
+    const root = document.getElementById(id);
+    root.addEventListener('click', e => {
+      const b = e.target.closest('button');
+      if (!b) return;
+      root.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', x === b));
+      onPick(b.dataset.v);
+    });
+  }
+
+  bindSeg('modes', v => { mode = v; restart(); });
+  bindSeg('bgs', v => { document.body.dataset.bg = v; });
+  document.getElementById('density').addEventListener('input', e => {
+    target = +e.target.value;
+    refill(false);
+  });
+
+  // Gallery: all 16 sprites at 4x.
+  const grid = document.getElementById('grid');
+  for (const c of COLORS) {
+    for (const s of Object.keys(SIZES)) {
+      const im = new Image();
+      im.src = SPRITES[`${s}-${c}`];
+      im.width = SIZES[s] * BASE;
+      im.height = SIZES[s] * BASE;
+      im.title = `${s}-${c}`;
+      grid.appendChild(im);
+    }
+  }
+
+  restart();
+</script>
+</body>
+</html>
