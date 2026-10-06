@@ -6,6 +6,7 @@ package economy
 import (
 	"encoding/json"
 	"fmt"
+	"time"
 )
 
 // Ladder maps a streak length to a daily payout: each entry is
@@ -168,4 +169,55 @@ func QuestDone(q Quest, c Counters, phaseLessons map[string][]string) bool {
 		return false
 	}
 	return QuestValue(q, c, phaseLessons) >= q.Target
+}
+
+// Product kinds.
+const (
+	ProductPhaseUnlock = "phase_unlock"
+	ProductConsumable  = "consumable"
+	ProductCosmetic    = "cosmetic"
+)
+
+// Product is one row of the products table. Ref identifies what is being sold
+// within its kind: a phase id, a consumable key, a palette name.
+type Product struct {
+	ID              int64
+	Kind            string
+	Ref             string
+	Title           string
+	Description     string
+	Price           int64
+	DiscountPercent int
+	DiscountFrom    string // YYYY-MM-DD, empty = open-ended
+	DiscountTo      string
+	GrantQty        int
+	Active          bool
+	SortOrder       int
+}
+
+// Permanent reports whether owning this product is a one-off right rather than
+// a stock of uses.
+func (p Product) Permanent() bool {
+	return p.Kind == ProductPhaseUnlock || p.Kind == ProductCosmetic
+}
+
+// SalePercent is the product's discount if now falls inside its window, else
+// 0. An empty bound is open-ended on that side.
+//
+// The bounds are compared as strings, which is exactly right for zero-padded
+// YYYY-MM-DD and sidesteps a timezone question the admin should not have to
+// answer: a sale runs for whole calendar days in whatever zone the reader is
+// in, and nobody cares which side of midnight a sale starts on.
+func (p Product) SalePercent(now time.Time) int {
+	if p.DiscountPercent <= 0 {
+		return 0
+	}
+	day := now.Format("2006-01-02")
+	if p.DiscountFrom != "" && day < p.DiscountFrom {
+		return 0
+	}
+	if p.DiscountTo != "" && day > p.DiscountTo {
+		return 0
+	}
+	return p.DiscountPercent
 }

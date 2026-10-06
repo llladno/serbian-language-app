@@ -204,11 +204,27 @@ func (u *UserStore) StreakDays(now time.Time) (int, error) {
 // this function only enforces that the day is in the past, is not already
 // active, and is inside the configured window.
 func (u *UserStore) RepairStreak(day string, now time.Time) error {
-	set, err := economySettings(u.db)
+	tx, err := u.db.Begin()
+	if err != nil {
+		return fmt.Errorf("repair streak: %w", err)
+	}
+	defer tx.Rollback()
+	if err := repairStreakTx(tx, u.user, day, now); err != nil {
+		return err
+	}
+	return tx.Commit()
+}
+
+// repairStreakTx is RepairStreak's body, taking the transaction so a caller
+// that also has to pay for the repair can commit both halves together — see
+// SpendStreakRepair. Running on u.db instead would let the repair stand after
+// the payment rolled back.
+func repairStreakTx(tx *dbtx, userID, day string, now time.Time) error {
+	set, err := economySettings(tx)
 	if err != nil {
 		return err
 	}
-	loc := userLocation(u.db, u.user)
+	loc := userLocation(tx, userID)
 	parsed, err := time.ParseInLocation(dateFmt, day, loc)
 	if err != nil {
 		return fmt.Errorf("repair streak: bad day %q: %w", day, err)
@@ -224,17 +240,17 @@ func (u *UserStore) RepairStreak(day string, now time.Time) error {
 		return fmt.Errorf("repair streak: %s is outside the %dh window", day, set.RepairWindowHours)
 	}
 	var actions, goal int
-	err = u.db.QueryRow(`SELECT actions, goal FROM user_daily_activity WHERE user_id = ? AND day = ?`,
-		u.user, day).Scan(&actions, &goal)
+	err = tx.QueryRow(`SELECT actions, goal FROM user_daily_activity WHERE user_id = ? AND day = ?`,
+		userID, day).Scan(&actions, &goal)
 	switch {
 	case err == nil && actions >= goal:
 		return fmt.Errorf("repair streak: %s is already active", day)
 	case err != nil && !errors.Is(err, sql.ErrNoRows):
 		return fmt.Errorf("repair streak: read %s: %w", day, err)
 	}
-	if _, err := u.db.Exec(`INSERT INTO streak_repairs (user_id, day, created_at) VALUES (?, ?, ?)
+	if _, err := tx.Exec(`INSERT INTO streak_repairs (user_id, day, created_at) VALUES (?, ?, ?)
 		ON CONFLICT (user_id, day) DO NOTHING`,
-		u.user, day, now.UTC().Format(time.RFC3339)); err != nil {
+		userID, day, now.UTC().Format(time.RFC3339)); err != nil {
 		return fmt.Errorf("repair streak: %w", err)
 	}
 	return nil
