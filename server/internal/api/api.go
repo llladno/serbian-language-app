@@ -162,6 +162,17 @@ func Handler(deps Deps) http.Handler {
 	root.HandleFunc("PATCH /api/me", h.requireSession(h.patchMe))
 	root.HandleFunc("POST /api/me/password", h.requireSession(h.changePassword))
 	root.HandleFunc("POST /api/me/link/telegram", h.requireSession(h.linkTelegram))
+
+	// Currency routes. requireSession, never the protected mux: the X-User
+	// bridge must not reach anything that moves money. /api/shop is
+	// account-scoped (it reports what you own), so it belongs here too.
+	root.HandleFunc("GET /api/me/wallet", h.requireSession(h.getWallet))
+	root.HandleFunc("GET /api/me/quests", h.requireSession(h.listQuests))
+	root.HandleFunc("POST /api/me/quests/{id}/claim", h.requireSession(h.claimQuest))
+	root.HandleFunc("GET /api/me/transactions", h.requireSession(h.listTransactions))
+	root.HandleFunc("GET /api/shop", h.requireSession(h.getShop))
+	root.HandleFunc("POST /api/me/purchases", h.requireSession(h.purchase))
+	root.HandleFunc("POST /api/me/streak/repair", h.requireSession(h.repairStreak))
 	root.HandleFunc("POST /api/me/telegram/start", h.requireSession(h.telegramLinkStart))
 	root.HandleFunc("DELETE /api/me/telegram", h.requireSession(h.unlinkTelegram))
 	root.HandleFunc("DELETE /api/me/sessions/{id}", h.requireSession(h.deleteSession))

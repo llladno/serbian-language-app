@@ -997,3 +997,20 @@ func TestLookupStaysOpenAcrossLockedPhases(t *testing.T) {
 		t.Fatal("lookup returned nothing for a word in a locked phase")
 	}
 }
+
+// doCookieWithKey is doCookie plus an Idempotency-Key header, for the endpoints
+// where a retried request must not be a second action.
+func doCookieWithKey(h http.Handler, c *http.Cookie, method, path, body, key string) *httptest.ResponseRecorder {
+	var r *http.Request
+	if body != "" {
+		r = httptest.NewRequest(method, path, strings.NewReader(body))
+	} else {
+		r = httptest.NewRequest(method, path, nil)
+	}
+	r.AddCookie(c)
+	r.Header.Set("Idempotency-Key", key)
+	setTestOrigin(r)
+	rr := httptest.NewRecorder()
+	h.ServeHTTP(rr, r)
+	return rr
+}

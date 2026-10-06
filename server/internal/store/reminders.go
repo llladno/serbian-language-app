@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"log"
 	"strconv"
 	"time"
 )
@@ -121,4 +122,25 @@ func (s *Store) SetBotReminderInactiveSentAt(userID string, at time.Time) error 
 		return fmt.Errorf("set bot reminder inactive-sent-at: %w", err)
 	}
 	return nil
+}
+
+// TelegramChatID resolves one account's Telegram chat id, for the
+// channel-subscription quest. Same rule as TelegramLinkedUsers: a still-pending
+// "pending:<username>" identity has no chat behind it yet and does not count.
+func (s *Store) TelegramChatID(userID string) (int64, bool) {
+	var uid string
+	err := s.db.QueryRow(`SELECT provider_uid FROM identities
+		WHERE user_id = ? AND provider = 'telegram' AND provider_uid NOT LIKE 'pending:%'`,
+		userID).Scan(&uid)
+	if err != nil {
+		if !errors.Is(err, sql.ErrNoRows) {
+			log.Printf("telegram chat id for %s: %v", userID, err)
+		}
+		return 0, false
+	}
+	chatID, err := strconv.ParseInt(uid, 10, 64)
+	if err != nil {
+		return 0, false
+	}
+	return chatID, true
 }

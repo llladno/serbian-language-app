@@ -1170,4 +1170,3 @@ func TestTelegramClaimsPendingCaseInsensitive(t *testing.T) {
 		t.Errorf("user count = %d, want 2 (claim must not create a new user)", len(users))
 	}
 }
-

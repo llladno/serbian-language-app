@@ -151,3 +151,31 @@ func (u *UserStore) ClaimQuest(q economy.Quest, now time.Time) error {
 	}
 	return tx.Commit()
 }
+
+// UpsertQuest creates or updates a quest. The admin panel's quest editor is the
+// only intended caller: quests are configuration, and the one thing that must
+// never change under a user is the id, since quest_claims and the ledger's
+// idempotency keys both reference it.
+func (s *Store) UpsertQuest(q economy.Quest, now time.Time) error {
+	active := 0
+	if q.Active {
+		active = 1
+	}
+	iso := now.UTC().Format(time.RFC3339)
+	if q.ID == 0 {
+		_, err := s.db.Exec(`INSERT INTO quests
+			(kind, target, param, title, description, reward, active, sort_order, created_at, updated_at)
+			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+			q.Kind, q.Target, q.Param, q.Title, q.Description, q.Reward, active, q.SortOrder, iso, iso)
+		if err != nil {
+			return fmt.Errorf("insert quest: %w", err)
+		}
+		return nil
+	}
+	if _, err := s.db.Exec(`UPDATE quests SET kind = ?, target = ?, param = ?, title = ?,
+		description = ?, reward = ?, active = ?, sort_order = ?, updated_at = ? WHERE id = ?`,
+		q.Kind, q.Target, q.Param, q.Title, q.Description, q.Reward, active, q.SortOrder, iso, q.ID); err != nil {
+		return fmt.Errorf("update quest %d: %w", q.ID, err)
+	}
+	return nil
+}
