@@ -946,3 +946,48 @@ func TestBackfillRunsOnADatabaseAlreadyAtVersion016(t *testing.T) {
 		t.Fatalf("28th actions = %d, want 1", got)
 	}
 }
+
+// Rows the live code already wrote survive the backfill untouched. On a
+// database that ran Task 5's counting before this hook existed (dev did), the
+// reconstruction is the weaker source: it keeps the live row even when its own
+// count is higher, because lowering a count a learner was already paid for is
+// the worse failure. This pins that, since the hook only ever runs once and a
+// regression here could not be caught later.
+func TestBackfillNeverOverwritesLiveRows(t *testing.T) {
+	s := openStoreAtVersion(t, 14)
+	id, _ := s.CreateUser("Ветеран")
+
+	// History that would reconstruct as 10 actions on the 27th and best = 9.
+	for i := 0; i < 10; i++ {
+		seedAttempt(t, s, id, "01."+strconv.Itoa(i), i != 9, "2026-09-27T09:00:00Z")
+	}
+	// What "the live code already recorded" looks like: a partial day with a
+	// goal from a different settings generation, and a streak still at zero.
+	mustExec(t, s, `INSERT INTO user_daily_activity (user_id, day, actions, goal) VALUES (?, ?, ?, ?)`,
+		id, "2026-09-27", 3, 99)
+	mustExec(t, s, `INSERT INTO user_answer_streak (user_id, current, best, updated_at) VALUES (?, ?, ?, ?)`,
+		id, 0, 0, "2026-09-27T09:00:00Z")
+
+	if err := s.runMigrations(); err != nil {
+		t.Fatalf("migrate to head: %v", err)
+	}
+
+	if got := activityOn(t, s, id, "2026-09-27"); got != 3 {
+		t.Fatalf("27th actions = %d, want 3 (the live row, not the backfill's 10)", got)
+	}
+	var goal int
+	if err := s.db.QueryRow(`SELECT goal FROM user_daily_activity WHERE user_id = ? AND day = ?`,
+		id, "2026-09-27").Scan(&goal); err != nil {
+		t.Fatalf("read goal: %v", err)
+	}
+	if goal != 99 {
+		t.Fatalf("goal = %d, want 99 (the live row's frozen goal)", goal)
+	}
+	cur, best, err := s.User(id).AnswerStreak()
+	if err != nil {
+		t.Fatalf("answer streak: %v", err)
+	}
+	if cur != 0 || best != 0 {
+		t.Fatalf("answer streak = (%d, %d), want (0, 0): the live row stands", cur, best)
+	}
+}

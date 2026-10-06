@@ -516,8 +516,11 @@ func migrate007(tx *dbtx, pg bool) error {
 // mis-credit whole histories according to where a card happens to sit now,
 // which is worse than skipping the check. The cap (b) is the half that prevents
 // gifting inflated streaks; the due check mostly excluded farming, and before
-// this feature nobody had a reason to farm: the UI only ever offered cards
-// from the queue, so nearly every historical review was of a due card.
+// this feature nobody had a reason to farm. That last part is an assumption
+// about how this data came to exist, not a property of it: the app's own UI
+// offers cards from the queue, but the API never enforced it (reviewGrade
+// passes any card_id straight to GradeCard), and nobody checked the stored
+// reviews against the queue predicate before writing this.
 //
 // Days are cut in Europe/Belgrade for everyone, since no historical timezone
 // exists, and the same zone buckets both the per-day action counts and the
@@ -526,7 +529,19 @@ func migrate007(tx *dbtx, pg bool) error {
 //
 // Existing rows are never overwritten (ON CONFLICT DO NOTHING): anything the
 // live code already wrote on a database that ran it before this hook is
-// authoritative.
+// authoritative. That is a real trade, not just a safety net — on such a
+// database a day the live code recorded partially keeps its smaller count even
+// though this backfill reconstructed a fuller one, and an answer streak the
+// live code started from zero stays at zero. Only databases that ran Task 5's
+// code before this hook can be in that state (in practice: dev), and keeping
+// the live row is the safer side of the trade, since overwriting could lower a
+// count a learner has already been paid for.
+//
+// Rows whose timestamp will not parse as RFC3339 are left out of the day
+// counts and reported in the log line. An unparseable attempt still counts as
+// that exercise's first attempt and still moves the answer streak: the streak
+// is a sequence over attempts, and dropping a link would splice together two
+// runs that were never consecutive.
 func migrate015(tx *dbtx, pg bool) error {
 	loc, err := time.LoadLocation(fallbackTZ)
 	if err != nil {
