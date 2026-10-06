@@ -36,7 +36,8 @@ func newStore(t *testing.T) *Store {
 			s.db.Exec(`TRUNCATE users, identities, sessions, email_tokens, srs_cards, reviews, attempts, lesson_progress, lesson_step_progress, bot_reminders, support_messages, link_visits, bot_outbox, notifications, notification_recipients, donations, broadcasts, currency_ledger, user_daily_activity, streak_repairs, user_answer_streak, quests, quest_claims, products, promo_codes, promo_code_products, promo_redemptions, user_entitlements`)
 		}
 		truncate()
-		t.Cleanup(func() { truncate(); s.Close() })
+		restoreEconomySettings(t, s)
+		t.Cleanup(func() { restoreEconomySettings(t, s); truncate(); s.Close() })
 	} else {
 		t.Cleanup(func() { s.Close() })
 	}

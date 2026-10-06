@@ -9,12 +9,23 @@ import (
 // restoreEconomySettings resets economy_settings back to migration 013's
 // seed. economy_settings is deliberately left out of newStore's Postgres
 // TRUNCATE list (it's shared config, not per-test data, and truncating it
-// would strand it empty forever — migrations only seed once). So a test
-// that UPDATEs or DELETEs rows must put them back itself, or it leaks into
-// whichever test runs next in the same process. A no-op in effect on
-// SQLite, where each test already gets its own fresh in-memory db.
+// would strand it empty forever — migrations only seed once). So a test that
+// UPDATEs, DELETEs or ADDs rows would otherwise leak into whichever test runs
+// next in the same process. A no-op in effect on SQLite, where each test
+// already gets its own fresh in-memory db.
+//
+// newStore calls this on cleanup, so individual tests do not have to remember.
+// It also drops keys outside the seeded seven: SeedEconomyDefaults writes an
+// economy_seeded marker, and a marker surviving into the next test makes the
+// seed a silent no-op there — which is exactly how TestSeedIsIdempotent first
+// failed on Postgres and passed on SQLite.
 func restoreEconomySettings(t *testing.T, s *Store) {
 	t.Helper()
+	if _, err := s.db.Exec(`DELETE FROM economy_settings WHERE key NOT IN
+		('currency_name_one', 'currency_name_few', 'currency_name_many', 'daily_goal',
+		 'streak_drip', 'streak_repair_window_hours', 'telegram_channel')`); err != nil {
+		t.Fatalf("drop extra economy_settings keys: %v", err)
+	}
 	_, err := s.db.Exec(`INSERT INTO economy_settings (key, value, updated_at) VALUES
 		('currency_name_one',          'монета',                 '2026-09-29T00:00:00Z'),
 		('currency_name_few',          'монеты',                 '2026-09-29T00:00:00Z'),

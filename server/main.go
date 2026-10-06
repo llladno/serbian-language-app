@@ -66,6 +66,15 @@ func main() {
 		log.Printf("imported %d rows from %s", n, *importSQLite)
 	}
 
+	// Writes the starting quest list and product catalogue on the first boot
+	// after this deploy, so the currency feature is live without anyone opening
+	// the admin panel. Idempotent, and guarded so that curating the list in the
+	// admin is not undone by a restart. A failed seed must not take the site
+	// down: it is logged and the server starts anyway.
+	if err := st.SeedEconomyDefaults(time.Now()); err != nil {
+		log.Printf("seed economy defaults: %v", err)
+	}
+
 	cfg := config.Load()
 
 	// Redirect every Bot API call through a reverse proxy when this host
