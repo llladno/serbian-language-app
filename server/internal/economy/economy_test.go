@@ -53,3 +53,74 @@ func TestEffectivePriceTakesTheBetterDiscount(t *testing.T) {
 		}
 	}
 }
+
+func TestQuestValue(t *testing.T) {
+	phases := map[string][]string{
+		"1": {"00", "01", "02", "03"},
+		"2": {"16", "17"},
+	}
+	c := Counters{
+		LessonsCompleted: 12,
+		VocabLearned:     140,
+		ReviewsDone:      320,
+		AnswerBest:       11,
+		StreakDays:       9,
+		CompletedLessons: map[string]bool{"00": true, "01": true, "02": true, "16": true},
+	}
+	cases := []struct {
+		kind, param string
+		want        int
+	}{
+		{"lessons_completed", "", 12},
+		{"vocab_learned", "", 140},
+		{"reviews_done", "", 320},
+		{"correct_in_row", "", 11},
+		{"streak_days", "", 9},
+		{"phase_completed", "1", 75}, // 3 of 4
+		{"phase_completed", "2", 50}, // 1 of 2
+		{"phase_completed", "9", 0},  // unknown phase
+		{"telegram_subscribed", "", 0},
+		{"nonsense", "", 0},
+	}
+	for _, tc := range cases {
+		q := Quest{Kind: tc.kind, Param: tc.param, Target: 100}
+		if got := QuestValue(q, c, phases); got != tc.want {
+			t.Errorf("QuestValue(%s,%q) = %d, want %d", tc.kind, tc.param, got, tc.want)
+		}
+	}
+}
+
+func TestQuestDone(t *testing.T) {
+	phases := map[string][]string{"1": {"00", "01"}}
+	c := Counters{LessonsCompleted: 10, CompletedLessons: map[string]bool{"00": true, "01": true}}
+
+	if !QuestDone(Quest{Kind: "lessons_completed", Target: 10}, c, phases) {
+		t.Error("exactly at target must count as done")
+	}
+	if QuestDone(Quest{Kind: "lessons_completed", Target: 11}, c, phases) {
+		t.Error("one short must not count as done")
+	}
+	if !QuestDone(Quest{Kind: "phase_completed", Param: "1", Target: 100}, c, phases) {
+		t.Error("a fully completed phase must count as done")
+	}
+
+	// telegram_subscribed is a flag, not a count.
+	sub := c
+	sub.TelegramSubscribed = true
+	if !QuestDone(Quest{Kind: "telegram_subscribed", Target: 1}, sub, phases) {
+		t.Error("a subscribed user must complete the telegram quest")
+	}
+	if QuestDone(Quest{Kind: "telegram_subscribed", Target: 1}, c, phases) {
+		t.Error("an unsubscribed user must not complete the telegram quest")
+	}
+
+	// A target of zero never completes. An admin saving a quest with no target,
+	// or this binary meeting a kind it does not know, must not hand out a
+	// reward to everyone the moment the profile screen loads.
+	if QuestDone(Quest{Kind: "lessons_completed", Target: 0}, c, phases) {
+		t.Error("a zero target must never be done")
+	}
+	if QuestDone(Quest{Kind: "kind_from_the_future", Target: 1}, c, phases) {
+		t.Error("an unknown kind must never be done")
+	}
+}

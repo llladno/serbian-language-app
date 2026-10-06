@@ -79,3 +79,93 @@ func EffectivePrice(base int64, salePercent, promoPercent int) (int64, string) {
 	}
 	return price, applied
 }
+
+// Quest kinds. Every kind must be computable server-side from data the user
+// cannot forge — that is the whole reason the admin panel creates instances
+// of a fixed list rather than free-form conditions.
+const (
+	QuestLessonsCompleted   = "lessons_completed"
+	QuestVocabLearned       = "vocab_learned"
+	QuestReviewsDone        = "reviews_done"
+	QuestStreakDays         = "streak_days"
+	QuestCorrectInRow       = "correct_in_row"
+	QuestPhaseCompleted     = "phase_completed"
+	QuestTelegramSubscribed = "telegram_subscribed"
+)
+
+// Quest is one row of the quests table.
+type Quest struct {
+	ID          int64
+	Kind        string
+	Target      int
+	Param       string
+	Title       string
+	Description string
+	Reward      int64
+	Active      bool
+	SortOrder   int
+}
+
+// Counters is everything a quest can be measured against, gathered once per
+// request. CompletedLessons is keyed by lesson id as it appears in
+// course.yaml. TelegramSubscribed is filled by the caller, since it needs a
+// Bot API round trip.
+type Counters struct {
+	LessonsCompleted   int
+	VocabLearned       int
+	ReviewsDone        int
+	AnswerBest         int
+	StreakDays         int
+	CompletedLessons   map[string]bool
+	TelegramSubscribed bool
+}
+
+// QuestValue is the user's current value for q. For phase_completed the value
+// is a percentage (0..100), which is why such a quest's target is always 100;
+// for telegram_subscribed it is 0 or 1. An unknown kind is worth 0 rather than
+// an error: an admin can save a kind this binary has not learned yet, and a
+// quest nobody can finish is better than a 500 on the profile screen.
+func QuestValue(q Quest, c Counters, phaseLessons map[string][]string) int {
+	switch q.Kind {
+	case QuestLessonsCompleted:
+		return c.LessonsCompleted
+	case QuestVocabLearned:
+		return c.VocabLearned
+	case QuestReviewsDone:
+		return c.ReviewsDone
+	case QuestStreakDays:
+		return c.StreakDays
+	case QuestCorrectInRow:
+		return c.AnswerBest
+	case QuestPhaseCompleted:
+		lessons := phaseLessons[q.Param]
+		if len(lessons) == 0 {
+			return 0
+		}
+		done := 0
+		for _, id := range lessons {
+			if c.CompletedLessons[id] {
+				done++
+			}
+		}
+		return done * 100 / len(lessons)
+	case QuestTelegramSubscribed:
+		if c.TelegramSubscribed {
+			return 1
+		}
+		return 0
+	default:
+		return 0
+	}
+}
+
+// QuestDone reports whether the quest's target has been reached. A target of
+// zero or less is never done: QuestValue reports 0 for an unknown kind, so
+// without this guard every kind this binary does not recognise would be
+// instantly claimable by everyone.
+func QuestDone(q Quest, c Counters, phaseLessons map[string][]string) bool {
+	if q.Target <= 0 {
+		return false
+	}
+	return QuestValue(q, c, phaseLessons) >= q.Target
+}
