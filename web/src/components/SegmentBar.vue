@@ -1,8 +1,8 @@
 <script setup lang="ts">
-// Progress as a row of hard-edged blocks rather than a smooth bar: the rest of
-// the app is rounded and soft, and the quests screen is the one place where the
-// pixel-art side of the brand gets to speak. Blocks also read at a glance on a
-// phone — six of twelve is countable, 60% of a gradient is not.
+// Progress as a row of blocks rather than one smooth bar: six of twelve is
+// countable at a glance on a phone, 60% of a gradient is not. The blocks are
+// rounded like everything else in the app — the counting is the idea here, not
+// a change of material.
 import { computed } from 'vue'
 
 const props = withDefaults(
@@ -37,7 +37,7 @@ const filled = computed(() => {
     <span
       v-for="i in segments"
       :key="i"
-      class="block h-2.5 flex-1"
+      class="block h-2.5 flex-1 rounded-full"
       :class="[i <= filled ? (tone === 'feather' ? 'seg-feather' : 'seg-accent') : 'seg-empty']"
     />
   </div>
