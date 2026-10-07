@@ -21,6 +21,10 @@ onBeforeUnmount(stop)
 function instant(): boolean {
   if (props.duration <= 0) return true
   if (typeof requestAnimationFrame !== 'function') return true
+  // A hidden tab does not run animation frames, so a count started there would
+  // sit frozen on a number that was never the balance until the tab is looked
+  // at again. Nobody is watching anyway.
+  if (typeof document !== 'undefined' && document.hidden) return true
   return !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
 }
 
@@ -33,8 +37,12 @@ watch(
       shown.value = to
       return
     }
-    const started = performance.now()
+    // The clock comes from the first frame, not from performance.now():
+    // the two are the same origin in a browser but not everywhere, and a
+    // mismatch sends the easing off in the wrong direction.
+    let started = 0
     const tick = (now: number) => {
+      if (!started) started = now
       const p = Math.min(1, (now - started) / props.duration)
       // easeOutCubic — most of the distance early, so the number spends its
       // time near the value that matters rather than racing past it.

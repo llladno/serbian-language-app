@@ -30,11 +30,23 @@ const WALLET = {
 }
 
 beforeEach(() => {
+  // The balance counts up to its value; AnimatedNumber's own test covers the
+  // counting, and here it only gets in the way of reading the number.
+  vi.stubGlobal('matchMedia', (query: string) => ({
+    matches: query.includes('prefers-reduced-motion'),
+    media: query,
+    addEventListener: () => {},
+    removeEventListener: () => {},
+  }))
   setActivePinia(createPinia())
   useRewardModal().closeModal()
   vi.spyOn(api, 'wallet').mockResolvedValue(WALLET)
+  vi.spyOn(api, 'shop').mockResolvedValue({ items: [] })
 })
-afterEach(() => vi.restoreAllMocks())
+afterEach(() => {
+  vi.unstubAllGlobals()
+  vi.restoreAllMocks()
+})
 
 describe('QuestsView', () => {
   it('splits quests into claimable, in progress and already paid', async () => {
@@ -58,7 +70,7 @@ describe('QuestsView', () => {
     expect(w.find('[data-test="wallet-balance"]').text()).toBe('100 пёрышек')
     expect(w.findAll('[data-test="quest-ready"]')).toHaveLength(1)
     expect(w.text()).toContain('Можно забрать')
-    expect(w.text()).toContain('12 / 30')
+    expect(w.text()).toContain('12/30')
     expect(w.text()).toContain('Получено')
     // A claimed quest keeps no button: the only claim button on screen is the
     // one for the quest that is actually payable.

@@ -23,8 +23,11 @@ const sparks = Array.from({ length: props.count }, (_, i) => {
     key: i,
     url: sparkleUrl(size, pick(COLORS)),
     px,
-    left: rnd(2, 98),
-    top: rnd(2, 96),
+    // Kept clear of the edges: a sprite is centred on its point, and the
+    // biggest one is 52px across, so a point too near the edge gets sliced in
+    // half by the layer's overflow and reads as a rendering glitch.
+    left: rnd(10, 90),
+    top: rnd(18, 82),
     dur: rnd(1.6, 3.2),
     delay: rnd(0, 2.2),
   }

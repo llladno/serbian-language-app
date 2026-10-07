@@ -346,6 +346,19 @@ export interface ClaimResult {
   balance: number
 }
 
+export interface ShopItem {
+  id: number
+  kind: string
+  ref: string
+  title: string
+  description: string
+  price: number
+  price_effective: number
+  discount_percent?: number
+  /** How many the learner already owns: 0 for an unlocked level is "not yet". */
+  owned: number
+}
+
 export interface LessonCompletion {
   status: string
   // What finishing this lesson paid. 0 when the lesson has no reward of its

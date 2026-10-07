@@ -24,6 +24,7 @@ import type {
   Quest,
   ClaimResult,
   LessonCompletion,
+  ShopItem,
 } from './types'
 import { getStoredAttribution } from './attribution'
 
@@ -126,6 +127,7 @@ export const api = {
     request<{ status: string }>('/me/support', { method: 'POST', body: JSON.stringify({ message }) }),
   wallet: () => request<Wallet>('/me/wallet'),
   quests: () => request<{ quests: Quest[] }>('/me/quests'),
+  shop: () => request<{ items: ShopItem[] }>('/shop'),
   claimQuest: (id: number) => request<ClaimResult>(`/me/quests/${id}/claim`, { method: 'POST' }),
   getNotifications: () => request<NotificationsResponse>('/me/notifications'),
   markNotificationsRead: () => request<{ status: string }>('/me/notifications/mark-read', { method: 'POST' }),

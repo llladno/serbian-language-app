@@ -7,7 +7,7 @@ import { api } from '../api'
 import { pluralRu } from '../lib/plural'
 import { useToasts } from '../lib/toasts'
 import { groupQuests } from '../lib/questGroups'
-import type { Quest } from '../types'
+import type { Quest, ShopItem } from '../types'
 
 // Levels pay out on their own and get the reward modal, so they are the one
 // kind the toast stays quiet about.
@@ -17,6 +17,7 @@ export const useWalletStore = defineStore('wallet', () => {
   const balance = ref(0)
   const streakDays = ref(0)
   const quests = ref<Quest[]>([])
+  const products = ref<ShopItem[]>([])
   // The currency is named in the admin panel, so the app has no name for it
   // until /me/wallet answers. Until then amounts render as bare numbers
   // rather than guessing a word the admin may have changed.
@@ -25,6 +26,16 @@ export const useWalletStore = defineStore('wallet', () => {
   const nameMany = ref('')
   const loaded = ref(false)
   const questsLoaded = ref(false)
+
+  // What the пёрышки are being saved for: the cheapest level not yet owned.
+  // Without it the balance is a number with no story — the quests screen is
+  // the only place that can say what it buys.
+  const goal = computed(() => {
+    const locked = products.value
+      .filter((p) => p.kind === 'phase_unlock' && p.owned === 0)
+      .sort((a, b) => a.price_effective - b.price_effective)
+    return locked[0] ?? null
+  })
 
   // How many quests are finished and still unclaimed — the number the profile
   // teaser and the header dot are about.
@@ -56,6 +67,10 @@ export const useWalletStore = defineStore('wallet', () => {
 
   // silent suppresses the "задание выполнено" toasts — for the quests screen
   // itself, where the card moving into «Можно забрать» is the notification.
+  async function loadShop() {
+    products.value = (await api.shop()).items
+  }
+
   async function loadQuests(silent = false) {
     const res = await api.quests()
     const before = questsLoaded.value ? quests.value : null
@@ -111,6 +126,8 @@ export const useWalletStore = defineStore('wallet', () => {
     balance,
     streakDays,
     quests,
+    products,
+    goal,
     nameOne,
     nameFew,
     nameMany,
@@ -120,6 +137,7 @@ export const useWalletStore = defineStore('wallet', () => {
     currencyWord,
     amount,
     refresh,
+    loadShop,
     loadQuests,
     claim,
     claimFinishedPhases,

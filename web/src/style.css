@@ -242,6 +242,30 @@ body {
   }
 }
 
+/* The currency's own colours, from docs/feather-currency-image-prompts.md.
+   They are the same in every palette and both themes: пёрышки are gold, and a
+   gold that followed the accent would stop reading as the currency. --feather
+   means money throughout the quests screen, the accent means progress. */
+:root {
+  --feather: #e3b04b;
+  --feather-hi: #f6d88a;
+  --feather-ink: #4a2c08;
+  /* The wash behind a claimable quest. Gold over a dark card turns olive, so
+     the dark themes mix the pale tone instead, and thinner. Both selectors are
+     palette-independent on purpose: пёрышки are gold in every palette. */
+  --feather-wash: rgba(227, 176, 75, 0.16);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --feather-wash: rgba(246, 216, 138, 0.09);
+  }
+}
+
+:root[data-theme='dark'] {
+  --feather-wash: rgba(246, 216, 138, 0.09);
+}
+
 /* skeleton loading placeholders */
 @keyframes skel-shimmer {
   0% { background-position: 100% 0; }
