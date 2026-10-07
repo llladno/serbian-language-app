@@ -69,15 +69,27 @@ describe('groupQuests', () => {
     expect(g.done).toHaveLength(0)
   })
 
-  it('does not fold levels together — they are parallel, not a ladder', () => {
-    const quests = [
-      quest({ id: 1, kind: 'phase_completed', target: 100, value: 100, done: true, claimed: true }),
-      quest({ id: 2, kind: 'phase_completed', target: 100, value: 40 }),
-      quest({ id: 3, kind: 'phase_completed', target: 100, value: 0 }),
-    ]
-    const g = groupQuests(quests)
+  it('shows one level at a time, in the order the server sent them', () => {
+    // Every level has the same target (100%), so only their order separates
+    // them: level 1 is paid, level 2 is the one being worked on.
+    const level = (id: number, title: string, over: Partial<Quest> = {}) =>
+      quest({ id, kind: 'phase_completed', title, target: 100, ...over })
+    const g = groupQuests([
+      level(1, 'Уровень 1 на 100%', { value: 100, done: true, claimed: true }),
+      level(2, 'Уровень 2 на 100%', { value: 40 }),
+      level(3, 'Уровень 3 на 100%', { value: 0 }),
+    ])
 
-    expect(g.done).toHaveLength(1)
-    expect(g.active).toHaveLength(2)
+    expect(g.active.map((q) => q.title)).toEqual(['Уровень 2 на 100%'])
+    expect(g.ready).toHaveLength(0)
+    expect(g.done).toHaveLength(0)
+  })
+
+  it('keeps the top level once every level is finished', () => {
+    const level = (id: number, title: string) =>
+      quest({ id, kind: 'phase_completed', title, target: 100, value: 100, done: true, claimed: true })
+    const g = groupQuests([level(1, 'Уровень 1 на 100%'), level(2, 'Уровень 2 на 100%')])
+
+    expect(g.done.map((q) => q.title)).toEqual(['Уровень 2 на 100%'])
   })
 })

@@ -4,15 +4,16 @@
 // takes its place the moment this one is paid.
 import type { Quest } from '../types'
 
-// Kinds whose rows differ only by target. phase_completed is deliberately not
-// here: levels run in parallel, each one is its own goal. telegram_subscribed
-// has a single row anyway.
+// Kinds whose rows are rungs of one climb. Levels are in here too: they are
+// taken in order, so the one worth showing is the level being worked on.
+// telegram_subscribed stays out — it has a single row anyway.
 const LADDER_KINDS = new Set([
   'lessons_completed',
   'vocab_learned',
   'reviews_done',
   'streak_days',
   'correct_in_row',
+  'phase_completed',
 ])
 
 export interface QuestGroups {
@@ -36,6 +37,9 @@ export function groupQuests(quests: Quest[]): QuestGroups {
 
   const groups: QuestGroups = { ready: [], active: [], done: [] }
   for (const family of families.values()) {
+    // By target, and — since Array#sort is stable — the server's own order
+    // decides between equal ones. That is what orders the levels, whose target
+    // is 100 apiece.
     const rungs = [...family].sort((a, b) => a.target - b.target)
     // The lowest unclaimed rung, even when a higher one is already paid: the
     // learner can claim rungs out of order, and skipping the one they left
