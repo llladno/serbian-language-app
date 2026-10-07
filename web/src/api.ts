@@ -23,6 +23,7 @@ import type {
   Wallet,
   Quest,
   ClaimResult,
+  LessonCompletion,
 } from './types'
 import { getStoredAttribution } from './attribution'
 
@@ -143,7 +144,8 @@ export const api = {
       method: 'POST',
       body: JSON.stringify({ status }),
     }),
-  completeLesson: (id: string) => request<void>(`/lessons/${id}/complete`, { method: 'POST' }),
+  completeLesson: (id: string) =>
+    request<LessonCompletion>(`/lessons/${id}/complete`, { method: 'POST' }),
   resetLesson: (id: string) => request<void>(`/lessons/${id}/reset`, { method: 'POST' }),
   resetExercises: () => request<void>('/reset-exercises', { method: 'POST' }),
   vocab: (params?: { lesson?: string; tag?: string; q?: string }) =>

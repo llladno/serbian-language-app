@@ -5,12 +5,20 @@ import (
 	"errors"
 	"fmt"
 	"time"
+
+	"github.com/grisha/serbian-app/server/internal/economy"
 )
 
-// seededKey marks the economy defaults as already written. Checked and set
-// inside SeedEconomyDefaults' own transaction, so curating the quest list in
-// the admin panel — including deleting quests — is not undone by a restart.
-const seededKey = "economy_seeded"
+// Markers for what has already been written. Each is checked and set inside
+// its own transaction, so curating the catalogue in the admin panel —
+// including deleting rows — is not undone by a restart. The per-lesson rewards
+// have their own marker because they arrived later: a database seeded before
+// them has the first marker set, and sharing it would leave that database
+// without lesson rewards for ever.
+const (
+	seededKey        = "economy_seeded"
+	lessonsSeededKey = "economy_lessons_seeded"
+)
 
 // SeedEconomyDefaults writes the starting quest list and product catalogue
 // from docs/superpowers/specs/2026-09-28-currency-design.md, once. Called from
@@ -27,23 +35,74 @@ const seededKey = "economy_seeded"
 // breaks both halves — a phase_completed quest nobody can finish, and a phase
 // that stops locking — so TestSeedMatchesTheRealCourse cross-checks them
 // against the real content tree.
-func (s *Store) SeedEconomyDefaults(now time.Time) error {
+func (s *Store) SeedEconomyDefaults(phases []economy.PhaseLessons, now time.Time) error {
+	if err := s.seedOnce(seededKey, now, seedCatalogue); err != nil {
+		return err
+	}
+	return s.seedOnce(lessonsSeededKey, now, func(tx *dbtx, ts string) error {
+		return seedLessonRewards(tx, ts, phases)
+	})
+}
+
+// seedOnce runs write inside a transaction, unless marker says it has already
+// run. The marker is written last: a boot that dies mid-seed marks nothing
+// done, and the next boot retries from a clean rollback.
+func (s *Store) seedOnce(marker string, now time.Time, write func(tx *dbtx, ts string) error) error {
 	tx, err := s.db.Begin()
 	if err != nil {
 		return fmt.Errorf("seed economy: %w", err)
 	}
 	defer tx.Rollback()
 
-	var marker string
-	err = tx.QueryRow(`SELECT value FROM economy_settings WHERE key = ?`, seededKey).Scan(&marker)
+	var found string
+	err = tx.QueryRow(`SELECT value FROM economy_settings WHERE key = ?`, marker).Scan(&found)
 	if err == nil {
 		return nil // already seeded
 	}
 	if !errors.Is(err, sql.ErrNoRows) {
-		return fmt.Errorf("seed economy: check marker: %w", err)
+		return fmt.Errorf("seed economy: check marker %s: %w", marker, err)
 	}
 
 	ts := now.UTC().Format(time.RFC3339)
+	if err := write(tx, ts); err != nil {
+		return err
+	}
+	if _, err := tx.Exec(`INSERT INTO economy_settings (key, value, updated_at) VALUES (?, '1', ?)`,
+		marker, ts); err != nil {
+		return fmt.Errorf("seed economy: mark %s done: %w", marker, err)
+	}
+	return tx.Commit()
+}
+
+// seedLessonRewards writes one quest per lesson of the phases that pay for
+// lessons. These are never offered on the quests screen: the server pays them
+// the moment the lesson is finished (see payLessonReward), which is why they
+// are quests at all — the claims table is what stops a lesson paying twice,
+// and the admin panel can already edit a quest's reward one row at a time.
+//
+// A lesson added to the course later gets no row, since this runs once; the
+// admin panel is where that row is added.
+func seedLessonRewards(tx *dbtx, ts string, phases []economy.PhaseLessons) error {
+	sortOrder := 100
+	for _, ph := range phases {
+		for i, lesson := range ph.Lessons {
+			reward, ok := economy.LessonReward(ph.ID, i+1)
+			if !ok {
+				break // a phase that does not pay for lessons
+			}
+			sortOrder++
+			if _, err := tx.Exec(`INSERT INTO quests
+				(kind, target, param, title, description, reward, active, sort_order, created_at, updated_at)
+				VALUES (?, 1, ?, ?, '', ?, 1, ?, ?, ?)`,
+				economy.QuestLessonCompleted, lesson, "Урок "+lesson, reward, sortOrder, ts, ts); err != nil {
+				return fmt.Errorf("seed lesson reward %s: %w", lesson, err)
+			}
+		}
+	}
+	return nil
+}
+
+func seedCatalogue(tx *dbtx, ts string) error {
 	for _, q := range defaultQuests {
 		if _, err := tx.Exec(`INSERT INTO quests
 			(kind, target, param, title, description, reward, active, sort_order, created_at, updated_at)
@@ -62,14 +121,7 @@ func (s *Store) SeedEconomyDefaults(now time.Time) error {
 			return fmt.Errorf("seed product %s:%s: %w", p.kind, p.ref, err)
 		}
 	}
-
-	// Written last: a boot that dies mid-seed marks nothing done, and the next
-	// boot retries from a clean rollback.
-	if _, err := tx.Exec(`INSERT INTO economy_settings (key, value, updated_at) VALUES (?, '1', ?)`,
-		seededKey, ts); err != nil {
-		return fmt.Errorf("seed economy: mark done: %w", err)
-	}
-	return tx.Commit()
+	return nil
 }
 
 type defaultQuest struct {
@@ -102,9 +154,12 @@ var defaultQuests = []defaultQuest{
 	{"streak_days", 7, "", "Стрик 7 дней", "Занимайся 7 дней подряд", 10, 60},
 	{"streak_days", 30, "", "Стрик 30 дней", "Занимайся 30 дней подряд", 40, 61},
 	{"streak_days", 100, "", "Стрик 100 дней", "Занимайся 100 дней подряд", 150, 62},
-	{"phase_completed", 100, "1", "Уровень 1 на 100%", "Пройди все уроки первого уровня", 50, 70},
-	{"phase_completed", 100, "2", "Уровень 2 на 100%", "Пройди все уроки второго уровня", 70, 71},
-	{"phase_completed", 100, "3", "Уровень 3 на 100%", "Пройди все уроки третьего уровня", 90, 72},
+	// A level is still worth 50 / 70 / 90 in total; most of it now arrives
+	// lesson by lesson (see seedLessonRewards), and what is left is the bonus
+	// for finishing the level — the one moment worth a modal.
+	{"phase_completed", 100, "1", "Уровень 1 на 100%", "Пройди все уроки первого уровня", 10, 70},
+	{"phase_completed", 100, "2", "Уровень 2 на 100%", "Пройди все уроки второго уровня", 19, 71},
+	{"phase_completed", 100, "3", "Уровень 3 на 100%", "Пройди все уроки третьего уровня", 30, 72},
 }
 
 type defaultProduct struct {

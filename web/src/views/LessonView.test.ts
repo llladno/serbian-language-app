@@ -3,7 +3,9 @@ import { mount, flushPromises } from '@vue/test-utils'
 import { setActivePinia, createPinia } from 'pinia'
 import LessonView from './LessonView.vue'
 import { api } from '../api'
-import type { Lesson, ExerciseBlock } from '../types'
+import { useToasts } from '../lib/toasts'
+import { useRewardModal } from '../lib/rewardModal'
+import type { Lesson, ExerciseBlock, Quest } from '../types'
 
 vi.mock('vue-router', () => ({
   useRoute: () => ({ params: { id: '01' }, query: {} }),
@@ -28,7 +30,11 @@ const blocks: ExerciseBlock[] = [
   { id: '01.2', title: 'Практика', exercises: [{ id: '01.2.1', type: 'translate', prompt: 'Привет' }] },
 ]
 
-beforeEach(() => setActivePinia(createPinia()))
+beforeEach(() => {
+  setActivePinia(createPinia())
+  useToasts().clearToasts()
+  useRewardModal().closeModal()
+})
 afterEach(() => vi.restoreAllMocks())
 
 describe('LessonView step player', () => {
@@ -172,5 +178,86 @@ describe('LessonView dialogue step', () => {
     await flushPromises()
 
     expect(w.find('button.btn-primary').attributes('disabled')).toBeUndefined()
+  })
+})
+
+// Finishing a lesson is where most of the currency is earned: the lesson pays
+// a little by itself, and the last lesson of a level also finishes the level.
+describe('LessonView, finishing', () => {
+  const WALLET = {
+    balance: 0,
+    currency_one: 'пёрышко',
+    currency_few: 'пёрышка',
+    currency_many: 'пёрышек',
+    streak_days: 1,
+  }
+
+  function mountOneStepLesson(quests: Quest[] = []) {
+    const oneStep = structuredClone(lesson)
+    oneStep.steps = [oneStep.steps![0]]
+    vi.spyOn(api, 'lesson').mockResolvedValue(oneStep)
+    vi.spyOn(api, 'exercises').mockResolvedValue([])
+    vi.spyOn(api, 'lessonAttempts').mockResolvedValue({})
+    vi.spyOn(api, 'setStepStatus').mockResolvedValue(undefined)
+    vi.spyOn(api, 'wallet').mockResolvedValue(WALLET)
+    vi.spyOn(api, 'quests').mockResolvedValue({ quests })
+    return mount(LessonView)
+  }
+
+  const finishButton = (w: ReturnType<typeof mount>) =>
+    w.findAll('button').find((b) => /Завершить/.test(b.text()))
+
+  it('says what the lesson paid', async () => {
+    const complete = vi.spyOn(api, 'completeLesson').mockResolvedValue({ status: 'done', reward: 4 })
+    const w = mountOneStepLesson()
+    await flushPromises()
+
+    await finishButton(w)!.trigger('click')
+    await flushPromises()
+
+    expect(complete).toHaveBeenCalledWith('01')
+    const { items } = useToasts()
+    expect(items.value).toHaveLength(1)
+    expect(items.value[0].reward).toBe(4)
+    expect(items.value[0].text).toBe('Урок 01')
+  })
+
+  it('stays quiet about a lesson that paid nothing', async () => {
+    vi.spyOn(api, 'completeLesson').mockResolvedValue({ status: 'done', reward: 0 })
+    const w = mountOneStepLesson()
+    await flushPromises()
+
+    await finishButton(w)!.trigger('click')
+    await flushPromises()
+
+    expect(useToasts().items.value).toHaveLength(0)
+  })
+
+  it('claims the level and celebrates it when this was its last lesson', async () => {
+    vi.spyOn(api, 'completeLesson').mockResolvedValue({ status: 'done', reward: 4 })
+    const claimQuest = vi.spyOn(api, 'claimQuest').mockResolvedValue({ reward: 10, balance: 14 })
+    const w = mountOneStepLesson([
+      {
+        id: 7,
+        kind: 'phase_completed',
+        title: 'Уровень 1 на 100%',
+        description: '',
+        target: 100,
+        value: 100,
+        reward: 10,
+        done: true,
+        claimed: false,
+      },
+    ])
+    await flushPromises()
+
+    await finishButton(w)!.trigger('click')
+    await flushPromises()
+
+    expect(claimQuest).toHaveBeenCalledWith(7)
+    const { open, reward, questsLink } = useRewardModal()
+    expect(open.value).toBe(true)
+    expect(reward.value).toBe(10)
+    expect(questsLink.value).toBe(true)
   })
 })

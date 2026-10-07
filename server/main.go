@@ -15,6 +15,7 @@ import (
 	"github.com/grisha/serbian-app/server/internal/auth"
 	"github.com/grisha/serbian-app/server/internal/config"
 	"github.com/grisha/serbian-app/server/internal/content"
+	"github.com/grisha/serbian-app/server/internal/economy"
 	"github.com/grisha/serbian-app/server/internal/mail"
 	"github.com/grisha/serbian-app/server/internal/outbox"
 	"github.com/grisha/serbian-app/server/internal/ratelimit"
@@ -71,7 +72,14 @@ func main() {
 	// the admin panel. Idempotent, and guarded so that curating the list in the
 	// admin is not undone by a restart. A failed seed must not take the site
 	// down: it is logged and the server starts anyway.
-	if err := st.SeedEconomyDefaults(time.Now()); err != nil {
+	// The phases come from the course because the per-lesson rewards are keyed
+	// by lesson id: the content tree is the only place that knows which lessons
+	// a level has, and in what order.
+	phases := make([]economy.PhaseLessons, 0)
+	for _, ph := range getCourse().Phases {
+		phases = append(phases, economy.PhaseLessons{ID: ph.ID, Lessons: ph.Lessons})
+	}
+	if err := st.SeedEconomyDefaults(phases, time.Now()); err != nil {
 		log.Printf("seed economy defaults: %v", err)
 	}
 

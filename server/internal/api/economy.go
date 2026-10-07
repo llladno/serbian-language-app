@@ -144,8 +144,13 @@ func (h handlers) telegramSubscribed(userID string) bool {
 	return telegram.IsMember(status)
 }
 
-// visibleQuests drops quests nobody could finish: a telegram_subscribed quest
-// with no channel configured would sit on the profile for ever.
+// visibleQuests is the list the quests screen works from. It drops two kinds:
+// a telegram_subscribed quest with no channel configured, which nobody could
+// ever finish, and the per-lesson rewards, which are not quests to the learner
+// at all — the server pays them when the lesson is finished (payLessonReward),
+// and listing 42 of them would bury the real quests. Dropping them here is
+// also what makes POST /quests/{id}/claim refuse one: claims resolve the id
+// against this list.
 func (h handlers) visibleQuests() ([]economy.Quest, error) {
 	quests, err := h.Store.ListQuests(true)
 	if err != nil {
@@ -155,17 +160,45 @@ func (h handlers) visibleQuests() ([]economy.Quest, error) {
 	if err != nil {
 		return nil, err
 	}
-	if set.TelegramChannel != "" {
-		return quests, nil
-	}
 	out := make([]economy.Quest, 0, len(quests))
 	for _, q := range quests {
-		if q.Kind == economy.QuestTelegramSubscribed {
+		if q.Kind == economy.QuestLessonCompleted {
+			continue
+		}
+		if q.Kind == economy.QuestTelegramSubscribed && set.TelegramChannel == "" {
 			continue
 		}
 		out = append(out, q)
 	}
 	return out, nil
+}
+
+// payLessonReward credits what this lesson is worth, once. Returns 0 when the
+// lesson has no reward row or has already been paid for — a repeat completion
+// is a normal thing (finishing a lesson again), not an error, and the claims
+// table is what makes the second one worth nothing.
+//
+// Failures are logged and swallowed: the lesson is finished either way, and a
+// learner who cannot be paid right now must still see their lesson completed.
+func (h handlers) payLessonReward(us *store.UserStore, lesson string) int64 {
+	quests, err := h.Store.ListQuests(true)
+	if err != nil {
+		log.Printf("lesson reward: list quests: %v", err)
+		return 0
+	}
+	for _, q := range quests {
+		if q.Kind != economy.QuestLessonCompleted || q.Param != lesson {
+			continue
+		}
+		if err := us.ClaimQuest(q, h.Now()); err != nil {
+			if !errors.Is(err, store.ErrAlreadyClaimed) {
+				log.Printf("lesson reward %s: %v", lesson, err)
+			}
+			return 0
+		}
+		return q.Reward
+	}
+	return 0
 }
 
 func (h handlers) listQuests(w http.ResponseWriter, r *http.Request) {

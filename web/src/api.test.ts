@@ -35,7 +35,7 @@ describe('api', () => {
 
   it('returns undefined for 204', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(null, { status: 204 })))
-    await expect(api.completeLesson('01')).resolves.toBeUndefined()
+    await expect(api.resetLesson('01')).resolves.toBeUndefined()
   })
 
   it('posts step status', async () => {

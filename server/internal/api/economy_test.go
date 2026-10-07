@@ -168,6 +168,65 @@ func TestClaimedQuestStaysDoneWhenItsCounterFallsBack(t *testing.T) {
 	}
 }
 
+func TestFinishingALessonPaysItsRewardOnceAndIsNotAQuestToClaim(t *testing.T) {
+	h, st, id, c := economyAPI(t)
+	if err := st.UpsertQuest(economy.Quest{
+		Kind: economy.QuestLessonCompleted, Target: 1, Param: "01",
+		Title: "Урок 01", Reward: 7, Active: true,
+	}, fixedNow); err != nil {
+		t.Fatalf("seed lesson quest: %v", err)
+	}
+	quests, _ := st.ListQuests(true)
+	lessonQuest := quests[len(quests)-1]
+
+	// Per-lesson rewards are not on offer anywhere: they are paid by finishing
+	// the lesson, and a list of them would bury the real quests.
+	res := doCookie(h, c, "GET", "/api/me/quests", "")
+	list := decodeBody[struct {
+		Quests []struct {
+			ID int64 `json:"id"`
+		} `json:"quests"`
+	}](t, res)
+	for _, q := range list.Quests {
+		if q.ID == lessonQuest.ID {
+			t.Fatalf("the lesson reward is offered on the quests screen")
+		}
+	}
+	claim := "/api/me/quests/" + strconv.FormatInt(lessonQuest.ID, 10) + "/claim"
+	if res := doCookie(h, c, "POST", claim, ""); res.Code != 404 {
+		t.Fatalf("claiming a lesson reward by hand = %d, want 404", res.Code)
+	}
+
+	res = doCookie(h, c, "POST", "/api/lessons/01/complete", "")
+	if res.Code != 200 {
+		t.Fatalf("complete = %d: %s", res.Code, res.Body.String())
+	}
+	paid := decodeBody[struct {
+		Reward int64 `json:"reward"`
+	}](t, res)
+	if paid.Reward != 7 {
+		t.Fatalf("reward = %d, want 7", paid.Reward)
+	}
+	if bal, _ := st.Balance(id); bal != 7 {
+		t.Fatalf("balance = %d, want 7", bal)
+	}
+
+	// Finishing it again is a normal thing to do and is worth nothing.
+	res = doCookie(h, c, "POST", "/api/lessons/01/complete", "")
+	if res.Code != 200 {
+		t.Fatalf("second complete = %d", res.Code)
+	}
+	again := decodeBody[struct {
+		Reward int64 `json:"reward"`
+	}](t, res)
+	if again.Reward != 0 {
+		t.Fatalf("second completion paid %d, want 0", again.Reward)
+	}
+	if bal, _ := st.Balance(id); bal != 7 {
+		t.Fatalf("balance = %d after finishing twice, want 7", bal)
+	}
+}
+
 func TestShopReportsEffectivePriceAndOwnership(t *testing.T) {
 	h, st, id, c := economyAPI(t)
 	if _, err := st.UpsertProduct(economy.Product{

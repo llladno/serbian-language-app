@@ -5,13 +5,41 @@ import (
 	"time"
 
 	"github.com/grisha/serbian-app/server/internal/content"
+	"github.com/grisha/serbian-app/server/internal/economy"
 )
 
 var seedNow = time.Date(2026, 9, 29, 0, 0, 0, 0, time.UTC)
 
+// seedPhases stands in for the course when a test only cares about the fixed
+// catalogue. Phase "1" has four lessons, enough for one of them to land on the
+// every-fourth bump; the paid phases pay nothing for lessons, same as the real
+// course.
+var seedPhases = []economy.PhaseLessons{
+	{ID: "1", Lessons: []string{"00", "01", "02", "03"}},
+	{ID: "4", Lessons: []string{"42", "43"}},
+}
+
+// realPhases is the course as the seed sees it, or a skip when the content
+// tree is not next to the test.
+func realPhases(t *testing.T) []economy.PhaseLessons {
+	t.Helper()
+	c, err := content.Load("../../../content")
+	if err != nil {
+		t.Skipf("real content tree not available: %v", err)
+	}
+	var out []economy.PhaseLessons
+	for _, ph := range c.Phases {
+		out = append(out, economy.PhaseLessons{ID: ph.ID, Lessons: ph.Lessons})
+	}
+	return out
+}
+
+// The pool is checked against the real course, not a fixture: most of what a
+// level pays now arrives lesson by lesson, so the total depends on how many
+// lessons each level actually has.
 func TestSeededEconomyMatchesTheDesign(t *testing.T) {
 	s := newStore(t)
-	if err := s.SeedEconomyDefaults(seedNow); err != nil {
+	if err := s.SeedEconomyDefaults(realPhases(t), seedNow); err != nil {
 		t.Fatalf("seed: %v", err)
 	}
 
@@ -62,16 +90,74 @@ func TestSeededEconomyMatchesTheDesign(t *testing.T) {
 	}
 }
 
+// Splitting a level's reward across its lessons must not change what the level
+// is worth: the design doc's 50 / 70 / 90 are what the rest of the economy —
+// including the price of Level 4 — was calculated against.
+func TestLessonRewardsMatchPhaseTotals(t *testing.T) {
+	s := newStore(t)
+	phases := realPhases(t)
+	if err := s.SeedEconomyDefaults(phases, seedNow); err != nil {
+		t.Fatalf("seed: %v", err)
+	}
+	quests, err := s.ListQuests(true)
+	if err != nil {
+		t.Fatalf("list quests: %v", err)
+	}
+
+	lessonPhase := map[string]string{}
+	for _, ph := range phases {
+		for _, id := range ph.Lessons {
+			lessonPhase[id] = ph.ID
+		}
+	}
+	perPhase := map[string]int64{}
+	lessonRows := map[string]int{}
+	for _, q := range quests {
+		switch q.Kind {
+		case economy.QuestPhaseCompleted:
+			perPhase[q.Param] += q.Reward
+		case economy.QuestLessonCompleted:
+			phase, ok := lessonPhase[q.Param]
+			if !ok {
+				t.Errorf("lesson reward for %q, which no phase of the course contains", q.Param)
+				continue
+			}
+			perPhase[phase] += q.Reward
+			lessonRows[phase]++
+		}
+	}
+
+	for _, want := range []struct {
+		phase string
+		total int64
+	}{{"1", 50}, {"2", 70}, {"3", 90}} {
+		if perPhase[want.phase] != want.total {
+			t.Errorf("phase %s pays %d in total, want %d", want.phase, perPhase[want.phase], want.total)
+		}
+		for _, ph := range phases {
+			if ph.ID == want.phase && lessonRows[want.phase] != len(ph.Lessons) {
+				t.Errorf("phase %s has %d lessons but %d of them pay", want.phase, len(ph.Lessons), lessonRows[want.phase])
+			}
+		}
+	}
+	// The paid levels stay out of it: their lessons would hand the learner part
+	// of the next level's price back.
+	if perPhase["4"] != 0 || perPhase["5"] != 0 {
+		t.Errorf("paid phases pay %d and %d, want 0", perPhase["4"], perPhase["5"])
+	}
+}
+
 func TestSeedIsIdempotent(t *testing.T) {
 	s := newStore(t)
 	for i := 0; i < 3; i++ {
-		if err := s.SeedEconomyDefaults(seedNow); err != nil {
+		if err := s.SeedEconomyDefaults(seedPhases, seedNow); err != nil {
 			t.Fatalf("seed %d: %v", i, err)
 		}
 	}
 	quests, _ := s.ListQuests(false)
-	if len(quests) != len(defaultQuests) {
-		t.Fatalf("%d quests after three seed runs, want %d", len(quests), len(defaultQuests))
+	want := len(defaultQuests) + 4 // the catalogue plus one row per phase-1 lesson
+	if len(quests) != want {
+		t.Fatalf("%d quests after three seed runs, want %d", len(quests), want)
 	}
 }
 
@@ -79,13 +165,13 @@ func TestSeedIsIdempotent(t *testing.T) {
 // the admin panel, a restart must not undo their work.
 func TestSeedDoesNotResurrectDeletedQuests(t *testing.T) {
 	s := newStore(t)
-	if err := s.SeedEconomyDefaults(seedNow); err != nil {
+	if err := s.SeedEconomyDefaults(seedPhases, seedNow); err != nil {
 		t.Fatalf("seed: %v", err)
 	}
 	if _, err := s.db.Exec(`DELETE FROM quests`); err != nil {
 		t.Fatalf("delete quests: %v", err)
 	}
-	if err := s.SeedEconomyDefaults(seedNow); err != nil {
+	if err := s.SeedEconomyDefaults(seedPhases, seedNow); err != nil {
 		t.Fatalf("re-seed: %v", err)
 	}
 	quests, _ := s.ListQuests(false)

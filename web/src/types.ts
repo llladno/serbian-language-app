@@ -345,3 +345,10 @@ export interface ClaimResult {
   reward: number
   balance: number
 }
+
+export interface LessonCompletion {
+  status: string
+  // What finishing this lesson paid. 0 when the lesson has no reward of its
+  // own, or when it had already been finished before.
+  reward: number
+}

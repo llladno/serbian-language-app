@@ -92,6 +92,7 @@ const (
 	QuestCorrectInRow       = "correct_in_row"
 	QuestPhaseCompleted     = "phase_completed"
 	QuestTelegramSubscribed = "telegram_subscribed"
+	QuestLessonCompleted    = "lesson_completed"
 )
 
 // Quest is one row of the quests table.
@@ -152,6 +153,11 @@ func QuestValue(q Quest, c Counters, phaseLessons map[string][]string) int {
 		return done * 100 / len(lessons)
 	case QuestTelegramSubscribed:
 		if c.TelegramSubscribed {
+			return 1
+		}
+		return 0
+	case QuestLessonCompleted:
+		if c.CompletedLessons[q.Param] {
 			return 1
 		}
 		return 0
@@ -220,4 +226,46 @@ func (p Product) SalePercent(now time.Time) int {
 		return 0
 	}
 	return p.DiscountPercent
+}
+
+// PhaseLessons is one phase of the course as the economy needs it: its id and
+// its lessons in course order. Built from content by the caller, so this
+// package stays free of the content loader.
+type PhaseLessons struct {
+	ID      string
+	Lessons []string
+}
+
+// lessonPay is what one lesson of a phase is worth: base for an ordinary
+// lesson, bump for every fourth one. Only the free phases are listed —
+// levels 4 and 5 are bought, and paying for their lessons would discount the
+// next level against a price that was calculated without them.
+//
+// The amounts are deliberately uneven and are never shown before the lesson is
+// finished, so from the learner's side the payout is unpredictable, which is
+// what keeps it from turning into a wage. They stay small next to a level's
+// price (500) for the same reason: the lesson is the point, the пёрышки are
+// not. Each phase's lessons plus its phase_completed bonus come to the totals
+// the design doc fixed — 50 / 70 / 90 — which TestLessonRewardsMatchPhaseTotals
+// checks against the real course.
+var lessonPay = map[string]struct{ base, bump int64 }{
+	"1": {2, 4},
+	"2": {3, 6},
+	"3": {4, 8},
+}
+
+// LessonBumpEvery is how often a lesson pays the larger amount.
+const LessonBumpEvery = 4
+
+// LessonReward reports what the lesson at 1-based position pos of phase pays,
+// and whether that phase pays for lessons at all.
+func LessonReward(phase string, pos int) (int64, bool) {
+	pay, ok := lessonPay[phase]
+	if !ok || pos < 1 {
+		return 0, false
+	}
+	if pos%LessonBumpEvery == 0 {
+		return pay.bump, true
+	}
+	return pay.base, true
 }

@@ -732,7 +732,10 @@ func (h handlers) completeLesson(w http.ResponseWriter, r *http.Request) {
 		fail(w, 500, err.Error())
 		return
 	}
-	writeJSON(w, 200, map[string]string{"status": "done"})
+	// The reward goes back in the response so the app can say what it was
+	// without asking again. It is 0 for a lesson that pays nothing and for one
+	// that was already finished before.
+	writeJSON(w, 200, map[string]any{"status": "done", "reward": h.payLessonReward(us, id)})
 }
 
 func (h handlers) getVocab(w http.ResponseWriter, r *http.Request) {

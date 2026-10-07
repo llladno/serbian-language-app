@@ -5,6 +5,7 @@ import { api } from '../api'
 import { useCourseStore } from '../stores/course'
 import { useWalletStore } from '../stores/wallet'
 import { useRewardModal } from '../lib/rewardModal'
+import { useToasts } from '../lib/toasts'
 import type { Lesson, ExerciseBlock, LessonAttempts, Step } from '../types'
 import MarkdownView from '../components/MarkdownView.vue'
 import ReadingText from '../components/ReadingText.vue'
@@ -233,18 +234,31 @@ function goBack() {
 async function finish() {
   if (!lesson.value) return
   const wasOpen = lesson.value.status !== 'done'
+  let paidForLesson = 0
   if (wasOpen) {
-    await store.markDone(lesson.value.id)
+    paidForLesson = (await store.markDone(lesson.value.id)).reward
     lesson.value.status = 'done'
   }
   celebrate.value = true
   setTimeout(() => (celebrate.value = false), 3500)
-  // This lesson may have been the one that finished the level — and it moved
-  // the counters behind the lesson quests either way, which is what raises
-  // their "задание выполнено" toast. Rewards are the lesson's reward, not its
-  // job: a failure here must not touch the screen the learner is looking at.
   if (!wasOpen) return
+
+  // Most lessons pay a little by themselves, and the amount is never shown
+  // beforehand — so the toast is where the learner finds out.
+  if (paidForLesson > 0) {
+    useToasts().push({
+      title: 'Урок пройден',
+      text: lesson.value.title,
+      reward: paidForLesson,
+      to: '/quests',
+    })
+  }
+  // This lesson may also have been the one that finished the level, and it
+  // moved the counters behind the lesson quests either way. Rewards are the
+  // lesson's reward, not its job: a failure here must not touch the screen the
+  // learner is looking at.
   try {
+    wallet.refresh()
     const paid = await wallet.claimFinishedPhases()
     if (paid) useRewardModal().celebrate(paid.reward, paid.title, true)
   } catch {

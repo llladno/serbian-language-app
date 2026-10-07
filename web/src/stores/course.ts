@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { api } from '../api'
-import type { Course, LessonStatus } from '../types'
+import type { Course, LessonCompletion, LessonStatus } from '../types'
 
 export const useCourseStore = defineStore('course', () => {
   const course = ref<Course | null>(null)
@@ -26,9 +26,11 @@ export const useCourseStore = defineStore('course', () => {
     if (l) l.status = status
   }
 
-  async function markDone(id: string) {
-    await api.completeLesson(id)
+  // Returns what the lesson paid, for the caller to show.
+  async function markDone(id: string): Promise<LessonCompletion> {
+    const done = await api.completeLesson(id)
     setStatus(id, 'done')
+    return done
   }
 
   return { course, loading, error, load, markDone, setStatus }
