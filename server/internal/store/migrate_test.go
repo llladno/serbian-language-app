@@ -644,3 +644,98 @@ func TestMigration022InviteQuest(t *testing.T) {
 		}
 	})
 }
+
+// Production sits at migration 012 with real learners in it. Upgrading that
+// database to the current schema must keep every row, record every version
+// once, and be harmless to run again; the economy is then seeded on top, as at
+// boot, and must end up with the final prices and the invite quest. Run it
+// against Postgres (TEST_DATABASE_URL) as well: that is what production is.
+func TestUpgradeFromProductionAtMigration012(t *testing.T) {
+	s := openStoreAtVersion(t, 12)
+	const ts = "2026-09-20T10:00:00Z"
+	for _, u := range []struct{ id, name, email, tg string }{
+		{"usr_a", "Анна", "anna@example.com", ""},
+		{"usr_b", "Борис", "", "boris_tg"},
+		{"usr_c", "Вера", "vera@example.com", ""},
+	} {
+		mustExec(t, s, `INSERT INTO users (id, name, created_at) VALUES (?, ?, ?)`, u.id, u.name, ts)
+		if u.email != "" {
+			mustExec(t, s, `INSERT INTO identities (id, user_id, provider, provider_uid, email, password_hash, email_verified_at, created_at)
+				VALUES (?, ?, 'password', ?, ?, 'x', ?, ?)`, "idn_"+u.id, u.id, u.email, u.email, ts, ts)
+		} else {
+			mustExec(t, s, `INSERT INTO identities (id, user_id, provider, provider_uid, tg_username, created_at)
+				VALUES (?, ?, 'telegram', ?, ?, ?)`, "idn_"+u.id, u.id, "1001", u.tg, ts)
+		}
+	}
+	mustExec(t, s, `INSERT INTO lesson_progress (user_id, lesson, status, started_at, completed_at) VALUES ('usr_a', '05', 'done', ?, ?)`, ts, ts)
+	mustExec(t, s, `INSERT INTO lesson_progress (user_id, lesson, status, started_at) VALUES ('usr_a', '06', 'in_progress', ?)`, ts)
+	mustExec(t, s, `INSERT INTO srs_cards (user_id, card_id, kind, ref_id, state, due, updated_at) VALUES ('usr_a', 'vocab:dan', 'vocab', 'dan', 'review', ?, ?)`, ts, ts)
+	mustExec(t, s, `INSERT INTO reviews (user_id, card_id, grade, reviewed_at) VALUES ('usr_a', 'vocab:dan', 4, ?)`, ts)
+	mustExec(t, s, `INSERT INTO attempts (user_id, exercise_id, lesson, block, answer, correct, attempted_at) VALUES ('usr_a', '05.2.1', '05', '05.2', 'x', 1, ?)`, ts)
+
+	if err := s.runMigrations(); err != nil {
+		t.Fatalf("upgrade 012 -> latest: %v", err)
+	}
+	if err := s.runMigrations(); err != nil {
+		t.Fatalf("second run: %v", err)
+	}
+
+	count := func(q string, a ...any) int {
+		t.Helper()
+		var n int
+		if err := s.db.QueryRow(q, a...).Scan(&n); err != nil {
+			t.Fatalf("%s: %v", q, err)
+		}
+		return n
+	}
+	if got := count(`SELECT COUNT(*) FROM users`); got != 3 {
+		t.Errorf("users = %d, want 3", got)
+	}
+	if got := count(`SELECT COUNT(*) FROM identities`); got != 3 {
+		t.Errorf("identities = %d, want 3", got)
+	}
+	if got := count(`SELECT COUNT(*) FROM lesson_progress WHERE user_id = 'usr_a'`); got != 2 {
+		t.Errorf("lesson_progress = %d, want 2", got)
+	}
+	if got := count(`SELECT COUNT(*) FROM srs_cards`); got != 1 {
+		t.Errorf("srs_cards = %d, want 1", got)
+	}
+	if got := count(`SELECT COUNT(*) FROM reviews`); got != 1 {
+		t.Errorf("reviews = %d, want 1", got)
+	}
+	// each version is recorded exactly once, ending at the newest migration
+	if got, want := count(`SELECT COUNT(*) FROM schema_migrations`), count(`SELECT COUNT(DISTINCT version) FROM schema_migrations`); got != want {
+		t.Errorf("schema_migrations has repeated versions: %d rows, %d distinct", got, want)
+	}
+	if got := count(`SELECT MAX(version) FROM schema_migrations`); got != 22 {
+		t.Errorf("latest version = %d, want 22", got)
+	}
+	// the new columns are there, and an existing learner has no code until asked
+	if got := count(`SELECT COUNT(*) FROM users WHERE referral_code IS NOT NULL OR referred_by IS NOT NULL`); got != 0 {
+		t.Errorf("existing users got referral data: %d", got)
+	}
+	// migrations leave an unseeded economy alone: the seed owns the first fill
+	if got := count(`SELECT COUNT(*) FROM quests`); got != 0 {
+		t.Errorf("quests before the seed = %d, want 0", got)
+	}
+
+	// boot seeds the economy once; the result is the designed one
+	if err := s.SeedEconomyDefaults(nil, day0); err != nil {
+		t.Fatalf("seed: %v", err)
+	}
+	if got := count(`SELECT price FROM products WHERE kind = 'phase_unlock' AND ref = '4'`); got != 230 {
+		t.Errorf("level 4 price = %d, want 230", got)
+	}
+	if got := count(`SELECT price FROM products WHERE kind = 'phase_unlock' AND ref = '5'`); got != 375 {
+		t.Errorf("level 5 price = %d, want 375", got)
+	}
+	if got := count(`SELECT reward FROM quests WHERE kind = 'friends_invited'`); got != 30 {
+		t.Errorf("invite quest reward = %d, want 30", got)
+	}
+	if got := count(`SELECT COUNT(*) FROM quests WHERE kind = 'friends_invited'`); got != 1 {
+		t.Errorf("invite quests = %d, want exactly 1", got)
+	}
+	if got := count(`SELECT COUNT(*) FROM economy_settings WHERE key = 'currency_name_many' AND value = 'зёрнышек'`); got != 1 {
+		t.Errorf("currency name was not seeded as зёрнышки")
+	}
+}
