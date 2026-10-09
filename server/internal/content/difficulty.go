@@ -8,14 +8,13 @@ import (
 )
 
 // ranks order exercise types from easiest (recognition) to hardest
-// (free production).
+// (translating a whole phrase).
 var ranks = map[string]int{
 	"choice": 1,
 	"match":  2, "fill_blank": 2,
 	"word_bank": 3, "fix_error": 3,
 	"conjugate": 4, "listen": 4,
 	"translate": 5,
-	"free":      6,
 }
 
 func exerciseRank(t string) int {

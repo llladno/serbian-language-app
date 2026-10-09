@@ -50,9 +50,9 @@ type exerciseYAML struct {
 	Type    string     `yaml:"type"`
 	Prompt  string     `yaml:"prompt"`
 	Explain string     `yaml:"explain"`
-	Sample  string     `yaml:"sample"`
 	Meta    string     `yaml:"meta"`
 	Say     string     `yaml:"say"`
+	RU      []string   `yaml:"ru"`
 	Forms   []string   `yaml:"forms"`
 	Options []string   `yaml:"options"`
 	Answer  string     `yaml:"answer"`
@@ -166,7 +166,7 @@ func slicesContains(s []string, v string) bool {
 func decodeExercise(dir, rel string, e exerciseYAML) (Exercise, error) {
 	ex := Exercise{
 		ID: e.ID, Type: e.Type, Prompt: e.Prompt, Explain: e.Explain,
-		Sample: e.Sample, Meta: e.Meta, Forms: e.Forms, Say: e.Say,
+		Meta: e.Meta, Forms: e.Forms, Say: e.Say, RU: e.RU,
 		Options: e.Options, Answer: e.Answer, Bank: e.Bank,
 	}
 	for _, p := range e.Pairs {
@@ -195,6 +195,18 @@ func decodeExercise(dir, rel string, e exerciseYAML) (Exercise, error) {
 		if len(ex.Pairs) < 2 || len(ex.Pairs) > 6 {
 			return Exercise{}, fmt.Errorf("%s: exercise %s: match needs 2..6 pairs", rel, e.ID)
 		}
+		// A repeated word on either side makes the pairing ambiguous: picking
+		// one of two identical cards selects both and the exercise cannot be
+		// finished.
+		for side := 0; side < 2; side++ {
+			seen := map[string]bool{}
+			for _, p := range ex.Pairs {
+				if seen[p[side]] {
+					return Exercise{}, fmt.Errorf("%s: exercise %s: match repeats %q; every card must be unique", rel, e.ID, p[side])
+				}
+				seen[p[side]] = true
+			}
+		}
 	case autoTypes[e.Type]:
 		if err := e.Accept.Decode(&ex.Accept); err != nil {
 			return Exercise{}, fmt.Errorf("%s: exercise %s: accept must be a list of strings: %w", rel, e.ID, err)
@@ -214,12 +226,15 @@ func decodeExercise(dir, rel string, e exerciseYAML) (Exercise, error) {
 			if e.Say == "" {
 				return Exercise{}, fmt.Errorf("%s: exercise %s: listen needs a non-empty say (text to synthesize)", rel, e.ID)
 			}
+			// The Russian rendering is what a learner who cannot play audio is
+			// asked for instead of the dictation (see the API's audio=off mode).
+			if len(e.RU) == 0 {
+				return Exercise{}, fmt.Errorf("%s: exercise %s: listen needs ru (accepted Russian translations of say, for learners who cannot listen)", rel, e.ID)
+			}
 			if _, err := os.Stat(filepath.Join(dir, "audio", e.ID+".mp3")); err == nil {
 				ex.Audio = e.ID + ".mp3"
 			}
 		}
-	case e.Type == "free":
-		// no auto-check
 	default:
 		return Exercise{}, fmt.Errorf("%s: exercise %s: unknown type %q", rel, e.ID, e.Type)
 	}

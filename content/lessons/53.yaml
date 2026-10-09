@@ -1,0 +1,302 @@
+lesson: "53"
+title: "Творительный (Instrumental)"
+subtitle: "с кем? чем? — sa prijateljem, nožem"
+teaches: [sedeti, setati, olovka, noz, viljuska, kasika, limun]
+
+steps:
+  - id: "53.1"
+    kind: teach
+    title: "С кем? Чем?"
+    md: "53/1-instrumental.md"
+
+  - id: "53.2"
+    kind: practice
+    title: "Sa sestrom, olovkom"
+    also_ok: ["sestrom", "prijateljem", "olovkom", "karticom", "bratom", "Anom", "psom", "Markom", "detetom", "vozom", "viljuškom", "mlekom", "olovka", "olovku", "kartica", "karticu", "sestru", "sestri", "prijatelja", "prijatelju", "mleko", "mleka", "platim"]
+    exercises:
+      - id: "53.2.1"
+        type: choice
+        prompt: "«с сестрой» —"
+        options: ["sa sestrom", "sa sestru", "sa sestri"]
+        answer: "sa sestrom"
+      - id: "53.2.2"
+        type: choice
+        prompt: "«с другом» —"
+        options: ["sa prijateljem", "sa prijatelja", "sa prijatelju"]
+        answer: "sa prijateljem"
+        explain: "После -lj ставим -em (а не -om): prijatelj → prijateljem."
+      - id: "53.2.3"
+        type: choice
+        prompt: "«Я пишу карандашом» —"
+        options: ["Pišem olovkom.", "Pišem olovka.", "Pišem olovku."]
+        answer: "Pišem olovkom."
+      - id: "53.2.4"
+        type: choice
+        prompt: "«Я плачу картой» —"
+        options: ["Platim karticom.", "Platim kartica.", "Platim karticu."]
+        answer: "Platim karticom."
+      - id: "53.2.5"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["sa Anom", "с Аной"]
+          - ["sa psom", "с собакой"]
+          - ["sa Markom", "с Марко"]
+          - ["sa detetom", "с ребёнком"]
+      - id: "53.2.6"
+        type: fill_blank
+        prompt: "«с братом» → sa ___"
+        accept: ["bratom"]
+      - id: "53.2.7"
+        type: fill_blank
+        prompt: "«Я еду на поезде» → Idem ___."
+        accept: ["vozom"]
+      - id: "53.2.8"
+        type: fill_blank
+        prompt: "«Я ем вилкой» → Jedem ___."
+        accept: ["viljuškom"]
+      - id: "53.2.9"
+        type: word_bank
+        prompt: "Собери: «Я иду с сестрой»"
+        bank: ["Idem", "sa", "sestrom", "sestru", "sestri"]
+        accept: ["Idem sa sestrom."]
+      - id: "53.2.10"
+        type: fix_error
+        prompt: "Idem sa sestru."
+        accept: ["Idem sa sestrom."]
+        explain: "После «sa» (с кем?) — инструментал: sestrom."
+      - id: "53.2.11"
+        type: translate
+        prompt: "Я пью кофе с молоком."
+        accept: ["Pijem kafu sa mlekom.", "Pijem kafu s mlekom."]
+
+  - id: "53.3"
+    kind: teach
+    title: "Прилагательные, много, еда"
+    md: "53/3-prid.md"
+
+  - id: "53.4"
+    kind: practice
+    title: "Sa novim prijateljem"
+    also_ok: ["novim", "novom", "novi", "prijateljem", "velikom", "velikim", "torbom", "torbu", "prijateljima", "prijatelji", "prijatelja", "mlekom", "mleko", "mleka", "sirom", "limunom", "džemom", "čokoladom", "dobrom", "sestrom", "mojim", "sestrama", "limun", "bioskop", "džem", "sirom"]
+    exercises:
+      - id: "53.4.1"
+        type: choice
+        prompt: "«с новым другом» —"
+        options: ["sa novim prijateljem", "sa novom prijateljem", "sa novi prijatelj"]
+        answer: "sa novim prijateljem"
+      - id: "53.4.2"
+        type: choice
+        prompt: "«с большой сумкой» —"
+        options: ["sa velikom torbom", "sa velikim torbom", "sa veliku torbu"]
+        answer: "sa velikom torbom"
+        explain: "Женский род: прилагательное -om, существительное -om."
+      - id: "53.4.3"
+        type: choice
+        prompt: "«с друзьями» —"
+        options: ["sa prijateljima", "sa prijatelji", "sa prijatelja"]
+        answer: "sa prijateljima"
+      - id: "53.4.4"
+        type: choice
+        prompt: "«кофе с молоком» —"
+        options: ["kafa sa mlekom", "kafa sa mleko", "kafa sa mleka"]
+        answer: "kafa sa mlekom"
+      - id: "53.4.5"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["hleb sa sirom", "хлеб с сыром"]
+          - ["čaj sa limunom", "чай с лимоном"]
+          - ["palačinke sa džemom", "блины с вареньем"]
+          - ["sladoled sa čokoladom", "мороженое с шоколадом"]
+      - id: "53.4.6"
+        type: fill_blank
+        prompt: "«с хорошей сестрой» → sa dobrom ___"
+        accept: ["sestrom"]
+      - id: "53.4.7"
+        type: fill_blank
+        prompt: "«с моим другом» → sa mojim ___"
+        accept: ["prijateljem"]
+      - id: "53.4.8"
+        type: fill_blank
+        prompt: "«с сёстрами» → sa ___"
+        accept: ["sestrama"]
+      - id: "53.4.9"
+        type: word_bank
+        prompt: "Собери: «Чай с лимоном, пожалуйста»"
+        bank: ["Čaj", "sa", "limunom", "limun", "molim"]
+        accept: ["Čaj sa limunom, molim."]
+      - id: "53.4.10"
+        type: fix_error
+        prompt: "Palačinke sa džem."
+        accept: ["Palačinke sa džemom."]
+      - id: "53.4.11"
+        type: translate
+        prompt: "Я иду в кино с новым другом."
+        accept: ["Idem u bioskop sa novim prijateljem."]
+
+  - id: "53.5"
+    kind: teach
+    title: "Время и место"
+    md: "53/5-vreme.md"
+
+  - id: "53.6"
+    kind: practice
+    title: "Subotom, za stolom"
+    also_ok: ["subotom", "nedeljom", "ponedeljkom", "danima", "radnim", "stolom", "stolu", "stola", "dani", "dana", "subotu", "subote"]
+    exercises:
+      - id: "53.6.1"
+        type: choice
+        prompt: "«по субботам» —"
+        options: ["subotom", "u subotu", "subote"]
+        answer: "subotom"
+      - id: "53.6.2"
+        type: choice
+        prompt: "«по будним дням» —"
+        options: ["radnim danima", "radni dani", "radnih dana"]
+        answer: "radnim danima"
+      - id: "53.6.3"
+        type: choice
+        prompt: "«за столом» —"
+        options: ["za stolom", "za stolu", "za stola"]
+        answer: "za stolom"
+      - id: "53.6.4"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["subotom", "по субботам"]
+          - ["nedeljom", "по воскресеньям"]
+          - ["radnim danima", "по будням"]
+          - ["za stolom", "за столом"]
+      - id: "53.6.5"
+        type: fill_blank
+        prompt: "«По понедельникам я работаю» → ___ radim."
+        accept: ["Ponedeljkom"]
+      - id: "53.6.6"
+        type: fill_blank
+        prompt: "«Мы сидим за столом» → Sedimo za ___."
+        accept: ["stolom"]
+      - id: "53.6.7"
+        type: word_bank
+        prompt: "Собери: «По субботам я работаю»"
+        bank: ["Subotom", "radim", "subotu", "u"]
+        accept: ["Subotom radim."]
+      - id: "53.6.8"
+        type: fix_error
+        prompt: "Radnim dani radim."
+        accept: ["Radnim danima radim."]
+      - id: "53.6.9"
+        type: translate
+        prompt: "По воскресеньям я сплю."
+        accept: ["Nedeljom spavam."]
+
+  - id: "53.7"
+    kind: reading
+    title: "Суббота с друзьями"
+    md: "53/7-citanje.md"
+    also_ok: ["mlekom", "psom", "prijateljima", "stolom", "limunom", "sestrom", "džemom", "pijemo", "pričamo", "jedemo", "šetam", "sedimo", "subotom", "nedeljom", "palačinke", "kuće"]
+    exercises:
+      - id: "53.7.1"
+        type: choice
+        prompt: "Что она делает днём?"
+        options: ["Šeta sa psom.", "Radi na poslu.", "Spava."]
+        answer: "Šeta sa psom."
+      - id: "53.7.2"
+        type: choice
+        prompt: "С кем она идёт в кафе?"
+        options: ["Sa prijateljima.", "Sa sestrom.", "Sa komšijom."]
+        answer: "Sa prijateljima."
+      - id: "53.7.3"
+        type: choice
+        prompt: "Что они едят по воскресеньям?"
+        options: ["Palačinke sa džemom.", "Hleb sa sirom.", "Sladoled sa čokoladom."]
+        answer: "Palačinke sa džemom."
+
+  - id: "53.8"
+    kind: dialogue
+    title: "U kafiću sa prijateljem"
+    scene: "Ты сел в кафе с другом. Официант обращается к вам на «вы»."
+    voice: f
+    also_ok: ["mlekom", "džemom", "limunom", "karticom", "pije", "platite", "ćete"]
+    turns:
+      - who: npc
+        sr: "Dobar dan, izvolite?"
+        ru: "Добрый день, слушаю вас?"
+
+      - who: me
+        sr: "Dobar dan. Jednu kafu sa mlekom, molim."
+        ru: "Добрый день. Один кофе с молоком, пожалуйста."
+        exercise:
+          id: "53.8.1"
+          type: choice
+          prompt: "Закажи кофе с молоком"
+          options:
+            - "Dobar dan. Jednu kafu sa mlekom, molim."
+            - "Dobar dan. Jednu kafu sa mleko, molim."
+            - "Dobar dan. Jednu kafu sa mleka, molim."
+          answer: "Dobar dan. Jednu kafu sa mlekom, molim."
+
+      - who: npc
+        sr: "Izvolite. Još nešto?"
+        ru: "Пожалуйста. Ещё что-нибудь?"
+
+      - who: me
+        sr: "Da, palačinke sa džemom."
+        ru: "Да, блины с вареньем."
+        exercise:
+          id: "53.8.2"
+          type: fill_blank
+          prompt: "«блины с вареньем» → Da, palačinke sa ___."
+          accept: ["džemom"]
+
+      - who: npc
+        sr: "Dobro. A za prijatelja?"
+        ru: "Хорошо. А для друга?"
+
+      - who: me
+        sr: "On pije čaj sa limunom."
+        ru: "Он пьёт чай с лимоном."
+        exercise:
+          id: "53.8.3"
+          type: translate
+          prompt: "Скажи: «Он пьёт чай с лимоном»"
+          accept: ["On pije čaj sa limunom.", "On pije čaj s limunom."]
+
+      - who: npc
+        sr: "Hvala. Kako ćete da platite?"
+        ru: "Спасибо. Как будете платить?"
+
+      - who: me
+        sr: "Platim karticom."
+        ru: "Заплачу картой."
+        exercise:
+          id: "53.8.4"
+          type: choice
+          prompt: "Скажи, что заплатишь картой"
+          options: ["Platim karticom.", "Platim kartica.", "Platim karticu."]
+          answer: "Platim karticom."
+
+  - id: "53.9"
+    kind: practice
+    title: "Диктант"
+    mixed: true
+    also_ok: ["sestrom", "mlekom", "psom", "šetam"]
+    exercises:
+      - id: "53.9.1"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Idem sa sestrom u bioskop."
+        accept: ["Idem sa sestrom u bioskop."]
+        ru: ["Я иду с сестрой в кино", "Иду с сестрой в кино"]
+      - id: "53.9.2"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Kafa sa mlekom, molim."
+        accept: ["Kafa sa mlekom, molim."]
+        ru: ["Кофе с молоком, пожалуйста", "Пожалуйста, кофе с молоком"]
+      - id: "53.9.3"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Šetam sa psom."
+        accept: ["Šetam sa psom."]
+        ru: ["Я гуляю с собакой", "Гуляю с собакой"]

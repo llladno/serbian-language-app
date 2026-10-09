@@ -131,27 +131,6 @@ steps:
         prompt: "Тебе подходит пятница?"
         accept: ["Da li ti odgovara petak?", "Odgovara li ti petak?"]
 
-  - id: "41.5"
-    kind: checkpoint
-    title: "Ролёвки"
-    exercises:
-      - id: "41.5.1"
-        type: free
-        prompt: "Расскажи, что ты делал(а) на прошлой неделе и что будешь делать на следующей: 4–5 фраз (прошедшее и будущее время)."
-        sample: "Prošle nedelje sam radio. Kupio sam hleb i kafu. Sledeće nedelje ću da putujem vozom kod sestre."
-      - id: "41.5.2"
-        type: free
-        prompt: "Разыграй: звонишь, чтобы перенести встречу, потому что заболел(а) — 3–4 фразы."
-        sample: "Dobar dan. Imam sastanak sutra, ali sam bolestan. Mogu li da pomerim sastanak? Hvala!"
-      - id: "41.5.3"
-        type: free
-        prompt: "Разыграй: ты на автобусной остановке — спроси, какой автобус идёт до центра и когда он придёт — 3–4 фразы."
-        sample: "Izvinite, koji autobus ide do centra? Kad dolazi sledeći autobus? Hvala!"
-      - id: "41.5.4"
-        type: free
-        prompt: "Разыграй: ты в аптеке покупаешь лекарство от простуды — 3–4 фразы."
-        sample: "Dobar dan. Imam recept za lek. Da li treba recept za sirup? Hvala, doviđenja!"
-
   - id: "41.6"
     kind: practice
     title: "Диктант"
@@ -162,13 +141,16 @@ steps:
         prompt: "Запиши, что слышишь."
         say: "Bio sam bolestan juče."
         accept: ["Bio sam bolestan juče."]
+        ru: ["Я болел вчера", "Вчера я болел", "Я был болен вчера", "Вчера я был болен", "Я вчера болел", "Я болела вчера", "Вчера я болела"]
       - id: "41.6.2"
         type: listen
         prompt: "Запиши, что слышишь."
         say: "Sutra ću da putujem vozom."
         accept: ["Sutra ću da putujem vozom."]
+        ru: ["Завтра я поеду на поезде", "Завтра поеду на поезде", "Я поеду завтра на поезде", "Завтра я поеду поездом", "Завтра я буду путешествовать на поезде", "Завтра я еду на поезде"]
       - id: "41.6.3"
         type: listen
         prompt: "Запиши, что слышишь."
         say: "Boli me glava."
         accept: ["Boli me glava."]
+        ru: ["У меня болит голова", "Болит голова", "Голова болит", "У меня голова болит"]

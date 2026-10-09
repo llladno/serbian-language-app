@@ -1,0 +1,307 @@
+lesson: "45"
+title: "Покупки и заказ (Kupovina i narudžbina)"
+subtitle: "винительный в магазине и кафе, с прилагательными"
+teaches:
+  [
+    ovaj, taj, zeleti, probati, trebaju-mi, majica, jakna, kosulja, haljina, suknja,
+    cipele, dzemper, kapa, carape,
+  ]
+
+steps:
+  - id: "45.1"
+    kind: teach
+    title: "Заказываю, прошу, ищу"
+    md: "45/1-narucujem.md"
+
+  - id: "45.2"
+    kind: practice
+    title: "Dajte mi, treba mi"
+    also_ok: ["crnu", "hladnu", "trebaju"]
+    exercises:
+      - id: "45.2.1"
+        type: choice
+        prompt: "«Мне чёрный кофе» (заказ) —"
+        options: ["Za mene crnu kafu.", "Za mene crna kafa.", "Za mene crnoj kafi."]
+        answer: "Za mene crnu kafu."
+        explain: "После «za mene» — винительный: kafa → kafu, crna → crnu."
+      - id: "45.2.2"
+        type: choice
+        prompt: "«Мне нужна чёрная сумка» —"
+        options: ["Treba mi crna torba.", "Treba mi crnu torbu.", "Trebam crnu torbu."]
+        answer: "Treba mi crna torba."
+        explain: "После «treba mi» слово остаётся в именительном: торба здесь подлежащее («нужна сумка»)."
+      - id: "45.2.3"
+        type: choice
+        prompt: "«Я ищу чёрную сумку» —"
+        options: ["Tražim crnu torbu.", "Tražim crna torba.", "Tražim crnoj torbi."]
+        answer: "Tražim crnu torbu."
+      - id: "45.2.4"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["Treba mi hleb.", "Мне нужен хлеб"]
+          - ["Tražim hleb.", "Ищу хлеб"]
+          - ["Dajte mi hleb.", "Дайте мне хлеб"]
+          - ["Za mene hleb.", "Мне хлеб"]
+      - id: "45.2.5"
+        type: fill_blank
+        prompt: "«Дайте мне холодную воду» → Dajte mi ___ vodu."
+        accept: ["hladnu"]
+      - id: "45.2.6"
+        type: fill_blank
+        prompt: "«Мне нужны книги» → ___ mi knjige."
+        accept: ["Trebaju"]
+        explain: "Книг несколько — глагол во множественном числе: trebaju."
+      - id: "45.2.7"
+        type: word_bank
+        prompt: "Собери: «Мне нужна новая сумка»"
+        bank: ["Treba", "mi", "nova", "novu", "torba", "torbu"]
+        accept: ["Treba mi nova torba."]
+      - id: "45.2.8"
+        type: fix_error
+        prompt: "Treba mi novu torbu."
+        accept: ["Treba mi nova torba."]
+        explain: "После «treba mi» — именительный: nova torba."
+      - id: "45.2.9"
+        type: translate
+        prompt: "Дайте мне, пожалуйста, холодную воду."
+        accept:
+          - "Dajte mi hladnu vodu, molim."
+          - "Dajte mi, molim vas, hladnu vodu."
+          - "Molim vas, dajte mi hladnu vodu."
+          - "Dajte mi hladnu vodu, molim vas."
+          - "Dajte mi hladnu vodu."
+          - "Molim vas hladnu vodu."
+
+  - id: "45.3"
+    kind: teach
+    title: "Этот и тот"
+    md: "45/3-ovaj-taj.md"
+
+  - id: "45.4"
+    kind: practice
+    title: "Ovaj, ova, ovo"
+    also_ok: ["ovu", "ove", "tu", "koštaju"]
+    exercises:
+      - id: "45.4.1"
+        type: choice
+        prompt: "«эта сумка» —"
+        options: ["ova torba", "ovaj torba", "ovo torba"]
+        answer: "ova torba"
+      - id: "45.4.2"
+        type: choice
+        prompt: "«Я хочу эту сумку» —"
+        options: ["Želim ovu torbu.", "Želim ova torba.", "Želim ovoj torbi."]
+        answer: "Želim ovu torbu."
+      - id: "45.4.3"
+        type: choice
+        prompt: "«Дайте мне этот хлеб» —"
+        options: ["Dajte mi ovaj hleb.", "Dajte mi ovu hleb.", "Dajte mi ovo hleb."]
+        answer: "Dajte mi ovaj hleb."
+      - id: "45.4.4"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["ovaj stan", "эта квартира"]
+          - ["ova kuća", "этот дом"]
+          - ["ovo selo", "это село"]
+          - ["taj film", "тот фильм"]
+      - id: "45.4.5"
+        type: fill_blank
+        prompt: "«Я вижу ту девушку» → Vidim ___ devojku."
+        accept: ["tu"]
+      - id: "45.4.6"
+        type: fill_blank
+        prompt: "«Дайте мне эти яблоки» → Dajte mi ___ jabuke."
+        accept: ["ove"]
+      - id: "45.4.7"
+        type: word_bank
+        prompt: "Собери: «Сколько стоит эта сумка?»"
+        bank: ["Koliko", "košta", "ova", "ovu", "torba"]
+        accept: ["Koliko košta ova torba?"]
+      - id: "45.4.8"
+        type: fix_error
+        prompt: "Koliko košta ovu torbu?"
+        accept: ["Koliko košta ova torba?"]
+        explain: "Здесь «torba» — подлежащее («что стоит?»), поэтому именительный: ova torba."
+      - id: "45.4.9"
+        type: translate
+        prompt: "Я хочу эту книгу."
+        accept: ["Želim ovu knjigu."]
+
+  - id: "45.5"
+    kind: teach
+    title: "Одежда"
+    md: "45/5-odeca.md"
+
+  - id: "45.6"
+    kind: practice
+    title: "Что ищешь?"
+    also_ok: ["crnu", "crne", "nove", "kupujem", "koštaju", "zelenu", "plavu", "jaknu", "majicu"]
+    exercises:
+      - id: "45.6.1"
+        type: choice
+        prompt: "«Мне нужна чёрная куртка» —"
+        options: ["Treba mi crna jakna.", "Treba mi crnu jaknu.", "Trebam crnu jaknu."]
+        answer: "Treba mi crna jakna."
+      - id: "45.6.2"
+        type: choice
+        prompt: "«Я ищу чёрные туфли» —"
+        options: ["Tražim crne cipele.", "Tražim crna cipele.", "Tražim crni cipele."]
+        answer: "Tražim crne cipele."
+      - id: "45.6.3"
+        type: choice
+        prompt: "«Мне нужны новые туфли» —"
+        options: ["Trebaju mi nove cipele.", "Treba mi nove cipele.", "Trebaju mi nova cipele."]
+        answer: "Trebaju mi nove cipele."
+      - id: "45.6.4"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["majica", "футболка"]
+          - ["jakna", "куртка"]
+          - ["haljina", "платье"]
+          - ["cipele", "туфли"]
+          - ["kapa", "шапка"]
+          - ["džemper", "свитер"]
+      - id: "45.6.5"
+        type: fill_blank
+        prompt: "«Я ищу зелёную футболку» → Tražim ___ majicu."
+        accept: ["zelenu"]
+      - id: "45.6.6"
+        type: fill_blank
+        prompt: "«Сколько стоят эти туфли?» → Koliko ___ ove cipele?"
+        accept: ["koštaju"]
+      - id: "45.6.7"
+        type: word_bank
+        prompt: "Собери: «Я ищу синюю куртку»"
+        bank: ["Tražim", "plavu", "jaknu", "plava", "jakna"]
+        accept: ["Tražim plavu jaknu."]
+      - id: "45.6.8"
+        type: fix_error
+        prompt: "Trebaju mi nova cipele."
+        accept: ["Trebaju mi nove cipele."]
+        explain: "«cipele» — женский род, множественное число: nove."
+      - id: "45.6.9"
+        type: translate
+        prompt: "Я покупаю чёрные туфли."
+        accept: ["Kupujem crne cipele."]
+
+  - id: "45.7"
+    kind: reading
+    title: "Новая куртка"
+    md: "45/7-citanje.md"
+    also_ok: ["kupujem", "crnu", "plavu", "zelenu", "jaknu", "crne", "centru", "prodavnicu"]
+    exercises:
+      - id: "45.7.1"
+        type: choice
+        prompt: "Что ей нужно?"
+        options: ["Nova jakna.", "Nove cipele.", "Nova torba."]
+        answer: "Nova jakna."
+      - id: "45.7.2"
+        type: choice
+        prompt: "Какая чёрная куртка?"
+        options: ["Lepa, ali skupa.", "Jeftina i mala.", "Ružna i velika."]
+        answer: "Lepa, ali skupa."
+      - id: "45.7.3"
+        type: choice
+        prompt: "Что она в итоге покупает?"
+        options: ["Crnu jaknu i crne cipele.", "Plavu jaknu.", "Zelenu jaknu i torbu."]
+        answer: "Crnu jaknu i crne cipele."
+
+  - id: "45.8"
+    kind: dialogue
+    title: "U prodavnici obuće"
+    scene: "Ты зашёл в магазин, чтобы купить туфли. Продавщица обращается к тебе на «вы»."
+    voice: f
+    also_ok: ["crne", "cipele", "probajte", "ove", "odgovaraju", "koštaju"]
+    turns:
+      - who: npc
+        sr: "Dobar dan, šta želite?"
+        ru: "Добрый день, что желаете?"
+
+      - who: me
+        sr: "Dobar dan. Tražim crne cipele."
+        ru: "Добрый день. Ищу чёрные туфли."
+        exercise:
+          id: "45.8.1"
+          type: choice
+          prompt: "Поздоровайся и скажи, что ищешь чёрные туфли"
+          options:
+            - "Dobar dan. Tražim crne cipele."
+            - "Dobar dan. Tražim crna cipele."
+            - "Dobar dan. Treba mi crne cipele."
+          answer: "Dobar dan. Tražim crne cipele."
+          explain: "После «tražim» — винительный (crne cipele). А «treba mi» требует «trebaju mi nove cipele» — с глаголом во множественном числе."
+
+      - who: npc
+        sr: "Koji broj nosite?"
+        ru: "Какой размер носите?"
+
+      - who: me
+        sr: "Nosim broj četrdeset."
+        ru: "Ношу сороковой размер."
+        exercise:
+          id: "45.8.2"
+          type: fill_blank
+          prompt: "«Ношу сороковой размер» → Nosim ___ četrdeset."
+          accept: ["broj"]
+
+      - who: npc
+        sr: "Izvolite, probajte ove cipele."
+        ru: "Пожалуйста, примерьте эти туфли."
+
+      - who: me
+        sr: "Hvala. Odgovaraju mi. Koliko koštaju?"
+        ru: "Спасибо. Мне подходят. Сколько они стоят?"
+        exercise:
+          id: "45.8.3"
+          type: translate
+          prompt: "Скажи: «Мне подходят. Сколько они стоят?»"
+          accept: ["Odgovaraju mi. Koliko koštaju?", "Hvala. Odgovaraju mi. Koliko koštaju?", "Odgovaraju mi, koliko koštaju?"]
+
+      - who: npc
+        sr: "Šest hiljada dinara."
+        ru: "Шесть тысяч динаров."
+
+      - who: me
+        sr: "Dobro, uzimam. Može karticom?"
+        ru: "Хорошо, беру. Можно картой?"
+        exercise:
+          id: "45.8.4"
+          type: choice
+          prompt: "Скажи, что берёшь, и спроси про оплату картой"
+          options:
+            - "Dobro, uzimam. Može karticom?"
+            - "Dobro, uzimam. Može kartica?"
+            - "Dobro, uzimam. Može karticu?"
+          answer: "Dobro, uzimam. Može karticom?"
+
+      - who: npc
+        sr: "Može. Izvolite račun. Prijatno!"
+        ru: "Можно. Вот чек. Всего доброго!"
+
+  - id: "45.9"
+    kind: practice
+    title: "Диктант"
+    mixed: true
+    also_ok: ["jaknu", "crne", "crnu"]
+    exercises:
+      - id: "45.9.1"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Tražim crnu jaknu."
+        accept: ["Tražim crnu jaknu."]
+        ru: ["Я ищу чёрную куртку", "Ищу чёрную куртку", "Ищу чёрную куртку."]
+      - id: "45.9.2"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Trebaju mi nove cipele."
+        accept: ["Trebaju mi nove cipele."]
+        ru: ["Мне нужны новые туфли", "Мне нужна новая обувь", "Мне нужны новые ботинки"]
+      - id: "45.9.3"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Za mene crnu kafu, molim."
+        accept: ["Za mene crnu kafu, molim."]
+        ru: ["Мне чёрный кофе, пожалуйста", "Для меня чёрный кофе, пожалуйста", "Чёрный кофе мне, пожалуйста", "Мне чёрного кофе, пожалуйста"]

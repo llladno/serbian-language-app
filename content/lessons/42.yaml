@@ -1,0 +1,286 @@
+lesson: "42"
+title: "Род и число (Rod i broj)"
+subtitle: "мужской, женский, средний род; множественное число"
+teaches: [prijatelj, knjiga, torba, devojka, covek, ljudi, braca, selo, dan, deca]
+
+steps:
+  - id: "42.1"
+    kind: teach
+    title: "Три рода"
+    md: "42/1-rod.md"
+
+  - id: "42.2"
+    kind: practice
+    title: "Какого рода?"
+    also_ok: ["женского", "мужского", "среднего"]
+    exercises:
+      - id: "42.2.1"
+        type: choice
+        prompt: "Слово «sestra» — какого рода?"
+        options: ["женского", "мужского", "среднего"]
+        answer: "женского"
+        explain: "Кончается на -a — значит, женский род."
+      - id: "42.2.2"
+        type: choice
+        prompt: "Слово «pivo» — какого рода?"
+        options: ["среднего", "женского", "мужского"]
+        answer: "среднего"
+        explain: "Кончается на -o — средний род (как «окно» по-русски)."
+      - id: "42.2.3"
+        type: choice
+        prompt: "Какое слово — исключение: кончается на -a, но мужское?"
+        options: ["tata", "kuća", "soba"]
+        answer: "tata"
+        explain: "«tata» (папа) и «deda» (дедушка) — мужчины, поэтому род мужской: moj tata."
+      - id: "42.2.4"
+        type: match
+        prompt: "Соедини слово и род"
+        pairs:
+          - ["brat", "мужской"]
+          - ["kuća", "женский"]
+          - ["selo", "средний"]
+      - id: "42.2.5"
+        type: fill_blank
+        prompt: "«один брат, одна сестра, один ребёнок» → Jedan brat, jedna sestra, jedno ___."
+        accept: ["dete"]
+      - id: "42.2.6"
+        type: fill_blank
+        prompt: "«моя книга» → ___ knjiga."
+        accept: ["moja"]
+        explain: "«knjiga» кончается на -a — женский род, поэтому «moja»."
+      - id: "42.2.7"
+        type: fix_error
+        prompt: "Jedna brat."
+        accept: ["Jedan brat."]
+        explain: "«brat» — мужской род, значит «jedan»; «jedna» только для женских слов (jedna sestra)."
+      - id: "42.2.8"
+        type: translate
+        prompt: "Это мой брат, а это моя сестра."
+        accept: ["Ovo je moj brat, a ovo je moja sestra.", "Ovo je moj brat a ovo je moja sestra."]
+        explain: "«Это» в начале фразы — «ovo je» (два слова). «Мой» зависит от рода: перед мужским словом moj, перед женским moja."
+
+  - id: "42.3"
+    kind: teach
+    title: "Множественное число"
+    md: "42/3-mnozina.md"
+
+  - id: "42.4"
+    kind: practice
+    title: "Один — много"
+    also_ok: ["stanovi", "gradovi", "kreveti", "prozori", "ključevi", "kuće", "piva"]
+    exercises:
+      - id: "42.4.1"
+        type: choice
+        prompt: "«stan» во множественном числе —"
+        options: ["stanovi", "stani", "stane"]
+        answer: "stanovi"
+        explain: "«stan» — короткое мужское слово (один слог): берёт -ovi."
+      - id: "42.4.2"
+        type: choice
+        prompt: "«sestra» во множественном числе —"
+        options: ["sestre", "sestri", "sestra"]
+        answer: "sestre"
+      - id: "42.4.3"
+        type: choice
+        prompt: "«ključ» во множественном числе —"
+        options: ["ključevi", "ključovi", "ključi"]
+        answer: "ključevi"
+        explain: "После ч, ć, š, ž, j… вместо -ovi пишем -evi: ključevi, muževi."
+      - id: "42.4.4"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["gradovi", "города"]
+          - ["kuće", "дома"]
+          - ["studenti", "студенты"]
+          - ["piva", "пива"]
+      - id: "42.4.5"
+        type: fill_blank
+        prompt: "«Это мои сёстры» → Ovo su moje ___."
+        accept: ["sestre"]
+      - id: "42.4.6"
+        type: fill_blank
+        prompt: "«кровать — кровати» → krevet — ___."
+        accept: ["kreveti"]
+        explain: "Длинное мужское слово (два слога): просто добавляем -i."
+      - id: "42.4.7"
+        type: word_bank
+        prompt: "Собери: «Это мои друзья»"
+        bank: ["Ovo", "su", "moji", "prijatelji", "je", "moj"]
+        accept: ["Ovo su moji prijatelji."]
+      - id: "42.4.8"
+        type: fix_error
+        prompt: "Ovo su moji sestre."
+        accept: ["Ovo su moje sestre."]
+        explain: "«sestre» — женский род во множественном числе, значит «moje»: moje sestre. «moji» только для мужских (moji prijatelji), а «moja» — это либо одна женщина (moja sestra), либо средний род во множественном (moja sela)."
+      - id: "42.4.9"
+        type: translate
+        prompt: "Это мои родители."
+        accept: ["Ovo su moji roditelji."]
+
+  - id: "42.5"
+    kind: teach
+    title: "Неправильные формы"
+    md: "42/5-izuzeci.md"
+
+  - id: "42.6"
+    kind: practice
+    title: "Исключения и «мои»"
+    exercises:
+      - id: "42.6.1"
+        type: choice
+        prompt: "«dan» во множественном числе —"
+        options: ["dani", "danovi", "dane"]
+        answer: "dani"
+      - id: "42.6.2"
+        type: choice
+        prompt: "«Дети здесь» —"
+        options: ["Deca su ovde.", "Dete su ovde.", "Deca je ovde."]
+        answer: "Deca su ovde."
+        explain: "«deca» — «дети», глагол при нём «su», как при любом множественном."
+      - id: "42.6.3"
+        type: choice
+        prompt: "«мои сёстры» —"
+        options: ["moje sestre", "moji sestre", "moja sestre"]
+        answer: "moje sestre"
+      - id: "42.6.4"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["braća", "братья"]
+          - ["ljudi", "люди"]
+          - ["deca", "дети"]
+          - ["dani", "дни"]
+      - id: "42.6.5"
+        type: fill_blank
+        prompt: "«Один человек, много людей» → Jedan čovek, mnogo ___."
+        accept: ["ljudi"]
+      - id: "42.6.6"
+        type: word_bank
+        prompt: "Собери: «Дети здесь»"
+        bank: ["Deca", "su", "ovde", "je"]
+        accept: ["Deca su ovde."]
+      - id: "42.6.7"
+        type: fix_error
+        prompt: "Moje prijatelji su ovde."
+        accept: ["Moji prijatelji su ovde."]
+        explain: "«prijatelji» — мужской род, значит «moji»."
+      - id: "42.6.8"
+        type: translate
+        prompt: "Мои сёстры здесь."
+        accept: ["Moje sestre su ovde."]
+
+  - id: "42.7"
+    kind: reading
+    title: "Мой дом"
+    md: "42/7-citanje.md"
+    also_ok: ["dolaze", "stolice"]
+    exercises:
+      - id: "42.7.1"
+        type: choice
+        prompt: "Что на столе?"
+        options: ["Knjige i torba.", "Frižider i šporet.", "Slike."]
+        answer: "Knjige i torba."
+      - id: "42.7.2"
+        type: choice
+        prompt: "Что на кухне?"
+        options: ["Frižider i šporet.", "Krevet i sto.", "Knjige i torba."]
+        answer: "Frižider i šporet."
+      - id: "42.7.3"
+        type: choice
+        prompt: "Кто часто приходит к Ане?"
+        options: ["Prijatelji.", "Roditelji.", "Lekari."]
+        answer: "Prijatelji."
+
+  - id: "42.8"
+    kind: dialogue
+    title: "Šta je ovo?"
+    scene: "Ты в гостях у знакомого. Он показывает свою комнату."
+    voice: m
+    also_ok: ["slike"]
+    turns:
+      - who: npc
+        sr: "Zdravo! Ovo je moja soba."
+        ru: "Привет! Это моя комната."
+
+      - who: me
+        sr: "Zdravo! Šta je ovo?"
+        ru: "Привет! Что это?"
+        exercise:
+          id: "42.8.1"
+          type: choice
+          prompt: "Поздоровайся и спроси «что это?» (про один предмет)"
+          options:
+            - "Zdravo! Šta je ovo?"
+            - "Zdravo! Šta su ovo?"
+            - "Zdravo! Ko je ovo?"
+          answer: "Zdravo! Šta je ovo?"
+          explain: "«je» — про один предмет, «su» — про несколько. «Ko» — «кто», про людей."
+
+      - who: npc
+        sr: "To je knjiga."
+        ru: "Это книга."
+
+      - who: me
+        sr: "A šta su ovo?"
+        ru: "А что это (несколько вещей)?"
+        exercise:
+          id: "42.8.2"
+          type: fill_blank
+          prompt: "«А что это?» (про несколько вещей) → A šta ___ ovo?"
+          accept: ["su"]
+          explain: "Несколько предметов — «su»."
+
+      - who: npc
+        sr: "To su slike. A ovo su moji prijatelji."
+        ru: "Это картины. А это мои друзья."
+
+      - who: me
+        sr: "Ko su oni?"
+        ru: "Кто они?"
+        exercise:
+          id: "42.8.3"
+          type: translate
+          prompt: "Спроси: «Кто они?»"
+          accept: ["Ko su oni?"]
+
+      - who: npc
+        sr: "Marko i Jovana. Oni su moji prijatelji."
+        ru: "Марко и Йована. Они мои друзья."
+
+      - who: me
+        sr: "Drago mi je. Hvala!"
+        ru: "Приятно познакомиться. Спасибо!"
+        exercise:
+          id: "42.8.4"
+          type: choice
+          prompt: "Скажи, что тебе приятно, и поблагодари"
+          options:
+            - "Drago mi je. Hvala!"
+            - "Laku noć. Hvala!"
+            - "Nema na čemu. Hvala!"
+          answer: "Drago mi je. Hvala!"
+
+  - id: "42.9"
+    kind: practice
+    title: "Диктант"
+    mixed: true
+    exercises:
+      - id: "42.9.1"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Ovo su moje sestre."
+        accept: ["Ovo su moje sestre."]
+        ru: ["Это мои сёстры", "Это мои сестры"]
+      - id: "42.9.2"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Knjige su na stolu."
+        accept: ["Knjige su na stolu."]
+        ru: ["Книги на столе", "Книги лежат на столе", "Книги находятся на столе"]
+      - id: "42.9.3"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Moji prijatelji su ovde."
+        accept: ["Moji prijatelji su ovde."]
+        ru: ["Мои друзья здесь", "Мои друзья тут", "Мои друзья находятся здесь"]

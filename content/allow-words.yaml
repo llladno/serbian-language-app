@@ -152,6 +152,50 @@ verb_forms:
   - pijemo
   - pijete
   - piju
+  # писать и покупать — основа меняется (pisati/pišem, kupovati/kupujem)
+  - pišem
+  - pišeš
+  - piše
+  - pišemo
+  - pišete
+  - pišu
+  - kupujem
+  - kupuješ
+  - kupuje
+  - kupujemo
+  - kupujete
+  - kupuju
+  # повелительное (урок 52): ты / вы
+  - čekaj
+  - čekajte
+  - piši
+  - pišite
+  - daj
+  - pomozi
+  - pomozite
+  - pomognete
+  - pomogneš
+  - pomogne
+  - pomognemo
+  - pomognu
+  - javi
+  - javite
+  - slušaj
+  - slušajte
+  - gledaj
+  - gledajte
+  - čitaj
+  - čitajte
+  - kupi
+  - kupite
+  - kaži
+  - dođi
+  - dođite
+  - uzmi
+  - uzmite
+  - žurite
+  # родительный от ona (nju / je / nje / njoj)
+  - nje
   # причастие и футур biti — короткий корень, эвристика префикса не покрывает
   - bio
   - bila

@@ -2,32 +2,40 @@ title: "Српски језик"
 
 phases:
   - id: "1"
-    title: "Уровень 1 — Первый контакт (A1.1)"
+    title: "Уровень 1 — Первый контакт"
     lessons:
       [
         "00", "01", "02", "03", "04", "05", "06", "07", "08", "09", "10",
         "11", "12", "13", "14", "15",
       ]
   - id: "2"
-    title: "Уровень 2 — Быт (A1.2)"
+    title: "Уровень 2 — Быт"
     lessons:
       [
         "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26",
         "27", "28", "29",
       ]
   - id: "3"
-    title: "Уровень 3 — Связная речь (A2.1)"
+    title: "Уровень 3 — Связная речь"
     lessons:
       [
         "30", "31", "32", "33", "34", "35", "36", "37", "38", "39", "40",
         "41",
       ]
   - id: "4"
-    title: "Уровень 4 — Мнения и жизнь (A2.2)"
-    lessons: ["42", "43", "44", "45", "46", "47", "48", "49", "50", "51"]
+    title: "Уровень 4 — Падежи в жизни"
+    lessons:
+      [
+        "42", "43", "44", "45", "46", "47", "48", "49", "50", "51", "52",
+        "53", "54", "55", "56", "57", "58", "59",
+      ]
   - id: "5"
-    title: "Уровень 5 — Уверенно (B1.1)"
-    lessons: ["52", "53", "54", "55", "56", "57", "58", "59", "60"]
+    title: "Уровень 5 — Жизнь на сербском"
+    lessons:
+      [
+        "60", "61", "62", "63", "64", "65", "66", "67", "68", "69", "70",
+        "71", "72", "73", "74", "75", "76", "77",
+      ]
 
 lessons:
   "00":
@@ -199,59 +207,128 @@ lessons:
     subtitle: "весь уровень 3, большие ролёвки"
     file: "lessons/41.yaml"
   "42":
-    title: "Осећања"
-    subtitle: "как ты себя чувствуешь, базовые эмоции"
+    title: "Род и число (Rod i broj)"
+    subtitle: "мужской, женский, средний род; множественное число"
+    file: "lessons/42.yaml"
   "43":
-    title: "Мишљења"
-    subtitle: "mislim da, slažem se, нравится/раздражает"
+    title: "Какой? (Kakav?)"
+    subtitle: "прилагательные: dobar / dobra / dobro, описать человека и вещь"
+    file: "lessons/43.yaml"
   "44":
-    title: "Прича о себи I"
-    subtitle: "биография, детство, школа"
+    title: "Винительный I (Akuzativ I)"
+    subtitle: "кого? что? — vidim ženu, kupujem hleb"
+    file: "lessons/44.yaml"
   "45":
-    title: "Прича о себи II"
-    subtitle: "взрослая жизнь, odrastao sam, планы"
+    title: "Покупки и заказ (Kupovina i narudžbina)"
+    subtitle: "винительный в магазине и кафе, с прилагательными"
+    file: "lessons/45.yaml"
   "46":
-    title: "Телефон"
-    subtitle: "звонки, javiću se, договориться о звонке"
+    title: "Родительный I (Genitiv I)"
+    subtitle: "нет, из, до, от, у — nema hleba, do stanice"
+    file: "lessons/46.yaml"
   "47":
-    title: "Поруке"
-    subtitle: "переписка, голосовые сообщения"
+    title: "Родительный II (Genitiv II)"
+    subtitle: "количество и мн. ч.: pet dinara, litar mleka"
+    file: "lessons/47.yaml"
   "48":
-    title: "Проблеми"
-    subtitle: "жалоба, что сломалось, pokvarilo se, kvar"
+    title: "Проверка 4а (Provera 4a)"
+    subtitle: "род, число, прилагательные, винительный, родительный"
+    file: "lessons/48.yaml"
   "49":
-    title: "Решења"
-    subtitle: "вызвать мастера, договориться о ремонте, сроки"
+    title: "Локатив (Lokativ)"
+    subtitle: "где и о ком: u sobi, na trgu, o filmu"
+    file: "lessons/49.yaml"
   "50":
-    title: "Слободно време"
-    subtitle: "хобби, спорт, приглашения, hajde da"
+    title: "Квартира и город (Stan i grad)"
+    subtitle: "снять жильё, объяснить где что"
+    file: "lessons/50.yaml"
   "51":
-    title: "Провера 4"
-    subtitle: "повторение уровня 4"
+    title: "Дательный (Dativ)"
+    subtitle: "кому? — dajem sestri, sviđa mi se, treba mi"
+    file: "lessons/51.yaml"
   "52":
-    title: "Посао I"
-    subtitle: "рабочее место, задачи, коллеги, rok"
+    title: "Просьбы и помощь (Molbe i pomoć)"
+    subtitle: "попросить, помочь, подарить"
+    file: "lessons/52.yaml"
   "53":
-    title: "Посао II"
-    subtitle: "собеседование базово, резюме, sastanak"
+    title: "Творительный (Instrumental)"
+    subtitle: "с кем? чем? — sa prijateljem, nožem"
+    file: "lessons/53.yaml"
   "54":
-    title: "Папирологија"
-    subtitle: "банк, карта, boravak"
+    title: "Местоимения по падежам (Zamenice po padežima)"
+    subtitle: "я, ты, он, она, мы, вы, они — во всех падежах"
+    file: "lessons/54.yaml"
   "55":
-    title: "МУП и адреса"
-    subtitle: "prijava adrese, документы (личный слой)"
+    title: "Друзья и планы (Prijatelji i planovi)"
+    subtitle: "встретиться, пригласить, договориться; hajde da"
+    file: "lessons/55.yaml"
   "56":
-    title: "Standard vs. novosadski"
-    subtitle: "войводинские словечки, кофейная культура"
+    title: "Переписка (Poruke)"
+    subtitle: "сообщения, обращения, «стриженая» латиница"
+    file: "lessons/56.yaml"
   "57":
-    title: "Small talk"
-    subtitle: "поддержать беседу, реагировать, вставные фразы"
+    title: "Порядковые числа и даты (Redni brojevi i datumi)"
+    subtitle: "prvi, drugi, treći; datum, sprat"
+    file: "lessons/57.yaml"
   "58":
-    title: "Дуги разговор"
-    subtitle: "рассказать историю целиком, беглость"
+    title: "Проверка 4б (Provera 4b)"
+    subtitle: "локатив, дательный, творительный, местоимения"
+    file: "lessons/58.yaml"
   "59":
-    title: "Читање и слух"
-    subtitle: "новости, вывески, сериалы без субтитров"
+    title: "Большая проверка 4 (Velika provera 4)"
+    subtitle: "все падежи, ролёвки"
+    file: "lessons/59.yaml"
   "60":
-    title: "Велика провера"
+    title: "Чувства (Osećanja)"
+    subtitle: "как ты себя чувствуешь, базовые эмоции"
+  "61":
+    title: "Мнения (Mišljenja)"
+    subtitle: "mislim da, slažem se, нравится / раздражает"
+  "62":
+    title: "Рассказ о себе I (Priča o sebi I)"
+    subtitle: "биография, детство, школа"
+  "63":
+    title: "Рассказ о себе II (Priča o sebi II)"
+    subtitle: "взрослая жизнь, планы"
+  "64":
+    title: "Телефон (Telefon)"
+    subtitle: "звонки, javiću se, договориться о звонке"
+  "65":
+    title: "Проблемы (Problemi)"
+    subtitle: "жалоба, что сломалось, kvar"
+  "66":
+    title: "Решения (Rešenja)"
+    subtitle: "вызвать мастера, договориться о ремонте, сроки"
+  "67":
+    title: "Проверка 5а (Provera 5a)"
+    subtitle: "чувства, мнения, рассказ о себе, телефон, проблемы"
+  "68":
+    title: "Свободное время (Slobodno vreme)"
+    subtitle: "хобби, спорт, приглашения, hajde da"
+  "69":
+    title: "Работа I (Posao I)"
+    subtitle: "рабочее место, задачи, коллеги, rok"
+  "70":
+    title: "Работа II (Posao II)"
+    subtitle: "собеседование, резюме, sastanak"
+  "71":
+    title: "Бумаги (Papirologija)"
+    subtitle: "банк, карта, boravak"
+  "72":
+    title: "Адрес и документы (Adresa i dokumenti)"
+    subtitle: "prijava adrese, документы"
+  "73":
+    title: "Стандартный и новосадский (Standard i novosadski)"
+    subtitle: "войводинские словечки, кофейная культура"
+  "74":
+    title: "Small talk (Small talk)"
+    subtitle: "поддержать беседу, реагировать, вставные фразы"
+  "75":
+    title: "Длинный разговор (Dug razgovor)"
+    subtitle: "рассказать историю целиком, беглость"
+  "76":
+    title: "Читаю и слушаю (Čitanje i slušanje)"
+    subtitle: "новости, вывески, сериалы без субтитров"
+  "77":
+    title: "Большая проверка (Velika provera)"
     subtitle: "итоговые ролёвки, план дальше"

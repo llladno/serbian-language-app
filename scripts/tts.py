@@ -15,17 +15,23 @@ Writes content/audio/<id>.mp3 for every entry in content/vocab.yaml, for
 every `type: listen` exercise (keyed by exercise id, e.g. 01-E-1.mp3) and for
 every dialogue turn (keyed <step id>-t<N>, e.g. 05.9-t1.mp3 — the two speakers
 get different voices).
+Phrases shown in lessons (teach-text code spans, exercise options/answers,
+reading lines) go to content/audio/p/<hash>.mp3 + index.json (see phrase_key).
 Re-run any time; existing files are skipped unless --force.
 
 The sr-RS voices are Cyrillic-trained and mispronounce Latin text, so
 everything is synthesized from Cyrillic — vocab via its `cyrillic` field,
 listen exercises via sr_lat_to_cyr() on the Latin `say`.
 """
+from __future__ import annotations
+
 import argparse
 import asyncio
+import json
 import os
 import re
 import sys
+import unicodedata
 
 import yaml
 
@@ -136,6 +142,170 @@ def dialogue_entries() -> list[dict]:
     return out
 
 
+# ---- phrase clips ---------------------------------------------------------
+# Every Serbian phrase shown in a lesson (teach text, exercise options and
+# answers, reading lines) gets content/audio/p/<key>.mp3, where <key> is a
+# hash of the normalised text. The web app computes the same hash
+# (web/src/lib/phraseAudio.ts) and shows a speaker button when the key is in
+# content/audio/p/index.json — so no id plumbing, and a changed phrase simply
+# gets a new clip instead of playing a stale one.
+PHRASE_DIR = os.path.join(AUDIO_DIR, "p")
+LESSON_MD_GLOB = os.path.join(ROOT, "content", "lessons", "*", "*.md")
+
+
+def _phrase_norm(text: str) -> str:
+    t = unicodedata.normalize("NFC", text).lower()
+    return " ".join("".join(c if c.isalnum() else " " for c in t).split())
+
+
+def phrase_key(text: str) -> str:
+    """FNV-1a 64 of the normalised text, 16 hex chars. Keep in sync with
+    phraseKey() in web/src/lib/phraseAudio.ts."""
+    h = 0xCBF29CE484222325
+    for b in _phrase_norm(text).encode("utf-8"):
+        h = ((h ^ b) * 0x100000001B3) & 0xFFFFFFFFFFFFFFFF
+    return f"{h:016x}"
+
+
+def phrase_speech(text: str) -> str:
+    """Cyrillic string for the voice: all slash-variants are read out;
+    parentheticals, ellipses and blanks are dropped."""
+    t = re.sub(r"\([^)]*\)", "", text)
+    t = t.replace("…", "").replace("...", "").replace("___", "")
+    t = re.sub(r"\s*/\s*", ", ", t)
+    t = re.sub(r"\s+([?!.,;:])", r"\1", t)
+    t = re.sub(r"\s+", " ", t).strip(" -–—,")
+    return sr_lat_to_cyr(t)
+
+
+_SOUND_ONLY = {"nj", "lj", "dž", "dj", "ž", "š", "č", "ć", "đ"}
+_LATIN = re.compile(r"[A-Za-zČčĆćŠšŽžĐđ]")
+_BAD_CHARS = re.compile(r"[+=→<>*_\n\d]|[Ѐ-ӿ]")
+
+
+def is_serbian_phrase(text: str) -> bool:
+    """True for a code span / quoted string that is plain Serbian Latin text —
+    not a suffix (-im), a single sound, a formula (sam + …) or a number."""
+    t = text.strip()
+    if not t or _BAD_CHARS.search(t) or t.startswith("-") or t.endswith("-"):
+        return False
+    return len(_LATIN.findall(t)) >= 2 and _phrase_norm(t) not in _SOUND_ONLY
+
+
+def md_phrases(md: str) -> list[str]:
+    """Serbian code spans of a lesson fragment."""
+    return [m for m in re.findall(r"`([^`]+)`", md) if is_serbian_phrase(m)]
+
+
+def prompt_phrases(prompt: str) -> list[str]:
+    """Serbian «quoted» segments of an exercise prompt (blanks excluded —
+    voicing a gap would give the answer away)."""
+    return [m for m in re.findall(r"«([^»]+)»", prompt or "") if "___" not in m and is_serbian_phrase(m)]
+
+
+def fill_sentence(prompt: str, word: str) -> str | None:
+    """Full Serbian sentence of a fill-in-the-blank prompt with the gap filled.
+    Keep in sync with fillSentence() in web/src/lib/phraseAudio.ts."""
+    if not word or len(re.findall(r"_{2,}", prompt)) != 1:
+        return None
+    quoted = next((m for m in re.findall(r"«([^»]*)»", prompt) if "___" in m), None)
+    if quoted is not None:
+        t = quoted
+    elif "→" in prompt:
+        t = prompt[prompt.rindex("→") + 1:]
+    elif " — " in prompt and "___" in prompt[prompt.rindex(" — "):]:
+        t = prompt[prompt.rindex(" — ") + 3:]
+    else:
+        t = prompt
+    t = re.sub(r"\([^)]*\)", "", t)
+    t = re.sub(r"_{2,}", lambda _: word, t, count=1)
+    t = re.sub(r"\s+", " ", t).strip()
+    return t if t and not re.search(r"[\u0400-\u04FF]", t) else None
+
+
+def exercise_phrases(ex: dict) -> list[str]:
+    """Serbian phrases of one exercise that may be voiced. Never an option that
+    is not the right answer (choice distractors, word-bank chips), and nothing
+    for dictations (they have their own clip)."""
+    t = ex.get("type")
+    out = prompt_phrases(ex.get("prompt", ""))
+    if t == "choice":
+        out.append(ex.get("answer") or "")
+    elif t == "word_bank":
+        out += ex.get("accept") or []
+    elif t == "match":
+        out += [x for pair in (ex.get("pairs") or []) for x in pair]
+    elif t == "fill_blank":
+        out += [fill_sentence(ex.get("prompt", ""), w) or "" for w in ex.get("accept") or []]
+    elif t in ("translate", "fix_error"):
+        out += ex.get("accept") or []
+    return [x for x in out if isinstance(x, str) and is_serbian_phrase(x)]
+
+
+def reading_lines(md: str) -> list[str]:
+    """Serbian lines of a reading fragment (everything before the first `---`),
+    minus the leading dash of a dialogue line."""
+    head = re.split(r"^---\s*$", md, maxsplit=1, flags=re.M)[0]
+    out = []
+    for line in head.splitlines():
+        line = re.sub(r"^\s*[—–-]\s*", "", line).strip()
+        if line:
+            out.append(line)
+    return out
+
+
+def phrase_texts() -> list[str]:
+    """Every phrase that should have a clip: first-seen spelling, de-duplicated by key."""
+    found: list[str] = []
+    for path in sorted(glob.glob(LESSON_MD_GLOB)):
+        md = open(path, encoding="utf-8").read()
+        found += md_phrases(md)
+        if "citanje" in os.path.basename(path) or "reading" in os.path.basename(path):
+            found += reading_lines(md)
+    for path in sorted(glob.glob(LESSONS_GLOB)):
+        if os.path.basename(path) == "_TEMPLATE.yaml":
+            continue
+        doc = yaml.safe_load(open(path, encoding="utf-8")) or {}
+        for step in doc.get("steps") or []:
+            exs = list(step.get("exercises") or [])
+            for t in step.get("turns") or []:
+                if t.get("exercise"):
+                    exs.append(t["exercise"])
+            for ex in exs:
+                found += exercise_phrases(ex)
+    seen, out = set(), []
+    for t in found:
+        k = phrase_key(t)
+        if k not in seen and phrase_speech(t):
+            seen.add(k)
+            out.append(t)
+    return out
+
+
+def phrase_entries() -> list[dict]:
+    return [{"id": "p/" + phrase_key(t), "cyrillic": phrase_speech(t), "exact": True} for t in phrase_texts()]
+
+
+def prune_phrase_clips() -> int:
+    """Delete phrase clips no current lesson text refers to."""
+    want = {phrase_key(t) for t in phrase_texts()}
+    n = 0
+    for f in os.listdir(PHRASE_DIR) if os.path.isdir(PHRASE_DIR) else []:
+        if f.endswith(".mp3") and f[:-4] not in want:
+            os.remove(os.path.join(PHRASE_DIR, f))
+            n += 1
+    return n
+
+
+def write_phrase_index() -> int:
+    """List every phrase clip on disk, for the web app."""
+    os.makedirs(PHRASE_DIR, exist_ok=True)
+    keys = sorted(f[:-4] for f in os.listdir(PHRASE_DIR) if f.endswith(".mp3"))
+    with open(os.path.join(PHRASE_DIR, "index.json"), "w") as f:
+        json.dump(keys, f)
+    return len(keys)
+
+
 def speech_text(entry: dict) -> str:
     """Pick a clean, speakable string from a vocab entry.
 
@@ -163,7 +333,7 @@ async def synth(sem, voice, text, dest):
 
 
 async def run(entries, voice, force):
-    os.makedirs(AUDIO_DIR, exist_ok=True)
+    os.makedirs(PHRASE_DIR, exist_ok=True)
     sem = asyncio.Semaphore(CONCURRENCY)
     tasks, planned = [], []
     for e in entries:
@@ -171,7 +341,7 @@ async def run(entries, voice, force):
         dest = os.path.join(AUDIO_DIR, eid + ".mp3")
         if os.path.exists(dest) and not force:
             continue
-        text = speech_text(e)
+        text = e["cyrillic"] if e.get("exact") else speech_text(e)
         if not text:
             print(f"  ! {eid}: no speakable text, skipped")
             continue
@@ -180,6 +350,7 @@ async def run(entries, voice, force):
 
     if not tasks:
         print("nothing to do — all audio present (use --force to regenerate)")
+        print(f"phrase index: {write_phrase_index()} clips")
         return 0
 
     print(f"generating {len(tasks)} file(s)\n")
@@ -193,6 +364,7 @@ async def run(entries, voice, force):
             ok += 1
             print(f"  ok {eid:24s} “{text}”  {os.path.getsize(dest) // 1024} KB")
     print(f"\ndone: {ok} written, {errs} failed")
+    print(f"phrase index: {write_phrase_index()} clips")
     return 1 if errs else 0
 
 
@@ -200,6 +372,7 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--voice", default=DEFAULT_VOICE)
     ap.add_argument("--force", action="store_true", help="regenerate existing files")
+    ap.add_argument("--prune", action="store_true", help="delete phrase clips no lesson text uses any more")
     ap.add_argument("--only", action="append", default=[], metavar="ID", help="limit to these ids (repeatable)")
     args = ap.parse_args()
 
@@ -207,6 +380,7 @@ def main():
         entries = [e for e in yaml.safe_load(f) if isinstance(e, dict) and e.get("id")]
     entries += listen_entries()
     entries += dialogue_entries()
+    entries += phrase_entries()
     if args.only:
         want = set(args.only)
         entries = [e for e in entries if e["id"] in want]
@@ -214,7 +388,11 @@ def main():
         for m in sorted(missing):
             print(f"  ! id not in vocab/exercises: {m}")
 
-    return asyncio.run(run(entries, args.voice, args.force))
+    rc = asyncio.run(run(entries, args.voice, args.force))
+    if args.prune:
+        print(f"pruned {prune_phrase_clips()} stale phrase clip(s)")
+        print(f"phrase index: {write_phrase_index()} clips")
+    return rc
 
 
 if __name__ == "__main__":

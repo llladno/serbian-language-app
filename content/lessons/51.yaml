@@ -1,0 +1,307 @@
+lesson: "51"
+title: "Дательный (Dativ)"
+subtitle: "кому? — dajem sestri, sviđa mi se, treba mi"
+teaches: [poklon, dati, reci, mu-joj, nam-im]
+
+steps:
+  - id: "51.1"
+    kind: teach
+    title: "Кому? Чему?"
+    md: "51/1-dativ.md"
+
+  - id: "51.2"
+    kind: practice
+    title: "Sestri, bratu, prijatelju"
+    also_ok: ["sestri", "sestru", "bratu", "brata", "brate", "prijatelju", "prijatelja", "prijatelje", "mami", "mamu", "mame", "detetu", "Ani", "kažem", "dajem", "kupujem", "pišem", "poklon"]
+    exercises:
+      - id: "51.2.1"
+        type: choice
+        prompt: "«Я даю книгу сестре» —"
+        options: ["Dajem knjigu sestri.", "Dajem knjigu sestru.", "Dajem knjigu sestre."]
+        answer: "Dajem knjigu sestri."
+        explain: "Тому, кому даём, — дательный: sestri. А «книгу» (что даём) — винительный: knjigu."
+      - id: "51.2.2"
+        type: choice
+        prompt: "«Я пишу брату» —"
+        options: ["Pišem bratu.", "Pišem brata.", "Pišem brate."]
+        answer: "Pišem bratu."
+      - id: "51.2.3"
+        type: choice
+        prompt: "«Я говорю другу» —"
+        options: ["Kažem prijatelju.", "Kažem prijatelja.", "Kažem prijatelje."]
+        answer: "Kažem prijatelju."
+      - id: "51.2.4"
+        type: choice
+        prompt: "«Я покупаю подарок маме» —"
+        options: ["Kupujem poklon mami.", "Kupujem poklon mamu.", "Kupujem poklon mame."]
+        answer: "Kupujem poklon mami."
+      - id: "51.2.5"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["bratu", "брату"]
+          - ["sestri", "сестре"]
+          - ["prijatelju", "другу"]
+          - ["detetu", "ребёнку"]
+      - id: "51.2.6"
+        type: fill_blank
+        prompt: "«Я пишу сестре» → Pišem ___."
+        accept: ["sestri"]
+      - id: "51.2.7"
+        type: fill_blank
+        prompt: "«Я говорю Ане» → Kažem ___."
+        accept: ["Ani"]
+      - id: "51.2.8"
+        type: fill_blank
+        prompt: "«Я даю ребёнку» → Dajem ___."
+        accept: ["detetu"]
+      - id: "51.2.9"
+        type: word_bank
+        prompt: "Собери: «Я даю сестре книгу»"
+        bank: ["Dajem", "sestri", "knjigu", "sestru", "knjiga"]
+        accept: ["Dajem sestri knjigu.", "Dajem knjigu sestri."]
+      - id: "51.2.10"
+        type: fix_error
+        prompt: "Pišem sestru."
+        accept: ["Pišem sestri."]
+        explain: "Пишу кому? — дательный: sestri."
+      - id: "51.2.11"
+        type: translate
+        prompt: "Я покупаю подарок брату."
+        accept: ["Kupujem poklon bratu.", "Kupujem bratu poklon."]
+
+  - id: "51.3"
+    kind: teach
+    title: "Мне, тебе, ему"
+    md: "51/3-zamenice.md"
+
+  - id: "51.4"
+    kind: practice
+    title: "Mi, ti, mu, joj"
+    also_ok: ["daje", "pišem", "sviđa", "sviđaju", "treba", "trebaju", "sviđam"]
+    exercises:
+      - id: "51.4.1"
+        type: choice
+        prompt: "«Он даёт мне книгу» —"
+        options: ["On mi daje knjigu.", "On ti daje knjigu.", "On joj daje knjigu."]
+        answer: "On mi daje knjigu."
+      - id: "51.4.2"
+        type: choice
+        prompt: "«Я пишу ей» —"
+        options: ["Pišem joj.", "Pišem mu.", "Pišem im."]
+        answer: "Pišem joj."
+      - id: "51.4.3"
+        type: choice
+        prompt: "«Я пишу ему» —"
+        options: ["Pišem mu.", "Pišem joj.", "Pišem im."]
+        answer: "Pišem mu."
+      - id: "51.4.4"
+        type: choice
+        prompt: "«Нам нравится город» —"
+        options: ["Sviđa nam se grad.", "Sviđa me se grad.", "Sviđam nam se grad."]
+        answer: "Sviđa nam se grad."
+      - id: "51.4.5"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["mi", "мне"]
+          - ["ti", "тебе"]
+          - ["nam", "нам"]
+          - ["im", "им"]
+      - id: "51.4.6"
+        type: fill_blank
+        prompt: "«Мне нравится эта сумка» → Sviđa ___ se ova torba."
+        accept: ["mi"]
+      - id: "51.4.7"
+        type: fill_blank
+        prompt: "«Мне нравятся эти туфли» → ___ mi se ove cipele."
+        accept: ["Sviđaju"]
+        explain: "Туфель несколько — глагол во множественном числе: sviđaju."
+      - id: "51.4.8"
+        type: fill_blank
+        prompt: "«Ей нужна вода» → Treba ___ voda."
+        accept: ["joj"]
+      - id: "51.4.9"
+        type: word_bank
+        prompt: "Собери: «Нам нужно время»"
+        bank: ["Treba", "nam", "vreme", "vremena", "vam"]
+        accept: ["Treba nam vreme."]
+      - id: "51.4.10"
+        type: fix_error
+        prompt: "Sviđa me se ova torba."
+        accept: ["Sviđa mi se ova torba."]
+        explain: "«mi» — «мне» (кому нравится), а «me» — «меня»."
+      - id: "51.4.11"
+        type: translate
+        prompt: "Нам нравится этот город."
+        accept: ["Sviđa nam se ovaj grad."]
+
+  - id: "51.5"
+    kind: practice
+    title: "Какой падеж?"
+    mixed: true
+    also_ok: ["sestru", "sestri", "sestre", "brata", "bratu", "prijatelja", "prijatelju", "Beogradu", "Beograda", "Beograd", "bratu", "poslu", "moru", "kupio", "kupila"]
+    exercises:
+      - id: "51.5.1"
+        type: choice
+        prompt: "«Я вижу сестру» —"
+        options: ["Vidim sestru.", "Vidim sestri.", "Vidim sestre."]
+        answer: "Vidim sestru."
+      - id: "51.5.2"
+        type: choice
+        prompt: "«Я пишу сестре» —"
+        options: ["Pišem sestri.", "Pišem sestru.", "Pišem sestre."]
+        answer: "Pišem sestri."
+      - id: "51.5.3"
+        type: choice
+        prompt: "«У меня нет сестры» —"
+        options: ["Nemam sestre.", "Nemam sestru.", "Nemam sestri."]
+        answer: "Nemam sestre."
+      - id: "51.5.4"
+        type: choice
+        prompt: "«Я живу в Белграде» —"
+        options: ["Živim u Beogradu.", "Živim u Beograd.", "Živim u Beograda."]
+        answer: "Živim u Beogradu."
+      - id: "51.5.5"
+        type: match
+        prompt: "Соедини (падеж по смыслу)"
+        pairs:
+          - ["Vidim brata.", "Вижу брата"]
+          - ["Dajem bratu knjigu.", "Даю брату книгу"]
+          - ["Nemam brata.", "У меня нет брата"]
+          - ["Pričam o bratu.", "Говорю о брате"]
+      - id: "51.5.6"
+        type: fill_blank
+        prompt: "«Я жду друга» → Čekam ___."
+        accept: ["prijatelja"]
+      - id: "51.5.7"
+        type: fill_blank
+        prompt: "«Я пишу другу» → Pišem ___."
+        accept: ["prijatelju"]
+      - id: "51.5.8"
+        type: fill_blank
+        prompt: "«Я говорю о друге» → Pričam o ___."
+        accept: ["prijatelju"]
+        explain: "Дательный и локатив выглядят одинаково (prijatelju). Различают по предлогу: «o» ведёт локатив, без предлога — дательный."
+      - id: "51.5.9"
+        type: word_bank
+        prompt: "Собери: «Я говорю сестре о брате»"
+        bank: ["Pričam", "sestri", "o", "bratu", "brata", "sestru"]
+        accept: ["Pričam sestri o bratu."]
+      - id: "51.5.10"
+        type: fix_error
+        prompt: "Pišem bratu o poslo."
+        accept: ["Pišem bratu o poslu."]
+      - id: "51.5.11"
+        type: translate
+        prompt: "Я купил сестре книгу о море."
+        accept: ["Kupio sam sestri knjigu o moru.", "Kupila sam sestri knjigu o moru."]
+
+  - id: "51.6"
+    kind: reading
+    title: "Подарок для сестры"
+    md: "51/6-citanje.md"
+    also_ok: ["kupujem", "joj", "poklon", "lepu", "moru", "bratu", "mami", "sestre", "pišem", "kažem", "dolazim", "poruku", "odgovara"]
+    exercises:
+      - id: "51.6.1"
+        type: choice
+        prompt: "Что она покупает сестре?"
+        options: ["Knjigu o moru.", "Kafu.", "Torbu."]
+        answer: "Knjigu o moru."
+      - id: "51.6.2"
+        type: choice
+        prompt: "Что она пишет сестре?"
+        options: ["Da dolazi u subotu.", "Da nema vremena.", "Da kupuje stan."]
+        answer: "Da dolazi u subotu."
+      - id: "51.6.3"
+        type: choice
+        prompt: "Что она покупает брату?"
+        options: ["Kafu.", "Knjigu.", "Hleb."]
+        answer: "Kafu."
+
+  - id: "51.7"
+    kind: dialogue
+    title: "Šta da kupim?"
+    scene: "Друг не знает, что подарить сестре и брату, и просит тебя о помощи."
+    voice: m
+    also_ok: ["sestri", "bratu", "kupim", "kupi", "joj", "mu", "knjigu", "kafu", "mami"]
+    turns:
+      - who: npc
+        sr: "Zdravo! Treba mi pomoć. Šta da kupim sestri?"
+        ru: "Привет! Мне нужна помощь. Что мне купить сестре?"
+
+      - who: me
+        sr: "Kupi joj knjigu."
+        ru: "Купи ей книгу."
+        exercise:
+          id: "51.7.1"
+          type: choice
+          prompt: "Посоветуй: «Купи ей книгу»"
+          options: ["Kupi joj knjigu.", "Kupi mu knjigu.", "Kupi joj knjiga."]
+          answer: "Kupi joj knjigu."
+          explain: "Сестра — «ей» (joj), а «книгу» — винительный."
+
+      - who: npc
+        sr: "Dobro. A bratu?"
+        ru: "Хорошо. А брату?"
+
+      - who: me
+        sr: "Kupi mu kafu."
+        ru: "Купи ему кофе."
+        exercise:
+          id: "51.7.2"
+          type: fill_blank
+          prompt: "«Купи ему кофе» → Kupi ___ kafu."
+          accept: ["mu"]
+
+      - who: npc
+        sr: "Hvala ti! A šta da kažem mami?"
+        ru: "Спасибо тебе! А что мне сказать маме?"
+
+      - who: me
+        sr: "Reci joj da je sve dobro."
+        ru: "Скажи ей, что всё хорошо."
+        exercise:
+          id: "51.7.3"
+          type: translate
+          prompt: "Скажи: «Скажи ей, что всё хорошо»"
+          accept: ["Reci joj da je sve dobro.", "Kaži joj da je sve dobro."]
+
+      - who: npc
+        sr: "Hvala! Vidimo se sutra."
+        ru: "Спасибо! Увидимся завтра."
+
+      - who: me
+        sr: "Nema na čemu! Vidimo se."
+        ru: "Не за что! Увидимся."
+        exercise:
+          id: "51.7.4"
+          type: choice
+          prompt: "Скажи: «Не за что! Увидимся»"
+          options: ["Nema na čemu! Vidimo se.", "Izvinite! Vidimo se.", "Laku noć! Vidimo se."]
+          answer: "Nema na čemu! Vidimo se."
+
+  - id: "51.8"
+    kind: practice
+    title: "Диктант"
+    mixed: true
+    also_ok: ["sestri", "kažem", "joj", "mu", "pišem"]
+    exercises:
+      - id: "51.8.1"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Pišem sestri poruku."
+        accept: ["Pišem sestri poruku."]
+        ru: ["Я пишу сестре сообщение", "Пишу сестре сообщение", "Я пишу сестре письмо"]
+      - id: "51.8.2"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Sviđa mi se ova torba."
+        accept: ["Sviđa mi se ova torba."]
+        ru: ["Мне нравится эта сумка", "Эта сумка мне нравится"]
+      - id: "51.8.3"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Kupi joj knjigu."
+        accept: ["Kupi joj knjigu."]
+        ru: ["Купи ей книгу", "Купи ей эту книгу"]

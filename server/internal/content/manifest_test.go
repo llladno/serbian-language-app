@@ -211,7 +211,7 @@ func TestDialogueValidation(t *testing.T) {
         sr: "Hvala."
         exercise:
           id: "05.9.1"
-          type: free
+          type: listen
           prompt: "x"`, "not allowed in a dialogue"},
 		{"line differs from answer", `
       - who: me

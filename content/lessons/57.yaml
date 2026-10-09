@@ -1,0 +1,314 @@
+lesson: "57"
+title: "Порядковые числа и даты (Redni brojevi i datumi)"
+subtitle: "prvi, drugi, treći; datum, sprat"
+teaches:
+  [
+    prvi, drugi, treci, cetvrti, peti, sesti, sedmi, osmi, deveti, deseti, datum, onda,
+    januar, februar, mart, april, maj, jun, jul, avgust, septembar, oktobar, novembar,
+    decembar,
+  ]
+
+steps:
+  - id: "57.1"
+    kind: teach
+    title: "Первый, второй, третий"
+    md: "57/1-redni.md"
+
+  - id: "57.2"
+    kind: practice
+    title: "Na trećem spratu"
+    also_ok: ["spratu", "trećem", "drugom", "treću", "četvrtom", "petom", "Treća", "peta", "sprat", "prvo", "treći", "drugi", "drugo", "treće", "drugoj", "prva", "druga", "prvi", "ulicu", "ulica"]
+    exercises:
+      - id: "57.2.1"
+        type: choice
+        prompt: "«второй этаж» (по-русски; первый этаж по-сербски — prizemlje) —"
+        options: ["prvi sprat", "prizemlje", "drugi sprat"]
+        answer: "prvi sprat"
+        explain: "Сербский счёт сдвинут на единицу: prizemlje — 1-й этаж, prvi sprat — 2-й, drugi sprat — 3-й."
+      - id: "57.2.2"
+        type: choice
+        prompt: "«на четвёртом этаже» (по-русски) —"
+        options: ["na trećem spratu", "na treći sprat", "na trećoj spratu"]
+        answer: "na trećem spratu"
+        explain: "Четвёртый этаж по-русски — treći sprat по-сербски (счёт сдвинут на единицу)."
+      - id: "57.2.3"
+        type: choice
+        prompt: "«вторая улица» —"
+        options: ["druga ulica", "drugi ulica", "drugo ulica"]
+        answer: "druga ulica"
+      - id: "57.2.4"
+        type: choice
+        prompt: "«Я живу на втором этаже» (по-русски) —"
+        options: ["Živim na prvom spratu.", "Živim na prvi sprat.", "Živim na prvoj spratu."]
+        answer: "Živim na prvom spratu."
+      - id: "57.2.5"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["prvi", "первый"]
+          - ["treći", "третий"]
+          - ["peti", "пятый"]
+          - ["deseti", "десятый"]
+      - id: "57.2.6"
+        type: fill_blank
+        prompt: "«пятая комната» → ___ soba"
+        accept: ["peta"]
+      - id: "57.2.7"
+        type: fill_blank
+        prompt: "«на пятом этаже» (по-русски) → na ___ spratu"
+        accept: ["četvrtom"]
+      - id: "57.2.8"
+        type: fill_blank
+        prompt: "«третья улица налево» → ___ ulica levo"
+        accept: ["Treća"]
+      - id: "57.2.9"
+        type: word_bank
+        prompt: "Собери: «Квартира на третьем этаже» (по-русски)"
+        bank: ["Stan", "je", "na", "drugom", "spratu", "drugi", "sprat"]
+        accept: ["Stan je na drugom spratu."]
+      - id: "57.2.10"
+        type: fix_error
+        prompt: "Živim na treći sprat."
+        accept: ["Živim na trećem spratu."]
+        explain: "Где живу? — локатив: na trećem spratu."
+      - id: "57.2.11"
+        type: translate
+        prompt: "Моя квартира на шестом этаже (по-русски)."
+        accept: ["Moj stan je na petom spratu."]
+
+  - id: "57.3"
+    kind: teach
+    title: "Дата"
+    md: "57/3-datumi.md"
+
+  - id: "57.4"
+    kind: practice
+    title: "Peti maj, petog maja"
+    also_ok: ["maja", "marta", "aprila", "juna", "petog", "šestog", "desetog", "prvog", "treći", "petom", "maju", "aprilu", "peti", "mart", "april", "jun", "sastanak", "termin"]
+    exercises:
+      - id: "57.4.1"
+        type: choice
+        prompt: "«Сегодня пятое мая» —"
+        options: ["Danas je peti maj.", "Danas je petog maja.", "Danas je peto maj."]
+        answer: "Danas je peti maj."
+      - id: "57.4.2"
+        type: choice
+        prompt: "«пятого мая» (когда?) —"
+        options: ["petog maja", "peti maj", "petom maju"]
+        answer: "petog maja"
+      - id: "57.4.3"
+        type: choice
+        prompt: "«Какое сегодня число?» —"
+        options: ["Koji je danas datum?", "Koliko je danas datum?", "Kada je danas datum?"]
+        answer: "Koji je danas datum?"
+      - id: "57.4.4"
+        type: choice
+        prompt: "«первого апреля» —"
+        options: ["prvog aprila", "prvi april", "prvom aprilu"]
+        answer: "prvog aprila"
+      - id: "57.4.5"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["januar", "январь"]
+          - ["mart", "март"]
+          - ["jun", "июнь"]
+          - ["oktobar", "октябрь"]
+      - id: "57.4.6"
+        type: fill_blank
+        prompt: "«шестого марта» → ___ marta"
+        accept: ["šestog"]
+      - id: "57.4.7"
+        type: fill_blank
+        prompt: "«до десятого июня» → do desetog ___"
+        accept: ["juna"]
+      - id: "57.4.8"
+        type: fill_blank
+        prompt: "«Сегодня третье июля» → Danas je ___ jul."
+        accept: ["treći"]
+      - id: "57.4.9"
+        type: word_bank
+        prompt: "Собери: «Встреча пятого марта»"
+        bank: ["Sastanak", "je", "petog", "marta", "peti", "mart"]
+        accept: ["Sastanak je petog marta."]
+      - id: "57.4.10"
+        type: fix_error
+        prompt: "Termin je peti marta."
+        accept: ["Termin je petog marta."]
+        explain: "Когда? — порядковое и месяц в родительном: petog marta."
+      - id: "57.4.11"
+        type: translate
+        prompt: "Мой приём — шестого марта в десять часов."
+        accept: ["Moj termin je šestog marta u deset sati."]
+
+  - id: "57.5"
+    kind: teach
+    title: "Сначала, потом, последний"
+    md: "57/5-redosled.md"
+
+  - id: "57.6"
+    kind: practice
+    title: "Prvo, onda, poslednji"
+    mixed: true
+    also_ok: ["treću", "ulicu", "ulica", "prvo", "prvog", "maja", "tuš", "poslednji", "poslednja", "poslednje", "sledeći", "prvi", "prva", "kafić", "moru"]
+    exercises:
+      - id: "57.6.1"
+        type: choice
+        prompt: "«Поверните в третью улицу налево» —"
+        options: ["Skrenite u treću ulicu levo.", "Skrenite u treća ulica levo.", "Skrenite u trećoj ulici levo."]
+        answer: "Skrenite u treću ulicu levo."
+        explain: "Скрыть куда? — винительный: treća ulica → treću ulicu."
+      - id: "57.6.2"
+        type: choice
+        prompt: "«Сначала кофе, потом работа» —"
+        options: ["Prvo kafa, onda posao.", "Prvi kafa, onda posao.", "Prva kafa, onda posao."]
+        answer: "Prvo kafa, onda posao."
+      - id: "57.6.3"
+        type: choice
+        prompt: "«последний автобус» —"
+        options: ["poslednji autobus", "poslednja autobus", "poslednje autobus"]
+        answer: "poslednji autobus"
+      - id: "57.6.4"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["prvo", "сначала"]
+          - ["onda", "потом"]
+          - ["poslednji", "последний"]
+          - ["sledeći", "следующий"]
+      - id: "57.6.5"
+        type: fill_blank
+        prompt: "«Сначала душ, потом завтрак» → ___ tuš, onda doručak."
+        accept: ["Prvo"]
+      - id: "57.6.6"
+        type: fill_blank
+        prompt: "«первого мая» → ___ maja"
+        accept: ["prvog"]
+      - id: "57.6.7"
+        type: word_bank
+        prompt: "Собери: «Сначала работа, потом кафе»"
+        bank: ["Prvo", "posao", "onda", "kafić", "prvi"]
+        accept: ["Prvo posao, onda kafić."]
+      - id: "57.6.8"
+        type: fix_error
+        prompt: "Skrenite u treća ulica."
+        accept: ["Skrenite u treću ulicu."]
+      - id: "57.6.9"
+        type: translate
+        prompt: "Первого мая я на море."
+        accept: ["Prvog maja sam na moru."]
+
+  - id: "57.7"
+    kind: reading
+    title: "Мой график"
+    md: "57/7-citanje.md"
+    also_ok: ["trećem", "spratu", "drugoj", "ulici", "stanice", "termin", "petog", "marta", "petnaestog", "dvadeset", "prvog", "plaćam", "račun", "lekara", "levo", "moru"]
+    exercises:
+      - id: "57.7.1"
+        type: choice
+        prompt: "На каком «sprat» она живёт (по сербскому счёту)?"
+        options: ["Na trećem.", "Na prvom.", "U prizemlju."]
+        answer: "Na trećem."
+      - id: "57.7.2"
+        type: choice
+        prompt: "Когда её приём у врача?"
+        options: ["Petog marta.", "Petnaestog marta.", "Prvog marta."]
+        answer: "Petog marta."
+      - id: "57.7.3"
+        type: choice
+        prompt: "Что она делает сначала?"
+        options: ["Ide kod lekara.", "Ide na posao.", "Ide na more."]
+        answer: "Ide kod lekara."
+
+  - id: "57.8"
+    kind: dialogue
+    title: "Zovem zbog termina"
+    scene: "Ты звонишь, чтобы записаться на приём. Секретарь обращается к тебе на «вы»."
+    voice: f
+    also_ok: ["termina", "petog", "šestog", "marta", "termin", "slobodan", "Vam"]
+    turns:
+      - who: npc
+        sr: "Dobar dan, izvolite?"
+        ru: "Добрый день, слушаю вас?"
+
+      - who: me
+        sr: "Dobar dan. Zovem zbog termina."
+        ru: "Добрый день. Звоню по поводу приёма."
+        exercise:
+          id: "57.8.1"
+          type: choice
+          prompt: "Поздоровайся и скажи, что звонишь по поводу приёма"
+          options:
+            - "Dobar dan. Zovem zbog termina."
+            - "Dobar dan. Zovem zbog termin."
+            - "Dobar dan. Zovem zbog terminu."
+          answer: "Dobar dan. Zovem zbog termina."
+          explain: "«zbog» + родительный: termin → termina."
+
+      - who: npc
+        sr: "Kada Vam odgovara?"
+        ru: "Когда вам удобно?"
+
+      - who: me
+        sr: "Petog marta u deset sati."
+        ru: "Пятого марта в десять часов."
+        exercise:
+          id: "57.8.2"
+          type: fill_blank
+          prompt: "«пятого марта» → ___ marta u deset sati."
+          accept: ["Petog"]
+
+      - who: npc
+        sr: "Nažalost, petog nema termina. Može šestog marta?"
+        ru: "К сожалению, на пятое нет приёма. Можно шестого марта?"
+
+      - who: me
+        sr: "Šestog marta mi odgovara."
+        ru: "Шестого марта мне подходит."
+        exercise:
+          id: "57.8.3"
+          type: choice
+          prompt: "Согласись на шестое марта"
+          options:
+            - "Šestog marta mi odgovara."
+            - "Šesti mart mi odgovara."
+            - "Šestom martu mi odgovara."
+          answer: "Šestog marta mi odgovara."
+
+      - who: npc
+        sr: "Dobro. Šestog marta u deset sati. Vidimo se!"
+        ru: "Хорошо. Шестого марта в десять часов. До встречи!"
+
+      - who: me
+        sr: "Hvala! Doviđenja!"
+        ru: "Спасибо! До свидания!"
+        exercise:
+          id: "57.8.4"
+          type: translate
+          prompt: "Поблагодари и попрощайся"
+          accept: ["Hvala! Doviđenja!", "Hvala, doviđenja!", "Hvala. Doviđenja."]
+
+  - id: "57.9"
+    kind: practice
+    title: "Диктант"
+    mixed: true
+    also_ok: ["petog", "šestog", "marta", "trećem", "spratu", "peti", "termin"]
+    exercises:
+      - id: "57.9.1"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Danas je peti maj."
+        accept: ["Danas je peti maj."]
+        ru: ["Сегодня пятое мая", "Сегодня 5 мая", "Сегодня пятое число мая"]
+      - id: "57.9.2"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Stan je na trećem spratu."
+        accept: ["Stan je na trećem spratu."]
+        ru: ["Квартира на четвёртом этаже", "Квартира находится на четвёртом этаже"]
+      - id: "57.9.3"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Termin je šestog marta."
+        accept: ["Termin je šestog marta."]
+        ru: ["Приём шестого марта", "Приём — шестого марта", "Запись на шестое марта"]

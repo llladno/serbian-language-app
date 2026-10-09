@@ -1,0 +1,312 @@
+lesson: "56"
+title: "Переписка (Poruke)"
+subtitle: "сообщения, обращения, «стриженая» латиница"
+teaches: [stizati, srecno, pozdrav, evo-me, javi-se, uskoro]
+
+steps:
+  - id: "56.1"
+    kind: teach
+    title: "Обращение"
+    md: "56/1-vokativ.md"
+
+  - id: "56.2"
+    kind: practice
+    title: "Ano, sestro, brate"
+    also_ok: ["Ano", "Anu", "Ani", "sestro", "sestru", "sestri", "brate", "brata", "bratu", "prijatelju", "prijatelja", "prijatelje", "mamo", "Petre", "Marko", "izvini"]
+    exercises:
+      - id: "56.2.1"
+        type: choice
+        prompt: "«Привет, Ана!» (обращение) —"
+        options: ["Zdravo, Ano!", "Zdravo, Anu!", "Zdravo, Ani!"]
+        answer: "Zdravo, Ano!"
+      - id: "56.2.2"
+        type: choice
+        prompt: "«Спасибо, сестра!» —"
+        options: ["Hvala, sestro!", "Hvala, sestru!", "Hvala, sestri!"]
+        answer: "Hvala, sestro!"
+      - id: "56.2.3"
+        type: choice
+        prompt: "«Извини, брат» —"
+        options: ["Izvini, brate.", "Izvini, brata.", "Izvini, bratu."]
+        answer: "Izvini, brate."
+      - id: "56.2.4"
+        type: choice
+        prompt: "«Увидимся, друг!» —"
+        options: ["Vidimo se, prijatelju!", "Vidimo se, prijatelja!", "Vidimo se, prijatelje!"]
+        answer: "Vidimo se, prijatelju!"
+      - id: "56.2.5"
+        type: match
+        prompt: "Соедини (обращение)"
+        pairs:
+          - ["Ano", "Ана!"]
+          - ["mamo", "мама!"]
+          - ["brate", "брат!"]
+          - ["Petre", "Петар!"]
+      - id: "56.2.6"
+        type: fill_blank
+        prompt: "«Доброе утро, мама!» → Dobro jutro, ___!"
+        accept: ["mamo"]
+      - id: "56.2.7"
+        type: fill_blank
+        prompt: "«Привет, Марко!» → Zdravo, ___!"
+        accept: ["Marko"]
+        explain: "Мужские имена на -o не меняются."
+      - id: "56.2.8"
+        type: fill_blank
+        prompt: "«Увидимся, Петар!» → Vidimo se, ___!"
+        accept: ["Petre"]
+        explain: "Беглое «a» выпадает: Petar → Petre."
+      - id: "56.2.9"
+        type: word_bank
+        prompt: "Собери: «Спасибо, сестра!»"
+        bank: ["Hvala", "sestro", "sestra", "sestru"]
+        accept: ["Hvala, sestro!", "Hvala sestro!"]
+      - id: "56.2.10"
+        type: fix_error
+        prompt: "Zdravo, sestru!"
+        accept: ["Zdravo, sestro!"]
+      - id: "56.2.11"
+        type: translate
+        prompt: "Привет, мама! Как дела?"
+        accept: ["Zdravo, mamo! Kako si?", "Zdravo, mamo, kako si?", "Zdravo mamo! Kako si?"]
+
+  - id: "56.3"
+    kind: teach
+    title: "Слова для сообщений"
+    md: "56/3-poruke.md"
+
+  - id: "56.4"
+    kind: practice
+    title: "Evo me, kasnim"
+    also_ok: ["kasnim", "stižem", "izvini", "kasni", "kasnimo", "minut", "minuta", "izvinite"]
+    exercises:
+      - id: "56.4.1"
+        type: choice
+        prompt: "«Опаздываю, извини» —"
+        options: ["Kasnim, izvini.", "Kasni, izvini.", "Kasnimo, izvini."]
+        answer: "Kasnim, izvini."
+      - id: "56.4.2"
+        type: choice
+        prompt: "«Буду через пять минут» —"
+        options: ["Stižem za pet minuta.", "Stižem za pet minut.", "Stižem pet minuta."]
+        answer: "Stižem za pet minuta."
+      - id: "56.4.3"
+        type: choice
+        prompt: "«Вот я!» —"
+        options: ["Evo me!", "Evo mi!", "Evo ja!"]
+        answer: "Evo me!"
+      - id: "56.4.4"
+        type: choice
+        prompt: "«Удачи!» —"
+        options: ["Srećno!", "Hvala!", "Naravno!"]
+        answer: "Srećno!"
+      - id: "56.4.5"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["Javi se!", "Напиши / позвони"]
+          - ["Čujemo se!", "Созвонимся"]
+          - ["Pozdrav!", "С приветом!"]
+          - ["Nema problema.", "Без проблем"]
+      - id: "56.4.6"
+        type: fill_blank
+        prompt: "«Буду через десять минут» → Stižem za deset ___."
+        accept: ["minuta"]
+      - id: "56.4.7"
+        type: fill_blank
+        prompt: "«Вот я» → Evo ___!"
+        accept: ["me"]
+      - id: "56.4.8"
+        type: fill_blank
+        prompt: "«Напиши мне!» (на «ты») → ___ se!"
+        accept: ["Javi"]
+      - id: "56.4.9"
+        type: word_bank
+        prompt: "Собери: «Опаздываю, прости»"
+        bank: ["Kasnim", "izvini", "kasni", "izvinite"]
+        accept: ["Kasnim, izvini."]
+      - id: "56.4.10"
+        type: fix_error
+        prompt: "Stižem za pet minut."
+        accept: ["Stižem za pet minuta."]
+      - id: "56.4.11"
+        type: translate
+        prompt: "Буду через десять минут, извини."
+        accept: ["Stižem za deset minuta, izvini.", "Izvini, stižem za deset minuta."]
+
+  - id: "56.5"
+    kind: teach
+    title: "«Стриженая» латиница"
+    md: "56/5-ocistena.md"
+
+  - id: "56.6"
+    kind: practice
+    title: "Читаем без значков"
+    also_ok: ["sta", "radis", "racun", "ranun", "moze", "moče", "kuca", "dodji", "dodi", "dođi", "dzem", "secer", "Moze", "Sta", "Dzem", "Secer", "Gde", "mlekom", "radiš"]
+    exercises:
+      - id: "56.6.1"
+        type: choice
+        prompt: "Сообщение: «Sta radis?» Как это на самом деле?"
+        options: ["Šta radiš?", "Sta radiš?", "Šta radis?"]
+        answer: "Šta radiš?"
+      - id: "56.6.2"
+        type: choice
+        prompt: "Сообщение: «Gde je racun?»"
+        options: ["Gde je račun?", "Gde je racun?", "Gde je ranun?"]
+        answer: "Gde je račun?"
+      - id: "56.6.3"
+        type: choice
+        prompt: "Сообщение: «Moze kafa?»"
+        options: ["Može kafa?", "Moze kafa?", "Moče kafa?"]
+        answer: "Može kafa?"
+      - id: "56.6.4"
+        type: choice
+        prompt: "Сообщение: «Dodji kod mene»"
+        options: ["Dođi kod mene", "Dodji kod mene", "Dodi kod mene"]
+        answer: "Dođi kod mene"
+        explain: "«dj» в стриженой латинице заменяет «đ»."
+      - id: "56.6.5"
+        type: match
+        prompt: "Соедини (так пишут в чате)"
+        pairs:
+          - ["racun", "счёт"]
+          - ["sta", "что"]
+          - ["moze", "можно"]
+          - ["kuca", "дом"]
+      - id: "56.6.6"
+        type: fill_blank
+        prompt: "«Sta radis?» пишем правильно: ___ radiš?"
+        accept: ["Šta"]
+      - id: "56.6.7"
+        type: fill_blank
+        prompt: "«Dzem» пишем правильно: ___"
+        accept: ["Džem"]
+      - id: "56.6.8"
+        type: fill_blank
+        prompt: "«Secer» пишем правильно: ___"
+        accept: ["Šećer"]
+      - id: "56.6.9"
+        type: fix_error
+        prompt: "Moze li kafa sa mlekom?"
+        accept: ["Može li kafa sa mlekom?"]
+        explain: "Добавляем значок: z → ž."
+      - id: "56.6.10"
+        type: fix_error
+        prompt: "Gde je racun?"
+        accept: ["Gde je račun?"]
+      - id: "56.6.11"
+        type: translate
+        prompt: "Можно счёт, пожалуйста?"
+        accept: ["Može račun, molim.", "Može li račun, molim vas?", "Račun, molim.", "Može račun, molim vas."]
+
+  - id: "56.7"
+    kind: reading
+    title: "Переписка в чате"
+    md: "56/7-citanje.md"
+    also_ok: ["Ano", "Marko", "ispred", "kafića", "kasnim", "stižem", "javi", "nešto", "treba", "srećno", "autobusom", "kuće"]
+    exercises:
+      - id: "56.7.1"
+        type: choice
+        prompt: "Где Ана ждёт Марко?"
+        options: ["Ispred kafića.", "U parku.", "Kod kuće."]
+        answer: "Ispred kafića."
+      - id: "56.7.2"
+        type: choice
+        prompt: "Через сколько Марко будет на месте?"
+        options: ["Za pet minuta.", "Za deset minuta.", "Sutra."]
+        answer: "Za pet minuta."
+      - id: "56.7.3"
+        type: choice
+        prompt: "Чем едет Марко?"
+        options: ["Autobusom.", "Vozom.", "Biciklom."]
+        answer: "Autobusom."
+
+  - id: "56.8"
+    kind: dialogue
+    title: "Kasnim"
+    scene: "Ты опаздываешь на встречу. Ана ждёт тебя у кафе и звонит."
+    voice: f
+    also_ok: ["Ano", "Anu", "Ani", "kafića", "kasnim", "stižem", "izvini", "minuta"]
+    turns:
+      - who: npc
+        sr: "Zdravo, Marko! Gde si?"
+        ru: "Привет, Марко! Где ты?"
+
+      - who: me
+        sr: "Zdravo, Ano! Izvini, kasnim."
+        ru: "Привет, Ана! Извини, опаздываю."
+        exercise:
+          id: "56.8.1"
+          type: choice
+          prompt: "Поздоровайся с Аной (обращение!) и извинись, что опаздываешь"
+          options:
+            - "Zdravo, Ano! Izvini, kasnim."
+            - "Zdravo, Anu! Izvini, kasnim."
+            - "Zdravo, Ani! Izvini, kasnim."
+          answer: "Zdravo, Ano! Izvini, kasnim."
+          explain: "Обращение к женщине на -a: -o (Ano). Anu — винительный, Ani — дательный."
+
+      - who: npc
+        sr: "Nema problema. Kada stižeš?"
+        ru: "Без проблем. Когда будешь?"
+
+      - who: me
+        sr: "Stižem za pet minuta."
+        ru: "Буду через пять минут."
+        exercise:
+          id: "56.8.2"
+          type: fill_blank
+          prompt: "«Буду через пять минут» → Stižem za pet ___."
+          accept: ["minuta"]
+
+      - who: npc
+        sr: "Dobro. Čekam te ispred kafića."
+        ru: "Хорошо. Жду тебя перед кафе."
+
+      - who: me
+        sr: "Hvala! Evo me uskoro."
+        ru: "Спасибо! Скоро буду."
+        exercise:
+          id: "56.8.3"
+          type: translate
+          prompt: "Скажи: «Спасибо! Скоро буду»"
+          accept: ["Hvala! Evo me uskoro.", "Hvala, evo me uskoro."]
+
+      - who: npc
+        sr: "Srećno! Čujemo se."
+        ru: "Удачи! Созвонимся."
+
+      - who: me
+        sr: "Čujemo se!"
+        ru: "Созвонимся!"
+        exercise:
+          id: "56.8.4"
+          type: choice
+          prompt: "Попрощайся"
+          options: ["Čujemo se!", "Laku noć!", "Dobro jutro!"]
+          answer: "Čujemo se!"
+
+  - id: "56.9"
+    kind: practice
+    title: "Диктант"
+    mixed: true
+    also_ok: ["kafića", "stižem", "Evo", "me"]
+    exercises:
+      - id: "56.9.1"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Evo me ispred kafića."
+        accept: ["Evo me ispred kafića."]
+        ru: ["Я уже перед кафе", "Вот я перед кафе", "Я уже у кафе", "Вот я, перед кафе"]
+      - id: "56.9.2"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Stižem za pet minuta."
+        accept: ["Stižem za pet minuta."]
+        ru: ["Буду через пять минут", "Приеду через пять минут", "Приду через пять минут"]
+      - id: "56.9.3"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Zdravo, brate!"
+        accept: ["Zdravo, brate!"]
+        ru: ["Привет, брат!", "Здорово, брат!"]

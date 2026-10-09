@@ -90,13 +90,13 @@ type ExerciseBlock struct {
 // Exercise is a single practice item.
 type Exercise struct {
 	ID      string
-	Type    string // translate | fill_blank | fix_error | conjugate | free | listen
+	Type    string // translate | fill_blank | fix_error | conjugate | listen | choice | word_bank | match
 	Prompt  string
 	Explain string
-	Sample  string // free: образец ответа
-	Meta    string // conjugate: подпись (напр. "тип I")
-	Say     string // listen: текст для синтеза речи (клиенту не отдаётся)
-	Audio   string // listen: имя файла под content/audio/ (когда файл есть)
+	Meta    string   // conjugate: подпись (напр. "тип I")
+	Say     string   // listen: текст для синтеза речи (клиенту не отдаётся)
+	RU      []string // listen: допустимые русские переводы say — для тех, кто не может слушать
+	Audio   string   // listen: имя файла под content/audio/ (когда файл есть)
 
 	Accept      []string   // auto types except conjugate: принимаемые ответы
 	Forms       []string   // conjugate: подписи форм (ja/ti/on…)

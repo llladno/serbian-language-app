@@ -17,7 +17,7 @@ steps:
     md: "NN/1-slug.md"
 
   # practice — 3–7 упражнений. Сложность НЕ убывает:
-  # choice < match/fill_blank < word_bank/fix_error < conjugate/listen < translate < free.
+  # choice < match/fill_blank < word_bank/fix_error < conjugate/listen < translate.
   # Нарушить порядок можно только с `mixed: true`.
   - id: "NN.2"
     kind: practice
@@ -94,23 +94,22 @@ steps:
     exercises:
       # listen — диктант. say клиенту не отдаётся; аудио кладёт scripts/tts.py
       # в content/audio/<id>.mp3 (напр. NN.4.1.mp3).
+      # ru — обязательно: допустимые русские переводы say. По ним проверяют тех,
+      # кто нажал «не могу прослушать» и переводит предложение вместо диктанта.
+      # Регистр, знаки препинания и ё/е не важны, а порядок слов и синонимы —
+      # да, так что перечисли естественные формулировки.
       - id: "NN.4.1"
         type: listen
         prompt: "Запиши, что слышишь."
         say: "Dobar dan, kako ste?"
         accept: ["Dobar dan, kako ste?"]
+        ru: ["Добрый день, как вы?", "Добрый день, как поживаете?", "Здравствуйте, как дела?"]
 
       # translate — перевод фразы (ru -> sr).
       - id: "NN.4.2"
         type: translate
         prompt: "Как дела?"
         accept: ["Kako si?", "Kako ste?"]
-
-      # free — без автопроверки: показывается sample + самооценка.
-      - id: "NN.4.3"
-        type: free
-        prompt: "Опиши ситуацию своими словами."
-        sample: "Примерный ответ для сверки."
 
   # dialogue — разговор из реплик. Ставится в конец урока: «а теперь примени».
   # Реплики `me` — задания (choice / translate / fill_blank); поле `sr` — то,

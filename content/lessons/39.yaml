@@ -87,10 +87,6 @@ steps:
         type: translate
         prompt: "У меня температура и кашель."
         accept: ["Imam temperaturu i kašalj."]
-      - id: "39.4.7"
-        type: free
-        prompt: "Опиши, что у тебя болит и как ты себя чувствуешь: 2–3 фразы."
-        sample: "Boli me glava i boli me grlo. Ne osećam se dobro. Imam temperaturu."
 
   - id: "39.5"
     kind: dialogue

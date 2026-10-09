@@ -1,0 +1,287 @@
+lesson: "55"
+title: "Друзья и планы (Prijatelji i planovi)"
+subtitle: "встретиться, пригласить, договориться; hajde da"
+teaches: [hajde, naci-se, mozda, zajedno]
+
+steps:
+  - id: "55.1"
+    kind: teach
+    title: "Приглашаю друга"
+    md: "55/1-poziv.md"
+
+  - id: "55.2"
+    kind: practice
+    title: "Hajde da idemo"
+    also_ok: ["dogovorili", "idemo", "nađemo", "bioskop", "kafić"]
+    exercises:
+      - id: "55.2.1"
+        type: choice
+        prompt: "«Пойдёшь со мной в кино?» —"
+        options: ["Hoćeš li da ideš sa mnom u bioskop?", "Hoćeš li da ideš sa mene u bioskop?", "Hoćeš li da ideš sa meni u bioskop?"]
+        answer: "Hoćeš li da ideš sa mnom u bioskop?"
+      - id: "55.2.2"
+        type: choice
+        prompt: "«Давай пойдём в кино!» —"
+        options: ["Hajde da idemo u bioskop!", "Hajde da ideš u bioskop!", "Hajde idemo bioskop!"]
+        answer: "Hajde da idemo u bioskop!"
+        explain: "«Hajde da» + форма «мы» (idemo): зовём и себя, и собеседника."
+      - id: "55.2.3"
+        type: choice
+        prompt: "«К сожалению, не могу» —"
+        options: ["Nažalost, ne mogu.", "Hajde, ne mogu.", "Možda, ne mogu."]
+        answer: "Nažalost, ne mogu."
+      - id: "55.2.4"
+        type: choice
+        prompt: "«Договорились!» —"
+        options: ["Dogovorili smo se!", "Dogovorim se!", "Dogovoriti se!"]
+        answer: "Dogovorili smo se!"
+      - id: "55.2.5"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["Hajde da idemo.", "Давай пойдём"]
+          - ["Zašto ne?", "Почему бы нет?"]
+          - ["Možda.", "Может быть"]
+          - ["Žao mi je.", "Мне жаль"]
+      - id: "55.2.6"
+        type: fill_blank
+        prompt: "«Пойдёшь ли ты со мной?» → ___ li da ideš sa mnom?"
+        accept: ["Hoćeš"]
+      - id: "55.2.7"
+        type: fill_blank
+        prompt: "«Давай встретимся в пять» → Hajde da se ___ u pet."
+        accept: ["nađemo"]
+      - id: "55.2.8"
+        type: fill_blank
+        prompt: "«Мы идём вместе» → Idemo ___."
+        accept: ["zajedno"]
+      - id: "55.2.9"
+        type: word_bank
+        prompt: "Собери: «Давай пойдём в кафе»"
+        bank: ["Hajde", "da", "idemo", "u", "kafić", "kafiću"]
+        accept: ["Hajde da idemo u kafić."]
+      - id: "55.2.10"
+        type: fix_error
+        prompt: "Hajde da idem u bioskop."
+        accept: ["Hajde da idemo u bioskop."]
+        explain: "Зовём вместе — «мы» (idemo), а не «я» (idem)."
+      - id: "55.2.11"
+        type: translate
+        prompt: "Пойдёшь со мной в кафе в субботу?"
+        accept:
+          - "Hoćeš li da ideš sa mnom u kafić u subotu?"
+          - "Hoćeš li u subotu da ideš sa mnom u kafić?"
+          - "Želiš li da ideš sa mnom u kafić u subotu?"
+
+  - id: "55.3"
+    kind: teach
+    title: "Где и когда"
+    md: "55/3-dogovor.md"
+
+  - id: "55.4"
+    kind: practice
+    title: "Gde i kada?"
+    also_ok: ["nađemo", "nađimo", "bioskopa", "škole", "radimo", "slobodna", "subotu"]
+    exercises:
+      - id: "55.4.1"
+        type: choice
+        prompt: "«Где встретимся?» —"
+        options: ["Gde ćemo da se nađemo?", "Gde ćemo da nađe?", "Gde da ćemo se nađemo?"]
+        answer: "Gde ćemo da se nađemo?"
+      - id: "55.4.2"
+        type: choice
+        prompt: "«Встретимся перед кинотеатром» —"
+        options: ["Nađimo se ispred bioskopa.", "Nađimo se ispred bioskop.", "Nađimo se ispred bioskopu."]
+        answer: "Nađimo se ispred bioskopa."
+        explain: "После «ispred» — родительный: bioskop → bioskopa."
+      - id: "55.4.3"
+        type: choice
+        prompt: "«В котором часу?» —"
+        options: ["U koliko sati?", "Koliko je sati?", "U kada sati?"]
+        answer: "U koliko sati?"
+      - id: "55.4.4"
+        type: choice
+        prompt: "«После работы» —"
+        options: ["Posle posla.", "Posle posao.", "Posle poslu."]
+        answer: "Posle posla."
+      - id: "55.4.5"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["ispred bioskopa", "перед кинотеатром"]
+          - ["u petak uveče", "в пятницу вечером"]
+          - ["u osam sati", "в восемь часов"]
+          - ["posle posla", "после работы"]
+      - id: "55.4.6"
+        type: fill_blank
+        prompt: "«Давай встретимся перед школой» → Nađimo se ispred ___."
+        accept: ["škole"]
+      - id: "55.4.7"
+        type: fill_blank
+        prompt: "«В восемь часов» → U ___ sati."
+        accept: ["osam"]
+      - id: "55.4.8"
+        type: fill_blank
+        prompt: "«Я свободен в субботу» → Slobodan sam u ___."
+        accept: ["subotu"]
+      - id: "55.4.9"
+        type: word_bank
+        prompt: "Собери: «Что мы будем делать?»"
+        bank: ["Šta", "ćemo", "da", "radimo", "radim"]
+        accept: ["Šta ćemo da radimo?"]
+      - id: "55.4.10"
+        type: fix_error
+        prompt: "Nađimo se ispred bioskop."
+        accept: ["Nađimo se ispred bioskopa."]
+      - id: "55.4.11"
+        type: translate
+        prompt: "Я свободна после работы, а ты?"
+        accept: ["Slobodna sam posle posla, a ti?", "Slobodna sam posle posla a ti?", "Posle posla sam slobodna, a ti?"]
+
+  - id: "55.5"
+    kind: practice
+    title: "Что ответить?"
+    mixed: true
+    also_ok: ["nađimo", "kafića", "kafić", "kafiću"]
+    exercises:
+      - id: "55.5.1"
+        type: choice
+        prompt: "Тебя зовут: «Hoćeš li da ideš u bioskop u petak?» Ты занят(а):"
+        options: ["Žao mi je, u petak radim.", "Dogovorili smo se!", "Hajde da idemo!"]
+        answer: "Žao mi je, u petak radim."
+      - id: "55.5.2"
+        type: choice
+        prompt: "Тебя зовут в кино, ты согласен:"
+        options: ["Može! U koliko sati?", "Žao mi je, ne mogu.", "Ne razumem."]
+        answer: "Može! U koliko sati?"
+      - id: "55.5.3"
+        type: choice
+        prompt: "Ты занят в пятницу, но хочешь пойти. Предложи другое время:"
+        options: ["Možda u subotu?", "Nažalost, nema.", "Zašto ne?"]
+        answer: "Možda u subotu?"
+      - id: "55.5.4"
+        type: choice
+        prompt: "Вы договорились. Скажи об этом:"
+        options: ["Dogovorili smo se!", "Ne znam.", "Izvinite."]
+        answer: "Dogovorili smo se!"
+      - id: "55.5.5"
+        type: choice
+        prompt: "Предложи встретиться перед кафе:"
+        options: ["Nađimo se ispred kafića.", "Nađimo se ispred kafić.", "Nađimo se ispred kafiću."]
+        answer: "Nađimo se ispred kafića."
+      - id: "55.5.6"
+        type: choice
+        prompt: "Спроси, пойдёт ли друг с тобой:"
+        options: ["Ideš li sa mnom?", "Ideš li sa mene?", "Ideš li sa meni?"]
+        answer: "Ideš li sa mnom?"
+
+  - id: "55.6"
+    kind: reading
+    title: "Переписка"
+    md: "55/5-citanje.md"
+    also_ok: ["slobodna", "dogovorili", "nađimo", "bioskopa", "subotom", "sedam", "osam"]
+    exercises:
+      - id: "55.6.1"
+        type: choice
+        prompt: "Почему Марко не может в пятницу?"
+        options: ["Radi do osam.", "Nema para.", "Bolestan je."]
+        answer: "Radi do osam."
+      - id: "55.6.2"
+        type: choice
+        prompt: "Когда они идут?"
+        options: ["U subotu.", "U petak.", "U nedelju."]
+        answer: "U subotu."
+      - id: "55.6.3"
+        type: choice
+        prompt: "Где они встретятся?"
+        options: ["Ispred bioskopa.", "U kafiću.", "Kod Jovane."]
+        answer: "Ispred bioskopa."
+
+  - id: "55.7"
+    kind: dialogue
+    title: "Hajde da idemo"
+    scene: "Ты звонишь другу и зовёшь его в кино."
+    voice: m
+    also_ok: ["bioskop", "bioskopa", "nađimo", "pozoveš", "pozovem", "osam", "Marka", "subotu"]
+    turns:
+      - who: npc
+        sr: "Zdravo! Šta radiš u subotu uveče?"
+        ru: "Привет! Что делаешь в субботу вечером?"
+
+      - who: me
+        sr: "Slobodan sam. Hajde da idemo u bioskop!"
+        ru: "Я свободен. Давай пойдём в кино!"
+        exercise:
+          id: "55.7.1"
+          type: choice
+          prompt: "Скажи, что свободен, и предложи пойти в кино"
+          options:
+            - "Slobodan sam. Hajde da idemo u bioskop!"
+            - "Slobodan sam. Hajde da ideš u bioskop!"
+            - "Slobodan sam. Hajde idem u bioskop!"
+          answer: "Slobodan sam. Hajde da idemo u bioskop!"
+
+      - who: npc
+        sr: "Može! U koliko sati?"
+        ru: "Можно! В котором часу?"
+
+      - who: me
+        sr: "U osam sati. Nađimo se ispred bioskopa."
+        ru: "В восемь часов. Встретимся перед кинотеатром."
+        exercise:
+          id: "55.7.2"
+          type: translate
+          prompt: "Скажи: «В восемь часов. Встретимся перед кинотеатром»"
+          accept: ["U osam sati. Nađimo se ispred bioskopa.", "U osam sati, nađimo se ispred bioskopa.", "U osam. Nađimo se ispred bioskopa."]
+
+      - who: npc
+        sr: "Dogovorili smo se! Hoćeš li da pozoveš Marka?"
+        ru: "Договорились! Позовёшь Марко?"
+
+      - who: me
+        sr: "Da, ja ću da ga pozovem."
+        ru: "Да, я его позову."
+        exercise:
+          id: "55.7.3"
+          type: fill_blank
+          prompt: "«Да, я его позову» → Da, ja ću da ga ___."
+          accept: ["pozovem"]
+
+      - who: npc
+        sr: "Dobro. Vidimo se u subotu!"
+        ru: "Хорошо. Увидимся в субботу!"
+
+      - who: me
+        sr: "Vidimo se!"
+        ru: "Увидимся!"
+        exercise:
+          id: "55.7.4"
+          type: choice
+          prompt: "Попрощайся до субботы"
+          options: ["Vidimo se!", "Laku noć!", "Dobro jutro!"]
+          answer: "Vidimo se!"
+
+  - id: "55.8"
+    kind: practice
+    title: "Диктант"
+    mixed: true
+    also_ok: ["idemo", "nađimo", "bioskopa", "slobodan"]
+    exercises:
+      - id: "55.8.1"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Hajde da idemo u bioskop."
+        accept: ["Hajde da idemo u bioskop."]
+        ru: ["Давай пойдём в кино", "Пойдёмте в кино", "Давайте пойдём в кино"]
+      - id: "55.8.2"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Nađimo se ispred bioskopa."
+        accept: ["Nađimo se ispred bioskopa."]
+        ru: ["Встретимся перед кинотеатром", "Давай встретимся перед кино", "Встретимся перед кино"]
+      - id: "55.8.3"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Slobodan sam u subotu."
+        accept: ["Slobodan sam u subotu."]
+        ru: ["Я свободен в субботу", "В субботу я свободен", "Я свободен в эту субботу"]

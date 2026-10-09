@@ -1,0 +1,253 @@
+lesson: "52"
+title: "Просьбы и помощь (Molbe i pomoć)"
+subtitle: "попросить, помочь, подарить"
+teaches: [tezak, pitati, pomoc]
+
+steps:
+  - id: "52.1"
+    kind: teach
+    title: "Просьба: ты и вы"
+    md: "52/1-imperativ.md"
+
+  - id: "52.2"
+    kind: practice
+    title: "Čekajte, recite, pišite"
+    also_ok: ["pomažete"]
+    exercises:
+      - id: "52.2.1"
+        type: choice
+        prompt: "«Помогите мне, пожалуйста» —"
+        options: ["Pomozite mi, molim vas.", "Pomažete mi, molim vas.", "Pomoći mi, molim vas."]
+        answer: "Pomozite mi, molim vas."
+      - id: "52.2.2"
+        type: choice
+        prompt: "«Подождите» (на «вы») —"
+        options: ["Čekajte.", "Čekate.", "Čekaj."]
+        answer: "Čekajte."
+        explain: "«Вы» — окончание -ajte; «ты» — -aj."
+      - id: "52.2.3"
+        type: choice
+        prompt: "«Подожди» (на «ты») —"
+        options: ["Čekaj.", "Čekajte.", "Čekam."]
+        answer: "Čekaj."
+      - id: "52.2.4"
+        type: choice
+        prompt: "«Скажите мне» (на «вы») —"
+        options: ["Recite mi.", "Rekao mi.", "Reći mi."]
+        answer: "Recite mi."
+      - id: "52.2.5"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["Čekajte.", "Подождите"]
+          - ["Dajte mi.", "Дайте мне"]
+          - ["Ponovite.", "Повторите"]
+          - ["Izvinite.", "Извините"]
+      - id: "52.2.6"
+        type: fill_blank
+        prompt: "«Дай мне кофе» (на «ты») → ___ mi kafu."
+        accept: ["Daj"]
+      - id: "52.2.7"
+        type: fill_blank
+        prompt: "«Слушайте» (на «вы») → ___."
+        accept: ["Slušajte"]
+      - id: "52.2.8"
+        type: fill_blank
+        prompt: "«Пишите мне» (на «вы») → ___ mi."
+        accept: ["Pišite"]
+      - id: "52.2.9"
+        type: word_bank
+        prompt: "Собери: «Пожалуйста, подождите»"
+        bank: ["Molim", "vas", "čekajte", "čekaj", "čekam"]
+        accept: ["Molim vas, čekajte.", "Čekajte, molim vas."]
+      - id: "52.2.10"
+        type: fix_error
+        prompt: "Čekaš, molim vas."
+        accept: ["Čekajte, molim vas."]
+        explain: "Просьба — повелительное: čekajte (на «вы»). «Čekaš» — это просто «ты ждёшь»."
+      - id: "52.2.11"
+        type: translate
+        prompt: "Пишите мне, пожалуйста."
+        accept: ["Pišite mi, molim vas.", "Molim vas, pišite mi."]
+
+  - id: "52.3"
+    kind: teach
+    title: "Попросить и предложить помощь"
+    md: "52/3-pomoc.md"
+
+  - id: "52.4"
+    kind: practice
+    title: "Možete li da mi pomognete?"
+    also_ok: ["pomognete", "pomognem", "ponovite", "pitam", "žurite", "čekajte", "pomoći", "pomoć", "pomoćom"]
+    exercises:
+      - id: "52.4.1"
+        type: choice
+        prompt: "«Вы можете мне помочь?» —"
+        options: ["Možete li da mi pomognete?", "Možete li da mi pomoći?", "Možete da mi pomognete li?"]
+        answer: "Možete li da mi pomognete?"
+      - id: "52.4.2"
+        type: choice
+        prompt: "«Могу я вам помочь?» —"
+        options: ["Mogu li da vam pomognem?", "Mogu li da vam pomognete?", "Mogu da vam li pomognem?"]
+        answer: "Mogu li da vam pomognem?"
+      - id: "52.4.3"
+        type: choice
+        prompt: "«Спасибо за помощь!» —"
+        options: ["Hvala na pomoći!", "Hvala za pomoć!", "Hvala od pomoći!"]
+        answer: "Hvala na pomoći!"
+        explain: "Это устойчивое выражение: hvala + na + локатив (pomoći)."
+      - id: "52.4.4"
+        type: choice
+        prompt: "«Не спешите» —"
+        options: ["Ne žurite.", "Ne žurim.", "Nije žurite."]
+        answer: "Ne žurite."
+      - id: "52.4.5"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["Možete li da ponovite?", "Вы можете повторить?"]
+          - ["Mogu li da vas pitam?", "Можно вас спросить?"]
+          - ["Nema problema.", "Без проблем"]
+          - ["Hvala na pomoći.", "Спасибо за помощь"]
+      - id: "52.4.6"
+        type: fill_blank
+        prompt: "«Вы можете повторить?» → Možete li da ___?"
+        accept: ["ponovite"]
+      - id: "52.4.7"
+        type: fill_blank
+        prompt: "«Не ждите» (на «вы») → Ne ___."
+        accept: ["čekajte"]
+      - id: "52.4.8"
+        type: fill_blank
+        prompt: "«Сумка тяжёлая» → Torba je ___."
+        accept: ["teška"]
+        explain: "Беглое «a» выпадает: težak → teška."
+      - id: "52.4.9"
+        type: word_bank
+        prompt: "Собери: «Можно вас спросить?»"
+        bank: ["Mogu", "li", "da", "vas", "pitam", "pitaš"]
+        accept: ["Mogu li da vas pitam?"]
+      - id: "52.4.10"
+        type: fix_error
+        prompt: "Hvala za pomoć."
+        accept: ["Hvala na pomoći."]
+      - id: "52.4.11"
+        type: translate
+        prompt: "Вы можете мне помочь, пожалуйста?"
+        accept:
+          - "Možete li da mi pomognete, molim vas?"
+          - "Možete li mi pomoći, molim vas?"
+          - "Molim vas, možete li da mi pomognete?"
+
+  - id: "52.5"
+    kind: reading
+    title: "Спросить дорогу"
+    md: "52/5-citanje.md"
+    also_ok: ["pomoć", "poštu", "pitam", "komšiju", "pomognete", "pomoći", "čemu", "idite", "pošta", "banke"]
+    exercises:
+      - id: "52.5.1"
+        type: choice
+        prompt: "Куда она идёт?"
+        options: ["Na poštu.", "U banku.", "U školu."]
+        answer: "Na poštu."
+      - id: "52.5.2"
+        type: choice
+        prompt: "Кого она спрашивает?"
+        options: ["Komšiju.", "Lekara.", "Konobara."]
+        answer: "Komšiju."
+      - id: "52.5.3"
+        type: choice
+        prompt: "Где почта?"
+        options: ["Pored banke.", "Iza škole.", "Ispred stanice."]
+        answer: "Pored banke."
+
+  - id: "52.6"
+    kind: dialogue
+    title: "Mogu li da vam pomognem?"
+    scene: "Ты несёшь тяжёлую сумку к подъезду. Сосед предлагает помощь. Обращайтесь друг к другу на «вы»."
+    voice: m
+    also_ok: ["pomognem", "teška", "torba", "stan", "sprat", "spratu", "torbu"]
+    turns:
+      - who: npc
+        sr: "Dobar dan! Mogu li da vam pomognem?"
+        ru: "Добрый день! Могу вам помочь?"
+
+      - who: me
+        sr: "Da, molim vas. Torba je teška."
+        ru: "Да, пожалуйста. Сумка тяжёлая."
+        exercise:
+          id: "52.6.1"
+          type: fill_blank
+          prompt: "«Сумка тяжёлая» → Da, molim vas. Torba je ___."
+          accept: ["teška"]
+
+      - who: npc
+        sr: "Dajte mi torbu. Gde idete?"
+        ru: "Дайте мне сумку. Куда идёте?"
+
+      - who: me
+        sr: "U stan, na sprat. Hvala na pomoći!"
+        ru: "В квартиру, на этаж. Спасибо за помощь!"
+        exercise:
+          id: "52.6.2"
+          type: choice
+          prompt: "Скажи: «В квартиру, на этаж. Спасибо за помощь!»"
+          options:
+            - "U stan, na sprat. Hvala na pomoći!"
+            - "U stanu, na spratu. Hvala za pomoć!"
+            - "U stan, na sprat. Hvala od pomoći!"
+          answer: "U stan, na sprat. Hvala na pomoći!"
+
+      - who: npc
+        sr: "Nema problema. Lift ne radi, idemo stepenicama."
+        ru: "Без проблем. Лифт не работает, пойдём по лестнице."
+
+      - who: me
+        sr: "Dobro. Čekajte, molim vas."
+        ru: "Хорошо. Подождите, пожалуйста."
+        exercise:
+          id: "52.6.3"
+          type: translate
+          prompt: "Скажи: «Хорошо. Подождите, пожалуйста»"
+          accept: ["Dobro. Čekajte, molim vas.", "Dobro, čekajte, molim vas.", "Dobro. Molim vas, čekajte."]
+
+      - who: npc
+        sr: "Evo, stigli smo."
+        ru: "Вот, мы пришли."
+
+      - who: me
+        sr: "Hvala vam! Doviđenja!"
+        ru: "Спасибо вам! До свидания!"
+        exercise:
+          id: "52.6.4"
+          type: choice
+          prompt: "Поблагодари и попрощайся (на «вы»)"
+          options:
+            - "Hvala vam! Doviđenja!"
+            - "Hvala ti! Doviđenja!"
+            - "Hvala me! Doviđenja!"
+          answer: "Hvala vam! Doviđenja!"
+
+  - id: "52.7"
+    kind: practice
+    title: "Диктант"
+    mixed: true
+    exercises:
+      - id: "52.7.1"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Možete li da mi pomognete?"
+        accept: ["Možete li da mi pomognete?"]
+        ru: ["Вы можете мне помочь?", "Можете мне помочь?", "Вы не могли бы мне помочь?"]
+      - id: "52.7.2"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Hvala na pomoći!"
+        accept: ["Hvala na pomoći!"]
+        ru: ["Спасибо за помощь", "Спасибо за помощь!", "Благодарю за помощь"]
+      - id: "52.7.3"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Pišite mi, molim vas."
+        accept: ["Pišite mi, molim vas."]
+        ru: ["Пишите мне, пожалуйста", "Пожалуйста, пишите мне"]

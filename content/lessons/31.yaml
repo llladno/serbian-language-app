@@ -176,13 +176,16 @@ steps:
         prompt: "Запиши, что слышишь."
         say: "Nismo radili juče."
         accept: ["Nismo radili juče."]
+        ru: ["Мы не работали вчера", "Вчера мы не работали"]
       - id: "31.7.2"
         type: listen
         prompt: "Запиши, что слышишь."
         say: "One su kupile kafu."
         accept: ["One su kupile kafu."]
+        ru: ["Они купили кофе"]
       - id: "31.7.3"
         type: listen
         prompt: "Запиши, что слышишь."
         say: "Jeste li radili?"
         accept: ["Jeste li radili?"]
+        ru: ["Вы работали?", "Вы работали"]

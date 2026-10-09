@@ -1,0 +1,310 @@
+lesson: "54"
+title: "Местоимения по падежам (Zamenice po padežima)"
+subtitle: "я, ты, он, она, мы, вы, они — во всех падежах"
+teaches: [mene, tebe, njega, nju, nas, vas, njih, mnom]
+
+steps:
+  - id: "54.1"
+    kind: teach
+    title: "Я и ты"
+    md: "54/1-ja-ti.md"
+
+  - id: "54.2"
+    kind: practice
+    title: "Me, te, mi, ti"
+    also_ok: ["videla", "tebi", "tebe", "meni", "mene"]
+    exercises:
+      - id: "54.2.1"
+        type: choice
+        prompt: "«Я вижу тебя» —"
+        options: ["Vidim te.", "Vidim ti.", "Vidim tebi."]
+        answer: "Vidim te."
+        explain: "Кого вижу? — винительный: короткое «te»."
+      - id: "54.2.2"
+        type: choice
+        prompt: "«Я пишу тебе» —"
+        options: ["Pišem ti.", "Pišem te.", "Pišem tebe."]
+        answer: "Pišem ti."
+        explain: "Пишу кому? — дательный: короткое «ti»."
+      - id: "54.2.3"
+        type: choice
+        prompt: "«Он видит меня» —"
+        options: ["On me vidi.", "On mi vidi.", "On meni vidi."]
+        answer: "On me vidi."
+      - id: "54.2.4"
+        type: choice
+        prompt: "«со мной» —"
+        options: ["sa mnom", "sa mene", "sa meni"]
+        answer: "sa mnom"
+      - id: "54.2.5"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["me", "меня"]
+          - ["mi", "мне"]
+          - ["te", "тебя"]
+          - ["ti", "тебе"]
+      - id: "54.2.6"
+        type: fill_blank
+        prompt: "«для тебя» → za ___"
+        accept: ["tebe"]
+      - id: "54.2.7"
+        type: fill_blank
+        prompt: "«Ты идёшь со мной?» → Ideš li sa ___?"
+        accept: ["mnom"]
+      - id: "54.2.8"
+        type: fill_blank
+        prompt: "«о тебе» → o ___"
+        accept: ["tebi"]
+      - id: "54.2.9"
+        type: word_bank
+        prompt: "Собери: «Он любит тебя»"
+        bank: ["On", "te", "voli", "ti", "tebe"]
+        accept: ["On te voli."]
+      - id: "54.2.10"
+        type: fix_error
+        prompt: "Vidim ti."
+        accept: ["Vidim te."]
+        explain: "«ti» — «тебе» (дательный); «вижу кого?» — винительный: te."
+      - id: "54.2.11"
+        type: translate
+        prompt: "Ты идёшь со мной?"
+        accept: ["Ideš li sa mnom?", "Da li ideš sa mnom?", "Ideš sa mnom?"]
+
+  - id: "54.3"
+    kind: teach
+    title: "Он, она, мы, вы, они"
+    md: "54/3-ostali.md"
+
+  - id: "54.4"
+    kind: practice
+    title: "Ga, je, mu, joj, ih"
+    also_ok: ["nje", "njemu", "njoj", "njima", "nju", "njega"]
+    exercises:
+      - id: "54.4.1"
+        type: choice
+        prompt: "«Я вижу его» —"
+        options: ["Vidim ga.", "Vidim mu.", "Vidim njemu."]
+        answer: "Vidim ga."
+      - id: "54.4.2"
+        type: choice
+        prompt: "«Я вижу её» —"
+        options: ["Vidim je.", "Vidim joj.", "Vidim njoj."]
+        answer: "Vidim je."
+      - id: "54.4.3"
+        type: choice
+        prompt: "«Я пишу ей» —"
+        options: ["Pišem joj.", "Pišem je.", "Pišem nju."]
+        answer: "Pišem joj."
+      - id: "54.4.4"
+        type: choice
+        prompt: "«без неё» —"
+        options: ["bez nje", "bez nju", "bez njoj"]
+        answer: "bez nje"
+        explain: "«bez» + родительный: у «ona» родительный — nje."
+      - id: "54.4.5"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["sa njom", "с ней"]
+          - ["kod njega", "у него"]
+          - ["o njima", "о них"]
+          - ["za nas", "для нас"]
+      - id: "54.4.6"
+        type: fill_blank
+        prompt: "«Я пишу им» → Pišem ___."
+        accept: ["im"]
+      - id: "54.4.7"
+        type: fill_blank
+        prompt: "«с ним» → sa ___"
+        accept: ["njim"]
+      - id: "54.4.8"
+        type: fill_blank
+        prompt: "«Мы идём к вам» → Idemo kod ___."
+        accept: ["vas"]
+      - id: "54.4.9"
+        type: word_bank
+        prompt: "Собери: «Я вижу их»"
+        bank: ["Vidim", "ih", "im", "njih"]
+        accept: ["Vidim ih.", "Vidim njih."]
+      - id: "54.4.10"
+        type: fix_error
+        prompt: "Vidim njemu."
+        accept: ["Vidim ga.", "Vidim njega."]
+        explain: "«njemu» — «ему» (дательный). Вижу кого? — винительный: ga / njega."
+      - id: "54.4.11"
+        type: translate
+        prompt: "Я жду её."
+        accept: ["Čekam je.", "Čekam nju."]
+
+  - id: "54.5"
+    kind: teach
+    title: "Куда ставить короткие слова"
+    md: "54/5-kratke.md"
+
+  - id: "54.6"
+    kind: practice
+    title: "Всё вместе"
+    mixed: true
+    also_ok: ["videla", "sviđaš", "sviđam", "pomozi", "ga", "ih", "nje", "mene", "tebe", "njega", "bratu", "brata"]
+    exercises:
+      - id: "54.6.1"
+        type: choice
+        prompt: "«Ты мне нравишься» —"
+        options: ["Sviđaš mi se.", "Sviđam ti se.", "Sviđaš me se."]
+        answer: "Sviđaš mi se."
+        explain: "Подлежащее — «ты» (sviđaš), а «мне» — дательный: mi."
+      - id: "54.6.2"
+        type: choice
+        prompt: "«Вчера я видела тебя» (говорит женщина) —"
+        options: ["Juče sam te videla.", "Juče te sam videla.", "Juče sam ti videla."]
+        answer: "Juče sam te videla."
+      - id: "54.6.3"
+        type: choice
+        prompt: "«Помоги мне» —"
+        options: ["Pomozi mi.", "Pomozi me.", "Pomozi mene."]
+        answer: "Pomozi mi."
+      - id: "54.6.4"
+        type: match
+        prompt: "Соедини (падеж по смыслу)"
+        pairs:
+          - ["Vidim ga.", "Вижу его"]
+          - ["Pišem mu.", "Пишу ему"]
+          - ["Idem sa njim.", "Иду с ним"]
+          - ["Kod njega je.", "Он у него"]
+      - id: "54.6.5"
+        type: fill_blank
+        prompt: "«Я у него дома» → Ja sam kod ___."
+        accept: ["njega"]
+      - id: "54.6.6"
+        type: fill_blank
+        prompt: "«Он видит нас» → On ___ vidi."
+        accept: ["nas"]
+      - id: "54.6.7"
+        type: word_bank
+        prompt: "Собери: «Я иду с ней»"
+        bank: ["Idem", "sa", "njom", "nju", "njoj"]
+        accept: ["Idem sa njom."]
+      - id: "54.6.8"
+        type: fix_error
+        prompt: "Idem sa njega."
+        accept: ["Idem sa njim."]
+        explain: "После «sa» (с кем?) — творительный: njim (м./ср.), njom (ж.)."
+      - id: "54.6.9"
+        type: translate
+        prompt: "Я пишу ей, а она пишет мне."
+        accept: ["Pišem joj, a ona piše meni.", "Pišem joj a ona piše meni.", "Ja joj pišem, a ona mi piše.", "Pišem joj, a ona mi piše."]
+
+  - id: "54.7"
+    kind: reading
+    title: "Письмо подруге"
+    md: "54/7-citanje.md"
+    also_ok: ["videla", "tebe", "mogla", "dođem", "Markom", "tvoja", "odgovor"]
+    exercises:
+      - id: "54.7.1"
+        type: choice
+        prompt: "Где Ана видела Йовану?"
+        options: ["U gradu.", "U kafiću.", "U školi."]
+        answer: "U gradu."
+      - id: "54.7.2"
+        type: choice
+        prompt: "Зачем Ана пишет?"
+        options: ["Treba joj pomoć.", "Ima poklon.", "Nema vremena."]
+        answer: "Treba joj pomoć."
+      - id: "54.7.3"
+        type: choice
+        prompt: "С кем она придёт?"
+        options: ["Sa Markom.", "Sa sestrom.", "Sa komšijom."]
+        answer: "Sa Markom."
+
+  - id: "54.8"
+    kind: dialogue
+    title: "Zovem te"
+    scene: "Ты звонишь близкой подруге и просишь о встрече."
+    voice: f
+    also_ok: ["tebe", "tebi", "te", "ga", "Markom"]
+    turns:
+      - who: npc
+        sr: "Zdravo! Kako si?"
+        ru: "Привет! Как дела?"
+
+      - who: me
+        sr: "Dobro, hvala. Zovem te jer mi treba pomoć."
+        ru: "Хорошо, спасибо. Я звоню тебе, потому что мне нужна помощь."
+        exercise:
+          id: "54.8.1"
+          type: choice
+          prompt: "Скажи: «Хорошо, спасибо. Звоню тебе, потому что нужна помощь»"
+          options:
+            - "Dobro, hvala. Zovem te jer mi treba pomoć."
+            - "Dobro, hvala. Zovem ti jer me treba pomoć."
+            - "Dobro, hvala. Zovem tebi jer mi treba pomoć."
+          answer: "Dobro, hvala. Zovem te jer mi treba pomoć."
+
+      - who: npc
+        sr: "Naravno. Šta ti treba?"
+        ru: "Конечно. Что тебе нужно?"
+
+      - who: me
+        sr: "Mogu li da dođem kod tebe u subotu?"
+        ru: "Можно я приду к тебе в субботу?"
+        exercise:
+          id: "54.8.2"
+          type: fill_blank
+          prompt: "«Можно приду к тебе в субботу?» → Mogu li da dođem kod ___ u subotu?"
+          accept: ["tebe"]
+
+      - who: npc
+        sr: "Naravno! Čekam te."
+        ru: "Конечно! Жду тебя."
+
+      - who: me
+        sr: "Hvala! Idem sa Markom. Može?"
+        ru: "Спасибо! Я иду с Марко. Можно?"
+        exercise:
+          id: "54.8.3"
+          type: translate
+          prompt: "Скажи: «Спасибо! Я иду с Марко. Можно?»"
+          accept: ["Hvala! Idem sa Markom. Može?", "Hvala, idem sa Markom. Može?", "Hvala! Idem sa Markom. Može li?"]
+
+      - who: npc
+        sr: "Naravno. Vidimo se u subotu!"
+        ru: "Конечно. Увидимся в субботу!"
+
+      - who: me
+        sr: "Vidimo se! Hvala ti."
+        ru: "Увидимся! Спасибо тебе."
+        exercise:
+          id: "54.8.4"
+          type: choice
+          prompt: "Поблагодари подругу (на «ты») и попрощайся до субботы"
+          options:
+            - "Vidimo se! Hvala ti."
+            - "Vidimo se! Hvala te."
+            - "Vidimo se! Hvala tebe."
+          answer: "Vidimo se! Hvala ti."
+
+  - id: "54.9"
+    kind: practice
+    title: "Диктант"
+    mixed: true
+    also_ok: ["videla", "mnom", "ih"]
+    exercises:
+      - id: "54.9.1"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Vidim te sutra."
+        accept: ["Vidim te sutra."]
+        ru: ["Я вижу тебя завтра", "Увижу тебя завтра", "Увидимся завтра", "Вижу тебя завтра"]
+      - id: "54.9.2"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Ideš li sa mnom?"
+        accept: ["Ideš li sa mnom?"]
+        ru: ["Ты идёшь со мной?", "Ты пойдёшь со мной?", "Идёшь со мной?"]
+      - id: "54.9.3"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Pišem im poruku."
+        accept: ["Pišem im poruku."]
+        ru: ["Я пишу им сообщение", "Пишу им сообщение"]

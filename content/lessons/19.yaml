@@ -99,16 +99,19 @@ steps:
         prompt: "Запиши, что слышишь."
         say: "Gde je kupatilo?"
         accept: ["Gde je kupatilo?"]
+        ru: ["Где ванная?", "Где ванная комната?"]
       - id: "19.6.2"
         type: listen
         prompt: "Запиши, что слышишь."
         say: "U kuhinji ima šporet."
         accept: ["U kuhinji ima šporet."]
+        ru: ["На кухне есть плита", "На кухне плита", "В кухне есть плита", "На кухне есть печь"]
       - id: "19.6.3"
         type: listen
         prompt: "Запиши, что слышишь."
         say: "Zgrada nema lifta."
         accept: ["Zgrada nema lifta."]
+        ru: ["В доме нет лифта", "В здании нет лифта", "В этом доме нет лифта", "В этом здании нет лифта"]
 
   - id: "19.7"
     kind: checkpoint
@@ -141,10 +144,6 @@ steps:
         type: translate
         prompt: "Где ванная?"
         accept: ["Gde je kupatilo?"]
-      - id: "19.7.6"
-        type: free
-        prompt: "Опиши свою квартиру: 4 фразы (сколько комнат, что на кухне, где спишь, есть ли балкон)."
-        sample: "Živim u malom stanu. Kuhinja ima šporet i frižider. Spavam u sobi. Nemam balkon, ali imam terasu."
 
   - id: "19.8"
     kind: dialogue

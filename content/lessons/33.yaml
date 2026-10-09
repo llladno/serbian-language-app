@@ -91,10 +91,6 @@ steps:
         type: translate
         prompt: "Что ты будешь делать на выходных?"
         accept: ["Šta ćeš da radiš za vikend?", "Šta ćeš raditi za vikend?"]
-      - id: "33.4.7"
-        type: free
-        prompt: "Расскажи о своих планах на выходные: 2–3 фразы."
-        sample: "U subotu ću da radim. U nedelju ću da čitam i pišem."
 
   - id: "33.5"
     kind: reading
@@ -174,13 +170,16 @@ steps:
         prompt: "Запиши, что слышишь."
         say: "Šta ćeš da radiš za vikend?"
         accept: ["Šta ćeš da radiš za vikend?"]
+        ru: ["Что ты будешь делать на выходных?", "Что ты будешь делать на выходные?", "Что ты будешь делать в выходные?", "Что будешь делать на выходных?", "Что ты делаешь на выходных?", "Чем ты займёшься на выходных?"]
       - id: "33.7.2"
         type: listen
         prompt: "Запиши, что слышишь."
         say: "Neću da radim sutra."
         accept: ["Neću da radim sutra."]
+        ru: ["Я не буду работать завтра", "Завтра я не буду работать", "Не буду работать завтра", "Я не хочу работать завтра", "Завтра я не хочу работать"]
       - id: "33.7.3"
         type: listen
         prompt: "Запиши, что слышишь."
         say: "Biću u gradu u pet."
         accept: ["Biću u gradu u pet."]
+        ru: ["Я буду в городе в пять", "В пять я буду в городе", "Буду в городе в пять", "Я буду в городе в пять часов", "Я буду в городе в 5"]

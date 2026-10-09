@@ -10,9 +10,9 @@ blocks:
         accept: ["Zdravo! Kako si?", "Ćao! Kako si?"]
         explain: "«Ćao» — неформально, тоже ок."
       - id: "01-A-2"
-        type: free
-        prompt: "Поздоровайся и попрощайся."
-        sample: "Dobro jutro! … Hvala, prijatno!"
+        type: translate
+        prompt: "Привет!"
+        accept: ["Zdravo!", "Ćao!"]
       - id: "01-A-3"
         type: conjugate
         prompt: "govoriti"
@@ -29,4 +29,5 @@ blocks:
         type: listen
         say: "Zdravo, kako si?"
         accept: ["Zdravo, kako si?", "Zdravo kako si"]
+        ru: ["Привет, как дела?", "Здравствуй, как дела?"]
         explain: "приветствие + «как дела»"

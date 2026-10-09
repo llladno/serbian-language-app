@@ -137,7 +137,7 @@ func TestLoadExtractsReadingBlockFromLessonMarkdown(t *testing.T) {
 func TestLoadListenExercise(t *testing.T) {
 	dir := t.TempDir()
 	tree := baseTree()
-	tree["exercises/01.yaml"] = "lesson: \"01\"\nblocks:\n  - id: D\n    title: Диктант\n    exercises:\n      - id: \"01-D-1\"\n        type: listen\n        say: \"Dobar dan.\"\n        accept: [\"Dobar dan.\", \"Dobar dan\"]\n"
+	tree["exercises/01.yaml"] = "lesson: \"01\"\nblocks:\n  - id: D\n    title: Диктант\n    exercises:\n      - id: \"01-D-1\"\n        type: listen\n        say: \"Dobar dan.\"\n        accept: [\"Dobar dan.\", \"Dobar dan\"]\n        ru: [\"Добрый день.\"]\n"
 	tree["audio/01-D-1.mp3"] = "x"
 	writeTree(t, dir, tree)
 	c, err := Load(dir)
@@ -153,6 +153,19 @@ func TestLoadListenExercise(t *testing.T) {
 	}
 	if ex.Audio != "01-D-1.mp3" {
 		t.Errorf("audio = %q, want 01-D-1.mp3", ex.Audio)
+	}
+}
+
+// A dictation has to have a Russian rendering too: it is what a learner who
+// cannot play audio is asked for instead.
+func TestLoadRejectsListenWithoutRussian(t *testing.T) {
+	dir := t.TempDir()
+	tree := baseTree()
+	tree["exercises/01.yaml"] = "lesson: \"01\"\nblocks:\n  - id: D\n    title: D\n    exercises:\n      - id: \"01-D-1\"\n        type: listen\n        say: \"Dobar dan.\"\n        accept: [\"Dobar dan.\"]\n"
+	writeTree(t, dir, tree)
+	_, err := Load(dir)
+	if err == nil || !strings.Contains(err.Error(), "needs ru") {
+		t.Fatalf("want a 'needs ru' error, got %v", err)
 	}
 }
 
@@ -189,6 +202,20 @@ func TestLoadRejectsMissingAccept(t *testing.T) {
 	}
 }
 
+// "Free" self-graded exercises (write your own phrase, then press "справился")
+// are gone for good: a lesson that still carries one must fail loudly rather
+// than serve an exercise nothing can check.
+func TestLoadRejectsFreeExercise(t *testing.T) {
+	dir := t.TempDir()
+	tree := baseTree()
+	tree["exercises/01.yaml"] = "lesson: \"01\"\nblocks:\n  - id: A\n    title: A\n    exercises:\n      - id: \"01-A-1\"\n        type: free\n        prompt: p\n        sample: s\n"
+	writeTree(t, dir, tree)
+	_, err := Load(dir)
+	if err == nil || !strings.Contains(err.Error(), "unknown type") {
+		t.Fatalf("want unknown type error, got %v", err)
+	}
+}
+
 func TestLoadRejectsDuplicateVocabID(t *testing.T) {
 	dir := t.TempDir()
 	tree := baseTree()
@@ -208,6 +235,24 @@ func TestLoadRejectsConjugateArityMismatch(t *testing.T) {
 	_, err := Load(dir)
 	if err == nil || !strings.Contains(err.Error(), "01-A-1") {
 		t.Fatalf("want arity error mentioning 01-A-1, got %v", err)
+	}
+}
+
+func TestLoadRejectsMatchWithRepeatedCard(t *testing.T) {
+	for name, pairs := range map[string]string{
+		"right side": `["brat", "мужской"], ["kuća", "женский"], ["prozor", "мужской"]`,
+		"left side":  `["brat", "мужской"], ["brat", "женский"]`,
+	} {
+		t.Run(name, func(t *testing.T) {
+			dir := t.TempDir()
+			tree := baseTree()
+			tree["exercises/01.yaml"] = "lesson: \"01\"\nblocks:\n  - id: A\n    title: A\n    exercises:\n      - id: \"01-A-1\"\n        type: match\n        prompt: m\n        pairs: [" + pairs + "]\n"
+			writeTree(t, dir, tree)
+			_, err := Load(dir)
+			if err == nil || !strings.Contains(err.Error(), "01-A-1") || !strings.Contains(err.Error(), "unique") {
+				t.Fatalf("want a repeated-card error mentioning 01-A-1, got %v", err)
+			}
+		})
 	}
 }
 

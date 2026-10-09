@@ -246,3 +246,243 @@
       accept: ["taksijem"]
     - prompt: "sestra (сестра) — «с сестрой»"
       accept: ["sestrom", "sa sestrom"]
+
+- id: "mnozina"
+  front: "множественное число: stan → stanovi, sestra → sestre, pivo → piva"
+  note: "м. длинное +i (lekar → lekari), м. короткое +ovi/evi (stan → stanovi, ključ → ključevi), ж. -a → -e, ср. -o/-e → -a; исключения: dan → dani, dete → deca, čovek → ljudi"
+  lesson: "42"
+  example_sr: "Ovo su moje sestre."
+  example_ru: "Это мои сёстры."
+  items:
+    - prompt: "stan (квартира) — много"
+      accept: ["stanovi"]
+    - prompt: "sestra (сестра) — много"
+      accept: ["sestre"]
+    - prompt: "pivo (пиво) — много"
+      accept: ["piva"]
+    - prompt: "student (студент) — много"
+      accept: ["studenti"]
+    - prompt: "ključ (ключ) — много"
+      accept: ["ključevi"]
+    - prompt: "dan (день) — много"
+      accept: ["dani"]
+
+- id: "prilagatelno-rod"
+  front: "прилагательное по роду: nov / nova / novo, мн. novi / nove / nova"
+  note: "прилагательное совпадает с существительным в роде, числе и падеже; м. ед. ч. — без окончания, перед и после je"
+  lesson: "43"
+  example_sr: "Stan je nov. Soba je nova."
+  example_ru: "Квартира новая. Комната новая."
+  items:
+    - prompt: "nov + soba (комната) — «новая комната»"
+      accept: ["nova soba"]
+    - prompt: "nov + selo (село) — «новое село»"
+      accept: ["novo selo"]
+    - prompt: "dobar + kafa (кофе) — «хороший кофе»"
+      accept: ["dobra kafa"]
+    - prompt: "«Квартира дорогая»: Stan je ___ (skup)"
+      accept: ["skup"]
+    - prompt: "torbe (сумки, мн.) — «новые сумки»"
+      accept: ["nove torbe"]
+
+- id: "akuzativ"
+  front: "винительный: koga? šta? — sestra → sestru, brat → brata, hleb → hleb"
+  note: "ж. на -a: -a → -u; м. одушевлённое: +a; м. вещь и ср. — без изменений; мн.: -e (м., ж.), -a (ср.). Идти «куда?» (u, na) — тоже винительный"
+  lesson: "44"
+  example_sr: "Vidim sestru i brata."
+  example_ru: "Вижу сестру и брата."
+  items:
+    - prompt: "sestra (сестра) — «вижу ...»"
+      accept: ["sestru"]
+    - prompt: "knjiga (книга) — «читаю ...»"
+      accept: ["knjigu"]
+    - prompt: "brat (брат, человек) — «вижу ...»"
+      accept: ["brata"]
+    - prompt: "hleb (хлеб, вещь) — «покупаю ...»"
+      accept: ["hleb"]
+    - prompt: "škola (школа) — «иду в ...»"
+      accept: ["školu", "u školu"]
+    - prompt: "prijatelji (друзья) — «вижу ...»"
+      accept: ["prijatelje"]
+
+- id: "treba-mi"
+  front: "treba mi / trebaju mi: слово — в именительном"
+  note: "после «tražim, želim, dajte mi, za mene» — винительный; после «treba mi» — именительный (это подлежащее)"
+  lesson: "45"
+  example_sr: "Treba mi nova torba. Trebaju mi nove cipele."
+  example_ru: "Мне нужна новая сумка. Мне нужны новые туфли."
+  items:
+    - prompt: "nova torba — «Мне нужна ...»"
+      accept: ["treba mi nova torba"]
+    - prompt: "nove cipele — «Мне нужны ...»"
+      accept: ["trebaju mi nove cipele"]
+    - prompt: "crna torba — «Я ищу ...»"
+      accept: ["tražim crnu torbu"]
+
+- id: "genitiv"
+  front: "родительный: kogo? čega? — hleb → hleba, voda → vode, mleko → mleka"
+  note: "м. +a, ж. -a → -e, ср. -o/-e → -a (vreme → vremena, dete → deteta); после nema/nemam, iz, do, od, kod, bez, pored, blizu, iza, ispred, posle, pre"
+  lesson: "46"
+  example_sr: "Nema hleba. Kafa bez šećera."
+  example_ru: "Нет хлеба. Кофе без сахара."
+  items:
+    - prompt: "hleb — «нет ...»"
+      accept: ["hleba"]
+    - prompt: "voda — «нет ...»"
+      accept: ["vode"]
+    - prompt: "mleko — «нет ...»"
+      accept: ["mleka"]
+    - prompt: "vreme — «нет ...»"
+      accept: ["vremena"]
+    - prompt: "stanica — «до ...»"
+      accept: ["stanice", "do stanice"]
+    - prompt: "šećer — «без ...»"
+      accept: ["šećera", "bez šećera"]
+
+- id: "broj-imenica"
+  front: "число + существительное: 1 — именительный, 2–4 — родительный ед., 5+ — родительный мн."
+  note: "как в русском: один рубль, два рубля, пять рублей. jedan dinar, dva dinara, pet dinara; tri sata, pet sati; dve sobe, pet soba"
+  lesson: "47"
+  example_sr: "Jedan dinar, dva dinara, pet dinara."
+  example_ru: "Один динар, два динара, пять динаров."
+  items:
+    - prompt: "dinar: 1"
+      accept: ["jedan dinar"]
+    - prompt: "dinar: 2"
+      accept: ["dva dinara"]
+    - prompt: "dinar: 5"
+      accept: ["pet dinara"]
+    - prompt: "sat: 3"
+      accept: ["tri sata"]
+    - prompt: "sat: 5"
+      accept: ["pet sati"]
+    - prompt: "godina: 30 (мне 30 лет)"
+      accept: ["trideset godina", "imam trideset godina"]
+
+- id: "lokativ"
+  front: "локатив: gde? o čemu? — grad → u gradu, soba → u sobi, selo → na selu"
+  note: "м., ср. +u (-o/-e → -u); ж. -a → -i (k→c, g→z, h→s: apoteka → apoteci); прилагательное -om (м., ср.), -oj (ж.); идти (куда?) — винительный, быть (где?) — локатив"
+  lesson: "49"
+  example_sr: "Živim u malom gradu."
+  example_ru: "Живу в маленьком городе."
+  items:
+    - prompt: "grad — «в ...»"
+      accept: ["gradu", "u gradu"]
+    - prompt: "soba — «в ...»"
+      accept: ["sobi", "u sobi"]
+    - prompt: "selo — «в ...» (на ...)"
+      accept: ["selu", "na selu"]
+    - prompt: "apoteka — «в ...»"
+      accept: ["apoteci", "u apoteci"]
+    - prompt: "posao — «на ...» (работе)"
+      accept: ["poslu", "na poslu"]
+    - prompt: "veliki grad — «в большом городе»"
+      accept: ["u velikom gradu"]
+
+- id: "dativ"
+  front: "дательный: kome? čemu? — sestra → sestri, brat → bratu"
+  note: "по форме совпадает с локативом, но стоит без предлога; сокращённые формы: mi, ti, mu, joj, nam, vam, im"
+  lesson: "51"
+  example_sr: "Pišem sestri. Sviđa mi se ova torba."
+  example_ru: "Пишу сестре. Мне нравится эта сумка."
+  items:
+    - prompt: "sestra — «пишу ...»"
+      accept: ["sestri"]
+    - prompt: "brat — «пишу ...»"
+      accept: ["bratu"]
+    - prompt: "dete — «даю ...»"
+      accept: ["detetu"]
+    - prompt: "ja (мне) — «Sviđa ___ se»"
+      accept: ["mi"]
+    - prompt: "ona (ей) — «Pišem ___»"
+      accept: ["joj"]
+    - prompt: "oni (им) — «Pišem ___»"
+      accept: ["im"]
+
+- id: "imperativ"
+  front: "просьба (повелительное): čekati → čekaj / čekajte, pisati → piši / pišite"
+  note: "-ati: -aj / -ajte; остальные: -i / -ite; отрицание — ne + форма: ne žurite"
+  lesson: "52"
+  example_sr: "Pišite mi, molim vas."
+  example_ru: "Пишите мне, пожалуйста."
+  items:
+    - prompt: "čekati — «подождите» (вы)"
+      accept: ["čekajte"]
+    - prompt: "čekati — «подожди» (ты)"
+      accept: ["čekaj"]
+    - prompt: "pisati — «пишите» (вы)"
+      accept: ["pišite"]
+    - prompt: "slušati — «слушайте» (вы)"
+      accept: ["slušajte"]
+
+- id: "instrumental"
+  front: "творительный: s kim? čim? — brat → bratom, sestra → sestrom"
+  note: "м., ср. -om (после č, ć, š, ž, j — -em); ж. -a → -om; прилагательное -im (м., ср.), -om (ж.); sa = с; subotom = по субботам"
+  lesson: "53"
+  example_sr: "Idem sa sestrom. Pijem kafu sa mlekom."
+  example_ru: "Иду с сестрой. Пью кофе с молоком."
+  items:
+    - prompt: "sestra — «с ...»"
+      accept: ["sestrom", "sa sestrom"]
+    - prompt: "prijatelj — «с ...»"
+      accept: ["prijateljem", "sa prijateljem"]
+    - prompt: "mleko — «кофе с ...»"
+      accept: ["mlekom", "sa mlekom"]
+    - prompt: "olovka — «пишу ...»"
+      accept: ["olovkom"]
+    - prompt: "novi prijatelj — «с новым другом»"
+      accept: ["sa novim prijateljem"]
+
+- id: "zamenice"
+  front: "местоимения: ja, ti, on, ona, mi, vi, oni во всех падежах"
+  note: "две формы: короткая (без ударения, на втором месте) и длинная (после предлога): me/mene, te/tebe, ga/njega, je/nju, nas, vas, ih/njih; mi/meni, ti/tebi, mu/njemu, joj/njoj, nam/nama, vam/vama, im/njima; instr.: mnom, tobom, njim, njom"
+  lesson: "54"
+  example_sr: "Vidim te. Pišem ti. Idem sa tobom."
+  example_ru: "Вижу тебя. Пишу тебе. Иду с тобой."
+  items:
+    - prompt: "я вижу тебя: Vidim ___"
+      accept: ["te"]
+    - prompt: "я пишу тебе: Pišem ___"
+      accept: ["ti"]
+    - prompt: "я вижу её: Vidim ___"
+      accept: ["je"]
+    - prompt: "я пишу ей: Pišem ___"
+      accept: ["joj"]
+    - prompt: "со мной: sa ___"
+      accept: ["mnom"]
+    - prompt: "для тебя: za ___"
+      accept: ["tebe"]
+
+- id: "vokativ"
+  front: "вокатив (обращение): Ana → Ano, brat → brate, mama → mamo"
+  note: "ж. на -a: -o; м. на согласную: +e (Petar → Petre); м. на -o и -a не меняются; в речи часто остаётся имя как есть"
+  lesson: "56"
+  example_sr: "Zdravo, Ano! Hvala, sestro!"
+  example_ru: "Привет, Ана! Спасибо, сестра!"
+  items:
+    - prompt: "Ana — «Привет, ___!»"
+      accept: ["Ano"]
+    - prompt: "sestra — «Спасибо, ___!»"
+      accept: ["sestro"]
+    - prompt: "brat — «Извини, ___»"
+      accept: ["brate"]
+    - prompt: "mama — «Доброе утро, ___!»"
+      accept: ["mamo"]
+
+- id: "redni-brojevi"
+  front: "порядковые числа и даты: peti maj, petog maja"
+  note: "prvi, drugi, treći, četvrti, peti…; число + -i (dvanaesti); дата «когда» — порядковое и месяц в родительном: petog maja; этаж — na trećem spratu"
+  lesson: "57"
+  example_sr: "Termin je petog marta. Živim na trećem spratu."
+  example_ru: "Приём пятого марта. Живу на третьем этаже."
+  items:
+    - prompt: "5 мая (когда?)"
+      accept: ["petog maja"]
+    - prompt: "1 марта (когда?)"
+      accept: ["prvog marta"]
+    - prompt: "6 июня (когда?)"
+      accept: ["šestog juna"]
+    - prompt: "на четвёртом этаже (по-русски; в Сербии счёт сдвинут)"
+      accept: ["na trećem spratu"]
+    - prompt: "третья улица (ж.)"
+      accept: ["treća ulica"]

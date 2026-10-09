@@ -104,16 +104,19 @@ steps:
         prompt: "Запиши, что слышишь."
         say: "Gde je stanica?"
         accept: ["Gde je stanica?"]
+        ru: ["Где станция?", "Где остановка?", "Где вокзал?"]
       - id: "25.6.2"
         type: listen
         prompt: "Запиши, что слышишь."
         say: "Da li je daleko?"
         accept: ["Da li je daleko?"]
+        ru: ["Это далеко?", "Далеко ли это?", "Далеко?", "Далеко ли?"]
       - id: "25.6.3"
         type: listen
         prompt: "Запиши, что слышишь."
         say: "Skrenite levo."
         accept: ["Skrenite levo."]
+        ru: ["Поверните налево", "Поверните влево", "Сверните налево", "Сверните влево", "Поворачивайте налево"]
 
   - id: "25.7"
     kind: checkpoint
@@ -146,10 +149,6 @@ steps:
         type: translate
         prompt: "Извините, где почта?"
         accept: ["Izvinite, gde je pošta?"]
-      - id: "25.7.6"
-        type: free
-        prompt: "Останови прохожего и спроси дорогу до рынка, уточни, далеко ли — 3–4 фразы."
-        sample: "Izvinite, kako da dođem do pijace? Da li je daleko? Hvala vam puno!"
 
   - id: "25.8"
     kind: dialogue
@@ -170,7 +169,7 @@ steps:
             - "Izvinite, kada je autobuska stanica?"
             - "Izvinite, kako je autobuska stanica?"
           answer: "Izvinite, gde je autobuska stanica?"
-          explain: "«gde» — про место. «kada» — про время, «kako» — про способ."
+          explain: "«Gde» — «где» (про место), «kada» — «когда» (про время), «kako» — «как» (про способ). Про станцию спрашивают «gde»."
 
       - who: npc
         sr: "Idite pravo do semafora, pa levo."
@@ -184,7 +183,7 @@ steps:
           type: fill_blank
           prompt: "Pravo, pa ___?"
           accept: ["levo"]
-          explain: "Повторить услышанное — лучший способ проверить, что понял правильно."
+          explain: "Он сказал «pravo, pa levo» — «прямо, потом налево». Повтори за ним: так проверяют, что поняли правильно."
 
       - who: npc
         sr: "Da. Ulica desno, kod pošte."

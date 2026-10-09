@@ -1,0 +1,311 @@
+lesson: "43"
+title: "Какой? (Kakav?)"
+subtitle: "прилагательные: dobar / dobra / dobro, описать человека и вещь"
+teaches:
+  [
+    dobar, los, lep, ruzan, mlad, visok, cist, prljav, hladan, topao, brz, spor,
+    jeftin, skup, crven, plav, zelen, zut, crn, beo,
+  ]
+
+steps:
+  - id: "43.1"
+    kind: teach
+    title: "Прилагательное и род"
+    md: "43/1-slaganje.md"
+
+  - id: "43.2"
+    kind: practice
+    title: "Nov, nova, novo"
+    exercises:
+      - id: "43.2.1"
+        type: choice
+        prompt: "«новая комната» —"
+        options: ["nova soba", "nov soba", "novo soba"]
+        answer: "nova soba"
+      - id: "43.2.2"
+        type: choice
+        prompt: "«новая квартира» —"
+        options: ["nov stan", "nova stan", "novo stan"]
+        answer: "nov stan"
+        explain: "«stan» — мужской род, поэтому «nov». По-русски «квартира» женского рода, а по-сербски «stan» — мужского: смотри на сербское слово. Длинная форма «novi stan» тоже существует (про конкретную, известную квартиру), но её среди вариантов нет: из трёх выбираем короткую."
+      - id: "43.2.3"
+        type: choice
+        prompt: "«старое село» —"
+        options: ["staro selo", "star selo", "stara selo"]
+        answer: "staro selo"
+      - id: "43.2.4"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["velika soba", "большая комната"]
+          - ["mali stan", "маленькая квартира"]
+          - ["staro selo", "старое село"]
+          - ["nov krevet", "новая кровать"]
+      - id: "43.2.5"
+        type: fill_blank
+        prompt: "«Кухня маленькая» → Kuhinja je ___."
+        accept: ["mala"]
+      - id: "43.2.6"
+        type: fill_blank
+        prompt: "«Сёла старые» → Sela su ___."
+        accept: ["stara"]
+        explain: "Множественное число среднего рода: -a (staro → stara)."
+      - id: "43.2.7"
+        type: word_bank
+        prompt: "Собери: «Квартира новая»"
+        bank: ["Stan", "je", "nov", "nova", "novo"]
+        accept: ["Stan je nov."]
+      - id: "43.2.8"
+        type: fix_error
+        prompt: "Soba je nov."
+        accept: ["Soba je nova."]
+        explain: "«soba» — женский род, значит «nova»."
+      - id: "43.2.9"
+        type: translate
+        prompt: "Это старая книга."
+        accept: ["Ovo je stara knjiga."]
+
+  - id: "43.3"
+    kind: teach
+    title: "Противоположности"
+    md: "43/3-suprotnosti.md"
+
+  - id: "43.4"
+    kind: practice
+    title: "Lep, ružan, skup, jeftin"
+    exercises:
+      - id: "43.4.1"
+        type: choice
+        prompt: "«Чай холодный» —"
+        options: ["Čaj je hladan.", "Čaj je hladna.", "Čaj je hladno."]
+        answer: "Čaj je hladan."
+      - id: "43.4.2"
+        type: choice
+        prompt: "«Кофе дорогой» —"
+        options: ["Kafa je skupa.", "Kafa je skup.", "Kafa je skupo."]
+        answer: "Kafa je skupa."
+      - id: "43.4.3"
+        type: choice
+        prompt: "«Книга дешёвая» —"
+        options: ["Knjiga je jeftina.", "Knjiga je jeftin.", "Knjiga je jeftino."]
+        answer: "Knjiga je jeftina."
+      - id: "43.4.4"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["lep", "красивый"]
+          - ["ružan", "некрасивый"]
+          - ["mlad", "молодой"]
+          - ["visok", "высокий"]
+      - id: "43.4.5"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["čist", "чистый"]
+          - ["prljav", "грязный"]
+          - ["brz", "быстрый"]
+          - ["spor", "медленный"]
+      - id: "43.4.6"
+        type: fill_blank
+        prompt: "«Она молодая» → Ona je ___."
+        accept: ["mlada"]
+      - id: "43.4.7"
+        type: fill_blank
+        prompt: "«хороший хлеб, хорошая кофе» → dobar hleb, ___ kafa"
+        accept: ["dobra"]
+        explain: "Беглое «a»: dobar → dobra (в женском роде гласная выпадает)."
+      - id: "43.4.8"
+        type: word_bank
+        prompt: "Собери: «Квартира дешёвая»"
+        bank: ["Stan", "je", "jeftin", "jeftina", "skup"]
+        accept: ["Stan je jeftin."]
+      - id: "43.4.9"
+        type: fix_error
+        prompt: "Ana je lep."
+        accept: ["Ana je lepa."]
+        explain: "Ана — женщина, значит «lepa»."
+      - id: "43.4.10"
+        type: translate
+        prompt: "Хлеб свежий, а кофе дорогой."
+        accept: ["Hleb je svež, a kafa je skupa.", "Hleb je svež a kafa je skupa."]
+
+  - id: "43.5"
+    kind: teach
+    title: "Цвета"
+    md: "43/5-boje.md"
+
+  - id: "43.6"
+    kind: practice
+    title: "Какого цвета?"
+    also_ok: ["beli", "zelene", "crvena"]
+    exercises:
+      - id: "43.6.1"
+        type: choice
+        prompt: "«красная сумка» —"
+        options: ["crvena torba", "crven torba", "crveno torba"]
+        answer: "crvena torba"
+      - id: "43.6.2"
+        type: choice
+        prompt: "«синее море» —"
+        options: ["plavo more", "plava more", "plav more"]
+        answer: "plavo more"
+      - id: "43.6.3"
+        type: choice
+        prompt: "«зелёные яблоки» —"
+        options: ["zelene jabuke", "zeleni jabuke", "zelena jabuke"]
+        answer: "zelene jabuke"
+        explain: "«jabuke» — женский род, множественное число: zelene."
+      - id: "43.6.4"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["crven", "красный"]
+          - ["plav", "синий"]
+          - ["zelen", "зелёный"]
+          - ["žut", "жёлтый"]
+          - ["crn", "чёрный"]
+          - ["beo", "белый"]
+      - id: "43.6.5"
+        type: fill_blank
+        prompt: "«белый хлеб» → ___ hleb."
+        accept: ["beo", "beli"]
+      - id: "43.6.6"
+        type: fill_blank
+        prompt: "«белое вино» → ___ vino."
+        accept: ["belo"]
+        explain: "Беглое «o»: beo → bela, belo."
+      - id: "43.6.7"
+        type: word_bank
+        prompt: "Собери: «Сумка красная»"
+        bank: ["Torba", "je", "crvena", "crven", "crveno"]
+        accept: ["Torba je crvena."]
+      - id: "43.6.8"
+        type: fix_error
+        prompt: "More je plava."
+        accept: ["More je plavo."]
+        explain: "«more» — средний род, значит «plavo»."
+      - id: "43.6.9"
+        type: translate
+        prompt: "Кухня белая, а кровать синяя."
+        accept: ["Kuhinja je bela, a krevet je plav.", "Kuhinja je bela a krevet je plav."]
+
+  - id: "43.7"
+    kind: reading
+    title: "Моя квартира"
+    md: "43/7-citanje.md"
+    also_ok: ["gradu"]
+    exercises:
+      - id: "43.7.1"
+        type: choice
+        prompt: "Какая кухня?"
+        options: ["Bela i čista.", "Mala i prljava.", "Velika i hladna."]
+        answer: "Bela i čista."
+      - id: "43.7.2"
+        type: choice
+        prompt: "Какая квартира?"
+        options: ["Nov, ali mali.", "Star i velik.", "Skup i velik."]
+        answer: "Nov, ali mali."
+      - id: "43.7.3"
+        type: choice
+        prompt: "Какого цвета кровать?"
+        options: ["Plav.", "Beo.", "Crven."]
+        answer: "Plav."
+
+  - id: "43.8"
+    kind: dialogue
+    title: "Kakav je stan?"
+    scene: "Друг спрашивает, какую квартиру ты нашёл."
+    voice: m
+    also_ok: ["centru", "parka"]
+    turns:
+      - who: npc
+        sr: "Zdravo! Kakav je stan?"
+        ru: "Привет! Какая квартира?"
+
+      - who: me
+        sr: "Zdravo! Stan je mali, ali lep."
+        ru: "Привет! Квартира маленькая, но красивая."
+        exercise:
+          id: "43.8.1"
+          type: choice
+          prompt: "Поздоровайся и скажи: квартира маленькая, но красивая"
+          options:
+            - "Zdravo! Stan je mali, ali lep."
+            - "Zdravo! Stan je mala, ali lep."
+            - "Zdravo! Stan je mali, ali lepa."
+          answer: "Zdravo! Stan je mali, ali lep."
+          explain: "«stan» — мужской род: оба прилагательных в мужской форме."
+
+      - who: npc
+        sr: "A kuhinja? Kakva je?"
+        ru: "А кухня? Какая она?"
+
+      - who: me
+        sr: "Kuhinja je velika i bela."
+        ru: "Кухня большая и белая."
+        exercise:
+          id: "43.8.2"
+          type: fill_blank
+          prompt: "«Кухня большая и белая» → Kuhinja je ___ i bela."
+          accept: ["velika"]
+
+      - who: npc
+        sr: "Je li skup?"
+        ru: "Он дорогой?"
+
+      - who: me
+        sr: "Ne, jeftin je."
+        ru: "Нет, он дешёвый."
+        exercise:
+          id: "43.8.3"
+          type: choice
+          prompt: "Ответь: «Нет, он дешёвый» (про квартиру)"
+          options: ["Ne, jeftin je.", "Ne, jeftina je.", "Ne, jeftino je."]
+          answer: "Ne, jeftin je."
+          explain: "Спрашивали про «stan» (мужской род) — отвечаем в мужском роде: jeftin."
+
+      - who: npc
+        sr: "Dobro! Gde je stan?"
+        ru: "Хорошо! Где квартира?"
+
+      - who: me
+        sr: "U centru, blizu parka."
+        ru: "В центре, рядом с парком."
+        exercise:
+          id: "43.8.4"
+          type: choice
+          prompt: "Скажи: «В центре, рядом с парком»"
+          options:
+            - "U centru, blizu parka."
+            - "U centar, blizu park."
+            - "Centru, blizu parka."
+          answer: "U centru, blizu parka."
+          explain: "Это готовые формы с нужными окончаниями: u centru, blizu parka. Скоро разберём, откуда они берутся."
+
+      - who: npc
+        sr: "Dobro! Vidimo se u subotu."
+        ru: "Хорошо! Увидимся в субботу."
+
+  - id: "43.9"
+    kind: practice
+    title: "Диктант"
+    mixed: true
+    exercises:
+      - id: "43.9.1"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Moja kuća je velika i bela."
+        accept: ["Moja kuća je velika i bela."]
+        ru: ["Мой дом большой и белый", "Мой дом большой и белый.", "Мой дом большой, белый"]
+      - id: "43.9.2"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Kafa je topla, a čaj je hladan."
+        accept: ["Kafa je topla, a čaj je hladan.", "Kafa je topla a čaj je hladan."]
+        ru: ["Кофе тёплый, а чай холодный", "Кофе тёплый, а чай холодный.", "Кофе горячий, а чай холодный"]
+      - id: "43.9.3"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Stanovi su skupi."
+        accept: ["Stanovi su skupi."]
+        ru: ["Квартиры дорогие", "Квартиры дорогие.", "Квартиры стоят дорого"]

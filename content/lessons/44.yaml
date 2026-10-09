@@ -1,0 +1,312 @@
+lesson: "44"
+title: "Винительный I (Akuzativ I)"
+subtitle: "кого? что? — vidim ženu, kupujem hleb"
+teaches:
+  [
+    videti, praviti, kuvati, voditi, nositi, cistiti, koga, film, serija, muzika,
+    pesma, macka, pas,
+  ]
+
+steps:
+  - id: "44.1"
+    kind: teach
+    title: "Что? Кого?"
+    md: "44/1-akuzativ.md"
+
+  - id: "44.2"
+    kind: practice
+    title: "Sestru, knjigu, kafu"
+    also_ok: ["kupujem", "Anu", "Ani"]
+    exercises:
+      - id: "44.2.1"
+        type: choice
+        prompt: "«Я читаю книгу» —"
+        options: ["Čitam knjigu.", "Čitam knjiga.", "Čitam knjigi."]
+        answer: "Čitam knjigu."
+      - id: "44.2.2"
+        type: choice
+        prompt: "«Я пью кофе» —"
+        options: ["Pijem kafu.", "Pijem kafa.", "Pijem kafi."]
+        answer: "Pijem kafu."
+      - id: "44.2.3"
+        type: choice
+        prompt: "«Я вижу Ану» —"
+        options: ["Vidim Anu.", "Vidim Ana.", "Vidim Ani."]
+        answer: "Vidim Anu."
+      - id: "44.2.4"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["Čitam knjigu.", "Читаю книгу"]
+          - ["Vidim sestru.", "Вижу сестру"]
+          - ["Pijem kafu.", "Пью кофе"]
+          - ["Kupujem torbu.", "Покупаю сумку"]
+      - id: "44.2.5"
+        type: fill_blank
+        prompt: "«Я читаю новую книгу» → Čitam ___ knjigu."
+        accept: ["novu"]
+        explain: "Прилагательное меняется вместе с существительным: nova → novu."
+      - id: "44.2.6"
+        type: fill_blank
+        prompt: "«Я вижу сестру» → Vidim ___."
+        accept: ["sestru"]
+      - id: "44.2.7"
+        type: word_bank
+        prompt: "Собери: «Я покупаю большую сумку»"
+        bank: ["Kupujem", "veliku", "torbu", "velika", "torba"]
+        accept: ["Kupujem veliku torbu."]
+      - id: "44.2.8"
+        type: fix_error
+        prompt: "Čitam knjiga."
+        accept: ["Čitam knjigu."]
+        explain: "Читаешь «что?» — нужен винительный: knjiga → knjigu."
+      - id: "44.2.9"
+        type: translate
+        prompt: "Я вижу новую кухню."
+        accept: ["Vidim novu kuhinju."]
+
+  - id: "44.3"
+    kind: teach
+    title: "Мужской и средний род"
+    md: "44/3-muski.md"
+
+  - id: "44.4"
+    kind: practice
+    title: "Hleb, brata, pivo"
+    also_ok: ["kupujem", "Marka", "lekara", "psa", "starog", "brata", "prijatelja"]
+    exercises:
+      - id: "44.4.1"
+        type: choice
+        prompt: "«Я пью сок» (сок — вещь) —"
+        options: ["Pijem sok.", "Pijem soka.", "Pijem soku."]
+        answer: "Pijem sok."
+        explain: "Вещь мужского рода не меняется: sok."
+      - id: "44.4.2"
+        type: choice
+        prompt: "«Я вижу брата» (человек) —"
+        options: ["Vidim brata.", "Vidim brat.", "Vidim bratu."]
+        answer: "Vidim brata."
+        explain: "Человек мужского рода получает -a: brat → brata."
+      - id: "44.4.3"
+        type: choice
+        prompt: "«Я смотрю фильм» —"
+        options: ["Gledam film.", "Gledam filma.", "Gledam filmu."]
+        answer: "Gledam film."
+      - id: "44.4.4"
+        type: choice
+        prompt: "«Я жду Марка» —"
+        options: ["Čekam Marka.", "Čekam Marko.", "Čekam Marku."]
+        answer: "Čekam Marka."
+      - id: "44.4.5"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["Kupujem hleb.", "Покупаю хлеб"]
+          - ["Vidim lekara.", "Вижу врача"]
+          - ["Gledam more.", "Смотрю на море"]
+          - ["Čekam studenta.", "Жду студента"]
+      - id: "44.4.6"
+        type: fill_blank
+        prompt: "«Я вижу врача» → Vidim ___."
+        accept: ["lekara"]
+      - id: "44.4.7"
+        type: fill_blank
+        prompt: "«Я вижу собаку» → Vidim ___."
+        accept: ["psa"]
+        explain: "Беглое «a» выпадает: pas → psa."
+      - id: "44.4.8"
+        type: fill_blank
+        prompt: "«Я вижу старого друга» → Vidim ___ prijatelja."
+        accept: ["starog"]
+        explain: "Прилагательное при живом мужском: -og."
+      - id: "44.4.9"
+        type: word_bank
+        prompt: "Собери: «Я покупаю молоко и хлеб»"
+        bank: ["Kupujem", "mleko", "i", "hleb", "mleka", "hleba"]
+        accept: ["Kupujem mleko i hleb."]
+      - id: "44.4.10"
+        type: fix_error
+        prompt: "Vidim sestra i brat."
+        accept: ["Vidim sestru i brata."]
+        explain: "Оба слова в винительном: sestra → sestru (женский на -a), brat → brata (человек, мужской)."
+      - id: "44.4.11"
+        type: translate
+        prompt: "Я жду друга."
+        accept: ["Čekam prijatelja."]
+
+  - id: "44.5"
+    kind: teach
+    title: "Много и «куда?»"
+    md: "44/5-mnozhestvennoe.md"
+
+  - id: "44.6"
+    kind: practice
+    title: "Книги, друзья, в школу"
+    also_ok: ["kolače", "prijatelje", "ljude", "kupujem", "decu"]
+    exercises:
+      - id: "44.6.1"
+        type: choice
+        prompt: "«Я читаю книги» —"
+        options: ["Čitam knjige.", "Čitam knjigu.", "Čitam knjiga."]
+        answer: "Čitam knjige."
+      - id: "44.6.2"
+        type: choice
+        prompt: "«Я вижу друзей» —"
+        options: ["Vidim prijatelje.", "Vidim prijatelji.", "Vidim prijatelja."]
+        answer: "Vidim prijatelje."
+      - id: "44.6.3"
+        type: choice
+        prompt: "«Я иду в школу» —"
+        options: ["Idem u školu.", "Idem u školi.", "Idem u škola."]
+        answer: "Idem u školu."
+        explain: "Идём «куда?» — винительный: škola → školu."
+      - id: "44.6.4"
+        type: choice
+        prompt: "«Я иду на работу» —"
+        options: ["Idem na posao.", "Idem na poslu.", "Idem na posla."]
+        answer: "Idem na posao."
+        explain: "«posao» — вещь мужского рода, в винительном не меняется."
+      - id: "44.6.5"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["Kupujem kolače.", "Покупаю пирожные"]
+          - ["Vidim ljude.", "Вижу людей"]
+          - ["Čitam knjige.", "Читаю книги"]
+          - ["Gledam serije.", "Смотрю сериалы"]
+      - id: "44.6.6"
+        type: fill_blank
+        prompt: "«Я веду детей в школу» → Vodim ___ u školu."
+        accept: ["decu"]
+      - id: "44.6.7"
+        type: fill_blank
+        prompt: "«Я иду в магазин» → Idem u ___."
+        accept: ["prodavnicu"]
+      - id: "44.6.8"
+        type: word_bank
+        prompt: "Собери: «Я иду в магазин»"
+        bank: ["Idem", "u", "prodavnicu", "prodavnici"]
+        accept: ["Idem u prodavnicu."]
+      - id: "44.6.9"
+        type: fix_error
+        prompt: "Idem u prodavnici."
+        accept: ["Idem u prodavnicu."]
+        explain: "Идём «куда?» — винительный (prodavnicu). «Prodavnici» отвечает на «где?»."
+      - id: "44.6.10"
+        type: translate
+        prompt: "Я готовлю обед и смотрю сериал."
+        accept: ["Kuvam ručak i gledam seriju.", "Kuvam ručak, gledam seriju."]
+
+  - id: "44.7"
+    kind: reading
+    title: "Мой день"
+    md: "44/7-citanje.md"
+    also_ok: ["kupujem", "ćerku", "školu"]
+    exercises:
+      - id: "44.7.1"
+        type: choice
+        prompt: "Что она пьёт утром?"
+        options: ["Kafu.", "Čaj.", "Sok."]
+        answer: "Kafu."
+      - id: "44.7.2"
+        type: choice
+        prompt: "Кого она ведёт в школу?"
+        options: ["Ćerku.", "Sina.", "Sestru."]
+        answer: "Ćerku."
+      - id: "44.7.3"
+        type: choice
+        prompt: "Что она покупает после работы?"
+        options: ["Hleb, mleko i jabuke.", "Knjigu i torbu.", "Kolače i sok."]
+        answer: "Hleb, mleko i jabuke."
+
+  - id: "44.8"
+    kind: dialogue
+    title: "Šta radiš?"
+    scene: "Друг пишет тебе вечером и спрашивает, чем ты занят."
+    voice: m
+    also_ok: ["Marka", "sestru", "kafu", "knjigu", "kupujem"]
+    turns:
+      - who: npc
+        sr: "Zdravo! Šta radiš?"
+        ru: "Привет! Что делаешь?"
+
+      - who: me
+        sr: "Čitam knjigu. A ti?"
+        ru: "Читаю книгу. А ты?"
+        exercise:
+          id: "44.8.1"
+          type: choice
+          prompt: "Скажи, что читаешь книгу, и спроси «а ты?»"
+          options:
+            - "Čitam knjigu. A ti?"
+            - "Čitam knjiga. A ti?"
+            - "Čitam knjigi. A ti?"
+          answer: "Čitam knjigu. A ti?"
+
+      - who: npc
+        sr: "Gledam film i čekam Marka."
+        ru: "Смотрю фильм и жду Марка."
+
+      - who: me
+        sr: "Ja čekam sestru."
+        ru: "А я жду сестру."
+        exercise:
+          id: "44.8.2"
+          type: translate
+          prompt: "Скажи: «А я жду сестру»"
+          accept: ["Ja čekam sestru.", "A ja čekam sestru.", "I ja čekam sestru.", "Čekam sestru."]
+
+      - who: npc
+        sr: "Dobro! Imaš li kafu?"
+        ru: "Хорошо! У тебя есть кофе?"
+
+      - who: me
+        sr: "Imam kafu i sok."
+        ru: "Есть кофе и сок."
+        exercise:
+          id: "44.8.3"
+          type: fill_blank
+          prompt: "«Есть кофе и сок» → Imam ___ i sok."
+          accept: ["kafu"]
+
+      - who: npc
+        sr: "Dolazim! Kupujem hleb."
+        ru: "Приду! Покупаю хлеб."
+
+      - who: me
+        sr: "Dobro! Vidimo se."
+        ru: "Хорошо! Увидимся."
+        exercise:
+          id: "44.8.4"
+          type: choice
+          prompt: "Согласись и попрощайся до встречи"
+          options:
+            - "Dobro! Vidimo se."
+            - "Laku noć! Vidimo se."
+            - "Nema na čemu! Vidimo se."
+          answer: "Dobro! Vidimo se."
+
+  - id: "44.9"
+    kind: practice
+    title: "Диктант"
+    mixed: true
+    also_ok: ["Anu", "Marka", "decu"]
+    exercises:
+      - id: "44.9.1"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Čitam novu knjigu."
+        accept: ["Čitam novu knjigu."]
+        ru: ["Я читаю новую книгу", "Читаю новую книгу"]
+      - id: "44.9.2"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Vodim decu u školu."
+        accept: ["Vodim decu u školu."]
+        ru: ["Я веду детей в школу", "Веду детей в школу", "Отвожу детей в школу"]
+      - id: "44.9.3"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Vidim Anu i Marka."
+        accept: ["Vidim Anu i Marka."]
+        ru: ["Я вижу Ану и Марка", "Вижу Ану и Марка", "Я вижу Ану и Марко"]

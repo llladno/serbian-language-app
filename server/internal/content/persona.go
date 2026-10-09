@@ -32,7 +32,7 @@ func interpolate(s string, p map[string]string) string {
 }
 
 // applyPersona interpolates persona tokens into every learner-facing string:
-// lesson subtitles, teach/reading markdown, and exercise prompts/samples.
+// lesson subtitles, teach/reading markdown, and exercise prompts.
 // Answer fields (accept, answer, bank, pairs, say) are deliberately left
 // alone so grading stays deterministic.
 //
@@ -52,7 +52,6 @@ func applyPersona(c *Course, p map[string]string) {
 			l.Steps[i].MarkdownRU = interpolate(l.Steps[i].MarkdownRU, p)
 			for j := range l.Steps[i].Exercises {
 				l.Steps[i].Exercises[j].Prompt = interpolate(l.Steps[i].Exercises[j].Prompt, p)
-				l.Steps[i].Exercises[j].Sample = interpolate(l.Steps[i].Exercises[j].Sample, p)
 			}
 		}
 	}

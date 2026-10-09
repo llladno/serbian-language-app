@@ -119,19 +119,3 @@ steps:
         prompt: "Мне нравится осень."
         accept: ["Sviđa mi se jesen."]
 
-  - id: "29.4"
-    kind: checkpoint
-    title: "Ролёвки"
-    exercises:
-      - id: "29.4.1"
-        type: free
-        prompt: "Расскажи свой будний день: 4–5 фраз (утро, дорога, работа, вечер, выходные)."
-        sample: "Ustajem u sedam, doručkujem i idem na posao autobusom. Radim kao {job} do pet. Uveče gledam seriju. Vikendom idem u prirodu."
-      - id: "29.4.2"
-        type: free
-        prompt: "Закажи обед в кафе и попроси счёт: 4 фразы."
-        sample: "Dobar dan! Za mene supu i jednu kafu. Ukusno je! Možemo li da platimo karticom?"
-      - id: "29.4.3"
-        type: free
-        prompt: "Спроси у прохожего дорогу до банка и уточни, далеко ли: 3–4 фразы."
-        sample: "Izvinite, kako da dođem do banke? Da li je daleko? Hvala vam puno!"

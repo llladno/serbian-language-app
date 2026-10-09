@@ -1,0 +1,316 @@
+lesson: "49"
+title: "Локатив (Lokativ)"
+subtitle: "где и о ком: u sobi, na trgu, o filmu"
+teaches: [pricati, komsija, kome, cemu]
+
+steps:
+  - id: "49.1"
+    kind: teach
+    title: "Где? — локатив"
+    md: "49/1-lokativ.md"
+
+  - id: "49.2"
+    kind: practice
+    title: "U gradu, u sobi, u selu"
+    also_ok: ["gradu", "sobi", "selu", "apoteci", "stanu", "kuhinji", "terasi", "školi", "centru", "poslu", "stolu", "Beogradu", "Novom", "Sadu", "živimo", "sobu", "sela"]
+    exercises:
+      - id: "49.2.1"
+        type: choice
+        prompt: "«в городе» —"
+        options: ["u gradu", "u grad", "u grada"]
+        answer: "u gradu"
+      - id: "49.2.2"
+        type: choice
+        prompt: "«в комнате» —"
+        options: ["u sobi", "u sobu", "u soba"]
+        answer: "u sobi"
+      - id: "49.2.3"
+        type: choice
+        prompt: "«в селе» —"
+        options: ["u selu", "u selo", "u sela"]
+        answer: "u selu"
+      - id: "49.2.4"
+        type: choice
+        prompt: "«в аптеке» —"
+        options: ["u apoteci", "u apoteki", "u apoteku"]
+        answer: "u apoteci"
+        explain: "k перед -i превращается в c: apoteka → apoteci (так же banka → banci)."
+      - id: "49.2.5"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["u stanu", "в квартире"]
+          - ["u kuhinji", "на кухне"]
+          - ["na terasi", "на террасе"]
+          - ["u školi", "в школе"]
+      - id: "49.2.6"
+        type: fill_blank
+        prompt: "«Я в центре» → Ja sam u ___."
+        accept: ["centru"]
+      - id: "49.2.7"
+        type: fill_blank
+        prompt: "«Ана на работе» → Ana je na ___."
+        accept: ["poslu"]
+      - id: "49.2.8"
+        type: fill_blank
+        prompt: "«Книга на столе» → Knjiga je na ___."
+        accept: ["stolu"]
+      - id: "49.2.9"
+        type: word_bank
+        prompt: "Собери: «Моя сестра в Белграде»"
+        bank: ["Moja", "sestra", "je", "u", "Beogradu", "Beograd"]
+        accept: ["Moja sestra je u Beogradu."]
+      - id: "49.2.10"
+        type: fix_error
+        prompt: "Ana je u školu."
+        accept: ["Ana je u školi."]
+        explain: "«Где?» — локатив (školi). Винительный (školu) — для вопроса «куда?»."
+      - id: "49.2.11"
+        type: translate
+        prompt: "Мы живём в Нови-Саде."
+        accept: ["Živimo u Novom Sadu."]
+
+  - id: "49.3"
+    kind: teach
+    title: "Прилагательные; где и куда"
+    md: "49/3-prid-kuda-gde.md"
+
+  - id: "49.4"
+    kind: practice
+    title: "U velikom gradu"
+    also_ok: ["velikom", "gradu", "maloj", "sobi", "školi", "staroj", "novom", "stanu", "malom", "poslu", "školu", "gradu", "živim", "malu", "sobu"]
+    exercises:
+      - id: "49.4.1"
+        type: choice
+        prompt: "«в большом городе» —"
+        options: ["u velikom gradu", "u veliki grad", "u velikog grada"]
+        answer: "u velikom gradu"
+      - id: "49.4.2"
+        type: choice
+        prompt: "«в маленькой комнате» —"
+        options: ["u maloj sobi", "u mala sobi", "u malu sobu"]
+        answer: "u maloj sobi"
+      - id: "49.4.3"
+        type: choice
+        prompt: "«Я в школе» (нахожусь) —"
+        options: ["Ja sam u školi.", "Ja sam u školu.", "Ja sam u škola."]
+        answer: "Ja sam u školi."
+      - id: "49.4.4"
+        type: choice
+        prompt: "«Я иду на работу» (движение) —"
+        options: ["Idem na posao.", "Idem na poslu.", "Idem na posla."]
+        answer: "Idem na posao."
+      - id: "49.4.5"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["Idem u grad.", "Еду в город"]
+          - ["Živim u gradu.", "Живу в городе"]
+          - ["Idem na posao.", "Иду на работу"]
+          - ["Ana je na poslu.", "Ана на работе"]
+      - id: "49.4.6"
+        type: fill_blank
+        prompt: "«на старой террасе» → na ___ terasi"
+        accept: ["staroj"]
+      - id: "49.4.7"
+        type: fill_blank
+        prompt: "«в новой квартире» → u ___ stanu"
+        accept: ["novom"]
+        explain: "«stan» — мужской род: прилагательное -om."
+      - id: "49.4.8"
+        type: word_bank
+        prompt: "Собери: «Я живу в маленьком городе»"
+        bank: ["Živim", "u", "malom", "gradu", "mali", "grad"]
+        accept: ["Živim u malom gradu."]
+      - id: "49.4.9"
+        type: fix_error
+        prompt: "Živim u grad."
+        accept: ["Živim u gradu."]
+      - id: "49.4.10"
+        type: fix_error
+        prompt: "Idem u školi."
+        accept: ["Idem u školu."]
+        explain: "Идём — «куда?», нужен винительный: školu."
+      - id: "49.4.11"
+        type: translate
+        prompt: "Я живу в маленькой квартире."
+        accept: ["Živim u malom stanu."]
+
+  - id: "49.5"
+    kind: teach
+    title: "О ком, о чём; мн. число"
+    md: "49/5-o-mnozina.md"
+
+  - id: "49.6"
+    kind: practice
+    title: "O poslu, o filmu"
+    also_ok: ["poslu", "filmu", "knjizi", "sestri", "stanovima", "ulicama", "gradovima", "prijateljima", "Srbiji", "pričamo"]
+    exercises:
+      - id: "49.6.1"
+        type: choice
+        prompt: "«Я говорю о работе» —"
+        options: ["Pričam o poslu.", "Pričam o posao.", "Pričam o posla."]
+        answer: "Pričam o poslu."
+      - id: "49.6.2"
+        type: choice
+        prompt: "«О чём ты говоришь?» —"
+        options: ["O čemu pričaš?", "O čega pričaš?", "O šta pričaš?"]
+        answer: "O čemu pričaš?"
+      - id: "49.6.3"
+        type: choice
+        prompt: "«в квартирах» —"
+        options: ["u stanovima", "u stanovi", "u stanova"]
+        answer: "u stanovima"
+      - id: "49.6.4"
+        type: choice
+        prompt: "«на улицах» —"
+        options: ["na ulicama", "na ulice", "na ulicima"]
+        answer: "na ulicama"
+        explain: "Женский род во множественном: -ama."
+      - id: "49.6.5"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["o filmu", "о фильме"]
+          - ["o knjizi", "о книге"]
+          - ["o sestri", "о сестре"]
+          - ["o prijateljima", "о друзьях"]
+      - id: "49.6.6"
+        type: fill_blank
+        prompt: "«О ком ты говоришь?» → O ___ pričaš?"
+        accept: ["kome"]
+      - id: "49.6.7"
+        type: fill_blank
+        prompt: "«в городах» → u ___"
+        accept: ["gradovima"]
+      - id: "49.6.8"
+        type: fill_blank
+        prompt: "«Читаю о Сербии» → Čitam o ___."
+        accept: ["Srbiji"]
+      - id: "49.6.9"
+        type: word_bank
+        prompt: "Собери: «Мы говорим о фильме»"
+        bank: ["Pričamo", "o", "filmu", "film", "filma"]
+        accept: ["Pričamo o filmu."]
+      - id: "49.6.10"
+        type: fix_error
+        prompt: "Pričam o poslo."
+        accept: ["Pričam o poslu."]
+      - id: "49.6.11"
+        type: translate
+        prompt: "Я читаю книгу о Сербии."
+        accept: ["Čitam knjigu o Srbiji."]
+
+  - id: "49.7"
+    kind: reading
+    title: "Где кто живёт"
+    md: "49/7-citanje.md"
+    also_ok: ["Beogradu", "velikom", "stanu", "selu", "maloj", "kući", "Rusiji", "starom", "gradu", "Novom", "Sadu", "malom", "parka", "poslu", "filmovima", "knjigama", "moru", "pričamo", "žive", "deci", "školi"]
+    exercises:
+      - id: "49.7.1"
+        type: choice
+        prompt: "Где живёт сестра?"
+        options: ["U Beogradu.", "Na selu.", "U Rusiji."]
+        answer: "U Beogradu."
+      - id: "49.7.2"
+        type: choice
+        prompt: "Где живёт брат?"
+        options: ["Na selu.", "U Beogradu.", "U Novom Sadu."]
+        answer: "Na selu."
+      - id: "49.7.3"
+        type: choice
+        prompt: "О чём они иногда говорят?"
+        options: ["O poslu, filmovima i knjigama.", "O poslu i novcu.", "O školi i deci."]
+        answer: "O poslu, filmovima i knjigama."
+
+  - id: "49.8"
+    kind: dialogue
+    title: "Gde si?"
+    scene: "Друг пишет голосовым: «Где ты?» Ты отвечаешь."
+    voice: m
+    also_ok: ["kafiću", "Trgu", "Srbiji", "centru", "filmu", "kuće", "moru"]
+    turns:
+      - who: npc
+        sr: "Zdravo! Gde si?"
+        ru: "Привет! Ты где?"
+
+      - who: me
+        sr: "Zdravo! Ja sam u kafiću na Trgu."
+        ru: "Привет! Я в кафе на площади."
+        exercise:
+          id: "49.8.1"
+          type: choice
+          prompt: "Скажи: «Привет! Я в кафе на площади»"
+          options:
+            - "Zdravo! Ja sam u kafiću na Trgu."
+            - "Zdravo! Ja sam u kafić na Trg."
+            - "Zdravo! Ja sam u kafiće na Trga."
+          answer: "Zdravo! Ja sam u kafiću na Trgu."
+
+      - who: npc
+        sr: "A šta radiš tamo?"
+        ru: "А что ты там делаешь?"
+
+      - who: me
+        sr: "Pijem kafu i čitam knjigu o Srbiji."
+        ru: "Пью кофе и читаю книгу о Сербии."
+        exercise:
+          id: "49.8.2"
+          type: fill_blank
+          prompt: "«Читаю книгу о Сербии» → Pijem kafu i čitam knjigu o ___."
+          accept: ["Srbiji"]
+
+      - who: npc
+        sr: "Dobro! Ja sam kod kuće. Gledam film o moru."
+        ru: "Хорошо! А я дома. Смотрю фильм о море."
+
+      - who: me
+        sr: "O čemu je film?"
+        ru: "О чём фильм?"
+        exercise:
+          id: "49.8.3"
+          type: translate
+          prompt: "Спроси: «О чём фильм?»"
+          accept: ["O čemu je film?"]
+
+      - who: npc
+        sr: "O ljubavi i o moru."
+        ru: "О любви и о море."
+
+      - who: me
+        sr: "Vidimo se sutra u centru."
+        ru: "Увидимся завтра в центре."
+        exercise:
+          id: "49.8.4"
+          type: choice
+          prompt: "Скажи: «Увидимся завтра в центре»"
+          options:
+            - "Vidimo se sutra u centru."
+            - "Vidimo se sutra u centar."
+            - "Vidimo se sutra u centra."
+          answer: "Vidimo se sutra u centru."
+
+  - id: "49.9"
+    kind: practice
+    title: "Диктант"
+    mixed: true
+    also_ok: ["kafiću", "poslu", "Beogradu"]
+    exercises:
+      - id: "49.9.1"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Ja sam u kafiću."
+        accept: ["Ja sam u kafiću."]
+        ru: ["Я в кафе", "Я нахожусь в кафе", "Я в кафешке"]
+      - id: "49.9.2"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Pričam o poslu."
+        accept: ["Pričam o poslu."]
+        ru: ["Я говорю о работе", "Говорю о работе", "Рассказываю о работе"]
+      - id: "49.9.3"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Moja sestra živi u Beogradu."
+        accept: ["Moja sestra živi u Beogradu."]
+        ru: ["Моя сестра живёт в Белграде", "Моя сестра живет в Белграде"]

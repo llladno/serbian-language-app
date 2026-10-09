@@ -91,15 +91,6 @@ steps:
         prompt: "Когда приходит следующий автобус?"
         accept: ["Kad dolazi sledeći autobus?"]
 
-  - id: "36.4"
-    kind: checkpoint
-    title: "План на выходные"
-    exercises:
-      - id: "36.4.1"
-        type: free
-        prompt: "Расскажи о своих планах на следующие выходные: куда поедешь, на чём, что будешь делать — 4–5 фраз."
-        sample: "U subotu ću da putujem vozom kod sestre. Stanica je blizu, ići ću pešice. U nedelju ću da se vratim autobusom."
-
   - id: "36.5"
     kind: practice
     title: "Диктант"
@@ -110,13 +101,16 @@ steps:
         prompt: "Запиши, что слышишь."
         say: "Sutra ću da radim."
         accept: ["Sutra ću da radim."]
+        ru: ["Завтра я буду работать", "Я буду работать завтра", "Завтра буду работать", "Буду работать завтра"]
       - id: "36.5.2"
         type: listen
         prompt: "Запиши, что слышишь."
         say: "Idem autobusom."
         accept: ["Idem autobusom."]
+        ru: ["Я еду на автобусе", "Еду на автобусе", "Я еду автобусом", "Я езжу на автобусе"]
       - id: "36.5.3"
         type: listen
         prompt: "Запиши, что слышишь."
         say: "Kad dolazi sledeći autobus?"
         accept: ["Kad dolazi sledeći autobus?"]
+        ru: ["Когда придёт следующий автобус?", "Когда приходит следующий автобус?", "Когда приедет следующий автобус?", "Когда будет следующий автобус?", "Когда следующий автобус?"]

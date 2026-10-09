@@ -1,0 +1,307 @@
+lesson: "46"
+title: "Родительный I (Genitiv I)"
+subtitle: "нет, из, до, от, у — nema hleba, do stanice"
+teaches: [posle, pre, ime, cega]
+
+steps:
+  - id: "46.1"
+    kind: teach
+    title: "Чего? Кого?"
+    md: "46/1-genitiv.md"
+
+  - id: "46.2"
+    kind: practice
+    title: "Nema hleba"
+    also_ok: ["hleba", "vode", "mleka", "kafe", "sira", "sestre", "lifta", "vremena", "frižideru", "mleku"]
+    exercises:
+      - id: "46.2.1"
+        type: choice
+        prompt: "«Нет хлеба» —"
+        options: ["Nema hleba.", "Nema hleb.", "Nema hlebu."]
+        answer: "Nema hleba."
+      - id: "46.2.2"
+        type: choice
+        prompt: "«Нет воды» —"
+        options: ["Nema vode.", "Nema voda.", "Nema vodu."]
+        answer: "Nema vode."
+      - id: "46.2.3"
+        type: choice
+        prompt: "«Нет молока» —"
+        options: ["Nema mleka.", "Nema mleko.", "Nema mleku."]
+        answer: "Nema mleka."
+      - id: "46.2.4"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["Nema hleba.", "Нет хлеба"]
+          - ["Nema vode.", "Нет воды"]
+          - ["Nema sira.", "Нет сыра"]
+          - ["Nema kafe.", "Нет кофе"]
+      - id: "46.2.5"
+        type: fill_blank
+        prompt: "«У меня нет сестры» → Nemam ___."
+        accept: ["sestre"]
+      - id: "46.2.6"
+        type: fill_blank
+        prompt: "«В доме нет лифта» → Zgrada nema ___."
+        accept: ["lifta"]
+      - id: "46.2.7"
+        type: fill_blank
+        prompt: "«У меня нет времени» → Nemam ___."
+        accept: ["vremena"]
+        explain: "«vreme» вставляет -n-: vremena. Запомни — «nemam vremena» очень частая фраза."
+      - id: "46.2.8"
+        type: word_bank
+        prompt: "Собери: «В холодильнике нет молока»"
+        bank: ["U", "frižideru", "nema", "mleka", "mleko"]
+        accept: ["U frižideru nema mleka."]
+      - id: "46.2.9"
+        type: fix_error
+        prompt: "Nema hleb."
+        accept: ["Nema hleba."]
+        explain: "После «nema» — родительный: hleb → hleba."
+      - id: "46.2.10"
+        type: translate
+        prompt: "У меня нет брата и сестры."
+        accept: ["Nemam brata i sestre."]
+
+  - id: "46.3"
+    kind: teach
+    title: "Предлоги с родительным"
+    md: "46/3-predlozi.md"
+
+  - id: "46.4"
+    kind: practice
+    title: "Do, od, kod, bez"
+    also_ok: ["Srbije", "stanice", "šećera", "banke", "škole", "pošte", "kuće", "posla", "petka", "lekara", "mleka"]
+    exercises:
+      - id: "46.4.1"
+        type: choice
+        prompt: "«из Сербии» —"
+        options: ["iz Srbije", "iz Srbija", "iz Srbiju"]
+        answer: "iz Srbije"
+      - id: "46.4.2"
+        type: choice
+        prompt: "«до остановки» —"
+        options: ["do stanice", "do stanica", "do stanicu"]
+        answer: "do stanice"
+      - id: "46.4.3"
+        type: choice
+        prompt: "«кофе без сахара» —"
+        options: ["kafa bez šećera", "kafa bez šećer", "kafa bez šećeru"]
+        answer: "kafa bez šećera"
+      - id: "46.4.4"
+        type: choice
+        prompt: "«рядом с банком» —"
+        options: ["pored banke", "pored banka", "pored banku"]
+        answer: "pored banke"
+      - id: "46.4.5"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["pored banke", "рядом с банком"]
+          - ["iza kuće", "за домом"]
+          - ["ispred škole", "перед школой"]
+          - ["preko puta pošte", "напротив почты"]
+      - id: "46.4.6"
+        type: fill_blank
+        prompt: "«после работы» → ___ posla"
+        accept: ["posle"]
+      - id: "46.4.7"
+        type: fill_blank
+        prompt: "«с понедельника по пятницу» → Od ponedeljka do ___."
+        accept: ["petka"]
+        explain: "День недели в родительном: petak → petka, subota → subote."
+      - id: "46.4.8"
+        type: fill_blank
+        prompt: "«Я у врача» → Ja sam kod ___."
+        accept: ["lekara"]
+      - id: "46.4.9"
+        type: word_bank
+        prompt: "Собери: «Я иду до остановки»"
+        bank: ["Idem", "do", "stanice", "stanicu", "stanica"]
+        accept: ["Idem do stanice."]
+      - id: "46.4.10"
+        type: fix_error
+        prompt: "Kafa bez šećer."
+        accept: ["Kafa bez šećera."]
+        explain: "После «bez» — родительный."
+      - id: "46.4.11"
+        type: translate
+        prompt: "Чай без молока, пожалуйста."
+        accept:
+          - "Čaj bez mleka, molim."
+          - "Čaj bez mleka, molim vas."
+          - "Molim vas čaj bez mleka."
+          - "Molim čaj bez mleka."
+
+  - id: "46.5"
+    kind: teach
+    title: "Подводные камни"
+    md: "46/5-izuzeci.md"
+
+  - id: "46.6"
+    kind: practice
+    title: "Vremena, psa, dana"
+    also_ok: ["vremena", "posla", "Sada", "Novog", "deteta", "velike", "dobre", "kafe", "dobrog", "velikog", "parka", "psa", "dana"]
+    exercises:
+      - id: "46.6.1"
+        type: choice
+        prompt: "«нет времени» —"
+        options: ["nema vremena", "nema vreme", "nema vremenu"]
+        answer: "nema vremena"
+      - id: "46.6.2"
+        type: choice
+        prompt: "«нет работы» —"
+        options: ["nema posla", "nema posao", "nema posle"]
+        answer: "nema posla"
+        explain: "«posao» теряет беглое «a»: posla."
+      - id: "46.6.3"
+        type: choice
+        prompt: "«из Нови-Сада» —"
+        options: ["iz Novog Sada", "iz Novi Sad", "iz Novom Sadu"]
+        answer: "iz Novog Sada"
+      - id: "46.6.4"
+        type: match
+        prompt: "Соедини (родительный)"
+        pairs:
+          - ["psa", "собаки"]
+          - ["dana", "дня"]
+          - ["posla", "работы"]
+          - ["vremena", "времени"]
+      - id: "46.6.5"
+        type: fill_blank
+        prompt: "«У меня нет ребёнка» → Nemam ___."
+        accept: ["deteta"]
+      - id: "46.6.6"
+        type: fill_blank
+        prompt: "«без хорошей работы» → bez dobrog ___"
+        accept: ["posla"]
+      - id: "46.6.7"
+        type: fill_blank
+        prompt: "«рядом с большой школой» → Pored ___ škole."
+        accept: ["velike"]
+      - id: "46.6.8"
+        type: word_bank
+        prompt: "Собери: «Нет хорошего кофе»"
+        bank: ["Nema", "dobre", "kafe", "dobra", "kafa"]
+        accept: ["Nema dobre kafe."]
+      - id: "46.6.9"
+        type: fix_error
+        prompt: "Nemam vreme."
+        accept: ["Nemam vremena."]
+      - id: "46.6.10"
+        type: translate
+        prompt: "Я живу рядом с большим парком."
+        accept: ["Živim blizu velikog parka.", "Živim pored velikog parka."]
+
+  - id: "46.7"
+    kind: reading
+    title: "Рядом с парком"
+    md: "46/7-citanje.md"
+    also_ok: ["velikog", "parka", "stana", "pešice", "kupujem", "kuće", "šećera", "ponedeljka", "petka"]
+    exercises:
+      - id: "46.7.1"
+        type: choice
+        prompt: "Где она живёт?"
+        options: ["Pored parka.", "Pored banke.", "Iza pošte."]
+        answer: "Pored parka."
+      - id: "46.7.2"
+        type: choice
+        prompt: "Как она ходит на работу?"
+        options: ["Pešice.", "Autobusom.", "Taksijem."]
+        answer: "Pešice."
+      - id: "46.7.3"
+        type: choice
+        prompt: "Когда у неё нет времени?"
+        options: ["Od ponedeljka do petka.", "Subotom i nedeljom.", "Uveče."]
+        answer: "Od ponedeljka do petka."
+
+  - id: "46.8"
+    kind: dialogue
+    title: "Gde je apoteka?"
+    scene: "Ты ищешь аптеку и спрашиваешь прохожего."
+    voice: m
+    also_ok: ["banke", "pošte", "apoteke", "stanice"]
+    turns:
+      - who: me
+        sr: "Izvinite, gde je apoteka?"
+        ru: "Извините, где аптека?"
+        exercise:
+          id: "46.8.1"
+          type: choice
+          prompt: "Вежливо спроси, где аптека"
+          options:
+            - "Izvinite, gde je apoteka?"
+            - "Izvinite, gde je apoteku?"
+            - "Izvinite, gde apoteke je?"
+          answer: "Izvinite, gde je apoteka?"
+
+      - who: npc
+        sr: "Pored banke, preko puta pošte."
+        ru: "Рядом с банком, напротив почты."
+
+      - who: me
+        sr: "Pored banke, preko puta pošte?"
+        ru: "Рядом с банком, напротив почты?"
+        exercise:
+          id: "46.8.2"
+          type: fill_blank
+          prompt: "«Рядом с банком, напротив почты?» → Pored ___, preko puta pošte?"
+          accept: ["banke"]
+
+      - who: npc
+        sr: "Da. Od stanice do apoteke je pet minuta."
+        ru: "Да. От остановки до аптеки пять минут."
+
+      - who: me
+        sr: "A do banke je daleko?"
+        ru: "А до банка далеко?"
+        exercise:
+          id: "46.8.3"
+          type: choice
+          prompt: "Спроси: «А до банка далеко?»"
+          options:
+            - "A do banke je daleko?"
+            - "A do banka je daleko?"
+            - "A do banku je daleko?"
+          answer: "A do banke je daleko?"
+          explain: "После «do» — родительный: banka → banke."
+
+      - who: npc
+        sr: "Nije. Pet minuta pešice."
+        ru: "Нет. Пять минут пешком."
+
+      - who: me
+        sr: "Hvala! Doviđenja!"
+        ru: "Спасибо! До свидания!"
+        exercise:
+          id: "46.8.4"
+          type: translate
+          prompt: "Поблагодари и попрощайся"
+          accept: ["Hvala! Doviđenja!", "Hvala, doviđenja!", "Hvala. Doviđenja."]
+
+  - id: "46.9"
+    kind: practice
+    title: "Диктант"
+    mixed: true
+    also_ok: ["hleba", "mleka", "šećera", "stanice", "posla"]
+    exercises:
+      - id: "46.9.1"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Nema hleba i nema mleka."
+        accept: ["Nema hleba i nema mleka."]
+        ru: ["Нет хлеба и нет молока", "Хлеба нет и молока нет", "Нет ни хлеба, ни молока"]
+      - id: "46.9.2"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Kafa bez šećera, molim."
+        accept: ["Kafa bez šećera, molim."]
+        ru: ["Кофе без сахара, пожалуйста", "Кофе без сахара, пожалуйста.", "Пожалуйста, кофе без сахара"]
+      - id: "46.9.3"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Idem do stanice posle posla."
+        accept: ["Idem do stanice posle posla."]
+        ru: ["Иду до остановки после работы", "После работы иду до остановки", "Я иду до остановки после работы"]

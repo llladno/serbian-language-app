@@ -112,6 +112,13 @@ make build      # npm ci (web/) + vite build + go build -> ./serbian-app
 Озвучка: `python3 scripts/tts.py` (edge-tts, `sr-RS-SophieNeural`, без ключа) —
 дописывает недостающие `content/audio/*.mp3` для слов из `vocab.yaml` **и** для
 упражнений `type: listen` / диалоговых реплик (`NN.M-tK.mp3`).
+А также для всех сербских фраз в уроках — код-спаны в teach-md, варианты/ответы
+упражнений, строки текстов для чтения → `content/audio/p/<hash>.mp3` +
+`p/index.json`. Ключ = FNV-1a 64 от нормализованного текста (`phrase_key` в
+`tts.py` ⇄ `phraseKey` в `web/src/lib/phraseAudio.ts`, держать синхронно); фронт
+сам ищет клип по тексту и рисует 🔊 (`PhraseSpeak.vue`, `PromptSpeak.vue`,
+`MarkdownView.vue`). Изменил фразу — просто перезапусти `tts.py`, старый клип
+останется мёртвым грузом, новый получит новый хэш.
 
 ## Деплой
 
@@ -291,18 +298,26 @@ python3 scripts/check_transcriptions.py
 (токенайзер `lib/reading.ts`, общий кэш `lib/lookup.ts`, эндпоинт
 `/api/lookup?q=`). Используется в тексте для чтения, в промптах упражнений
 `fill_blank` / `fix_error` и в репликах диалога. Промпты `translate`
-(русские, ответ спойлить нельзя) и `free` — без глоссов. В карточке слова —
+(русские, ответ спойлить нельзя) — без глоссов. В карточке слова —
 кнопка «＋ в повторение» (`POST /api/review/add {vocab_id}`).
 
 ### Типы упражнений
 
-`translate`, `fill_blank`, `fix_error`, `conjugate`, `free`, `listen`
-(диктант — `say:` синтезируется, `accept:` печатают), плюс лёгкие:
+`translate`, `fill_blank`, `fix_error`, `conjugate`, `listen`
+(диктант — `say:` синтезируется, `accept:` печатают; обязательный `ru:` —
+допустимые русские переводы `say`, см. ниже), плюс лёгкие:
 `choice` (`options` + `answer`), `word_bank` (`bank` из фишек +
 `accept`), `match` (`pairs` [sr, ru]). Клиенту НИКОГДА не уходят
 `accept` / `answer` / соответствие `pairs` / `say` — только
 `options` / `bank` / `left` / `right`, перемешиваются на клиенте.
-Проверка — `POST /api/lessons/{id}/exercises/{exId}/check`. Компоненты —
+Проверка — `POST /api/lessons/{id}/exercises/{exId}/check`. Заданий «напиши
+своё и оцени себя» (`free`) больше нет — загрузчик на них падает.
+
+«Не могу прослушать»: нажатие превращает все диктанты урока в «переведи
+предложение на русский» до завершения урока (флаг `lesson.silent.<id>` в
+localStorage). `GET .../exercises?audio=off` отдаёт `say` как `text`
+(только в этом режиме), а `check` с `{ru: true}` сверяет ответ с `ru:`.
+Компоненты —
 `web/src/components/exercises/*Answer.vue`; `translate`/`fill_blank`/
 `fix_error`/`listen` делят `TextAnswer.vue`.
 
@@ -310,6 +325,29 @@ python3 scripts/check_transcriptions.py
 через общий `BottomBar.vue` (закреплён снизу) — `LessonView.vue`
 (`showOwnBottomButton`) следит, чтобы одновременно был виден только один
 нижний бар (свой или общий «Дальше»).
+
+### Квест «Подписаться на канал»
+
+Канал — настройка `telegram_channel` (`economy_settings`, правится в админке;
+миграция 019 ставит `@ucimosrb` там, где она пустая — пустая настройка прячет
+квест). Подписку проверяет сервер через `getChatMember` при каждой загрузке
+списка заданий, бот должен быть админом канала. Три пути, кнопка в строке
+задания (`QuestsView.vue`) выбирает по полям квеста `url` / `needs_telegram`:
+
+1. Telegram привязан → ссылка на канал, после неё «Проверить подписку»
+   (ответ — тост).
+2. Уже подписан → квест приходит выполненным, кнопки нет.
+3. Telegram не привязан → привязка через бота с намерением `channel`
+   (`POST /api/me/telegram/start {"intent":"channel"}`, живёт в `PendingStore`);
+   после привязки бот присылает «Подписаться на канал» + «Проверить подписку»
+   (`InlineButton.ChannelURL`, в очереди — тип `channel_check`), а нажатие
+   «Проверить» разбирает вебхук (`callback_query`, `channelCheckPressed`):
+   notice поверх чата + сообщение с итогом. Тексты — `channel_prompt`,
+   `channel_ok`, `channel_not_yet` (в `bot_messages` для старых баз их нет,
+   работают дефолты из `telegram.DefaultMessages`).
+
+Вебхук работает только на публичном https, поэтому путь 3 локально целиком не
+проверить: покрыт тестами (`telegram_bot_test.go`) и проверяется на проде.
 
 ### Личный слой
 

@@ -1,0 +1,308 @@
+lesson: "58"
+title: "Проверка 4б (Provera 4b)"
+subtitle: "локатив, дательный, творительный, местоимения"
+teaches: []
+
+steps:
+  - id: "58.1"
+    kind: reading
+    title: "Аны неделя"
+    md: "58/1-citanje.md"
+    also_ok: ["četvrtom", "spratu", "psom", "petog", "aprila", "termin", "lekara", "brata", "poklon", "poruku", "dođem", "stižem", "minuta", "mu", "tebe", "te", "sestro", "brate", "Zdravo", "moru"]
+    exercises:
+      - id: "58.1.1"
+        type: choice
+        prompt: "На каком «sprat» живёт Ана (по сербскому счёту)?"
+        options: ["Na četvrtom.", "Na prvom.", "Na petom."]
+        answer: "Na četvrtom."
+      - id: "58.1.2"
+        type: choice
+        prompt: "Когда у неё приём у врача?"
+        options: ["Petog aprila.", "Prvog aprila.", "Petog maja."]
+        answer: "Petog aprila."
+      - id: "58.1.3"
+        type: choice
+        prompt: "Что она покупает после врача?"
+        options: ["Poklon za brata.", "Kafu.", "Knjigu o moru."]
+        answer: "Poklon za brata."
+
+  - id: "58.2"
+    kind: practice
+    title: "Локатив и дательный"
+    mixed: true
+    also_ok: ["Beogradu", "sestri", "sestru", "sestre", "sobi", "bratu", "terasi", "stolu", "detetu", "filmu", "prodavnicu", "prodavnici", "čitam", "moru", "Beograd", "Beograda"]
+    exercises:
+      - id: "58.2.1"
+        type: choice
+        prompt: "«Я живу в Белграде» —"
+        options: ["Živim u Beogradu.", "Živim u Beograd.", "Živim u Beograda."]
+        answer: "Živim u Beogradu."
+      - id: "58.2.2"
+        type: choice
+        prompt: "«Я пишу сестре» —"
+        options: ["Pišem sestri.", "Pišem sestru.", "Pišem sestre."]
+        answer: "Pišem sestri."
+      - id: "58.2.3"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["u sobi", "в комнате"]
+          - ["o bratu", "о брате"]
+          - ["bratu", "брату"]
+          - ["na terasi", "на террасе"]
+      - id: "58.2.4"
+        type: fill_blank
+        prompt: "«Ключ на столе» → Ključ je na ___."
+        accept: ["stolu"]
+      - id: "58.2.5"
+        type: fill_blank
+        prompt: "«Я даю ребёнку книгу» → Dajem ___ knjigu."
+        accept: ["detetu"]
+      - id: "58.2.6"
+        type: word_bank
+        prompt: "Собери: «Мы говорим о фильме»"
+        bank: ["Pričamo", "o", "filmu", "film", "filma"]
+        accept: ["Pričamo o filmu."]
+      - id: "58.2.7"
+        type: fix_error
+        prompt: "Idem u prodavnici."
+        accept: ["Idem u prodavnicu."]
+        explain: "Иду куда? — винительный: prodavnicu."
+      - id: "58.2.8"
+        type: translate
+        prompt: "Я читаю сестре книгу о море."
+        accept: ["Čitam sestri knjigu o moru."]
+
+  - id: "58.3"
+    kind: practice
+    title: "Творительный и местоимения"
+    mixed: true
+    also_ok: ["prijateljem", "prijatelja", "prijatelju", "mlekom", "njemu", "njim", "njega", "meni", "mnom", "njom"]
+    exercises:
+      - id: "58.3.1"
+        type: choice
+        prompt: "«с другом» —"
+        options: ["sa prijateljem", "sa prijatelja", "sa prijatelju"]
+        answer: "sa prijateljem"
+      - id: "58.3.2"
+        type: choice
+        prompt: "«Я вижу его» —"
+        options: ["Vidim ga.", "Vidim mu.", "Vidim njemu."]
+        answer: "Vidim ga."
+      - id: "58.3.3"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["sa njom", "с ней"]
+          - ["za tebe", "для тебя"]
+          - ["kod mene", "у меня"]
+          - ["sa mnom", "со мной"]
+      - id: "58.3.4"
+        type: fill_blank
+        prompt: "«Он пишет мне» → On ___ piše."
+        accept: ["mi"]
+      - id: "58.3.5"
+        type: fill_blank
+        prompt: "«кофе с молоком» → kafa sa ___"
+        accept: ["mlekom"]
+      - id: "58.3.6"
+        type: word_bank
+        prompt: "Собери: «Я иду с ним»"
+        bank: ["Idem", "sa", "njim", "njega", "njemu"]
+        accept: ["Idem sa njim."]
+      - id: "58.3.7"
+        type: fix_error
+        prompt: "Sviđa me se ova torba."
+        accept: ["Sviđa mi se ova torba."]
+      - id: "58.3.8"
+        type: translate
+        prompt: "Пойдёшь со мной в кино?"
+        accept: ["Ideš li sa mnom u bioskop?", "Hoćeš li da ideš sa mnom u bioskop?", "Da li ideš sa mnom u bioskop?"]
+
+  - id: "58.4"
+    kind: practice
+    title: "Числа, даты, чат"
+    mixed: true
+    also_ok: ["petom", "spratu", "šestog", "marta", "Ano", "Anu", "sta", "radis", "radiš", "Sta", "moze", "racun", "Moze", "stižem", "minuta", "peti", "šesti", "Ani"]
+    exercises:
+      - id: "58.4.1"
+        type: choice
+        prompt: "«на шестом этаже» (по-русски) —"
+        options: ["na petom spratu", "na peti sprat", "na petoj spratu"]
+        answer: "na petom spratu"
+      - id: "58.4.2"
+        type: choice
+        prompt: "«шестого марта» —"
+        options: ["šestog marta", "šesti mart", "šestom martu"]
+        answer: "šestog marta"
+      - id: "58.4.3"
+        type: choice
+        prompt: "«Привет, Ана!» (обращение) —"
+        options: ["Zdravo, Ano!", "Zdravo, Anu!", "Zdravo, Ani!"]
+        answer: "Zdravo, Ano!"
+      - id: "58.4.4"
+        type: choice
+        prompt: "Сообщение: «Sta radis?» Как это на самом деле?"
+        options: ["Šta radiš?", "Sta radiš?", "Šta radis?"]
+        answer: "Šta radiš?"
+      - id: "58.4.5"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["Evo me!", "Вот я!"]
+          - ["Srećno!", "Удачи!"]
+          - ["Javi se!", "Напиши мне"]
+          - ["Čujemo se!", "Созвонимся"]
+      - id: "58.4.6"
+        type: fill_blank
+        prompt: "«Буду через пять минут» → Stižem za pet ___."
+        accept: ["minuta"]
+      - id: "58.4.7"
+        type: fix_error
+        prompt: "Moze li racun?"
+        accept: ["Može li račun?"]
+      - id: "58.4.8"
+        type: translate
+        prompt: "Сегодня пятое мая, а завтра шестое."
+        accept: ["Danas je peti maj, a sutra je šesti.", "Danas je peti maj a sutra je šesti.", "Danas je peti maj, a sutra šesti."]
+
+  - id: "58.5"
+    kind: dialogue
+    title: "Poziv na večeru"
+    scene: "Друг зовёт тебя на ужин. Вы на «ты»."
+    voice: m
+    also_ok: ["večeru", "trećem", "spratu", "sestrom", "kupim", "kupi", "kafu", "kolače", "je", "dođeš", "dođem"]
+    turns:
+      - who: npc
+        sr: "Zdravo! Hoćeš li da dođeš kod mene na večeru u petak?"
+        ru: "Привет! Придёшь ко мне на ужин в пятницу?"
+
+      - who: me
+        sr: "Zdravo! Naravno. U koliko sati?"
+        ru: "Привет! Конечно. В котором часу?"
+        exercise:
+          id: "58.5.1"
+          type: choice
+          prompt: "Согласись и спроси, во сколько"
+          options:
+            - "Zdravo! Naravno. U koliko sati?"
+            - "Zdravo! Naravno. Koliko je sati?"
+            - "Zdravo! Žao mi je. U koliko sati?"
+          answer: "Zdravo! Naravno. U koliko sati?"
+
+      - who: npc
+        sr: "U osam sati. Živim na trećem spratu."
+        ru: "В восемь часов. Я живу на четвёртом этаже."
+
+      - who: me
+        sr: "Mogu li da dođem sa sestrom?"
+        ru: "Можно прийти с сестрой?"
+        exercise:
+          id: "58.5.2"
+          type: choice
+          prompt: "Спроси: «Можно прийти с сестрой?»"
+          options:
+            - "Mogu li da dođem sa sestrom?"
+            - "Mogu li da dođem sa sestru?"
+            - "Mogu li da dođem sa sestri?"
+          answer: "Mogu li da dođem sa sestrom?"
+          explain: "«sa» (с кем?) — творительный: sestrom."
+
+      - who: npc
+        sr: "Naravno! Čekam vas."
+        ru: "Конечно! Жду вас."
+
+      - who: me
+        sr: "Hvala ti. Šta da kupim?"
+        ru: "Спасибо тебе. Что мне купить?"
+        exercise:
+          id: "58.5.3"
+          type: fill_blank
+          prompt: "«Что мне купить?» → Šta da ___?"
+          accept: ["kupim"]
+
+      - who: npc
+        sr: "Kupi kafu i kolače."
+        ru: "Купи кофе и пирожные."
+
+      - who: me
+        sr: "Dogovorili smo se! Vidimo se u petak."
+        ru: "Договорились! Увидимся в пятницу."
+        exercise:
+          id: "58.5.4"
+          type: translate
+          prompt: "Скажи: «Договорились! Увидимся в пятницу»"
+          accept: ["Dogovorili smo se! Vidimo se u petak.", "Dogovorili smo se, vidimo se u petak."]
+
+  - id: "58.6"
+    kind: practice
+    title: "Диктант"
+    mixed: true
+    also_ok: ["njom", "petom", "spratu", "mu"]
+    exercises:
+      - id: "58.6.1"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Idem sa njom u bioskop."
+        accept: ["Idem sa njom u bioskop."]
+        ru: ["Я иду с ней в кино", "Иду с ней в кино"]
+      - id: "58.6.2"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Stan je na petom spratu."
+        accept: ["Stan je na petom spratu."]
+        ru: ["Квартира на шестом этаже", "Квартира находится на шестом этаже"]
+      - id: "58.6.3"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Pišem mu poruku."
+        accept: ["Pišem mu poruku."]
+        ru: ["Я пишу ему сообщение", "Пишу ему сообщение"]
+
+  - id: "58.7"
+    kind: checkpoint
+    title: "Проверка"
+    also_ok: ["pomognem", "pomogneš", "pomogne", "pomognemo", "pomognete", "pomognu", "tebi", "njom", "drugom", "spratu", "njoj"]
+    exercises:
+      - id: "58.7.1"
+        type: conjugate
+        prompt: "pomoći — помочь"
+        forms: ["ja", "ti", "on/ona/ono", "mi", "vi", "oni/one/ona"]
+        accept:
+          - ["pomognem"]
+          - ["pomogneš"]
+          - ["pomogne"]
+          - ["pomognemo"]
+          - ["pomognete"]
+          - ["pomognu"]
+        meta: "тип -em"
+      - id: "58.7.2"
+        type: choice
+        prompt: "«Мне нравится этот город» —"
+        options: ["Sviđa mi se ovaj grad.", "Sviđam mi se ovaj grad.", "Sviđa me se ovaj grad."]
+        answer: "Sviđa mi se ovaj grad."
+      - id: "58.7.3"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["Kod nje je.", "Он у неё"]
+          - ["Sa njom je.", "Он с ней"]
+          - ["Vidim je.", "Вижу её"]
+          - ["Pišem joj.", "Пишу ей"]
+      - id: "58.7.4"
+        type: fill_blank
+        prompt: "«о тебе» → o ___"
+        accept: ["tebi"]
+      - id: "58.7.5"
+        type: word_bank
+        prompt: "Собери: «Я живу на третьем этаже» (по-русски)"
+        bank: ["Živim", "na", "drugom", "spratu", "drugi", "sprat"]
+        accept: ["Živim na drugom spratu."]
+      - id: "58.7.6"
+        type: fix_error
+        prompt: "Pišem sa njega."
+        accept: ["Pišem sa njim."]
+      - id: "58.7.7"
+        type: translate
+        prompt: "Я иду с ней в кафе в субботу."
+        accept: ["Idem sa njom u kafić u subotu."]

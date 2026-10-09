@@ -73,18 +73,18 @@ func TestRealContentLoads(t *testing.T) {
 	if len(c.Phases) != 5 {
 		t.Errorf("phases = %d, want 5", len(c.Phases))
 	}
-	if len(c.Lessons) != 61 {
-		t.Errorf("lessons = %d, want 61", len(c.Lessons))
+	if len(c.Lessons) != 78 {
+		t.Errorf("lessons = %d, want 78", len(c.Lessons))
 	}
 
-	// "00".."41" are the fully authored lessons of levels 1-3.
+	// "00".."59" are the fully authored lessons of levels 1-4.
 	var authored []string
-	for i := 0; i <= 41; i++ {
+	for i := 0; i <= 59; i++ {
 		authored = append(authored, fmt.Sprintf("%02d", i))
 	}
 	// Lessons whose first step is a reading (the opening half of a
 	// "Провера" review lesson), so they don't have to start with "teach".
-	readingFirst := map[string]bool{"14": true, "28": true, "32": true, "36": true, "41": true}
+	readingFirst := map[string]bool{"14": true, "28": true, "32": true, "36": true, "41": true, "48": true, "58": true, "59": true}
 
 	kindTotals := map[string]int{}
 	listen := 0
@@ -124,23 +124,25 @@ func TestRealContentLoads(t *testing.T) {
 			}
 		}
 	}
-	if kindTotals["checkpoint"] != 17 {
-		t.Errorf("checkpoint steps across 00-41 = %d, want 17", kindTotals["checkpoint"])
+	// 17 before the self-graded "free" exercises were removed: four checkpoints
+	// (15.3, 29.4, 36.4, 41.5) held nothing else, so they went with them; lessons 48, 58 and 59 add three more.
+	if kindTotals["checkpoint"] != 16 {
+		t.Errorf("checkpoint steps across 00-59 = %d, want 16", kindTotals["checkpoint"])
 	}
-	if kindTotals["reading"] != 22 {
-		t.Errorf("reading steps across 00-41 = %d, want 22", kindTotals["reading"])
+	if kindTotals["reading"] != 40 {
+		t.Errorf("reading steps across 00-59 = %d, want 40", kindTotals["reading"])
 	}
-	if kindTotals["dialogue"] != 18 {
-		t.Errorf("dialogue steps across 00-41 = %d, want 18", kindTotals["dialogue"])
+	if kindTotals["dialogue"] != 37 {
+		t.Errorf("dialogue steps across 00-59 = %d, want 37", kindTotals["dialogue"])
 	}
-	if listen != 64 {
-		t.Errorf("listen exercises across 00-41 = %d, want 64", listen)
+	if listen != 119 {
+		t.Errorf("listen exercises across 00-59 = %d, want 119", listen)
 	}
 
 	if c.Lessons["00"].Planned {
 		t.Error("lesson 00 should have content")
 	}
-	for _, id := range []string{"51", "60"} {
+	for _, id := range []string{"70", "77"} {
 		if !c.Lessons[id].Planned {
 			t.Errorf("checkpoint lesson %s should be planned", id)
 		}

@@ -1,0 +1,258 @@
+lesson: "50"
+title: "Квартира и город (Stan i grad)"
+subtitle: "снять жильё, объяснить где что"
+teaches: [rezije, vlasnik, mesecno, grejanje, internet, pogled, zvati, kom-kojoj]
+
+steps:
+  - id: "50.1"
+    kind: teach
+    title: "Где что стоит"
+    md: "50/1-gde-sta.md"
+
+  - id: "50.2"
+    kind: practice
+    title: "Gde je šta?"
+    also_ok: ["kuhinji", "zidu", "stolu", "spavaćoj", "sobi", "kojoj", "spratu", "zgradi", "frižideru", "kuhinju", "zid", "stola", "koji", "kojeg", "sprata"]
+    exercises:
+      - id: "50.2.1"
+        type: choice
+        prompt: "«Плита на кухне» —"
+        options: ["Šporet je u kuhinji.", "Šporet je u kuhinju.", "Šporet je u kuhinja."]
+        answer: "Šporet je u kuhinji."
+      - id: "50.2.2"
+        type: choice
+        prompt: "«Картина на стене» —"
+        options: ["Slika je na zidu.", "Slika je na zid.", "Slika je na zida."]
+        answer: "Slika je na zidu."
+      - id: "50.2.3"
+        type: choice
+        prompt: "«Ключ на столе» —"
+        options: ["Ključ je na stolu.", "Ključ je na sto.", "Ključ je na stola."]
+        answer: "Ključ je na stolu."
+      - id: "50.2.4"
+        type: choice
+        prompt: "«На каком этаже?» —"
+        options: ["Na kom spratu?", "Na koji sprat?", "Na kojeg sprata?"]
+        answer: "Na kom spratu?"
+      - id: "50.2.5"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["u kuhinji", "на кухне"]
+          - ["u spavaćoj sobi", "в спальне"]
+          - ["na zidu", "на стене"]
+          - ["u frižideru", "в холодильнике"]
+      - id: "50.2.6"
+        type: fill_blank
+        prompt: "«На какой улице?» → U ___ ulici?"
+        accept: ["kojoj"]
+        explain: "«ulica» — женский род: kojoj. Для мужского и среднего — kom."
+      - id: "50.2.7"
+        type: fill_blank
+        prompt: "«Кровать в спальне» → Krevet je u spavaćoj ___."
+        accept: ["sobi"]
+      - id: "50.2.8"
+        type: word_bank
+        prompt: "Собери: «В доме есть лифт»"
+        bank: ["U", "zgradi", "ima", "lift", "lifta"]
+        accept: ["U zgradi ima lift."]
+      - id: "50.2.9"
+        type: fix_error
+        prompt: "Šporet je u kuhinju."
+        accept: ["Šporet je u kuhinji."]
+        explain: "Где стоит плита? — локатив: kuhinji."
+      - id: "50.2.10"
+        type: translate
+        prompt: "Холодильник на кухне, а кровать в спальне."
+        accept:
+          - "Frižider je u kuhinji, a krevet je u spavaćoj sobi."
+          - "Frižider je u kuhinji a krevet je u spavaćoj sobi."
+
+  - id: "50.3"
+    kind: teach
+    title: "Звоню по поводу квартиры"
+    md: "50/3-arenda.md"
+
+  - id: "50.4"
+    kind: practice
+    title: "Snimam stan"
+    also_ok: ["slobodan", "slobodna", "mesečno", "kiriji", "park", "vlasnik", "dođem", "dođeš", "vidim", "videti"]
+    exercises:
+      - id: "50.4.1"
+        type: choice
+        prompt: "«Квартира ещё свободна?» —"
+        options: ["Da li je stan još slobodan?", "Da li je stan još slobodna?", "Da li je stan još slobodno?"]
+        answer: "Da li je stan još slobodan?"
+      - id: "50.4.2"
+        type: choice
+        prompt: "«Сколько аренда в месяц?» —"
+        options: ["Koliko je kirija mesečno?", "Koliko je kirija mesec?", "Koliko kirija je mesečno?"]
+        answer: "Koliko je kirija mesečno?"
+      - id: "50.4.3"
+        type: choice
+        prompt: "«Коммунальные входят в аренду?» —"
+        options: ["Da li su režije u kiriji?", "Da li je režije u kiriji?", "Da li su režije u kiriju?"]
+        answer: "Da li su režije u kiriji?"
+        explain: "«režije» — множественное число: su. «В аренде» — где? — локатив: kiriji."
+      - id: "50.4.4"
+        type: choice
+        prompt: "«Можно посмотреть квартиру?» —"
+        options: ["Mogu li da vidim stan?", "Mogu li da vidim stana?", "Mogu li da videti stan?"]
+        answer: "Mogu li da vidim stan?"
+      - id: "50.4.5"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["kirija", "аренда"]
+          - ["režije", "коммунальные платежи"]
+          - ["vlasnik", "владелец"]
+          - ["mesečno", "ежемесячно"]
+      - id: "50.4.6"
+        type: fill_blank
+        prompt: "«Квартира с видом на парк» → Stan ima pogled na ___."
+        accept: ["park"]
+      - id: "50.4.7"
+        type: fill_blank
+        prompt: "«Лифт есть?» → Ima ___ lift?"
+        accept: ["li"]
+      - id: "50.4.8"
+        type: word_bank
+        prompt: "Собери: «Когда я могу прийти?»"
+        bank: ["Kada", "mogu", "da", "dođem", "dođeš"]
+        accept: ["Kada mogu da dođem?"]
+      - id: "50.4.9"
+        type: fix_error
+        prompt: "Koliko je kirija mesec?"
+        accept: ["Koliko je kirija mesečno?"]
+      - id: "50.4.10"
+        type: translate
+        prompt: "Вы владелец?"
+        accept: ["Da li ste vi vlasnik?", "Jeste li vi vlasnik?", "Da li ste vlasnik?", "Jeste li vlasnik?"]
+
+  - id: "50.5"
+    kind: reading
+    title: "Объявление"
+    md: "50/5-citanje.md"
+    also_ok: ["Izdajem", "Možete", "prizemlju", "parka", "kiriji", "stan", "pogled", "mesečno", "Grejanje"]
+    exercises:
+      - id: "50.5.1"
+        type: choice
+        prompt: "На каком этаже квартира?"
+        options: ["U prizemlju.", "Na spratu.", "U podrumu."]
+        answer: "U prizemlju."
+      - id: "50.5.2"
+        type: choice
+        prompt: "Что входит в аренду?"
+        options: ["Grejanje i internet.", "Režije.", "Ništa."]
+        answer: "Grejanje i internet."
+      - id: "50.5.3"
+        type: choice
+        prompt: "Когда можно посмотреть квартиру?"
+        options: ["U subotu u deset sati.", "U nedelju uveče.", "Svaki dan."]
+        answer: "U subotu u deset sati."
+
+  - id: "50.6"
+    kind: dialogue
+    title: "Zovem zbog stana"
+    scene: "Ты звонишь по объявлению хозяину квартиры. Обращайся на «вы»."
+    voice: m
+    also_ok: ["slobodan", "kiriji", "prizemlju", "mesečno", "režije", "hiljada", "dinara", "stan", "vidim", "dođem", "lift", "sobe"]
+    turns:
+      - who: npc
+        sr: "Izvolite?"
+        ru: "Слушаю вас?"
+
+      - who: me
+        sr: "Dobar dan. Zovem zbog stana. Da li je još slobodan?"
+        ru: "Добрый день. Звоню по поводу квартиры. Она ещё свободна?"
+        exercise:
+          id: "50.6.1"
+          type: choice
+          prompt: "Поздоровайся, скажи, что звонишь по поводу квартиры, и спроси, свободна ли она"
+          options:
+            - "Dobar dan. Zovem zbog stana. Da li je još slobodan?"
+            - "Dobar dan. Zovem zbog stan. Da li je još slobodan?"
+            - "Dobar dan. Zovem zbog stana. Da li je još slobodna?"
+          answer: "Dobar dan. Zovem zbog stana. Da li je još slobodan?"
+
+      - who: npc
+        sr: "Da, slobodan je. Dve sobe, blizu centra."
+        ru: "Да, свободна. Две комнаты, рядом с центром."
+
+      - who: me
+        sr: "Koliko je kirija mesečno?"
+        ru: "Сколько аренда в месяц?"
+        exercise:
+          id: "50.6.2"
+          type: translate
+          prompt: "Спроси: «Сколько аренда в месяц?»"
+          accept: ["Koliko je kirija mesečno?", "Koliko košta kirija mesečno?"]
+
+      - who: npc
+        sr: "Četrdeset pet hiljada dinara. Režije nisu u kiriji."
+        ru: "Сорок пять тысяч динаров. Коммунальные не входят в аренду."
+
+      - who: me
+        sr: "Ima li lift?"
+        ru: "Лифт есть?"
+        exercise:
+          id: "50.6.3"
+          type: choice
+          prompt: "Спроси, есть ли лифт"
+          options: ["Ima li lift?", "Ima li lifta?", "Ima li liftu?"]
+          answer: "Ima li lift?"
+
+      - who: npc
+        sr: "Nema, ali stan je u prizemlju."
+        ru: "Нет, но квартира на первом этаже."
+
+      - who: me
+        sr: "Mogu li da vidim stan u subotu?"
+        ru: "Можно посмотреть квартиру в субботу?"
+        exercise:
+          id: "50.6.4"
+          type: translate
+          prompt: "Спроси: «Можно посмотреть квартиру в субботу?»"
+          accept: ["Mogu li da vidim stan u subotu?", "Mogu li u subotu da vidim stan?", "Da li mogu da vidim stan u subotu?"]
+
+      - who: npc
+        sr: "Naravno. U deset sati?"
+        ru: "Конечно. В десять часов?"
+
+      - who: me
+        sr: "Odgovara mi. Doviđenja!"
+        ru: "Мне подходит. До свидания!"
+        exercise:
+          id: "50.6.5"
+          type: choice
+          prompt: "Скажи, что время подходит, и попрощайся"
+          options:
+            - "Odgovara mi. Doviđenja!"
+            - "Odgovaram. Doviđenja!"
+            - "Odgovara. Laku noć!"
+          answer: "Odgovara mi. Doviđenja!"
+
+  - id: "50.7"
+    kind: practice
+    title: "Диктант"
+    mixed: true
+    also_ok: ["slobodan", "mesečno", "spavaćoj", "sobi", "kuhinji", "režije"]
+    exercises:
+      - id: "50.7.1"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Da li je stan još slobodan?"
+        accept: ["Da li je stan još slobodan?"]
+        ru: ["Квартира ещё свободна?", "Эта квартира ещё свободна?", "Свободна ли ещё квартира?"]
+      - id: "50.7.2"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Režije nisu u kiriji."
+        accept: ["Režije nisu u kiriji."]
+        ru: ["Коммунальные не входят в аренду", "Коммунальные услуги не входят в аренду", "Коммунальные не включены в аренду"]
+      - id: "50.7.3"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Krevet je u spavaćoj sobi."
+        accept: ["Krevet je u spavaćoj sobi."]
+        ru: ["Кровать в спальне", "Кровать находится в спальне"]

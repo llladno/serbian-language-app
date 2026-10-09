@@ -1,0 +1,378 @@
+lesson: "59"
+title: "Большая проверка 4 (Velika provera 4)"
+subtitle: "все падежи, ролёвки"
+teaches: []
+
+steps:
+  - id: "59.1"
+    kind: reading
+    title: "Новая квартира Марко"
+    md: "59/1-citanje.md"
+    also_ok: ["novom", "stanu", "trećem", "spratu", "parka", "kiriji", "mesečno", "dinara", "hiljada", "ključ", "sestri", "poruku", "prijateljima", "stižemo", "petog", "šest", "Evo", "me", "Dođi", "Dogovorili"]
+    exercises:
+      - id: "59.1.1"
+        type: choice
+        prompt: "Где находится квартира?"
+        options: ["Preko puta parka.", "Pored škole.", "Iza stanice."]
+        answer: "Preko puta parka."
+      - id: "59.1.2"
+        type: choice
+        prompt: "Что не входит в аренду?"
+        options: ["Režije.", "Internet.", "Grejanje."]
+        answer: "Režije."
+      - id: "59.1.3"
+        type: choice
+        prompt: "Когда приедет сестра?"
+        options: ["Petog u šest sati.", "Prvog u šest sati.", "Petog u osam sati."]
+        answer: "Petog u šest sati."
+
+  - id: "59.2"
+    kind: practice
+    title: "Винительный и родительный"
+    mixed: true
+    also_ok: ["vremena", "para", "pare", "vremenu", "parama", "jaja", "jaje", "jajima", "sestru", "sestre", "sestra", "mleka", "jakna", "nova", "crvenu", "torbu", "brata", "brat", "nemam"]
+    exercises:
+      - id: "59.2.1"
+        type: choice
+        prompt: "«У меня нет времени и денег» —"
+        options: ["Nemam vremena i para.", "Nemam vreme i pare.", "Nemam vremenu i parama."]
+        answer: "Nemam vremena i para."
+      - id: "59.2.2"
+        type: choice
+        prompt: "«Дайте мне пять яиц» —"
+        options: ["Dajte mi pet jaja.", "Dajte mi pet jaje.", "Dajte mi pet jajima."]
+        answer: "Dajte mi pet jaja."
+      - id: "59.2.3"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["Vidim sestru.", "Вижу сестру"]
+          - ["Nemam sestre.", "Нет сестры"]
+          - ["Treba mi sestra.", "Нужна сестра"]
+          - ["Idem kod sestre.", "Иду к сестре"]
+      - id: "59.2.4"
+        type: fill_blank
+        prompt: "«Литр молока, пожалуйста» → Litar ___, molim."
+        accept: ["mleka"]
+      - id: "59.2.5"
+        type: fill_blank
+        prompt: "«Мне нужна новая куртка» → Treba mi nova ___."
+        accept: ["jakna"]
+      - id: "59.2.6"
+        type: word_bank
+        prompt: "Собери: «Я ищу красную сумку»"
+        bank: ["Tražim", "crvenu", "torbu", "crvena", "torba"]
+        accept: ["Tražim crvenu torbu."]
+      - id: "59.2.7"
+        type: fix_error
+        prompt: "Nemam novu torbu."
+        accept: ["Nemam nove torbe."]
+        explain: "После «nemam» — родительный: nova torba → nove torbe."
+      - id: "59.2.8"
+        type: translate
+        prompt: "У меня нет брата, но есть сестра."
+        accept: ["Nemam brata, ali imam sestru.", "Nemam brata ali imam sestru."]
+
+  - id: "59.3"
+    kind: practice
+    title: "Локатив, дательный, творительный"
+    mixed: true
+    also_ok: ["malom", "mali", "malog", "gradu", "grad", "grada", "bratu", "brata", "bratom", "filmu", "filmom", "filma", "tobom", "nas", "sestrom", "sestri", "poslu", "poslo", "sestrom"]
+    exercises:
+      - id: "59.3.1"
+        type: choice
+        prompt: "«Я живу в маленьком городе» —"
+        options: ["Živim u malom gradu.", "Živim u mali grad.", "Živim u malog grada."]
+        answer: "Živim u malom gradu."
+      - id: "59.3.2"
+        type: choice
+        prompt: "«Я пишу брату» —"
+        options: ["Pišem bratu.", "Pišem brata.", "Pišem bratom."]
+        answer: "Pišem bratu."
+      - id: "59.3.3"
+        type: choice
+        prompt: "«Я иду с братом» —"
+        options: ["Idem sa bratom.", "Idem sa brata.", "Idem sa bratu."]
+        answer: "Idem sa bratom."
+      - id: "59.3.4"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["o filmu", "о фильме"]
+          - ["sa filmom", "с фильмом"]
+          - ["iz filma", "из фильма"]
+          - ["za film", "для фильма"]
+      - id: "59.3.5"
+        type: fill_blank
+        prompt: "«Я с тобой» → Ja sam sa ___."
+        accept: ["tobom"]
+      - id: "59.3.6"
+        type: fill_blank
+        prompt: "«Она у нас» → Ona je kod ___."
+        accept: ["nas"]
+      - id: "59.3.7"
+        type: fix_error
+        prompt: "Pričam sa sestri o poslo."
+        accept: ["Pričam sa sestrom o poslu."]
+        explain: "«sa» (с кем?) — творительный: sestrom; «o» (о чём?) — локатив: poslu."
+      - id: "59.3.8"
+        type: translate
+        prompt: "Я говорю с сестрой о работе."
+        accept: ["Pričam sa sestrom o poslu."]
+
+  - id: "59.4"
+    kind: practice
+    title: "Какой падеж?"
+    mixed: true
+    also_ok: ["lekara", "lekar", "lekaru", "sestri", "sestru", "sestre", "školu", "školi", "škole", "škola", "šećera", "šećer", "šećeru", "prijateljem", "prijatelja", "prijatelju", "mu", "njemu", "je", "nju", "joj"]
+    exercises:
+      - id: "59.4.1"
+        type: choice
+        prompt: "«Я у врача» → Ja sam kod ___."
+        options: ["lekara", "lekar", "lekaru"]
+        answer: "lekara"
+      - id: "59.4.2"
+        type: choice
+        prompt: "«Даю книгу сестре» → Dajem knjigu ___."
+        options: ["sestri", "sestru", "sestre"]
+        answer: "sestri"
+      - id: "59.4.3"
+        type: choice
+        prompt: "«Иду в школу» → Idem ___."
+        options: ["u školu", "u školi", "u škole"]
+        answer: "u školu"
+      - id: "59.4.4"
+        type: choice
+        prompt: "«Ана в школе» → Ana je ___."
+        options: ["u školi", "u školu", "u škola"]
+        answer: "u školi"
+      - id: "59.4.5"
+        type: choice
+        prompt: "«Кофе без сахара» → Kafa ___."
+        options: ["bez šećera", "bez šećer", "bez šećeru"]
+        answer: "bez šećera"
+      - id: "59.4.6"
+        type: choice
+        prompt: "«Говорю с другом» → Pričam ___."
+        options: ["sa prijateljem", "sa prijatelja", "sa prijatelju"]
+        answer: "sa prijateljem"
+      - id: "59.4.7"
+        type: choice
+        prompt: "«Я вижу его» → Vidim ___."
+        options: ["ga", "mu", "njemu"]
+        answer: "ga"
+      - id: "59.4.8"
+        type: choice
+        prompt: "«Я пишу ей» → Pišem ___."
+        options: ["joj", "je", "nju"]
+        answer: "joj"
+
+  - id: "59.5"
+    kind: dialogue
+    title: "Poklon za sestru"
+    scene: "Ты в магазине подарков. Продавщица обращается к тебе на «вы»."
+    voice: f
+    also_ok: ["sestru", "sestra", "knjige", "kafu", "knjigu", "moru", "hiljade", "dinara", "platim", "karticom", "Vaša"]
+    turns:
+      - who: npc
+        sr: "Dobar dan, šta želite?"
+        ru: "Добрый день, что желаете?"
+
+      - who: me
+        sr: "Dobar dan. Tražim poklon za sestru."
+        ru: "Добрый день. Ищу подарок для сестры."
+        exercise:
+          id: "59.5.1"
+          type: choice
+          prompt: "Поздоровайся и скажи, что ищешь подарок для сестры"
+          options:
+            - "Dobar dan. Tražim poklon za sestru."
+            - "Dobar dan. Tražim poklon za sestri."
+            - "Dobar dan. Tražim poklon za sestre."
+          answer: "Dobar dan. Tražim poklon za sestru."
+          explain: "«za» + винительный: sestra → sestru."
+
+      - who: npc
+        sr: "Šta voli Vaša sestra?"
+        ru: "Что любит ваша сестра?"
+
+      - who: me
+        sr: "Voli knjige i kafu."
+        ru: "Любит книги и кофе."
+        exercise:
+          id: "59.5.2"
+          type: fill_blank
+          prompt: "«Любит книги и кофе» → Voli ___ i kafu."
+          accept: ["knjige"]
+
+      - who: npc
+        sr: "Imamo lepu knjigu o moru. Košta dve hiljade dinara."
+        ru: "У нас есть красивая книга о море. Стоит две тысячи динаров."
+
+      - who: me
+        sr: "Hvala, uzimam. Mogu li da platim karticom?"
+        ru: "Спасибо, беру. Можно заплатить картой?"
+        exercise:
+          id: "59.5.3"
+          type: translate
+          prompt: "Скажи: «Спасибо, беру. Можно заплатить картой?»"
+          accept: ["Hvala, uzimam. Mogu li da platim karticom?", "Hvala. Uzimam. Mogu li da platim karticom?", "Hvala, uzimam. Može karticom?"]
+
+      - who: npc
+        sr: "Naravno. Izvolite račun. Prijatno!"
+        ru: "Конечно. Вот чек. Всего доброго!"
+
+      - who: me
+        sr: "Hvala! Doviđenja!"
+        ru: "Спасибо! До свидания!"
+        exercise:
+          id: "59.5.4"
+          type: choice
+          prompt: "Поблагодари и попрощайся"
+          options: ["Hvala! Doviđenja!", "Molim! Doviđenja!", "Laku noć! Doviđenja!"]
+          answer: "Hvala! Doviđenja!"
+
+  - id: "59.6"
+    kind: dialogue
+    title: "Plan za subotu"
+    scene: "Ты зовёшь друга на море. Вы на «ты»."
+    voice: m
+    also_ok: ["more", "moru", "mnom", "termin", "lekara", "petog", "stanice", "nađimo", "prijatelju", "ispred"]
+    turns:
+      - who: npc
+        sr: "Zdravo! Šta radiš u subotu?"
+        ru: "Привет! Что делаешь в субботу?"
+
+      - who: me
+        sr: "Slobodan sam. Hoćeš li da ideš sa mnom na more?"
+        ru: "Я свободен. Пойдёшь со мной на море?"
+        exercise:
+          id: "59.6.1"
+          type: choice
+          prompt: "Скажи, что свободен, и позови друга на море"
+          options:
+            - "Slobodan sam. Hoćeš li da ideš sa mnom na more?"
+            - "Slobodan sam. Hoćeš li da ideš sa mene na more?"
+            - "Slobodan sam. Hoćeš li da ideš sa mnom na moru?"
+          answer: "Slobodan sam. Hoćeš li da ideš sa mnom na more?"
+          explain: "«sa mnom» — творительный; «na more» — куда? — винительный (more не меняется)."
+
+      - who: npc
+        sr: "Žao mi je, ne mogu. Imam termin kod lekara petog."
+        ru: "Мне жаль, не могу. У меня приём у врача пятого."
+
+      - who: me
+        sr: "Nema problema. Možda u nedelju?"
+        ru: "Без проблем. Может быть, в воскресенье?"
+        exercise:
+          id: "59.6.2"
+          type: translate
+          prompt: "Скажи: «Без проблем. Может быть, в воскресенье?»"
+          accept: ["Nema problema. Možda u nedelju?", "Nema problema, možda u nedelju?"]
+
+      - who: npc
+        sr: "Dogovorili smo se! Nađimo se u deset sati ispred stanice."
+        ru: "Договорились! Встретимся в десять часов перед станцией."
+
+      - who: me
+        sr: "Dobro. Ispred stanice u deset."
+        ru: "Хорошо. Перед станцией в десять."
+        exercise:
+          id: "59.6.3"
+          type: fill_blank
+          prompt: "«Перед станцией» → Dobro. Ispred ___ u deset."
+          accept: ["stanice"]
+
+      - who: npc
+        sr: "Vidimo se, prijatelju!"
+        ru: "Увидимся, друг!"
+
+      - who: me
+        sr: "Vidimo se! Srećno u petak."
+        ru: "Увидимся! Удачи в пятницу."
+        exercise:
+          id: "59.6.4"
+          type: choice
+          prompt: "Попрощайся и пожелай удачи"
+          options: ["Vidimo se! Srećno u petak.", "Doviđenja! Hvala u petak.", "Laku noć! Srećno u petak."]
+          answer: "Vidimo se! Srećno u petak."
+
+  - id: "59.7"
+    kind: practice
+    title: "Диктант"
+    mixed: true
+    also_ok: ["Slobodan", "slobodan", "bratu", "sestru", "stanu"]
+    exercises:
+      - id: "59.7.1"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Tražim poklon za sestru."
+        accept: ["Tražim poklon za sestru."]
+        ru: ["Я ищу подарок для сестры", "Ищу подарок для сестры", "Ищу подарок сестре"]
+      - id: "59.7.2"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Hoćeš li da ideš sa mnom na more?"
+        accept: ["Hoćeš li da ideš sa mnom na more?"]
+        ru: ["Пойдёшь со мной на море?", "Ты пойдёшь со мной на море?", "Хочешь пойти со мной на море?"]
+      - id: "59.7.3"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Nemam vremena od ponedeljka do petka."
+        accept: ["Nemam vremena od ponedeljka do petka."]
+        ru: ["У меня нет времени с понедельника по пятницу", "С понедельника по пятницу у меня нет времени"]
+      - id: "59.7.4"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Stan je na trećem spratu preko puta parka."
+        accept: ["Stan je na trećem spratu preko puta parka."]
+        ru: ["Квартира на четвёртом этаже напротив парка", "Квартира на четвёртом этаже, напротив парка"]
+
+  - id: "59.8"
+    kind: checkpoint
+    title: "Итоговая проверка уровня 4"
+    also_ok: ["dajem", "daješ", "daje", "dajemo", "dajete", "daju", "dam", "daš", "da", "damo", "date", "novih", "sestara", "njega", "njom", "stanovima"]
+    exercises:
+      - id: "59.8.1"
+        type: conjugate
+        prompt: "dati — давать"
+        forms: ["ja", "ti", "on/ona/ono", "mi", "vi", "oni/one/ona"]
+        accept:
+          - ["dajem", "dam"]
+          - ["daješ", "daš"]
+          - ["daje", "da"]
+          - ["dajemo", "damo"]
+          - ["dajete", "date"]
+          - ["daju"]
+        meta: "dajem... (разг.) или dam... (совершенный вид)"
+      - id: "59.8.2"
+        type: choice
+        prompt: "«пять новых книг» —"
+        options: ["pet novih knjiga", "pet nove knjige", "pet novi knjiga"]
+        answer: "pet novih knjiga"
+      - id: "59.8.3"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["Vidim te.", "Вижу тебя"]
+          - ["Pišem ti.", "Пишу тебе"]
+          - ["Idem sa tobom.", "Иду с тобой"]
+          - ["Kod tebe sam.", "Я у тебя"]
+      - id: "59.8.4"
+        type: fill_blank
+        prompt: "«в квартирах» → u ___"
+        accept: ["stanovima"]
+      - id: "59.8.5"
+        type: word_bank
+        prompt: "Собери: «У меня пять сестёр»"
+        bank: ["Imam", "pet", "sestara", "sestre", "sestru"]
+        accept: ["Imam pet sestara."]
+      - id: "59.8.6"
+        type: fix_error
+        prompt: "Dajem knjigu sa njim o poslo."
+        accept: ["Dajem mu knjigu o poslu."]
+        explain: "Даю кому? — дательный: mu (ему). «O» (о чём?) — локатив: poslu."
+      - id: "59.8.7"
+        type: translate
+        prompt: "Мне нужна помощь, а у меня нет времени."
+        accept: ["Treba mi pomoć, a nemam vremena.", "Treba mi pomoć a nemam vremena."]
