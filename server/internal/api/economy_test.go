@@ -2,11 +2,14 @@ package api
 
 import (
 	"net/http"
+	"net/http/httptest"
 	"strconv"
 	"testing"
 
+	"github.com/grisha/serbian-app/server/internal/auth"
 	"github.com/grisha/serbian-app/server/internal/economy"
 	"github.com/grisha/serbian-app/server/internal/store"
+	"github.com/grisha/serbian-app/server/internal/telegram"
 )
 
 // economyAPI returns the standard fixture API plus a live session cookie for
@@ -58,8 +61,8 @@ func TestWalletReportsBalanceAndCurrencyName(t *testing.T) {
 	if out.Balance != 42 {
 		t.Fatalf("balance = %d, want 42", out.Balance)
 	}
-	if out.CurrencyMany != "пёрышек" {
-		t.Fatalf("currency_many = %q, want пёрышек", out.CurrencyMany)
+	if out.CurrencyMany != "зёрнышек" {
+		t.Fatalf("currency_many = %q, want зёрнышек", out.CurrencyMany)
 	}
 }
 
@@ -350,5 +353,124 @@ func TestRepairStreakEndpointNeedsAConsumable(t *testing.T) {
 	}](t, res)
 	if out.Error != "no_repair_available" {
 		t.Fatalf("error = %q, want no_repair_available", out.Error)
+	}
+}
+
+// The screen that closes a lesson reports how much of it was right the first
+// time. Redoing an exercise later does not buy the score back.
+func TestFinishingALessonReportsFirstTryStats(t *testing.T) {
+	h, _, _, c := economyAPI(t)
+	check := func(ex, answer string) {
+		t.Helper()
+		body := `{"answer":"` + answer + `"}`
+		if res := doCookie(h, c, "POST", "/api/lessons/01/exercises/"+ex+"/check", body); res.Code != 200 {
+			t.Fatalf("check %s = %d", ex, res.Code)
+		}
+	}
+	check("01-A-1", "nope")             // wrong first,
+	check("01-A-1", "Zdravo! Kako si?") // right on the second go: still a miss
+	check("01-A-2", "Zdravo")           // right first time
+	check("01-A-4", "Zdravo, kako si?") // right first time
+	check("01-A-4", "Zdravo, kako si?") // asking again changes nothing
+
+	res := doCookie(h, c, "POST", "/api/lessons/01/complete", "")
+	got := decodeBody[struct {
+		Stats lessonStatsDTO `json:"stats"`
+	}](t, res).Stats
+	if got.Answered != 3 || got.Mistakes != 1 || got.Percent != 67 {
+		t.Fatalf("stats = %+v, want 3 answered, 1 mistake, 67%%", got)
+	}
+}
+
+func TestFinishingALessonWithNothingAnsweredHasNoPercent(t *testing.T) {
+	h, _, _, c := economyAPI(t)
+	res := doCookie(h, c, "POST", "/api/lessons/01/complete", "")
+	got := decodeBody[struct {
+		Stats lessonStatsDTO `json:"stats"`
+	}](t, res).Stats
+	if got.Answered != 0 || got.Percent != 0 || got.Mistakes != 0 {
+		t.Fatalf("stats = %+v, want all zero", got)
+	}
+}
+
+// "New words" are the lesson's own vocabulary, however the lesson names it.
+func TestLessonStatsCountTheLessonsOwnWords(t *testing.T) {
+	h, _, _, c := economyAPI(t)
+	res := doCookie(h, c, "POST", "/api/lessons/01/complete", "")
+	got := decodeBody[struct {
+		Stats lessonStatsDTO `json:"stats"`
+	}](t, res).Stats
+	if got.NewWords != 4 {
+		t.Fatalf("new words = %d, want the 4 vocabulary entries filed under lesson 01", got.NewWords)
+	}
+}
+
+func TestTelegramChannelURL(t *testing.T) {
+	for in, want := range map[string]string{
+		"@ucimosrb":             "https://t.me/ucimosrb",
+		"  @ucimosrb ":          "https://t.me/ucimosrb",
+		"https://t.me/ucimosrb": "https://t.me/ucimosrb",
+		"-1001234567890":        "", // a private channel's id has no address to open
+		"@":                     "",
+		"":                      "",
+	} {
+		if got := telegramChannelURL(in); got != want {
+			t.Errorf("telegramChannelURL(%q) = %q, want %q", in, got, want)
+		}
+	}
+}
+
+// The subscription quest tells the app where to go, and whether subscribing
+// alone could ever finish it for this account.
+func TestSubscriptionQuestCarriesTheChannelLink(t *testing.T) {
+	h, st, id, c := economyAPI(t)
+	seedQuestRow(t, st, economy.QuestTelegramSubscribed, 1, 15)
+
+	var status string
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		_, _ = w.Write([]byte(`{"ok":true,"result":{"status":"` + status + `"}}`))
+	}))
+	defer srv.Close()
+	defer telegram.SetAPIBase(srv.URL)()
+
+	quest := func() questDTO {
+		t.Helper()
+		res := doCookie(h, c, "GET", "/api/me/quests", "")
+		list := decodeBody[struct {
+			Quests []questDTO `json:"quests"`
+		}](t, res)
+		for _, q := range list.Quests {
+			if q.Kind == economy.QuestTelegramSubscribed {
+				return q
+			}
+		}
+		t.Fatalf("the subscription quest is not listed")
+		return questDTO{}
+	}
+
+	// A fresh database already has the channel (migration 019). No Telegram is
+	// linked, so subscribing would not be seen.
+	q := quest()
+	if q.URL != "https://t.me/ucimosrb" || !q.NeedsTelegram || q.Done {
+		t.Fatalf("unlinked account: %+v, want the channel link, needs_telegram, not done", q)
+	}
+
+	// Linked, but not in the channel yet: the link stays, the warning goes.
+	if err := st.CreateIdentity(store.Identity{
+		ID: auth.NewIdentityID(), UserID: id, Provider: "telegram", ProviderUID: "5550123",
+	}); err != nil {
+		t.Fatalf("link telegram: %v", err)
+	}
+	status = "left"
+	q = quest()
+	if q.URL == "" || q.NeedsTelegram || q.Done {
+		t.Fatalf("linked, not subscribed: %+v, want the link, no warning, not done", q)
+	}
+
+	// Subscribed: nothing left to send the learner to.
+	status = "member"
+	q = quest()
+	if !q.Done || q.URL != "" || q.NeedsTelegram {
+		t.Fatalf("subscribed: %+v, want done with no link and no warning", q)
 	}
 }

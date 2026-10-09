@@ -161,7 +161,9 @@ describe('LessonView dialogue step', () => {
     },
   ]
 
-  it('renders the chat and gates advancing until the turn is answered', async () => {
+  it('has no button at all until the conversation is over', async () => {
+    // lines arrive at once here: the pacing is DialogueStep's own business
+    vi.stubGlobal('matchMedia', (q: string) => ({ matches: /reduce/.test(q), media: q, addEventListener() {}, removeEventListener() {} }))
     vi.spyOn(api, 'lesson').mockResolvedValue(structuredClone(dialogueLesson))
     vi.spyOn(api, 'exercises').mockResolvedValue(structuredClone(dialogueBlocks))
     vi.spyOn(api, 'lessonAttempts').mockResolvedValue({})
@@ -172,12 +174,15 @@ describe('LessonView dialogue step', () => {
 
     expect(w.text()).toContain('Ты зашёл в пекару.')
     expect(w.text()).toContain('Izvolite?')
-    expect(w.find('button.btn-primary').attributes('disabled')).toBeDefined()
+    // not a disabled button waiting at the bottom: none
+    expect(w.find('button.btn-primary').exists()).toBe(false)
 
     await w.findAll('button').find((b) => b.text() === 'Jedan hleb, molim.')!.trigger('click')
     await flushPromises()
 
+    expect(w.find('button.btn-primary').exists()).toBe(true)
     expect(w.find('button.btn-primary').attributes('disabled')).toBeUndefined()
+    vi.unstubAllGlobals()
   })
 })
 
@@ -186,11 +191,17 @@ describe('LessonView dialogue step', () => {
 describe('LessonView, finishing', () => {
   const WALLET = {
     balance: 0,
-    currency_one: 'пёрышко',
-    currency_few: 'пёрышка',
-    currency_many: 'пёрышек',
+    currency_one: 'зёрнышко',
+    currency_few: 'зёрнышка',
+    currency_many: 'зёрнышек',
     streak_days: 1,
   }
+
+  beforeEach(() => {
+    // The arc and the counting are tested on their own; here the final screen.
+    vi.stubGlobal('matchMedia', (q: string) => ({ matches: /reduce/.test(q), media: q, addEventListener() {}, removeEventListener() {} }))
+  })
+  afterEach(() => vi.unstubAllGlobals())
 
   function mountOneStepLesson(quests: Quest[] = []) {
     const oneStep = structuredClone(lesson)
@@ -207,8 +218,12 @@ describe('LessonView, finishing', () => {
   const finishButton = (w: ReturnType<typeof mount>) =>
     w.findAll('button').find((b) => /Завершить/.test(b.text()))
 
-  it('says what the lesson paid', async () => {
-    const complete = vi.spyOn(api, 'completeLesson').mockResolvedValue({ status: 'done', reward: 4 })
+  it('closes the lesson with a summary instead of a toast', async () => {
+    const complete = vi.spyOn(api, 'completeLesson').mockResolvedValue({
+      status: 'done',
+      reward: 4,
+      stats: { answered: 10, mistakes: 2, percent: 80, new_words: 12 },
+    })
     const w = mountOneStepLesson()
     await flushPromises()
 
@@ -216,14 +231,25 @@ describe('LessonView, finishing', () => {
     await flushPromises()
 
     expect(complete).toHaveBeenCalledWith('01')
-    const { items } = useToasts()
-    expect(items.value).toHaveLength(1)
-    expect(items.value[0].reward).toBe(4)
-    expect(items.value[0].text).toBe('Урок 01')
+    expect(useToasts().items.value).toHaveLength(0)
+    const summary = w.find('[data-test="lesson-summary"]')
+    expect(summary.exists()).toBe(true)
+    expect(summary.text()).toContain('Урок пройден')
+    expect(summary.text()).toContain('80')
+    expect(w.find('[data-test="stat-reward"]').text()).toContain('4')
+    expect(w.find('[data-test="stat-words"]').text()).toContain('12')
+    expect(w.find('[data-test="stat-mistakes"]').text()).toContain('2')
+    // the lesson's own bar is gone: the way on is the summary's
+    expect(finishButton(w)).toBeUndefined()
+    expect(w.find('[data-test="summary-course"]').exists()).toBe(true)
   })
 
-  it('stays quiet about a lesson that paid nothing', async () => {
-    vi.spyOn(api, 'completeLesson').mockResolvedValue({ status: 'done', reward: 0 })
+  it('leaves out the seeds when the lesson paid nothing', async () => {
+    vi.spyOn(api, 'completeLesson').mockResolvedValue({
+      status: 'done',
+      reward: 0,
+      stats: { answered: 4, mistakes: 0, percent: 100, new_words: 0 },
+    })
     const w = mountOneStepLesson()
     await flushPromises()
 
@@ -231,6 +257,10 @@ describe('LessonView, finishing', () => {
     await flushPromises()
 
     expect(useToasts().items.value).toHaveLength(0)
+    expect(w.find('[data-test="stat-reward"]').exists()).toBe(false)
+    expect(w.find('[data-test="stat-words"]').exists()).toBe(false)
+    // no mistakes is the best news there is, so it stays
+    expect(w.find('[data-test="stat-mistakes"]').text()).toContain('0')
   })
 
   it('claims the level and celebrates it when this was its last lesson', async () => {
@@ -261,3 +291,249 @@ describe('LessonView, finishing', () => {
     expect(questsLink.value).toBe(true)
   })
 })
+
+// A wrong answer sends the exercise to the end of its step, and the step is
+// only over once everything in it was answered right. Dialogues and lessons
+// that are already finished keep the old, forgiving behaviour.
+describe('LessonView, a wrong answer goes to the end', () => {
+  const twoLesson = (): Lesson => {
+    const l = structuredClone(lesson)
+    l.steps![1].exercise_ids = ['01.2.1', '01.2.2']
+    return l
+  }
+  const twoBlocks = (): ExerciseBlock[] => [
+    {
+      id: '01.2',
+      title: 'Практика',
+      exercises: [
+        { id: '01.2.1', type: 'translate', prompt: 'Первое' },
+        { id: '01.2.2', type: 'translate', prompt: 'Второе' },
+      ],
+    },
+  ]
+
+  const navBtn = (w: ReturnType<typeof mount>) =>
+    w.findAll('button').find((b) => /Дальше|Завершить|Вернёмся позже|Ещё раз/.test(b.text()))
+  const hidden = (w: ReturnType<typeof mount>, ex: string) =>
+    w.find(`[data-ex="${ex}"]`).attributes('style')?.includes('display: none')
+
+  async function answer(w: ReturnType<typeof mount>, ex: string, text: string) {
+    await w.find(`[data-ex="${ex}"] input[type="text"]`).setValue(text)
+    await w.find(`[data-ex="${ex}"] form`).trigger('submit')
+    await flushPromises()
+  }
+
+  // Mounts the lesson and gets onto the practice step: a lesson in progress
+  // resumes there on its own (the teach step is done), a fresh or finished one
+  // is walked there by hand.
+  async function openPractice(opts: { attempts?: Record<string, { answer: string; correct: boolean }>; status?: Lesson['status']; resume?: boolean } = {}) {
+    const l = twoLesson()
+    if (opts.status) l.status = opts.status
+    if (opts.resume) l.steps![0].status = 'done'
+    vi.spyOn(api, 'lesson').mockResolvedValue(l)
+    vi.spyOn(api, 'exercises').mockResolvedValue(twoBlocks())
+    vi.spyOn(api, 'lessonAttempts').mockResolvedValue(opts.attempts ?? {})
+    const setStep = vi.spyOn(api, 'setStepStatus').mockResolvedValue(undefined)
+    const w = mount(LessonView)
+    await flushPromises()
+    if (!opts.resume) {
+      await navBtn(w)!.trigger('click') // teach -> practice
+      await flushPromises()
+    }
+    return { w, setStep }
+  }
+
+  it('puts a wrong exercise last and asks for it again before the step ends', async () => {
+    const check = vi.spyOn(api, 'check')
+    const { w, setStep } = await openPractice()
+
+    check.mockResolvedValueOnce({ ok: false, expected: 'Zdravo' })
+    await answer(w, '01.2.1', 'nope')
+    expect(w.find('[data-ex="01.2.1"]').text()).toContain('Не совсем')
+    // no instant redo: the way forward is the lesson's own button
+    expect(w.find('[data-ex="01.2.1"] button[title="Переделать"]').exists()).toBe(false)
+    expect(navBtn(w)!.text()).toContain('Вернёмся позже')
+
+    await navBtn(w)!.trigger('click')
+    await flushPromises()
+    expect(hidden(w, '01.2.1')).toBe(true)
+    expect(hidden(w, '01.2.2')).toBeFalsy()
+
+    check.mockResolvedValueOnce({ ok: true })
+    await answer(w, '01.2.2', 'Drugo')
+    await navBtn(w)!.trigger('click') // the second was right, so the first comes back
+    await flushPromises()
+
+    expect(setStep).not.toHaveBeenCalledWith('01', '01.2', 'done')
+    expect(hidden(w, '01.2.1')).toBeFalsy()
+    // asked afresh: no earlier verdict, empty field
+    expect(w.find('[data-ex="01.2.1"]').text()).not.toContain('Не совсем')
+    expect((w.find('[data-ex="01.2.1"] input[type="text"]').element as HTMLInputElement).value).toBe('')
+
+    check.mockResolvedValueOnce({ ok: true })
+    await answer(w, '01.2.1', 'Zdravo')
+    await navBtn(w)!.trigger('click')
+    await flushPromises()
+    expect(setStep).toHaveBeenCalledWith('01', '01.2', 'done')
+  })
+
+  it('offers "Ещё раз", not "Дальше", when the wrong one is the only one left', async () => {
+    const check = vi.spyOn(api, 'check')
+    const { w, setStep } = await openPractice()
+
+    check.mockResolvedValueOnce({ ok: true })
+    await answer(w, '01.2.1', 'Prvo')
+    await navBtn(w)!.trigger('click')
+    await flushPromises()
+
+    check.mockResolvedValueOnce({ ok: false, expected: 'Drugo' })
+    await answer(w, '01.2.2', 'nope')
+    expect(navBtn(w)!.text()).toContain('Ещё раз')
+
+    await navBtn(w)!.trigger('click')
+    await flushPromises()
+    expect(setStep).not.toHaveBeenCalledWith('01', '01.2', 'done')
+    expect(hidden(w, '01.2.2')).toBeFalsy()
+    expect((w.find('[data-ex="01.2.2"] input[type="text"]').element as HTMLInputElement).value).toBe('')
+  })
+
+  it('asks again for an exercise that was answered wrongly on an earlier visit', async () => {
+    const { w } = await openPractice({
+      resume: true,
+      attempts: { '01.2.1': { answer: 'staro', correct: false } },
+    })
+    // the wrong exercise is blank rather than replaying the old mistake
+    expect(w.find('[data-ex="01.2.1"]').text()).not.toContain('Был ответ с ошибкой')
+    expect((w.find('[data-ex="01.2.1"] input[type="text"]').element as HTMLInputElement).value).toBe('')
+    // and it cannot be walked past
+    expect(navBtn(w)).toBeUndefined()
+  })
+
+  it('does not hold back a lesson that is already finished', async () => {
+    const { w } = await openPractice({
+      status: 'done',
+      attempts: {
+        '01.2.1': { answer: 'staro', correct: false },
+        '01.2.2': { answer: 'drugo', correct: true },
+      },
+    })
+    // the old mistake is shown as it was, and Дальше just goes on
+    expect(w.find('[data-ex="01.2.1"]').text()).toContain('Был ответ с ошибкой')
+    expect(navBtn(w)!.text()).toContain('Дальше')
+    expect(navBtn(w)!.attributes('disabled')).toBeUndefined()
+  })
+
+  it('lets a wrong dialogue line stand', async () => {
+    const dialogue: Lesson = {
+      ...lesson,
+      steps: [
+        {
+          id: '01.d',
+          kind: 'dialogue',
+          title: 'У пекари',
+          scene: 'Ты зашёл в пекару.',
+          exercise_ids: ['01.d.1'],
+          status: 'not_started',
+          turns: [
+            { who: 'npc', sr: 'Izvolite?', ru: 'Слушаю вас?' },
+            { who: 'me', exercise_id: '01.d.1' },
+          ],
+        },
+      ],
+    }
+    vi.spyOn(api, 'lesson').mockResolvedValue(dialogue)
+    vi.spyOn(api, 'exercises').mockResolvedValue([
+      {
+        id: '01.d',
+        title: 'У пекари',
+        exercises: [{ id: '01.d.1', type: 'choice', prompt: 'Попроси хлеб', options: ['Jedan hleb, molim.', 'Hvala.'] }],
+      },
+    ])
+    vi.spyOn(api, 'lessonAttempts').mockResolvedValue({})
+    vi.spyOn(api, 'check').mockResolvedValue({ ok: false, expected: 'Jedan hleb, molim.', line: 'Jedan hleb, molim.' })
+
+    const w = mount(LessonView)
+    await flushPromises()
+    await w.findAll('button').find((b) => b.text() === 'Hvala.')!.trigger('click')
+    await flushPromises()
+
+    const btn = w.find('button.btn-primary')
+    expect(btn.attributes('disabled')).toBeUndefined()
+    expect(btn.text()).toContain('Завершить')
+  })
+})
+
+// Someone who cannot listen is not let off the dictation: it turns into a
+// translation of the same sentence, for the rest of that lesson.
+describe('LessonView, cannot listen', () => {
+  const dictation = (): Lesson => ({
+    ...lesson,
+    steps: [
+      { id: '01.2', kind: 'practice', title: 'Диктант', exercise_ids: ['01.2.1'], status: 'not_started' },
+    ],
+  })
+  const audioBlocks: ExerciseBlock[] = [
+    { id: '01.2', title: 'Диктант', exercises: [{ id: '01.2.1', type: 'listen', prompt: 'Запиши, что слышишь.', audio: '01.2.1.mp3' }] },
+  ]
+  const textBlocks: ExerciseBlock[] = [
+    { id: '01.2', title: 'Диктант', exercises: [{ id: '01.2.1', type: 'listen', prompt: 'Переведи на русский.', text: 'Dobar dan.' }] },
+  ]
+
+  beforeEach(() => localStorage.clear())
+
+  function setup(lessonOverride: Lesson = dictation()) {
+    vi.spyOn(api, 'lesson').mockResolvedValue(lessonOverride)
+    const exercises = vi
+      .spyOn(api, 'exercises')
+      .mockImplementation(async (_id, opts) => structuredClone(opts?.audioOff ? textBlocks : audioBlocks))
+    vi.spyOn(api, 'lessonAttempts').mockResolvedValue({})
+    vi.spyOn(api, 'setStepStatus').mockResolvedValue(undefined)
+    return exercises
+  }
+
+  it('swaps the dictation for a translation and remembers it', async () => {
+    const exercises = setup()
+    const w = mount(LessonView)
+    await flushPromises()
+    expect(w.find('[data-test="listen-as-text"]').exists()).toBe(false)
+
+    await w.find('[data-test="cant-listen"]').trigger('click')
+    await flushPromises()
+
+    expect(exercises).toHaveBeenLastCalledWith('01', { audioOff: true })
+    expect(w.find('[data-test="listen-as-text"]').text()).toContain('Dobar dan.')
+
+    // coming back to the lesson later does not bring the audio back
+    const again = mount(LessonView)
+    await flushPromises()
+    expect(again.find('[data-test="listen-as-text"]').exists()).toBe(true)
+  })
+
+  it('brings the audio back once the lesson is finished', async () => {
+    const finished = dictation()
+    finished.status = 'done'
+    localStorage.setItem('lesson.silent.01', '1')
+    const exercises = setup(finished)
+
+    const w = mount(LessonView)
+    await flushPromises()
+
+    expect(exercises).toHaveBeenLastCalledWith('01', { audioOff: false })
+    expect(w.find('[data-test="listen-as-text"]').exists()).toBe(false)
+    expect(localStorage.getItem('lesson.silent.01')).toBeNull()
+  })
+
+  it('stays a dictation if the text cannot be fetched', async () => {
+    const exercises = setup()
+    const w = mount(LessonView)
+    await flushPromises()
+    exercises.mockRejectedValueOnce(new Error('offline'))
+
+    await w.find('[data-test="cant-listen"]').trigger('click')
+    await flushPromises()
+
+    expect(w.find('[data-test="cant-listen"]').exists()).toBe(true)
+    expect(localStorage.getItem('lesson.silent.01')).toBeNull()
+  })
+})
+

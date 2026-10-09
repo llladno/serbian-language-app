@@ -25,6 +25,10 @@ type pendingEntry struct {
 	// userID is "" for a login token (no account yet) or the caller's own id
 	// for a link token (attach Telegram to an already-authenticated account).
 	userID string
+	// intent is why a link token was minted, beyond linking: "" for nothing in
+	// particular, "channel" when the learner came from the subscription quest and
+	// the bot should go on to ask them to subscribe.
+	intent string
 	status PendingStatus
 	// resolvedUserID is set once status is PendingDone: the account the
 	// token resolved to (a fresh login, an existing identity match, or the
@@ -59,6 +63,11 @@ func NewPendingStore() *PendingStore {
 // the caller's own id) and returns the raw token to embed in the t.me
 // deep link. Only the hash is retained.
 func (s *PendingStore) Create(userID string) (raw string, err error) {
+	return s.CreateFor(userID, "")
+}
+
+// CreateFor is Create for a token that carries an intent (see pendingEntry).
+func (s *PendingStore) CreateFor(userID, intent string) (raw string, err error) {
 	raw, hash, err := NewToken()
 	if err != nil {
 		return "", err
@@ -68,6 +77,7 @@ func (s *PendingStore) Create(userID string) (raw string, err error) {
 	s.evictLocked()
 	s.seen[hash] = &pendingEntry{
 		userID:  userID,
+		intent:  intent,
 		status:  PendingWaiting,
 		expires: s.now().Add(pendingTTL),
 	}
@@ -86,6 +96,17 @@ func (s *PendingStore) Lookup(raw string) (userID string, ok bool) {
 		return "", false
 	}
 	return e.userID, true
+}
+
+// Intent returns what a token was minted for ("" if nothing, or unknown).
+func (s *PendingStore) Intent(raw string) string {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	e, ok := s.seen[HashToken(raw)]
+	if !ok {
+		return ""
+	}
+	return e.intent
 }
 
 // Resolve marks a pending token done with the account it resolved to. A

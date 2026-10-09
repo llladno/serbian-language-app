@@ -3,7 +3,13 @@
 // "me" turn shows its exercise; once answered — right or wrong — the canonical
 // line takes its place as a bubble, so the thread of the conversation never
 // breaks.
-import { computed, reactive, ref } from 'vue'
+//
+// What follows an answer arrives like a conversation does: the other person's
+// lines come in one at a time, each fading up into place with the page scrolling
+// smoothly to it, and the next question waits until they have all been said.
+// Whatever was already on the screen when the step opened (a dialogue resumed,
+// or looked back at) is simply there.
+import { computed, nextTick, onBeforeUnmount, reactive, ref, watch } from 'vue'
 import type { CheckResult, Exercise, LessonAttempt, Step } from '../types'
 import DialogueBubble from './DialogueBubble.vue'
 import ChoiceAnswer from './exercises/ChoiceAnswer.vue'
@@ -17,22 +23,12 @@ const props = defineProps<{
 }>()
 const emit = defineEmits<{ graded: [exerciseId: string, ok: boolean]; ungraded: [exerciseId: string] }>()
 
+const calm = () => typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches
+
 const showTranslations = ref(localStorage.getItem('dialogue.translations') === '1')
 function toggleTranslations() {
   showTranslations.value = !showTranslations.value
   localStorage.setItem('dialogue.translations', showTranslations.value ? '1' : '0')
-}
-
-// Autoplay is opt-in: mobile browsers mute audio without a user gesture, and
-// an unexpected voice in a quiet room is worse than a missing one.
-const autoplay = ref(localStorage.getItem('dialogue.autoplay') === '1')
-function toggleAutoplay() {
-  autoplay.value = !autoplay.value
-  localStorage.setItem('dialogue.autoplay', autoplay.value ? '1' : '0')
-}
-function played(clip?: string) {
-  if (!autoplay.value || !clip) return
-  new Audio(`/audio/${clip}`).play().catch(() => {})
 }
 
 const turns = computed(() => props.step.turns ?? [])
@@ -42,6 +38,8 @@ const byID = computed(() => Object.fromEntries(props.exercises.map((e) => [e.id,
 // them with the check result. Turns answered in an earlier session already
 // carry their sr/ru in the lesson payload.
 const answered = reactive<Record<string, CheckResult>>({})
+// What the learner actually answered, for showing it next to the right line.
+const given = reactive<Record<string, string>>({})
 
 function isDone(exerciseId: string) {
   return !!answered[exerciseId] || exerciseId in props.priors
@@ -59,9 +57,70 @@ const visible = computed(() => {
   return out
 })
 
-function onGraded(exerciseId: string, ok: boolean, result: CheckResult) {
+function onGraded(exerciseId: string, ok: boolean, result: CheckResult, answer: string) {
   answered[exerciseId] = result
+  given[exerciseId] = answer
   emit('graded', exerciseId, ok)
+}
+
+// ---- pacing -----------------------------------------------------------
+// `visible` is what the conversation has got to; `shown` is how much of it is
+// on the screen. They differ for a moment after each answer.
+const initial = visible.value.length
+const shown = ref(initial)
+const onScreen = computed(() => visible.value.slice(0, shown.value))
+let timer = 0
+
+// How long the next line takes to "type": longer lines take longer, within
+// limits that keep it from dragging.
+function gapBefore(index: number) {
+  const t = turns.value[index]
+  const prev = turns.value[index - 1]
+  if (t.who === 'me') return 450 // the next question, after the last line was read
+  return Math.min(1300, Math.max(600, 450 + (prev?.sr?.length ?? 0) * 8))
+}
+
+watch(
+  () => visible.value.length,
+  (len) => {
+    clearTimeout(timer)
+    if (len <= shown.value || calm()) {
+      shown.value = len
+      scrollToEnd()
+      return
+    }
+    const reveal = () => {
+      shown.value++
+      scrollToEnd()
+      if (shown.value < len) timer = window.setTimeout(reveal, gapBefore(visible.value[shown.value].index))
+    }
+    timer = window.setTimeout(reveal, gapBefore(visible.value[shown.value].index))
+  },
+)
+onBeforeUnmount(() => clearTimeout(timer))
+
+// True once every question has been answered and the last line has been said:
+// only then does the lesson offer its way on.
+const finished = computed(
+  () =>
+    shown.value >= visible.value.length &&
+    turns.value.every((t) => t.who !== 'me' || !t.exercise_id || isDone(t.exercise_id)),
+)
+
+const listEl = ref<HTMLElement | null>(null)
+async function scrollToEnd() {
+  await nextTick()
+  const last = listEl.value?.lastElementChild as HTMLElement | null | undefined
+  if (last && typeof last.scrollIntoView === 'function') {
+    last.scrollIntoView({ behavior: calm() ? 'auto' : 'smooth', block: 'nearest' })
+  }
+}
+
+// Things that arrive after the step opened — new lines, and the bubble an
+// answer turns into — fade up. What was there from the start does not.
+function arrives(index: number) {
+  const t = turns.value[index]
+  return index >= initial || (t.who === 'me' && !!t.exercise_id && t.exercise_id in answered)
 }
 
 // The lesson's back button steps a dialogue one turn at a time rather than
@@ -84,7 +143,7 @@ function stepBack(): boolean {
   return false
 }
 
-defineExpose({ stepBack })
+defineExpose({ stepBack, finished })
 
 // A settled "me" turn: the canonical line, plus — when the answer was wrong —
 // the miss marker and its explanation, so a mistake is never silently swallowed
@@ -98,7 +157,10 @@ function lineOf(t: { exercise_id?: string; sr?: string; ru?: string; audio?: str
     ru: res?.line_ru ?? t.ru,
     audio: res?.line_audio ?? t.audio,
     wrong,
-    note: res?.explain,
+    given: t.exercise_id ? (given[t.exercise_id] ?? prior?.answer) : undefined,
+    // The server's note when the answer was just checked; after a reload only
+    // the exercise's own explanation is left, which says the same thing.
+    note: res?.explain ?? (t.exercise_id ? byID.value[t.exercise_id]?.explain : undefined),
   }
 }
 </script>
@@ -119,20 +181,17 @@ function lineOf(t: { exercise_id?: string; sr?: string; ru?: string; audio?: str
         >
           переводы
         </button>
-        <button
-          type="button"
-          data-test="toggle-autoplay"
-          class="rounded-full bg-[var(--bg-soft)] px-3 py-1.5 text-xs text-[var(--muted)] transition hover:text-[var(--accent)]"
-          :class="{ 'bg-[var(--accent-soft)] text-[var(--accent)]': autoplay }"
-          @click="toggleAutoplay"
-        >
-          звук
-        </button>
       </div>
     </header>
 
-    <div class="space-y-3">
-      <template v-for="v in visible" :key="v.index">
+    <div ref="listEl" class="space-y-3">
+      <div
+        v-for="v in onScreen"
+        :key="v.index"
+        class="msg"
+        :class="[turns[v.index].who, arrives(v.index) ? (v.active ? 'msg-fade' : 'msg-in') : '']"
+        :data-index="v.index"
+      >
         <DialogueBubble
           v-if="turns[v.index].who === 'npc'"
           who="npc"
@@ -140,7 +199,6 @@ function lineOf(t: { exercise_id?: string; sr?: string; ru?: string; audio?: str
           :ru="turns[v.index].ru"
           :audio="turns[v.index].audio"
           :show-translation="showTranslations"
-          @vue:mounted="played(turns[v.index].audio)"
         />
 
         <template v-else>
@@ -151,6 +209,7 @@ function lineOf(t: { exercise_id?: string; sr?: string; ru?: string; audio?: str
             :ru="lineOf(turns[v.index]).ru"
             :audio="lineOf(turns[v.index]).audio"
             :wrong="lineOf(turns[v.index]).wrong"
+            :given="lineOf(turns[v.index]).given"
             :note="lineOf(turns[v.index]).note"
             :show-translation="showTranslations"
           />
@@ -162,7 +221,7 @@ function lineOf(t: { exercise_id?: string; sr?: string; ru?: string; audio?: str
             :prompt="byID[turns[v.index].exercise_id!].prompt"
             :options="byID[turns[v.index].exercise_id!].options ?? []"
             :explain="byID[turns[v.index].exercise_id!].explain"
-            @graded="(ok, res) => onGraded(turns[v.index].exercise_id!, ok, res)"
+            @graded="(ok, res, ans) => onGraded(turns[v.index].exercise_id!, ok, res, ans)"
           />
 
           <TextAnswer
@@ -172,10 +231,57 @@ function lineOf(t: { exercise_id?: string; sr?: string; ru?: string; audio?: str
             :type="byID[turns[v.index].exercise_id!].type as 'translate' | 'fill_blank'"
             :prompt="byID[turns[v.index].exercise_id!].prompt"
             :explain="byID[turns[v.index].exercise_id!].explain"
-            @graded="(ok, res) => onGraded(turns[v.index].exercise_id!, ok, res)"
+            @graded="(ok, res, ans) => onGraded(turns[v.index].exercise_id!, ok, res, ans)"
           />
         </template>
-      </template>
+      </div>
     </div>
   </section>
 </template>
+
+<style scoped>
+/* The page scrolls to a new line so that it ends up clear of the fixed bar the
+   answer fields bring with them. */
+.msg {
+  scroll-margin-bottom: 9rem;
+}
+
+/* A line coming in: it rises out of where the speaker's bubble sits, so the
+   two sides of the conversation do not arrive from the same place.
+
+   Two things here are deliberate. The animation holds no end state
+   (`backwards`, not `both`): an element that carries a transform animation, even
+   one that has finished and is only filling, becomes the containing block of any
+   `position: fixed` child, and the pinned "Проверить" bar would then stick to the
+   line instead of the bottom of the screen. And the wrapper of an open question,
+   which contains exactly that bar, fades only — it never gets a transform. */
+.msg-in {
+  animation: msg-in 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
+}
+.msg-in.npc {
+  transform-origin: 0% 100%;
+}
+.msg-in.me {
+  transform-origin: 100% 100%;
+}
+.msg-fade {
+  animation: msg-fade 0.4s ease backwards;
+}
+@keyframes msg-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.96);
+  }
+}
+@keyframes msg-fade {
+  from {
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .msg-in,
+  .msg-fade {
+    animation: none;
+  }
+}
+</style>

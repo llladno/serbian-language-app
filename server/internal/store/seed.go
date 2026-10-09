@@ -27,9 +27,12 @@ const (
 // store test, and the behaviour would differ between the backends, since
 // Postgres tests TRUNCATE after migrating while SQLite tests do not.
 //
-// Quest rewards total 638, which covers Level 4 (500) and deliberately does
-// not cover Level 5 (1000): Level 5 is what the daily streak drip is for.
-// Every number here is editable from the admin panel afterwards.
+// Prices are derived, not picked: Level 4 costs what the free levels pay
+// (50 + 70 + 90) plus the Telegram quest (20) = 230; Level 5 costs Level 4's
+// price plus what Level 4 itself pays (110) plus the "100 words" and "100
+// reviews" quests (25 + 10) = 375. TestSeededEconomyMatchesTheDesign recomputes
+// both from these tables, so a reward edited here without the price following
+// fails the build. Every number is editable from the admin panel afterwards.
 //
 // The phase ids below ("1".."5") are course.yaml's. A renamed phase silently
 // breaks both halves — a phase_completed quest nobody can finish, and a phase
@@ -138,7 +141,8 @@ type defaultQuest struct {
 // screen yet, and a cosmetic nobody can see is a row that will drift out of
 // date before it is ever used.
 var defaultQuests = []defaultQuest{
-	{"telegram_subscribed", 1, "", "Подписаться на канал", "Подпишись на наш Telegram-канал", 15, 10},
+	{"telegram_subscribed", 1, "", "Подписаться на канал", "Подпишись на наш Telegram-канал", 20, 10},
+	{"friends_invited", 1, "", "Пригласить друга", "Друг пришёл по твоей ссылке", 30, 12},
 	{"lessons_completed", 5, "", "Пройти 5 уроков", "", 5, 20},
 	{"lessons_completed", 10, "", "Пройти 10 уроков", "", 10, 21},
 	{"lessons_completed", 20, "", "Пройти 20 уроков", "", 20, 22},
@@ -151,15 +155,20 @@ var defaultQuests = []defaultQuest{
 	{"correct_in_row", 5, "", "5 правильных подряд", "", 3, 50},
 	{"correct_in_row", 10, "", "10 правильных подряд", "", 5, 51},
 	{"correct_in_row", 20, "", "20 правильных подряд", "", 15, 52},
-	{"streak_days", 7, "", "Стрик 7 дней", "Занимайся 7 дней подряд", 10, 60},
+	// One-off on purpose: a quest that paid again after every broken streak
+	// would be farmable by breaking it deliberately. The renewable income is
+	// the daily streak drip.
+	{"streak_days", 3, "", "Стрик 3 дня", "Занимайся 3 дня подряд", 20, 58},
+	{"streak_days", 7, "", "Стрик 7 дней", "Занимайся 7 дней подряд", 60, 60},
 	{"streak_days", 30, "", "Стрик 30 дней", "Занимайся 30 дней подряд", 40, 61},
 	{"streak_days", 100, "", "Стрик 100 дней", "Занимайся 100 дней подряд", 150, 62},
-	// A level is still worth 50 / 70 / 90 in total; most of it now arrives
+	// A level is still worth 50 / 70 / 90 / 110 in total; most of it now arrives
 	// lesson by lesson (see seedLessonRewards), and what is left is the bonus
 	// for finishing the level — the one moment worth a modal.
 	{"phase_completed", 100, "1", "Уровень 1 на 100%", "Пройди все уроки первого уровня", 10, 70},
 	{"phase_completed", 100, "2", "Уровень 2 на 100%", "Пройди все уроки второго уровня", 19, 71},
 	{"phase_completed", 100, "3", "Уровень 3 на 100%", "Пройди все уроки третьего уровня", 30, 72},
+	{"phase_completed", 100, "4", "Уровень 4 на 100%", "Пройди все уроки четвёртого уровня", 22, 73},
 }
 
 type defaultProduct struct {
@@ -172,7 +181,7 @@ type defaultProduct struct {
 }
 
 var defaultProducts = []defaultProduct{
-	{"phase_unlock", "4", "Уровень 4 — Мнения и жизнь", "Открывает уровень A2.2", 500, 10},
-	{"phase_unlock", "5", "Уровень 5 — Уверенно", "Открывает уровень B1.1", 1000, 11},
+	{"phase_unlock", "4", "Уровень 4 — Падежи в жизни", "Открывает уровень 4: падежи, прилагательные, местоимения", 230, 10},
+	{"phase_unlock", "5", "Уровень 5 — Жизнь на сербском", "Открывает уровень 5: чувства, звонки, работа, документы", 375, 11},
 	{"consumable", "streak_repair", "Восстановить стрик", "Вернёт сгоревший стрик в течение 48 часов", 25, 20},
 }

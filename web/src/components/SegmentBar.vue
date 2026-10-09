@@ -9,8 +9,8 @@ const props = withDefaults(
   defineProps<{
     value: number
     max: number
-    /** 'accent' while working towards it, 'feather' once it is worth money. */
-    tone?: 'accent' | 'feather'
+    /** 'accent' while working towards it, 'seed' once it is worth money. */
+    tone?: 'accent' | 'seed'
     segments?: number
   }>(),
   { tone: 'accent', segments: 12 },
@@ -38,7 +38,7 @@ const filled = computed(() => {
       v-for="i in segments"
       :key="i"
       class="block h-2.5 flex-1 rounded-full"
-      :class="[i <= filled ? (tone === 'feather' ? 'seg-feather' : 'seg-accent') : 'seg-empty']"
+      :class="[i <= filled ? (tone === 'seed' ? 'seg-seed' : 'seg-accent') : 'seg-empty']"
     />
   </div>
 </template>
@@ -47,8 +47,8 @@ const filled = computed(() => {
 .seg-accent {
   background: var(--accent);
 }
-.seg-feather {
-  background: var(--feather);
+.seg-seed {
+  background: var(--seed);
 }
 .seg-empty {
   background: var(--ring-track);

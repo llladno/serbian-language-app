@@ -2,6 +2,11 @@
 // docs/superpowers/specs/2026-09-22-utm-link-tracking-design.md.
 const STORAGE_KEY = 'ucimo_attribution'
 const VISIT_LOGGED_KEY = 'ucimo_visit_logged'
+const REFERRAL_KEY = 'ucimo_referral'
+
+// The server mints codes from lowercase letters and digits; anything else in
+// the URL is somebody's typo or junk and is not worth keeping.
+const REFERRAL_RE = /^[a-z0-9]{6,12}$/
 
 export interface Attribution {
   utm_source?: string
@@ -64,5 +69,38 @@ export function captureAttribution(): void {
     }
   } catch {
     /* localStorage unavailable — attribution just won't reach registration */
+  }
+}
+
+/** The invite code of the link this browser arrived by, or '' if none. */
+export function getStoredReferral(): string {
+  try {
+    const code = (localStorage.getItem(REFERRAL_KEY) ?? '').toLowerCase()
+    return REFERRAL_RE.test(code) ? code : ''
+  } catch {
+    return ''
+  }
+}
+
+export function clearStoredReferral(): void {
+  try {
+    localStorage.removeItem(REFERRAL_KEY)
+  } catch {
+    /* nothing to clear */
+  }
+}
+
+/**
+ * Remembers `?ref=CODE` from the URL. Unlike the UTM first touch, the latest
+ * link wins: someone who opens a friend's invite means that friend. (The
+ * server still keeps only the first inviter an account ever gets.)
+ */
+export function captureReferral(): void {
+  const code = (new URLSearchParams(window.location.search).get('ref') ?? '').trim().toLowerCase()
+  if (!REFERRAL_RE.test(code)) return
+  try {
+    localStorage.setItem(REFERRAL_KEY, code)
+  } catch {
+    /* localStorage unavailable — the code still rides along if the learner registers on this page */
   }
 }

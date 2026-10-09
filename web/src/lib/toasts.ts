@@ -10,7 +10,7 @@ export interface Toast {
   id: number
   title: string
   text: string
-  /** Shown as "+N" with a feather next to it. */
+  /** Shown as "+N" with a seed next to it. */
   reward?: number
   /** Where tapping the toast goes. */
   to?: string

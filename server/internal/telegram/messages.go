@@ -16,6 +16,12 @@ const (
 	MsgLinkSuccess          MessageKey = "link_success"
 	MsgLinkTaken            MessageKey = "link_taken"
 	MsgLinkError            MessageKey = "link_error"
+	// The channel-subscription quest, when the learner was sent to the bot to
+	// link Telegram for it: the prompt that follows the link, and the two
+	// answers to "check".
+	MsgChannelPrompt MessageKey = "channel_prompt"
+	MsgChannelOK     MessageKey = "channel_ok"
+	MsgChannelNotYet MessageKey = "channel_not_yet"
 )
 
 // SupportURL is where every "написать в поддержку" button and @-mention
@@ -55,6 +61,13 @@ var DefaultMessages = map[MessageKey]string{
 		"Если это ошибка — напиши нам: @ucimosupport",
 	MsgLinkError: "Упс, не получилось привязать Telegram 😔\n\n" +
 		"Попробуй ещё раз с сайта, а если не поможет — напиши нам: @ucimosupport",
+	MsgChannelPrompt: "Готово, {name}! Telegram привязан 🎉\n\n" +
+		"Осталось подписаться на канал: нажми «Подписаться на канал», а потом «Проверить подписку». " +
+		"Награду заберёшь в приложении.",
+	MsgChannelOK: "Подписку вижу, {name} ✅\n\n" +
+		"Возвращайся в приложение и забирай награду.",
+	MsgChannelNotYet: "Пока не вижу подписки, {name} 🤔\n\n" +
+		"Подпишись на канал и нажми «Проверить подписку» ещё раз.",
 }
 
 // Substitute replaces every "{name}" placeholder in text with name.

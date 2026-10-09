@@ -297,15 +297,46 @@ func TestCheckConjugateFormByForm(t *testing.T) {
 	}
 }
 
-func TestCheckFreeAlwaysOKAndSample(t *testing.T) {
+// A learner who cannot listen is asked to translate the sentence into Russian
+// instead of writing it down. The sentence is the dictation's answer, so it is
+// only ever sent when that mode is asked for.
+func TestListenAsRussianTranslation(t *testing.T) {
 	h, _ := newTestAPI(t)
-	rr := do(h, "POST", "/api/lessons/01/exercises/01-A-2/check", `{"answer":"blah","self":false}`)
-	res := decodeBody[checkResultDTO](t, rr)
-	if res.OK {
-		t.Error("self:false should record as not ok")
+	listen := func(path string) exerciseDTO {
+		for _, b := range decodeBody[[]exerciseBlockDTO](t, do(h, "GET", path, "")) {
+			for _, e := range b.Exercises {
+				if e.Type == "listen" {
+					return e
+				}
+			}
+		}
+		t.Fatal("no listen exercise")
+		return exerciseDTO{}
 	}
-	if res.Sample == "" {
-		t.Error("want sample")
+
+	normal := listen("/api/lessons/01/exercises")
+	if normal.Text != "" {
+		t.Errorf("the sentence leaked into the normal dictation: %q", normal.Text)
+	}
+	off := listen("/api/lessons/01/exercises?audio=off")
+	if off.Text != "Zdravo, kako si?" || off.Audio != "" || off.Explain != "" || off.Prompt != "Переведи на русский." {
+		t.Errorf("audio=off listen = %+v", off)
+	}
+
+	ok := decodeBody[checkResultDTO](t, do(h, "POST", "/api/lessons/01/exercises/01-A-4/check", `{"answer":"Привет, как дела","ru":true}`))
+	if !ok.OK {
+		t.Errorf("a right Russian translation was refused: %+v", ok)
+	}
+	if yo := decodeBody[checkResultDTO](t, do(h, "POST", "/api/lessons/01/exercises/01-A-4/check", `{"answer":"здравствуй, как дела?","ru":true}`)); !yo.OK {
+		t.Errorf("case and punctuation should not matter: %+v", yo)
+	}
+	bad := decodeBody[checkResultDTO](t, do(h, "POST", "/api/lessons/01/exercises/01-A-4/check", `{"answer":"Zdravo, kako si?","ru":true}`))
+	if bad.OK || bad.Explain != "" || bad.Expected == "" {
+		t.Errorf("the Serbian sentence is not a Russian translation: %+v", bad)
+	}
+	// without the flag it is still a dictation
+	if d := decodeBody[checkResultDTO](t, do(h, "POST", "/api/lessons/01/exercises/01-A-4/check", `{"answer":"Zdravo, kako si?"}`)); !d.OK {
+		t.Errorf("the dictation broke: %+v", d)
 	}
 }
 
@@ -352,7 +383,7 @@ func TestLessonCompleteThenProgress(t *testing.T) {
 func TestLessonAttemptsAndReset(t *testing.T) {
 	h, _ := newTestAPI(t)
 	do(h, "POST", "/api/lessons/01/exercises/01-A-1/check", `{"answer":"Zdravo! Kako si?"}`)
-	do(h, "POST", "/api/lessons/01/exercises/01-A-2/check", `{"answer":"x","self":false}`)
+	do(h, "POST", "/api/lessons/01/exercises/01-A-2/check", `{"answer":"x"}`)
 
 	got := decodeBody[map[string]attemptDTO](t, do(h, "GET", "/api/lessons/01/attempts", ""))
 	if len(got) != 2 || !got["01-A-1"].Correct || got["01-A-2"].Correct {

@@ -393,3 +393,161 @@ func TestTelegramWebhookUsesBotMessageOverride(t *testing.T) {
 		t.Fatalf("messages = %+v, want the DB override substituted", msgs)
 	}
 }
+
+// ---- the channel-subscription flow through the bot ----
+
+// fakeBotAPI stands in for api.telegram.org: getChatMember answers with the
+// current status (or an error when status is "error"), and every
+// answerCallbackQuery text is recorded.
+type fakeBotAPI struct {
+	mu      sync.Mutex
+	status  string
+	answers []string
+}
+
+func newFakeBotAPI(t *testing.T, status string) *fakeBotAPI {
+	t.Helper()
+	f := &fakeBotAPI{status: status}
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		r.ParseForm()
+		f.mu.Lock()
+		defer f.mu.Unlock()
+		switch {
+		case strings.HasSuffix(r.URL.Path, "/getChatMember"):
+			if f.status == "error" {
+				_, _ = w.Write([]byte(`{"ok":false,"error_code":400,"description":"Bad Request: member list is inaccessible"}`))
+				return
+			}
+			_, _ = w.Write([]byte(`{"ok":true,"result":{"status":"` + f.status + `"}}`))
+		case strings.HasSuffix(r.URL.Path, "/answerCallbackQuery"):
+			f.answers = append(f.answers, r.Form.Get("text"))
+			_, _ = w.Write([]byte(`{"ok":true,"result":true}`))
+		default:
+			_, _ = w.Write([]byte(`{"ok":true,"result":true}`))
+		}
+	}))
+	t.Cleanup(srv.Close)
+	t.Cleanup(telegram.SetAPIBase(srv.URL))
+	return f
+}
+
+func (f *fakeBotAPI) lastAnswer() string {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	if len(f.answers) == 0 {
+		return "<none>"
+	}
+	return f.answers[len(f.answers)-1]
+}
+
+// linkForChannel registers an account, starts a link with the channel intent
+// and has Telegram user tgID press Start, returning the account's id.
+func linkForChannel(t *testing.T, h http.Handler, st *store.Store, intentBody string, tgID int64) string {
+	t.Helper()
+	uid := registerAndVerify(t, h, st, fmt.Sprintf("chan%d@example.com", tgID), "secret1234", "Chan")
+	start := doCookie(h, authed(t, st, uid), "POST", "/api/me/telegram/start", intentBody)
+	if start.Code != http.StatusOK {
+		t.Fatalf("link start = %d %s", start.Code, start.Body)
+	}
+	postWebhook(h, tgWebhookSecret, webhookUpdate(tgID, tgID, "chan", "Chan", "/start "+startToken(t, start)))
+	return uid
+}
+
+func callbackUpdate(fromID int64, data string) string {
+	return fmt.Sprintf(`{"callback_query":{"id":"cb-1","data":%q,"from":{"id":%d,"first_name":"Chan"}}}`, data, fromID)
+}
+
+func TestLinkForTheChannelQuestAsksForTheSubscription(t *testing.T) {
+	h, st, sink := newTelegramBotAPI(t)
+	newFakeBotAPI(t, "left")
+	linkForChannel(t, h, st, `{"intent":"channel"}`, 7001)
+
+	msgs := sink.all()
+	if len(msgs) != 1 {
+		t.Fatalf("messages = %+v, want exactly the prompt", msgs)
+	}
+	m := msgs[0]
+	if m.Button == nil || m.Button.ChannelURL != "https://t.me/ucimosrb" {
+		t.Errorf("button = %+v, want the subscribe-and-check keyboard for the channel", m.Button)
+	}
+	if !strings.Contains(m.Text, "Подписаться на канал") {
+		t.Errorf("text = %q, want the prompt to subscribe", m.Text)
+	}
+}
+
+func TestLinkForTheChannelQuestSaysSoAtOnceWhenAlreadySubscribed(t *testing.T) {
+	h, st, sink := newTelegramBotAPI(t)
+	newFakeBotAPI(t, "member")
+	linkForChannel(t, h, st, `{"intent":"channel"}`, 7002)
+
+	msgs := sink.all()
+	if len(msgs) != 1 || msgs[0].Button == nil || msgs[0].Button.ChannelURL != "" ||
+		!strings.HasSuffix(msgs[0].Button.WebAppURL, "/quests") {
+		t.Fatalf("messages = %+v, want one message sending them to the quests, not a prompt", msgs)
+	}
+	if !strings.Contains(msgs[0].Text, "Подписку вижу") {
+		t.Errorf("text = %q", msgs[0].Text)
+	}
+}
+
+func TestPlainLinkIsNotTurnedIntoAChannelPrompt(t *testing.T) {
+	h, st, sink := newTelegramBotAPI(t)
+	newFakeBotAPI(t, "left")
+	linkForChannel(t, h, st, "", 7003)
+
+	msgs := sink.all()
+	if len(msgs) != 1 || msgs[0].Button == nil || msgs[0].Button.ChannelURL != "" {
+		t.Fatalf("messages = %+v, want only the ordinary 'linked' reply", msgs)
+	}
+}
+
+func TestChannelCheckButton(t *testing.T) {
+	cases := []struct {
+		name       string
+		status     string
+		from       int64
+		data       string
+		wantAnswer string
+		wantText   string // "" = no message
+		wantRetry  bool   // the reply carries the subscribe-and-check keyboard again
+	}{
+		{"subscribed", "member", 7010, telegram.CallbackCheckChannel, "Подписка найдена ✅", "Подписку вижу", false},
+		{"not subscribed", "left", 7010, telegram.CallbackCheckChannel, "Подписки пока не видно", "Пока не вижу подписки", true},
+		{"cannot tell", "error", 7010, telegram.CallbackCheckChannel, "Не получилось проверить, попробуй ещё раз", "", false},
+		{"not linked to any account", "member", 7999, telegram.CallbackCheckChannel, "Сначала привяжи Telegram в приложении", "", false},
+		{"some other button", "member", 7010, "something_else", "", "", false},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			h, st, sink := newTelegramBotAPI(t)
+			bot := newFakeBotAPI(t, "left")
+			linkForChannel(t, h, st, `{"intent":"channel"}`, 7010) // 7010 is linked, 7999 never is
+			before := len(sink.all())
+
+			bot.mu.Lock()
+			bot.status = tc.status
+			bot.mu.Unlock()
+			rr := postWebhook(h, tgWebhookSecret, callbackUpdate(tc.from, tc.data))
+			if rr.Code != http.StatusOK {
+				t.Fatalf("webhook = %d", rr.Code)
+			}
+
+			if got := bot.lastAnswer(); got != tc.wantAnswer && !(tc.wantAnswer == "" && got == "") {
+				t.Errorf("notice over the chat = %q, want %q", got, tc.wantAnswer)
+			}
+			sent := sink.all()[before:]
+			if tc.wantText == "" {
+				if len(sent) != 0 {
+					t.Fatalf("sent %+v, want no message", sent)
+				}
+				return
+			}
+			if len(sent) != 1 || !strings.Contains(sent[0].Text, tc.wantText) {
+				t.Fatalf("sent %+v, want one message containing %q", sent, tc.wantText)
+			}
+			if gotRetry := sent[0].Button != nil && sent[0].Button.ChannelURL != ""; gotRetry != tc.wantRetry {
+				t.Errorf("reply has the channel keyboard = %v, want %v", gotRetry, tc.wantRetry)
+			}
+		})
+	}
+}

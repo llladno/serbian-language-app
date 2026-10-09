@@ -6,13 +6,14 @@ import router from './router'
 import { applyTheme } from './theme'
 import { applyPalette } from './palette'
 import { initTelegram } from './telegram'
-import { captureAttribution } from './attribution'
+import { captureAttribution, captureReferral } from './attribution'
 import { initMetrika } from './metrika'
 
 applyTheme()
 applyPalette()
 initTelegram()
 captureAttribution()
+captureReferral()
 initMetrika()
 
 createApp(App).use(createPinia()).use(router).mount('#app')

@@ -38,12 +38,12 @@ describe('AnimatedNumber', () => {
   it('counts through the format, so the word follows the number', async () => {
     stubReducedMotion(true)
     const w = mount(AnimatedNumber, {
-      props: { value: 1, format: (n: number) => `${n} пёрышек` },
+      props: { value: 1, format: (n: number) => `${n} зёрнышек` },
     })
 
     await w.setProps({ value: 5 })
     await flushPromises()
 
-    expect(w.text()).toBe('5 пёрышек')
+    expect(w.text()).toBe('5 зёрнышек')
   })
 })

@@ -32,9 +32,9 @@ beforeEach(() => {
   vi.spyOn(api, 'quests').mockResolvedValue({ quests: [] })
   vi.spyOn(api, 'wallet').mockResolvedValue({
     balance: 137,
-    currency_one: 'пёрышко',
-    currency_few: 'пёрышка',
-    currency_many: 'пёрышек',
+    currency_one: 'зёрнышко',
+    currency_few: 'зёрнышка',
+    currency_many: 'зёрнышек',
     streak_days: 4,
   })
 })
@@ -113,6 +113,6 @@ describe('AppNav', () => {
     await flushPromises()
 
     expect(w.find('[data-test="reward-quest"]').text()).toBe('Пройти 5 уроков')
-    expect(w.find('[data-test="reward-amount"]').text()).toBe('+15 пёрышек')
+    expect(w.find('[data-test="reward-amount"]').text()).toBe('+15 зёрнышек')
   })
 })

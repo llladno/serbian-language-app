@@ -36,6 +36,8 @@ func ProcessNext(st *store.Store, botToken string, now time.Time) (ok bool, retr
 			button.WebAppURL = msg.Button.Target
 		case "url":
 			button.URL = msg.Button.Target
+		case "channel_check":
+			button.ChannelURL = msg.Button.Target
 		}
 	}
 

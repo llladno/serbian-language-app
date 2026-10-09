@@ -302,7 +302,17 @@ func (h handlers) telegramLinkStart(w http.ResponseWriter, r *http.Request) {
 		fail(w, http.StatusUnauthorized, "no session")
 		return
 	}
-	h.telegramStartFor(w, ac.UserID)
+	// The body is optional: {"intent":"channel"} says the learner is linking
+	// for the channel quest. Anything else, or no body, is a plain link.
+	var req struct {
+		Intent string `json:"intent"`
+	}
+	_ = decode(r, &req)
+	intent := ""
+	if req.Intent == linkIntentChannel {
+		intent = linkIntentChannel
+	}
+	h.telegramStartFor(w, ac.UserID, intent)
 }
 
 // unlinkTelegram handles DELETE /api/me/telegram. Refuses to remove the

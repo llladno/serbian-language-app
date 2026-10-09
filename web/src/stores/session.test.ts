@@ -117,4 +117,31 @@ describe('useSessionStore', () => {
     expect(spy).not.toHaveBeenCalled()
     expect(s.user).toBeNull()
   })
+
+  describe('invite link code', () => {
+    it('is handed to the server once the learner is signed in, then forgotten', async () => {
+      localStorage.setItem('ucimo_referral', 'abcd2345')
+      vi.spyOn(api, 'session').mockResolvedValue(user())
+      const claim = vi.spyOn(api, 'claimReferral').mockResolvedValue({ applied: true })
+      await useSessionStore().fetchSession()
+      await vi.waitFor(() => expect(localStorage.getItem('ucimo_referral')).toBeNull())
+      expect(claim).toHaveBeenCalledWith('abcd2345')
+    })
+
+    it('does not call the server when there is no code', async () => {
+      vi.spyOn(api, 'session').mockResolvedValue(user())
+      const claim = vi.spyOn(api, 'claimReferral')
+      await useSessionStore().fetchSession()
+      expect(claim).not.toHaveBeenCalled()
+    })
+
+    it('keeps the code for next time when the server cannot be reached', async () => {
+      localStorage.setItem('ucimo_referral', 'abcd2345')
+      vi.spyOn(api, 'login').mockResolvedValue(user())
+      const claim = vi.spyOn(api, 'claimReferral').mockRejectedValue(new Error('offline'))
+      await useSessionStore().login('g@example.com', 'x')
+      await vi.waitFor(() => expect(claim).toHaveBeenCalled())
+      expect(localStorage.getItem('ucimo_referral')).toBe('abcd2345')
+    })
+  })
 })

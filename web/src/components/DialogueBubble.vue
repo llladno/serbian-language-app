@@ -13,14 +13,17 @@ const props = defineProps<{
   ru?: string
   audio?: string
   showTranslation?: boolean
-  // a "me" line the learner got wrong: the correct line still stands in the
-  // chat, but it has to be visibly marked as a miss, with the explanation.
+  // a "me" line the learner got wrong: the right line stands in the chat in
+  // their place, marked as a correction, with what they answered and why.
   wrong?: boolean
+  given?: string
   note?: string
 }>()
 
 const open = ref(false)
-const translated = computed(() => props.showTranslation || open.value)
+// A correction always carries its translation: the point of showing the right
+// line is that it can be understood.
+const translated = computed(() => props.showTranslation || open.value || !!props.wrong)
 </script>
 
 <template>
@@ -32,11 +35,14 @@ const translated = computed(() => props.showTranslation || open.value)
         wrong ? 'ring-1 ring-[var(--bad)]' : '',
       ]"
     >
+      <p v-if="wrong" class="mb-1 text-sm font-semibold text-[var(--bad)]" data-test="correction">
+        Нужно было ответить так
+      </p>
       <div class="flex items-start gap-2">
         <p class="serbian leading-7"><GlossedText :text="sr" /></p>
         <SpeakButton v-if="audio" :src="audio" :size="26" class="mt-0.5" />
         <button
-          v-if="ru"
+          v-if="ru && !wrong"
           type="button"
           data-test="translate"
           class="mt-0.5 inline-grid h-[26px] w-[26px] shrink-0 place-items-center rounded-full text-[var(--muted)] transition hover:bg-[var(--accent-soft)] hover:text-[var(--accent)]"
@@ -50,8 +56,10 @@ const translated = computed(() => props.showTranslation || open.value)
 
       <p v-if="translated && ru" class="mt-1.5 text-sm text-[var(--muted)]">{{ ru }}</p>
 
-      <p v-if="wrong" class="mt-1.5 text-sm font-semibold text-[var(--bad)]">✗ ты ответил иначе</p>
-      <p v-if="wrong && note" class="mt-0.5 text-sm text-[var(--muted)]">{{ note }}</p>
+      <p v-if="wrong && given" class="mt-2 text-sm text-[var(--muted)]" data-test="given">
+        Твой ответ: <span class="serbian text-[var(--fg)]">«{{ given }}»</span>
+      </p>
+      <p v-if="wrong && note" class="mt-1 text-sm text-[var(--muted)]">{{ note }}</p>
     </div>
   </div>
 </template>

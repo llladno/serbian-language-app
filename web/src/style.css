@@ -242,28 +242,28 @@ body {
   }
 }
 
-/* The currency's own colours, from docs/feather-currency-image-prompts.md.
-   They are the same in every palette and both themes: пёрышки are gold, and a
-   gold that followed the accent would stop reading as the currency. --feather
+/* The currency's own colours, from docs/seed-currency-image-prompts.md.
+   They are the same in every palette and both themes: зёрнышки are gold, and a
+   gold that followed the accent would stop reading as the currency. --seed
    means money throughout the quests screen, the accent means progress. */
 :root {
-  --feather: #e3b04b;
-  --feather-hi: #f6d88a;
-  --feather-ink: #4a2c08;
+  --seed: #e3b04b;
+  --seed-hi: #f6d88a;
+  --seed-ink: #4a2c08;
   /* The wash behind a claimable quest. Gold over a dark card turns olive, so
      the dark themes mix the pale tone instead, and thinner. Both selectors are
-     palette-independent on purpose: пёрышки are gold in every palette. */
-  --feather-wash: rgba(227, 176, 75, 0.16);
+     palette-independent on purpose: зёрнышки are gold in every palette. */
+  --seed-wash: rgba(227, 176, 75, 0.16);
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) {
-    --feather-wash: rgba(246, 216, 138, 0.09);
+    --seed-wash: rgba(246, 216, 138, 0.09);
   }
 }
 
 :root[data-theme='dark'] {
-  --feather-wash: rgba(246, 216, 138, 0.09);
+  --seed-wash: rgba(246, 216, 138, 0.09);
 }
 
 /* skeleton loading placeholders */
@@ -350,6 +350,13 @@ body {
 .md li::marker { color: var(--accent); }
 .md strong { font-weight: 700; color: var(--fg); }
 .md em { color: var(--muted); font-style: italic; }
+.md .md-speak {
+  display: inline-grid; place-items: center; vertical-align: middle;
+  width: 22px; height: 22px; margin-left: 3px; border-radius: 9999px;
+  color: var(--muted); transition: background 0.15s, color 0.15s, transform 0.1s;
+}
+.md .md-speak:hover { background: var(--accent-soft); color: var(--accent); }
+.md .md-speak:active { transform: scale(0.9); }
 .md code {
   background: var(--accent-soft);
   color: var(--fg);

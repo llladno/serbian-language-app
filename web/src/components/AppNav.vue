@@ -9,7 +9,7 @@ import DonateModal from './DonateModal.vue'
 import RewardModal from './RewardModal.vue'
 import ToastStack from './ToastStack.vue'
 import NotificationBell from './NotificationBell.vue'
-import FeatherIcon from './FeatherIcon.vue'
+import SeedIcon from './SeedIcon.vue'
 import AnimatedNumber from './AnimatedNumber.vue'
 import ClaimableStar from './ClaimableStar.vue'
 
@@ -96,10 +96,10 @@ watch(() => route.path, refreshWallet)
       <RouterLink
         to="/quests"
         class="relative ml-auto flex h-9 shrink-0 items-center gap-1.5 rounded-full bg-[var(--bg-soft)] px-2.5 text-sm font-bold transition hover:bg-[var(--accent-soft)]"
-        :title="wallet.claimable > 0 ? 'Есть выполненные задания' : 'Задания и пёрышки'"
+        :title="wallet.claimable > 0 ? 'Есть выполненные задания' : 'Задания и зёрнышки'"
         data-test="wallet-chip"
       >
-        <FeatherIcon :size="15" />
+        <SeedIcon :size="15" />
         <AnimatedNumber :value="wallet.balance" />
         <ClaimableStar v-if="wallet.claimable > 0" class="absolute -right-1.5 -top-1.5" />
       </RouterLink>

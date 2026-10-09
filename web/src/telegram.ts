@@ -12,10 +12,26 @@ interface TgWebApp {
   setHeaderColor?: (c: string) => void
   setBackgroundColor?: (c: string) => void
   onEvent?: (e: string, cb: () => void) => void
+  openTelegramLink?: (url: string) => void
 }
 
 function tg(): TgWebApp | undefined {
   return (window as unknown as { Telegram?: { WebApp?: TgWebApp } }).Telegram?.WebApp
+}
+
+// Opens a t.me link inside Telegram itself when running as a Mini App, which
+// keeps the learner in the app instead of bouncing them to an external browser.
+// Returns whether it did: outside Telegram the caller lets the link do its
+// ordinary thing.
+export function openTelegramLink(url: string): boolean {
+  const wa = tg()
+  if (!wa?.openTelegramLink) return false
+  try {
+    wa.openTelegramLink(url)
+    return true
+  } catch {
+    return false
+  }
 }
 
 export function isTelegram() {

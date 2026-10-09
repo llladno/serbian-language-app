@@ -33,18 +33,16 @@ The word "задание" is overloaded in Russian. In this doc and in code:
 
 | Product wording | `course.yaml` phases | Access |
 |---|---|---|
-| first course (free) | 1 (A1.1), 2 (A1.2), 3 (A2.1) | free |
-| second course | 4 — Мнения и жизнь (A2.2) | currency; fully coverable by completing every quest |
-| third course | 5 — Уверенно (B1.1) | currency; quests alone are not enough, needs a long streak or a top-up |
+| first course (free) | 1 (Первый контакт), 2 (Быт), 3 (Связная речь) | free |
+| second course | 4 — Падежи в жизни | currency; costs what the free levels pay plus the Telegram quest (230) |
+| third course | 5 — Жизнь на сербском | currency; costs Level 4's price plus what Level 4 pays and the "100 words" and "100 reviews" quests (375); needs nearly every quest or a long streak |
 
 There is no "pay with money" unlock path. Money, when it arrives, buys currency
 (see Out of scope), never a level directly.
 
-**Content reality check:** lessons `00`–`29` exist, i.e. phases 1 and 2 only.
-Phases 3, 4, 5 are declared in `course.yaml` with lessons `30-39`, `40-49`,
-`50-58` but have no content. So in v1 the unlock machinery ships dormant — the
-live parts are earning, balance, ledger, admin, plus the two extras that work
-immediately (streak repair, cosmetics).
+**Content status (2026-10-08):** lessons `00`–`59` are authored, i.e. phases 1–4.
+Phase 5 (`60`–`77`) is declared in `course.yaml` but has no content yet, so its
+product is for sale before it can be read — the shop copy says "скоро".
 
 ## Data model
 
@@ -275,7 +273,7 @@ existing store deliberately avoids FK coupling across features.
 
 ### Quest kinds
 
-Seven kinds. Each is a pure "user → current value" function; a quest is complete
+Eight kinds. Each is a pure "user → current value" function; a quest is complete
 when value ≥ `target`.
 
 | `kind` | value computed from | `param` |
@@ -287,10 +285,25 @@ when value ≥ `target`.
 | `correct_in_row` | `user_answer_streak.best` | — |
 | `phase_completed` | percent of that phase's lessons completed, 0..100; `target` is therefore always 100 | phase id, e.g. `2` |
 | `telegram_subscribed` | Telegram `getChatMember` | channel, defaults to `economy_settings.telegram_channel` |
+| `friends_invited` | `COUNT(*)` of users whose `referred_by` is this user and who have a Telegram identity or a confirmed email | — |
 
 Adding a new kind is a code change plus a deploy, by design: every kind must be
 verifiable server-side, otherwise currency is mintable from the client. The
 admin panel creates *instances* of these kinds, never free-form conditions.
+
+`friends_invited` ("Пригласить друга", 30 зёрнышек, one time) rests on two
+`users` columns from migration 022. `referral_code` is minted lazily the first
+time the learner opens the invite modal (8 characters from an alphabet without
+look-alikes, unique index). `referred_by` is written once, first touch wins,
+by `ApplyReferral`, which refuses an unknown code, the account's own code, a
+code of someone the account itself invited, and any signup older than 7 days.
+The link is `<APP_BASE_URL>/register?ref=CODE`, the site rather than the bot, so
+it works from every messenger and does not depend on the Telegram API being
+reachable. The browser keeps the code in `localStorage` (`ucimo_referral`) and
+sends it with the registration and with a Telegram login; after any sign-in it
+is also posted to `POST /api/me/referral/claim`, which covers an email confirmed
+on another device and the bot login, and answers 200 for a stale code. A friend
+only counts once confirmed, so throwaway addresses do not pay out.
 
 `telegram_subscribed` needs a new `telegram.GetChatMember(botToken, chat, userID)`
 in `internal/telegram`. Prod cannot reach `api.telegram.org` directly, but every
@@ -435,14 +448,15 @@ All editable from the admin panel; these are seeds, not constants.
 
 | Quest | Reward |
 |---|---|
-| Подписка на Telegram-канал | 15 |
+| Подписка на Telegram-канал | 20 |
+| Пригласить друга (разово, друг подтвердил аккаунт) | 30 |
 | Пройти 5 / 10 / 20 / 30 уроков | 5 / 10 / 20 / 30 |
 | Выучить 30 / 100 / 300 слов | 10 / 25 / 50 |
 | Сделать 100 / 500 повторений | 10 / 30 |
 | Серия 5 / 10 / 20 правильных подряд | 3 / 5 / 15 |
-| Стрик 7 / 30 / 100 дней | 10 / 40 / 150 |
-| Завершить Уровень 1 / 2 / 3 на 100% | 50 / 70 / 90 |
-| **Total** | **638** |
+| Стрик 3 / 7 / 30 / 100 дней (разово) | 20 / 60 / 40 / 150 |
+| Уровни 1 / 2 / 3 / 4: уроки + бонус за завершение | 50 / 70 / 90 / 110 |
+| **Total** | **853** |
 
 **Daily drip:** days 1–29 → 1, days 30–99 → 2, day 100+ → 3. 169 over 100
 consecutive days, ~960 over a year.
@@ -451,8 +465,8 @@ consecutive days, ~960 over a year.
 
 | Product | Price | Rationale |
 |---|---|---|
-| Уровень 4 (A2.2) | 500 | covered by the quest pool alone — literally "100% + все задания" |
-| Уровень 5 (B1.1) | 1000 | quests are not enough; needs ~360 more from the drip (~8 months of streak) or a top-up |
+| Уровень 4 | 230 | 50 + 70 + 90 (levels 1–3) + 20 (Telegram) — everything the free course pays |
+| Уровень 5 | 375 | 230 + 110 (Level 4 pays) + 25 ("100 слов") + 10 ("100 повторений"): total 605 earned out of 853 in the pool, so it takes nearly every quest, or months of streak drip |
 | Восстановление стрика | 25 | 48-hour window |
 | Палитра | 30 | per palette |
 

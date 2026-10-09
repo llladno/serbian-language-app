@@ -169,6 +169,8 @@ func Handler(deps Deps) http.Handler {
 	root.HandleFunc("GET /api/me/wallet", h.requireSession(h.getWallet))
 	root.HandleFunc("GET /api/me/quests", h.requireSession(h.listQuests))
 	root.HandleFunc("POST /api/me/quests/{id}/claim", h.requireSession(h.claimQuest))
+	root.HandleFunc("GET /api/me/referral", h.requireSession(h.getReferral))
+	root.HandleFunc("POST /api/me/referral/claim", h.requireSession(h.claimReferral))
 	root.HandleFunc("GET /api/me/transactions", h.requireSession(h.listTransactions))
 	root.HandleFunc("GET /api/shop", h.requireSession(h.getShop))
 	root.HandleFunc("POST /api/me/purchases", h.requireSession(h.purchase))
@@ -488,6 +490,15 @@ func (h handlers) getExercises(w http.ResponseWriter, r *http.Request) {
 		for _, e := range b.Exercises {
 			d := exerciseDTO{ID: e.ID, Type: e.Type, Prompt: e.Prompt, Forms: e.Forms, Meta: e.Meta, Audio: e.Audio, Explain: e.Explain}
 			switch e.Type {
+			case "listen":
+				// A learner who cannot listen gets the sentence as text to
+				// translate into Russian. The text is the dictation's answer,
+				// so it goes out only when asked for.
+				if r.URL.Query().Get("audio") == "off" {
+					d.Audio, d.Explain = "", ""
+					d.Text = e.Say
+					d.Prompt = "Переведи на русский."
+				}
 			case "choice":
 				d.Options = e.Options
 			case "word_bank":
@@ -509,7 +520,7 @@ type checkRequest struct {
 	Answer  string            `json:"answer"`
 	Answers []string          `json:"answers"`
 	Pairs   map[string]string `json:"pairs"` // match: left -> picked right
-	Self    *bool             `json:"self"`
+	RU      bool              `json:"ru"`    // listen: answered as a Russian translation (audio=off)
 }
 
 func (h handlers) findExercise(lesson, exID string) (content.Exercise, string, bool) {
@@ -581,15 +592,6 @@ func (h handlers) checkExercise(w http.ResponseWriter, r *http.Request) {
 		resp.Forms = results
 		recordAnswer = strings.Join(req.Answers, " | ")
 		correct = allOK
-	case "free":
-		self := true
-		if req.Self != nil {
-			self = *req.Self
-		}
-		resp.OK = self
-		resp.Sample = ex.Sample
-		recordAnswer = req.Answer
-		correct = self
 	case "choice":
 		res := checker.CheckChoice(req.Answer, ex.Answer)
 		resp.OK = res.OK
@@ -604,7 +606,12 @@ func (h handlers) checkExercise(w http.ResponseWriter, r *http.Request) {
 		recordAnswer = string(b)
 		correct = ok
 	default:
-		res := checker.Check(req.Answer, ex.Accept)
+		accept := ex.Accept
+		if ex.Type == "listen" && req.RU {
+			accept = ex.RU
+			resp.Explain = "" // it explains how the sentence is spelled, not what it means
+		}
+		res := checker.Check(req.Answer, accept)
 		resp.OK = res.OK
 		resp.Diff = res.Diff
 		resp.Expected = res.Expected
@@ -735,7 +742,11 @@ func (h handlers) completeLesson(w http.ResponseWriter, r *http.Request) {
 	// The reward goes back in the response so the app can say what it was
 	// without asking again. It is 0 for a lesson that pays nothing and for one
 	// that was already finished before.
-	writeJSON(w, 200, map[string]any{"status": "done", "reward": h.payLessonReward(us, id)})
+	writeJSON(w, 200, map[string]any{
+		"status": "done",
+		"reward": h.payLessonReward(us, id),
+		"stats":  h.lessonStats(us, id),
+	})
 }
 
 func (h handlers) getVocab(w http.ResponseWriter, r *http.Request) {

@@ -130,14 +130,28 @@ func SetWebhook(botToken, webhookURL, secretToken string) error {
 	return call(botToken, "setWebhook", params, nil)
 }
 
-// InlineButton is a single-button inline keyboard row shown below a
-// message. Exactly one of WebAppURL (opens a Telegram Mini App with
-// initData auto-login) or URL (opens a plain link) should be set.
+// InlineButton is the inline keyboard shown below a message. Exactly one of
+// WebAppURL (opens a Telegram Mini App with initData auto-login), URL (opens a
+// plain link) or ChannelURL should be set.
+//
+// ChannelURL is the one keyboard that has two buttons: "subscribe" (a link to
+// that channel) and "check" (a callback the webhook answers). It is a preset,
+// not two free buttons, because the outbox stores one button per message as
+// (label, type, target) and this keeps that shape.
 type InlineButton struct {
-	Label     string
-	WebAppURL string
-	URL       string
+	Label      string
+	WebAppURL  string
+	URL        string
+	ChannelURL string
 }
+
+// The channel keyboard's wording, and the callback_data its "check" button
+// sends back to the webhook.
+const (
+	CallbackCheckChannel = "chan_check"
+	SubscribeLabel       = "Подписаться на канал"
+	CheckLabel           = "Проверить подписку"
+)
 
 // SendMessageWithButton sends text to chatID, with a single inline button
 // below it if button is non-nil. The only caller in production is
@@ -149,19 +163,40 @@ func SendMessageWithButton(botToken string, chatID int64, text string, button *I
 		"text":    {text},
 	}
 	if button != nil {
-		btn := map[string]any{"text": button.Label}
-		if button.WebAppURL != "" {
-			btn["web_app"] = map[string]string{"url": button.WebAppURL}
+		var rows [][]map[string]any
+		if button.ChannelURL != "" {
+			rows = [][]map[string]any{
+				{{"text": SubscribeLabel, "url": button.ChannelURL}},
+				{{"text": CheckLabel, "callback_data": CallbackCheckChannel}},
+			}
 		} else {
-			btn["url"] = button.URL
+			btn := map[string]any{"text": button.Label}
+			if button.WebAppURL != "" {
+				btn["web_app"] = map[string]string{"url": button.WebAppURL}
+			} else {
+				btn["url"] = button.URL
+			}
+			rows = [][]map[string]any{{btn}}
 		}
-		markup, err := json.Marshal(map[string]any{"inline_keyboard": [][]map[string]any{{btn}}})
+		markup, err := json.Marshal(map[string]any{"inline_keyboard": rows})
 		if err != nil {
 			return fmt.Errorf("telegram sendMessage: marshal reply_markup: %w", err)
 		}
 		params.Set("reply_markup", string(markup))
 	}
 	return call(botToken, "sendMessage", params, nil)
+}
+
+// AnswerCallbackQuery acknowledges a button press: it stops the spinner on the
+// button and shows text as a short notice over the chat. Telegram expects an
+// answer within seconds, so unlike messages this is sent straight from the
+// webhook rather than through the outbox.
+func AnswerCallbackQuery(botToken, callbackQueryID, text string) error {
+	params := url.Values{"callback_query_id": {callbackQueryID}}
+	if text != "" {
+		params.Set("text", text)
+	}
+	return call(botToken, "answerCallbackQuery", params, nil)
 }
 
 // SetChatMenuButton sets the bot's default menu button — shown to every user

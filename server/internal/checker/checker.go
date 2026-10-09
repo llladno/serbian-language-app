@@ -33,6 +33,7 @@ var punct = map[rune]bool{
 // collapses whitespace so cosmetic differences don't fail an answer.
 func Normalize(s string) string {
 	s = strings.ToLower(s)
+	s = strings.ReplaceAll(s, "ё", "е") // «счёт» и «счет» — один и тот же ответ
 	var b strings.Builder
 	for _, r := range s {
 		switch {

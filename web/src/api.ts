@@ -1,4 +1,5 @@
 import type {
+  Referral,
   Course,
   Lesson,
   ExerciseBlock,
@@ -25,8 +26,9 @@ import type {
   ClaimResult,
   LessonCompletion,
   ShopItem,
+  PurchaseResult,
 } from './types'
-import { getStoredAttribution } from './attribution'
+import { getStoredAttribution, getStoredReferral } from './attribution'
 
 export class ApiError extends Error {
   status: number
@@ -38,7 +40,7 @@ export class ApiError extends Error {
 }
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const headers: Record<string, string> = {}
+  const headers: Record<string, string> = { ...(init?.headers as Record<string, string> | undefined) }
   if (init?.body) headers['Content-Type'] = 'application/json'
 
   const res = await fetch('/api' + path, { ...init, headers, credentials: 'same-origin' })
@@ -83,12 +85,17 @@ function qs(params?: Record<string, string | undefined>): string {
   return s ? '?' + s : ''
 }
 
+function referralField(): { ref?: string } {
+  const ref = getStoredReferral()
+  return ref ? { ref } : {}
+}
+
 export const api = {
   health: () => request<Health>('/health'),
   register: (email: string, password: string, name: string) =>
     request<{ status: string }>('/auth/register', {
       method: 'POST',
-      body: JSON.stringify({ email, password, name, ...getStoredAttribution() }),
+      body: JSON.stringify({ email, password, name, ...getStoredAttribution(), ...referralField() }),
     }),
   login: (email: string, password: string) =>
     request<SessionUser>('/auth/login', { method: 'POST', body: JSON.stringify({ email, password }) }),
@@ -107,7 +114,7 @@ export const api = {
   telegramLogin: (payload: Record<string, unknown>) =>
     request<SessionUser>('/auth/telegram', {
       method: 'POST',
-      body: JSON.stringify({ ...payload, ...getStoredAttribution() }),
+      body: JSON.stringify({ ...payload, ...getStoredAttribution(), ...referralField() }),
     }),
   telegramLoginStart: () => request<TelegramStart>('/auth/telegram/start', { method: 'POST' }),
   telegramPoll: (token: string) => request<TelegramPoll>('/auth/telegram/poll?token=' + encodeURIComponent(token)),
@@ -118,7 +125,13 @@ export const api = {
     request<{ status: string }>('/me/password', { method: 'POST', body: JSON.stringify(payload) }),
   linkTelegram: (payload: Record<string, unknown>) =>
     request<SessionUser>('/me/link/telegram', { method: 'POST', body: JSON.stringify(payload) }),
-  telegramLinkStart: () => request<TelegramStart>('/me/telegram/start', { method: 'POST' }),
+  // intent 'channel': the learner is linking for the channel-subscription quest,
+  // so the bot goes on to ask them to subscribe once it has linked.
+  telegramLinkStart: (intent?: 'channel') =>
+    request<TelegramStart>('/me/telegram/start', {
+      method: 'POST',
+      body: intent ? JSON.stringify({ intent }) : undefined,
+    }),
   unlinkTelegram: () => request<void>('/me/telegram', { method: 'DELETE' }),
   deleteSession: (id: string) => request<void>(`/me/sessions/${id}`, { method: 'DELETE' }),
   deleteMe: (password?: string) =>
@@ -128,13 +141,29 @@ export const api = {
   wallet: () => request<Wallet>('/me/wallet'),
   quests: () => request<{ quests: Quest[] }>('/me/quests'),
   shop: () => request<{ items: ShopItem[] }>('/shop'),
+  // The key makes a retry after a lost response return the original purchase
+  // instead of charging twice (the server replays it).
+  purchase: (productId: number, idempotencyKey: string) =>
+    request<PurchaseResult>('/me/purchases', {
+      method: 'POST',
+      headers: { 'Idempotency-Key': idempotencyKey },
+      body: JSON.stringify({ product_id: productId }),
+    }),
+  referral: () => request<Referral>('/me/referral'),
+  // Attaches the invite code a new account arrived with. The server answers 200
+  // even for a stale or junk code, so a late claim can never break sign-in.
+  claimReferral: (code: string) =>
+    request<{ applied: boolean }>('/me/referral/claim', { method: 'POST', body: JSON.stringify({ code }) }),
   claimQuest: (id: number) => request<ClaimResult>(`/me/quests/${id}/claim`, { method: 'POST' }),
   getNotifications: () => request<NotificationsResponse>('/me/notifications'),
   markNotificationsRead: () => request<{ status: string }>('/me/notifications/mark-read', { method: 'POST' }),
 
   course: () => request<Course>('/course'),
   lesson: (id: string) => request<Lesson>(`/lessons/${id}`),
-  exercises: (id: string) => request<ExerciseBlock[]>(`/lessons/${id}/exercises`),
+  // audioOff: dictations come back as sentences to translate into Russian, for
+  // a learner who cannot listen.
+  exercises: (id: string, opts: { audioOff?: boolean } = {}) =>
+    request<ExerciseBlock[]>(`/lessons/${id}/exercises${opts.audioOff ? '?audio=off' : ''}`),
   lessonAttempts: (id: string) => request<LessonAttempts>(`/lessons/${id}/attempts`),
   check: (lesson: string, exId: string, payload: CheckPayload) =>
     request<CheckResult>(`/lessons/${lesson}/exercises/${exId}/check`, {

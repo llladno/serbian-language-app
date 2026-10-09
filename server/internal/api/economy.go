@@ -12,6 +12,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/grisha/serbian-app/server/internal/economy"
@@ -42,6 +43,29 @@ type questDTO struct {
 	Reward      int64  `json:"reward"`
 	Done        bool   `json:"done"`
 	Claimed     bool   `json:"claimed"`
+	// URL is where the learner goes to do the quest, for the kinds that happen
+	// outside the app: the channel to subscribe to. Absent otherwise, and absent
+	// for a channel that has no public address (a bare numeric id).
+	URL string `json:"url,omitempty"`
+	// NeedsTelegram is set on the subscription quest for an account that has no
+	// Telegram linked: the subscription is checked through the bot, so for such
+	// an account subscribing alone would never finish the quest.
+	NeedsTelegram bool `json:"needs_telegram,omitempty"`
+}
+
+// telegramChannelURL turns the channel setting into a link a person can open:
+// "@name" becomes t.me/name and a full t.me address is kept. A numeric chat id
+// (-100...) is how a private channel is told to the Bot API, but it has no
+// address anyone could open, so it yields "".
+func telegramChannelURL(channel string) string {
+	channel = strings.TrimSpace(channel)
+	switch {
+	case strings.HasPrefix(channel, "https://t.me/"):
+		return channel
+	case strings.HasPrefix(channel, "@") && len(channel) > 1:
+		return "https://t.me/" + channel[1:]
+	}
+	return ""
 }
 
 type shopItemDTO struct {
@@ -128,20 +152,34 @@ func (h handlers) questCounters(userID string, quests []economy.Quest) (economy.
 // false on every failure: an unreachable Bot API must leave the profile screen
 // working, just with that one quest unfinished.
 func (h handlers) telegramSubscribed(userID string) bool {
-	set, err := h.Store.EconomySettings()
-	if err != nil || set.TelegramChannel == "" {
-		return false
-	}
 	chatID, ok := h.Store.TelegramChatID(userID)
 	if !ok {
 		return false
 	}
-	status, err := telegram.GetChatMember(h.Config.TelegramBotToken, set.TelegramChannel, chatID)
+	member, err := h.memberOfChannel(chatID)
 	if err != nil {
 		log.Printf("quests: getChatMember: %v", err)
 		return false
 	}
-	return telegram.IsMember(status)
+	return member
+}
+
+// memberOfChannel asks Telegram whether a Telegram user (a private chat's id is
+// the user's id) is in the configured channel. An error means "could not tell",
+// never "no": the callers decide what to do with that.
+func (h handlers) memberOfChannel(tgID int64) (bool, error) {
+	set, err := h.Store.EconomySettings()
+	if err != nil {
+		return false, err
+	}
+	if set.TelegramChannel == "" {
+		return false, errors.New("no channel configured")
+	}
+	status, err := telegram.GetChatMember(h.Config.TelegramBotToken, set.TelegramChannel, tgID)
+	if err != nil {
+		return false, err
+	}
+	return telegram.IsMember(status), nil
 }
 
 // visibleQuests is the list the quests screen works from. It drops two kinds:
@@ -201,6 +239,37 @@ func (h handlers) payLessonReward(us *store.UserStore, lesson string) int64 {
 	return 0
 }
 
+// lessonStats sums up a lesson for the screen that closes it. A failure to read
+// the attempts must not stop the lesson from being finished, so it is logged
+// and the screen simply gets no percentage.
+func (h handlers) lessonStats(us *store.UserStore, lesson string) lessonStatsDTO {
+	st := lessonStatsDTO{}
+	// A word counts as new in the lesson the vocabulary files it under, and in
+	// one that lists it in `teaches`; most lessons only do the first.
+	words := map[string]bool{}
+	if l := h.Course().Lessons[lesson]; l != nil {
+		for _, id := range l.Teaches {
+			words[id] = true
+		}
+	}
+	for _, v := range h.Course().Vocab {
+		if v.Lesson == lesson {
+			words[v.ID] = true
+		}
+	}
+	st.NewWords = len(words)
+	answered, right, err := us.FirstTry(lesson)
+	if err != nil {
+		log.Printf("lesson stats %s: %v", lesson, err)
+		return st
+	}
+	st.Answered, st.Mistakes = answered, answered-right
+	if answered > 0 {
+		st.Percent = (right*100 + answered/2) / answered
+	}
+	return st
+}
+
 func (h handlers) listQuests(w http.ResponseWriter, r *http.Request) {
 	ac, ok := authFrom(r)
 	if !ok {
@@ -230,6 +299,8 @@ func (h handlers) listQuests(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	phases := h.phaseLessons()
+	set, _ := h.Store.EconomySettings()
+	_, telegramLinked := h.Store.TelegramChatID(ac.UserID)
 	out := struct {
 		Quests []questDTO `json:"quests"`
 	}{Quests: []questDTO{}}
@@ -239,12 +310,17 @@ func (h handlers) listQuests(w http.ResponseWriter, r *http.Request) {
 		// and streak_days drops to 0. Recomputing "done" from the counter alone
 		// would make a paid quest look unfinished for ever.
 		done := claimed[q.ID] || economy.QuestDone(q, counters, phases)
-		out.Quests = append(out.Quests, questDTO{
+		dto := questDTO{
 			ID: q.ID, Kind: q.Kind, Title: q.Title, Description: q.Description,
 			Target: q.Target, Value: economy.QuestValue(q, counters, phases),
 			Reward: q.Reward, Done: done,
 			Claimed: claimed[q.ID],
-		})
+		}
+		if q.Kind == economy.QuestTelegramSubscribed && !done {
+			dto.URL = telegramChannelURL(set.TelegramChannel)
+			dto.NeedsTelegram = !telegramLinked
+		}
+		out.Quests = append(out.Quests, dto)
 	}
 	writeJSON(w, 200, out)
 }

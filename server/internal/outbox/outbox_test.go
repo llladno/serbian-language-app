@@ -3,6 +3,7 @@ package outbox
 import (
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 	"time"
 
@@ -142,5 +143,29 @@ func TestProcessNextSendsHighPriorityBeforeNormal(t *testing.T) {
 	}
 	if len(order) != 2 || order[0] != "high" || order[1] != "normal" {
 		t.Errorf("send order = %v, want [high, normal] regardless of enqueue time", order)
+	}
+}
+
+// The two-button channel keyboard travels through the one-button outbox as a
+// preset: its type, with the channel's address as the target.
+func TestProcessNextSendsTheChannelKeyboard(t *testing.T) {
+	var markup string
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		r.ParseForm()
+		markup = r.Form.Get("reply_markup")
+		w.Write([]byte(`{"ok":true,"result":true}`))
+	}))
+	defer srv.Close()
+	defer telegram.SetAPIBase(srv.URL)()
+
+	st := newTestStore(t)
+	if err := st.EnqueueBotMessage(555, "hi", store.OutboxButton{Type: "channel_check", Target: "https://t.me/ucimosrb"}, store.PriorityHigh, time.Now()); err != nil {
+		t.Fatal(err)
+	}
+	if _, _, err := ProcessNext(st, "tok", time.Now()); err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(markup, "https://t.me/ucimosrb") || !strings.Contains(markup, telegram.CallbackCheckChannel) {
+		t.Errorf("reply_markup = %s, want the channel link and the check callback", markup)
 	}
 }

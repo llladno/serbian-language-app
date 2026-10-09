@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { RefreshCw } from 'lucide-vue-next'
 import { api } from '../../api'
+import { useWrongGoesToEnd } from '../../lib/lessonRules'
 import type { CheckResult, LessonAttempt } from '../../types'
 import SerbianKeys from '../SerbianKeys.vue'
 import BottomBar from '../BottomBar.vue'
@@ -21,6 +22,13 @@ const priorAnswers = props.prior ? props.prior.answer.split(' | ') : []
 const answers = ref<string[]>(props.forms.map((_, i) => priorAnswers[i] ?? ''))
 const result = ref<CheckResult | null>(null)
 const fromPrior = ref(!!props.prior)
+
+// After a mistake the way forward is the lesson's own button (the exercise
+// comes back at the end of the step), not an instant redo.
+const wrongGoesToEnd = useWrongGoesToEnd()
+const showRetry = computed(
+  () => (fromPrior.value || !!result.value) && !(wrongGoesToEnd.value && result.value && !result.value.ok),
+)
 const pending = ref(false)
 
 async function submit() {
@@ -46,7 +54,7 @@ function retry() {
 <template>
   <div class="relative">
     <button
-      v-if="fromPrior || result"
+      v-if="showRetry"
       class="icon-btn absolute right-0 top-0"
       title="Переделать"
       @click="retry"

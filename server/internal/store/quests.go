@@ -76,6 +76,12 @@ func (u *UserStore) QuestCounters(now time.Time) (economy.Counters, error) {
 	}
 	c.StreakDays = streak
 
+	friends, err := friendsInvited(u.db, u.user)
+	if err != nil {
+		return c, err
+	}
+	c.FriendsInvited = friends
+
 	rows, err := u.db.Query(`SELECT lesson FROM lesson_progress WHERE user_id = ? AND status = 'done'`, u.user)
 	if err != nil {
 		return c, fmt.Errorf("counters: completed lessons: %w", err)

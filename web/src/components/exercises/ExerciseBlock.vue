@@ -1,24 +1,22 @@
 <script setup lang="ts">
-import { reactive } from 'vue'
 import type { ExerciseBlock, LessonAttempts } from '../../types'
 import ExerciseItem from './ExerciseItem.vue'
 
-const props = defineProps<{ lesson: string; block: ExerciseBlock; exIdx: number; priors?: LessonAttempts }>()
-const emit = defineEmits<{ graded: [id: string, ok: boolean]; ungraded: [id: string]; skip: [] }>()
+// The lesson decides which exercise is on screen (`activeId`) and in what
+// order they come — a wrong answer sends one to the end — so this only draws.
+// `rounds` counts how many times an exercise was sent back: a new round is a
+// fresh component (empty field, reshuffled options) and its earlier attempt is
+// no longer shown as if it were this one.
+const props = defineProps<{
+  lesson: string
+  block: ExerciseBlock
+  activeId?: string
+  priors?: LessonAttempts
+  rounds?: Record<string, number>
+}>()
+const emit = defineEmits<{ graded: [id: string, ok: boolean]; ungraded: [id: string]; cantListen: [] }>()
 
-const graded = reactive<Record<string, boolean>>({})
-for (const ex of props.block.exercises) {
-  const p = props.priors?.[ex.id]
-  if (p) graded[ex.id] = p.correct
-}
-function onGraded(id: string, ok: boolean) {
-  graded[id] = ok
-  emit('graded', id, ok)
-}
-function onUngraded(id: string) {
-  delete graded[id]
-  emit('ungraded', id)
-}
+const roundOf = (id: string) => props.rounds?.[id] ?? 0
 </script>
 
 <template>
@@ -28,19 +26,19 @@ function onUngraded(id: string) {
          and forth within the block keeps each exercise's own answered/result
          state instead of losing it to a remount. -->
     <div
-      v-for="(ex, i) in block.exercises"
-      v-show="i === exIdx"
-      :key="ex.id"
+      v-for="ex in block.exercises"
+      v-show="ex.id === activeId"
+      :key="ex.id + ':' + roundOf(ex.id)"
       :data-ex="ex.id"
-      :class="{ 'ex-fade-in': i === exIdx }"
+      :class="{ 'ex-fade-in': ex.id === activeId }"
     >
       <ExerciseItem
         :lesson="lesson"
         :exercise="ex"
-        :prior="priors?.[ex.id]"
-        @graded="onGraded(ex.id, $event)"
-        @ungraded="onUngraded(ex.id)"
-        @skip="emit('skip')"
+        :prior="roundOf(ex.id) ? undefined : priors?.[ex.id]"
+        @graded="emit('graded', ex.id, $event)"
+        @ungraded="emit('ungraded', ex.id)"
+        @cant-listen="emit('cantListen')"
       />
     </div>
   </section>
@@ -50,8 +48,8 @@ function onUngraded(id: string) {
 /* v-show keeps every exercise mounted (see the comment above) so a Vue
    Transition — which only fires on mount/unmount — can't animate the swap.
    A plain CSS animation still restarts whenever the class is (re)applied,
-   which happens exactly when this exercise becomes the active one (i ===
-   exIdx flips from false to true), v-show'd-display or not. */
+   which happens exactly when this exercise becomes the active one (the
+   `ex.id === activeId` flips from false to true), v-show'd-display or not. */
 @keyframes exFadeIn {
   from { opacity: 0; }
   to { opacity: 1; }

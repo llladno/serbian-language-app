@@ -27,7 +27,7 @@ export const useWalletStore = defineStore('wallet', () => {
   const loaded = ref(false)
   const questsLoaded = ref(false)
 
-  // What the пёрышки are being saved for: the cheapest level not yet owned.
+  // What the зёрнышки are being saved for: the cheapest level not yet owned.
   // Without it the balance is a number with no story — the quests screen is
   // the only place that can say what it buys.
   const goal = computed(() => {
@@ -45,7 +45,7 @@ export const useWalletStore = defineStore('wallet', () => {
     return pluralRu(n, nameOne.value, nameFew.value, nameMany.value)
   }
 
-  // "15 пёрышек", or just "15" before the first wallet response.
+  // "15 зёрнышек", or just "15" before the first wallet response.
   function amount(n: number): string {
     const word = currencyWord(n)
     return word ? `${n} ${word}` : String(n)
@@ -111,6 +111,21 @@ export const useWalletStore = defineStore('wallet', () => {
     return paid
   }
 
+  // The shop row that unlocks a level, or null for a free level / no product.
+  function productForPhase(phaseId: string): ShopItem | null {
+    return products.value.find((p) => p.kind === 'phase_unlock' && p.ref === phaseId) ?? null
+  }
+
+  // Buys a product and refreshes what the purchase changed. One key per call,
+  // so a double tap is one purchase; a failed attempt may be retried with a new
+  // key because nothing was charged.
+  async function buy(productId: number): Promise<number> {
+    const res = await api.purchase(productId, crypto.randomUUID())
+    balance.value = res.balance
+    await loadShop()
+    return res.paid
+  }
+
   // Claims one quest and returns the reward, so the caller can celebrate it.
   // The balance comes back from the server rather than being added up here:
   // the daily drip may have credited something since the last refresh.
@@ -138,6 +153,8 @@ export const useWalletStore = defineStore('wallet', () => {
     amount,
     refresh,
     loadShop,
+    productForPhase,
+    buy,
     loadQuests,
     claim,
     claimFinishedPhases,

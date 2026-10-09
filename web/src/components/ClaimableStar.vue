@@ -2,7 +2,7 @@
 // The "something is waiting for you" mark on the balance chip: one pixel star
 // that pops in and then keeps winking. Decorative — the chip it sits on is
 // already a link to the quests, and the screen reader gets the label there.
-import { sparkleUrl } from '../lib/feathers'
+import { sparkleUrl } from '../lib/seeds'
 </script>
 
 <template>

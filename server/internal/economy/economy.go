@@ -93,6 +93,7 @@ const (
 	QuestPhaseCompleted     = "phase_completed"
 	QuestTelegramSubscribed = "telegram_subscribed"
 	QuestLessonCompleted    = "lesson_completed"
+	QuestFriendsInvited     = "friends_invited"
 )
 
 // Quest is one row of the quests table.
@@ -120,6 +121,9 @@ type Counters struct {
 	StreakDays         int
 	CompletedLessons   map[string]bool
 	TelegramSubscribed bool
+	// FriendsInvited is how many verified accounts joined through the learner's
+	// invite link.
+	FriendsInvited int
 }
 
 // QuestValue is the user's current value for q. For phase_completed the value
@@ -156,6 +160,8 @@ func QuestValue(q Quest, c Counters, phaseLessons map[string][]string) int {
 			return 1
 		}
 		return 0
+	case QuestFriendsInvited:
+		return c.FriendsInvited
 	case QuestLessonCompleted:
 		if c.CompletedLessons[q.Param] {
 			return 1
@@ -237,21 +243,23 @@ type PhaseLessons struct {
 }
 
 // lessonPay is what one lesson of a phase is worth: base for an ordinary
-// lesson, bump for every fourth one. Only the free phases are listed —
-// levels 4 and 5 are bought, and paying for their lessons would discount the
-// next level against a price that was calculated without them.
+// lesson, bump for every fourth one. Level 5 is the only phase that pays
+// nothing: it is the last one for sale, so there is no next level to discount.
+// Level 4 does pay (110 in all with its completion quest), and that income is
+// part of how Level 5's price was calculated.
 //
 // The amounts are deliberately uneven and are never shown before the lesson is
 // finished, so from the learner's side the payout is unpredictable, which is
 // what keeps it from turning into a wage. They stay small next to a level's
-// price (500) for the same reason: the lesson is the point, the пёрышки are
+// price (500) for the same reason: the lesson is the point, the зёрнышки are
 // not. Each phase's lessons plus its phase_completed bonus come to the totals
-// the design doc fixed — 50 / 70 / 90 — which TestLessonRewardsMatchPhaseTotals
+// the design doc fixed — 50 / 70 / 90 / 110 — which TestLessonRewardsMatchPhaseTotals
 // checks against the real course.
 var lessonPay = map[string]struct{ base, bump int64 }{
 	"1": {2, 4},
 	"2": {3, 6},
 	"3": {4, 8},
+	"4": {4, 8},
 }
 
 // LessonBumpEvery is how often a lesson pays the larger amount.

@@ -28,10 +28,11 @@ func TestDisplayNameFallsBackToGeneric(t *testing.T) {
 	}
 }
 
-func TestDefaultMessagesHaveAllEightKeys(t *testing.T) {
+func TestDefaultMessagesHaveEveryKey(t *testing.T) {
 	want := []MessageKey{
 		MsgStartGreeting, MsgLoginSuccessNew, MsgLoginSuccessExisting,
 		MsgLoginTokenExpired, MsgLoginError, MsgLinkSuccess, MsgLinkTaken, MsgLinkError,
+		MsgChannelPrompt, MsgChannelOK, MsgChannelNotYet,
 	}
 	if len(DefaultMessages) != len(want) {
 		t.Fatalf("DefaultMessages has %d entries, want %d", len(DefaultMessages), len(want))

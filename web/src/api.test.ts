@@ -94,4 +94,32 @@ describe('api', () => {
     await expect(api.login('a@b.com', 'wrong')).rejects.toMatchObject({ status: 401 })
     expect(pushSpy).not.toHaveBeenCalled()
   })
+
+  describe('invite code on sign-up', () => {
+    const ok = () => vi.fn().mockResolvedValue(new Response('{"status":"ok"}', { status: 200 }))
+    beforeEach(() => localStorage.clear())
+
+    it('rides along with a registration', async () => {
+      localStorage.setItem('ucimo_referral', 'abcd2345')
+      const fetchMock = ok()
+      vi.stubGlobal('fetch', fetchMock)
+      await api.register('a@example.com', 'password123', 'Аня')
+      expect(JSON.parse(fetchMock.mock.calls[0][1].body)).toMatchObject({ email: 'a@example.com', ref: 'abcd2345' })
+    })
+
+    it('rides along with a Telegram login', async () => {
+      localStorage.setItem('ucimo_referral', 'abcd2345')
+      const fetchMock = ok()
+      vi.stubGlobal('fetch', fetchMock)
+      await api.telegramLogin({ init_data: 'x' })
+      expect(JSON.parse(fetchMock.mock.calls[0][1].body)).toMatchObject({ init_data: 'x', ref: 'abcd2345' })
+    })
+
+    it('is left out when the browser came without a link', async () => {
+      const fetchMock = ok()
+      vi.stubGlobal('fetch', fetchMock)
+      await api.register('a@example.com', 'password123', 'Аня')
+      expect(JSON.parse(fetchMock.mock.calls[0][1].body)).not.toHaveProperty('ref')
+    })
+  })
 })

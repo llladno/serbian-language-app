@@ -2,9 +2,12 @@
 import { computed, ref } from 'vue'
 import { RefreshCw } from 'lucide-vue-next'
 import { api } from '../../api'
+import { useWrongGoesToEnd } from '../../lib/lessonRules'
 import type { CheckResult, LessonAttempt } from '../../types'
 import BottomBar from '../BottomBar.vue'
 import HintButton from '../HintButton.vue'
+import PhraseSpeak from '../PhraseSpeak.vue'
+import PromptSpeak from '../PromptSpeak.vue'
 
 const props = defineProps<{
   lesson: string
@@ -23,6 +26,13 @@ const chips = ref(
 const picked = ref<number[]>([])
 const result = ref<CheckResult | null>(null)
 const fromPrior = ref(!!props.prior)
+
+// After a mistake the way forward is the lesson's own button (the exercise
+// comes back at the end of the step), not an instant redo.
+const wrongGoesToEnd = useWrongGoesToEnd()
+const showRetry = computed(
+  () => (fromPrior.value || !!result.value) && !(wrongGoesToEnd.value && result.value && !result.value.ok),
+)
 const pending = ref(false)
 
 const available = computed(() => chips.value.filter((c) => !picked.value.includes(c.id)))
@@ -61,7 +71,7 @@ function retry() {
 <template>
   <div class="relative text-center">
     <button
-      v-if="fromPrior || result"
+      v-if="showRetry"
       class="icon-btn absolute right-0 top-0"
       title="Переделать"
       @click="retry"
@@ -71,6 +81,7 @@ function retry() {
 
     <p class="mb-5 flex flex-wrap items-center justify-center gap-1.5 whitespace-pre-wrap px-8 text-xl font-medium">
       {{ prompt }}
+      <PromptSpeak :prompt="prompt" />
       <HintButton v-if="explain && !result && !fromPrior" :text="explain" />
     </p>
 
@@ -117,8 +128,11 @@ function retry() {
         <p class="mb-1 font-semibold" :class="result.ok ? 'text-[var(--good)]' : 'text-[var(--bad)]'">
           {{ result.ok ? '✓ Верно' : result.near_miss ? 'Почти — опечатка?' : '✗ Не совсем' }}
         </p>
-        <p v-if="!result.ok && result.expected">
-          Правильно: <span class="serbian font-semibold">{{ result.expected }}</span>
+        <p class="flex items-center justify-center gap-1">
+          <template v-if="!result.ok && result.expected">
+            Правильно: <span class="serbian font-semibold">{{ result.expected }}</span>
+          </template>
+          <PhraseSpeak :text="result.ok ? sentence : result.expected" />
         </p>
         <p v-if="result.explain" class="mt-1 text-[var(--muted)]">{{ result.explain }}</p>
       </div>

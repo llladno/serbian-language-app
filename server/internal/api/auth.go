@@ -135,6 +135,7 @@ func (h handlers) register(w http.ResponseWriter, r *http.Request) {
 		UtmMedium   string `json:"utm_medium"`
 		UtmCampaign string `json:"utm_campaign"`
 		UtmContent  string `json:"utm_content"`
+		Ref         string `json:"ref"`
 	}
 	if err := decode(r, &req); err != nil {
 		fail(w, http.StatusBadRequest, "bad request body")
@@ -205,6 +206,7 @@ func (h handlers) register(w http.ResponseWriter, r *http.Request) {
 		if err := h.Store.SetUserAttribution(userID, attr); err != nil {
 			log.Printf("register: set attribution: %v", err)
 		}
+		h.applyReferral(userID, req.Ref)
 		identityID := auth.NewIdentityID()
 		if err := h.Store.CreateIdentity(store.Identity{
 			ID:           identityID,
@@ -755,6 +757,7 @@ func (h handlers) telegramLogin(w http.ResponseWriter, r *http.Request) {
 			UtmMedium   string `json:"utm_medium"`
 			UtmCampaign string `json:"utm_campaign"`
 			UtmContent  string `json:"utm_content"`
+			Ref         string `json:"ref"`
 		}
 		_ = json.Unmarshal(body, &attrReq)
 		if err := h.Store.SetUserAttribution(userID, store.Attribution{
@@ -763,6 +766,7 @@ func (h handlers) telegramLogin(w http.ResponseWriter, r *http.Request) {
 		}); err != nil {
 			log.Printf("telegram login: set attribution: %v", err)
 		}
+		h.applyReferral(userID, attrReq.Ref)
 	}
 	h.finishTelegramLogin(w, r, userID)
 }
@@ -788,12 +792,12 @@ func (h handlers) finishTelegramLogin(w http.ResponseWriter, r *http.Request, us
 // callerUserID ("" for a login attempt from telegramLoginStart, an
 // authenticated user's own id for a link attempt from telegramLinkStart in
 // me.go) and returns the t.me URL the frontend opens in a new tab.
-func (h handlers) telegramStartFor(w http.ResponseWriter, callerUserID string) {
+func (h handlers) telegramStartFor(w http.ResponseWriter, callerUserID, intent string) {
 	if !h.Config.TelegramEnabled() || h.TelegramBotUsername == "" {
 		fail(w, http.StatusServiceUnavailable, "telegram_disabled")
 		return
 	}
-	raw, err := h.TelegramPending.Create(callerUserID)
+	raw, err := h.TelegramPending.CreateFor(callerUserID, intent)
 	if err != nil {
 		log.Printf("telegram start: %v", err)
 		fail(w, http.StatusInternalServerError, "internal error")
@@ -809,7 +813,7 @@ func (h handlers) telegramStartFor(w http.ResponseWriter, callerUserID string) {
 // how a caller gets a login token in the first place, so it cannot itself
 // require a session).
 func (h handlers) telegramLoginStart(w http.ResponseWriter, r *http.Request) {
-	h.telegramStartFor(w, "")
+	h.telegramStartFor(w, "", "")
 }
 
 // telegramPoll handles GET /api/auth/telegram/poll?token=... (public — the
@@ -878,6 +882,15 @@ func (h handlers) telegramWebhook(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 
 	var update struct {
+		CallbackQuery *struct {
+			ID   string `json:"id"`
+			Data string `json:"data"`
+			From struct {
+				ID        int64  `json:"id"`
+				Username  string `json:"username"`
+				FirstName string `json:"first_name"`
+			} `json:"from"`
+		} `json:"callback_query"`
 		Message *struct {
 			Chat struct {
 				ID int64 `json:"id"`
@@ -890,7 +903,15 @@ func (h handlers) telegramWebhook(w http.ResponseWriter, r *http.Request) {
 			} `json:"from"`
 		} `json:"message"`
 	}
-	if err := json.NewDecoder(r.Body).Decode(&update); err != nil || update.Message == nil {
+	if err := json.NewDecoder(r.Body).Decode(&update); err != nil {
+		return
+	}
+	if cq := update.CallbackQuery; cq != nil {
+		h.channelCheckPressed(cq.ID, cq.Data, cq.From.ID,
+			telegram.DisplayName(cq.From.FirstName, cq.From.Username))
+		return
+	}
+	if update.Message == nil {
 		return
 	}
 	chatID := update.Message.Chat.ID
@@ -944,8 +965,84 @@ func (h handlers) telegramWebhook(w http.ResponseWriter, r *http.Request) {
 		h.sendBotMessage(chatID, telegram.MsgLinkError, name, h.supportButton())
 		return
 	}
+	intent := h.TelegramPending.Intent(token)
 	h.TelegramPending.Resolve(token, callerUserID)
+	if intent == linkIntentChannel && h.sendChannelPrompt(chatID, update.Message.From.ID, name) {
+		return
+	}
 	h.sendBotMessage(chatID, telegram.MsgLinkSuccess, name, h.miniAppButton())
+}
+
+// linkIntentChannel marks a link token minted from the subscription quest: once
+// Telegram is linked the bot goes on to ask for the subscription instead of
+// stopping at "linked".
+const linkIntentChannel = "channel"
+
+// channelKeyboard is the subscribe-and-check keyboard for the configured
+// channel, or nil when there is no channel with an address to send anyone to.
+func (h handlers) channelKeyboard() *telegram.InlineButton {
+	set, err := h.Store.EconomySettings()
+	if err != nil {
+		return nil
+	}
+	if u := telegramChannelURL(set.TelegramChannel); u != "" {
+		return &telegram.InlineButton{ChannelURL: u}
+	}
+	return nil
+}
+
+// sendChannelPrompt follows a link made for the subscription quest. Someone who
+// is already in the channel is told so at once, with no detour through the
+// buttons. Returns false when there is nothing channel-specific to say (no
+// channel configured), so the caller falls back to the ordinary "linked".
+func (h handlers) sendChannelPrompt(chatID, tgID int64, name string) bool {
+	kb := h.channelKeyboard()
+	if kb == nil {
+		return false
+	}
+	if member, err := h.memberOfChannel(tgID); err == nil && member {
+		h.sendBotMessage(chatID, telegram.MsgChannelOK, name, h.questsButton())
+		return true
+	}
+	h.sendBotMessage(chatID, telegram.MsgChannelPrompt, name, kb)
+	return true
+}
+
+// channelCheckPressed answers the "check" button under the bot's channel
+// message: a short notice over the chat straight away, and a message that
+// stays in it, so the result is not lost once the notice fades. The same
+// answer reaches the app by itself, because the quest asks Telegram on every
+// load.
+func (h handlers) channelCheckPressed(queryID, data string, tgID int64, name string) {
+	token := h.Config.TelegramBotToken
+	answer := func(text string) {
+		if err := telegram.AnswerCallbackQuery(token, queryID, text); err != nil {
+			log.Printf("telegram webhook: answer callback: %v", err)
+		}
+	}
+	if data != telegram.CallbackCheckChannel {
+		answer("")
+		return
+	}
+	// A private chat's id is the user's id.
+	chatID := tgID
+	if _, err := h.Store.IdentityByProviderUID("telegram", strconv.FormatInt(tgID, 10)); err != nil {
+		answer("Сначала привяжи Telegram в приложении")
+		return
+	}
+	member, err := h.memberOfChannel(tgID)
+	if err != nil {
+		log.Printf("telegram webhook: check channel: %v", err)
+		answer("Не получилось проверить, попробуй ещё раз")
+		return
+	}
+	if member {
+		answer("Подписка найдена ✅")
+		h.sendBotMessage(chatID, telegram.MsgChannelOK, name, h.questsButton())
+		return
+	}
+	answer("Подписки пока не видно")
+	h.sendBotMessage(chatID, telegram.MsgChannelNotYet, name, h.channelKeyboard())
 }
 
 // sendBotMessage resolves key to its current text (an admin override in
@@ -968,6 +1065,11 @@ func (h handlers) sendBotMessage(chatID int64, key telegram.MessageKey, name str
 // same target telegram.SetChatMenuButton already points at.
 func (h handlers) miniAppButton() *telegram.InlineButton {
 	return &telegram.InlineButton{Label: "Открыть Учимо", WebAppURL: h.Config.AppBaseURL + "/profile"}
+}
+
+// questsButton opens the Mini App on the quests screen, where the reward waits.
+func (h handlers) questsButton() *telegram.InlineButton {
+	return &telegram.InlineButton{Label: "Забрать награду", WebAppURL: h.Config.AppBaseURL + "/quests"}
 }
 
 // supportButton points at the same account the website's support card

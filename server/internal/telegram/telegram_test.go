@@ -335,3 +335,43 @@ func TestGetChatMemberSendsChatAndUser(t *testing.T) {
 		t.Errorf("body = %q, want the chat and user id", gotBody)
 	}
 }
+
+func TestSendMessageWithChannelKeyboardHasSubscribeAndCheck(t *testing.T) {
+	var markup string
+	withTestServer(t, func(w http.ResponseWriter, r *http.Request) {
+		r.ParseForm()
+		markup = r.Form.Get("reply_markup")
+		w.Write([]byte(`{"ok":true,"result":true}`))
+	})
+	err := SendMessageWithButton("tok", 7, "hi", &InlineButton{ChannelURL: "https://t.me/ucimosrb"})
+	if err != nil {
+		t.Fatalf("send: %v", err)
+	}
+	var got struct {
+		Keyboard [][]map[string]string `json:"inline_keyboard"`
+	}
+	if err := json.Unmarshal([]byte(markup), &got); err != nil {
+		t.Fatalf("reply_markup %q: %v", markup, err)
+	}
+	if len(got.Keyboard) != 2 ||
+		got.Keyboard[0][0]["url"] != "https://t.me/ucimosrb" || got.Keyboard[0][0]["text"] != SubscribeLabel ||
+		got.Keyboard[1][0]["callback_data"] != CallbackCheckChannel || got.Keyboard[1][0]["text"] != CheckLabel {
+		t.Errorf("keyboard = %v, want [subscribe url] over [check callback]", got.Keyboard)
+	}
+}
+
+func TestAnswerCallbackQuerySendsIDAndText(t *testing.T) {
+	var form url.Values
+	var path string
+	withTestServer(t, func(w http.ResponseWriter, r *http.Request) {
+		r.ParseForm()
+		form, path = r.Form, r.URL.Path
+		w.Write([]byte(`{"ok":true,"result":true}`))
+	})
+	if err := AnswerCallbackQuery("tok", "cb-1", "Подписка найдена"); err != nil {
+		t.Fatalf("answer: %v", err)
+	}
+	if path != "/bottok/answerCallbackQuery" || form.Get("callback_query_id") != "cb-1" || form.Get("text") != "Подписка найдена" {
+		t.Errorf("path=%q form=%v", path, form)
+	}
+}

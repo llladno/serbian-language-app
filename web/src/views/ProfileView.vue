@@ -13,9 +13,10 @@ import { useTelegramStart } from '../lib/telegramStart'
 import ProgressDashboard from '../components/ProgressDashboard.vue'
 import PhaseProgressCard from '../components/PhaseProgressCard.vue'
 import LeaderboardCard from '../components/LeaderboardCard.vue'
+import ModalShell from '../components/ModalShell.vue'
 import SupportCard from '../components/SupportCard.vue'
 import DonateCard from '../components/DonateCard.vue'
-import FeatherIcon from '../components/FeatherIcon.vue'
+import SeedIcon from '../components/SeedIcon.vue'
 import { pluralRu } from '../lib/plural'
 import type { LeaderRow, Me, Progress, Vocab } from '../types'
 
@@ -248,7 +249,7 @@ async function logout() {
               <p class="text-sm text-[var(--muted)]">{{ questsHint }}</p>
             </div>
             <span class="flex shrink-0 items-center gap-1.5 text-lg font-extrabold">
-              <FeatherIcon :size="18" />{{ wallet.balance }}
+              <SeedIcon :size="18" />{{ wallet.balance }}
             </span>
           </RouterLink>
 
@@ -260,155 +261,125 @@ async function logout() {
     <SupportCard v-if="me" />
     <DonateCard v-if="me" />
 
-    <Teleport to="body">
-      <Transition name="modal-overlay">
-        <div
-          v-if="me && showSettings"
-          class="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto p-4 sm:items-center"
-        >
-        <div class="fixed inset-0 bg-black/40" @click="showSettings = false" />
-        <div class="card modal-panel relative z-10 w-full max-w-md space-y-4 p-5">
-          <div class="flex items-center justify-between">
-            <p class="text-lg font-extrabold">Настройки</p>
-            <button class="icon-btn" title="Закрыть" aria-label="Закрыть" @click="showSettings = false">
-              <X :size="19" :stroke-width="2.25" />
-            </button>
-          </div>
+    <ModalShell v-if="me" :open="showSettings" panel-class="space-y-4 p-5" @close="showSettings = false">
+      <div class="flex items-center justify-between">
+        <p class="text-lg font-extrabold">Настройки</p>
+        <button class="icon-btn" title="Закрыть" aria-label="Закрыть" @click="showSettings = false">
+          <X :size="19" :stroke-width="2.25" />
+        </button>
+      </div>
 
-          <div>
-            <div class="flex items-center justify-between gap-2">
-              <template v-if="!editingName">
-                <p class="font-semibold">{{ me.name }}</p>
-                <button class="text-sm text-[var(--accent)]" @click="startEditName">изменить имя</button>
-              </template>
-              <form v-else class="flex flex-1 gap-2" @submit.prevent="saveName">
-                <input v-model="nameDraft" class="field flex-1" maxlength="40" autofocus />
-                <button class="btn btn-primary" :disabled="nameBusy">Сохранить</button>
-                <button type="button" class="btn btn-ghost" @click="editingName = false">Отмена</button>
-              </form>
-            </div>
-            <p v-if="nameError" class="mt-1 text-sm text-[var(--bad)]">{{ nameError }}</p>
-          </div>
-
-          <div class="border-t border-[var(--border)] pt-3">
-            <p class="mb-2 text-sm text-[var(--muted)]">Тема</p>
-            <div class="flex gap-2">
-              <button
-                v-for="(meta, key) in THEME_META"
-                :key="key"
-                type="button"
-                class="flex flex-1 items-center justify-center gap-1.5 rounded-full px-3 py-2 text-sm font-semibold transition"
-                :class="
-                  theme === key
-                    ? 'bg-[var(--accent)] text-white'
-                    : 'bg-[var(--bg-soft)] text-[var(--muted)] hover:text-[var(--fg)]'
-                "
-                :title="meta.label"
-                :data-test="'theme-' + key"
-                @click="setTheme(key as Theme)"
-              >
-                <component :is="THEME_ICON[key as Theme]" :size="15" :stroke-width="2.25" />
-                {{ THEME_SHORT[key as Theme] }}
-              </button>
-            </div>
-          </div>
-
-          <div class="border-t border-[var(--border)] pt-3">
-            <p class="mb-2 text-sm text-[var(--muted)]">Цвет</p>
-            <div class="flex gap-3">
-              <button
-                v-for="(meta, key) in PALETTE_META"
-                :key="key"
-                type="button"
-                class="flex h-9 w-9 items-center justify-center rounded-full border-2 transition"
-                :style="{
-                  background: meta.swatch,
-                  borderColor: palette === key ? meta.swatch : 'transparent',
-                  boxShadow: palette === key ? `0 0 0 2px var(--card), 0 0 0 4px ${meta.swatch}` : 'none',
-                }"
-                :title="meta.label"
-                :aria-label="meta.label"
-                @click="setPalette(key as Palette)"
-              >
-                <Check v-if="palette === key" :size="16" :stroke-width="3" color="#fff" />
-              </button>
-            </div>
-          </div>
-
-          <div class="border-t border-[var(--border)] pt-3">
-            <div class="flex items-center gap-2 text-sm">
-              <span class="text-[var(--muted)]">Telegram:</span>
-              <span v-if="me.telegram.linked">@{{ me.telegram.username || '—' }}</span>
-              <button v-else class="text-[var(--accent)]" :disabled="tg.busy.value" @click="linkTelegram">
-                {{ tg.busy.value ? 'ждём подтверждения в Telegram…' : 'привязать' }}
-              </button>
-            </div>
-            <p v-if="tg.error.value" class="mt-1 text-sm text-[var(--bad)]">{{ tg.error.value }}</p>
-          </div>
-
-          <div class="border-t border-[var(--border)] pt-3">
-            <button v-if="!showPasswordForm" class="btn btn-ghost" @click="showPasswordForm = true">
-              {{ hasPassword ? 'Сменить пароль' : 'Задать пароль' }}
-            </button>
-            <form v-else class="mt-2 space-y-2" @submit.prevent="submitPassword">
-              <input
-                v-if="hasPassword"
-                v-model="currentPassword"
-                type="password"
-                class="field w-full"
-                placeholder="текущий пароль"
-              />
-              <input
-                v-if="!hasPassword"
-                v-model="pwEmail"
-                type="email"
-                class="field w-full"
-                placeholder="email для входа по паролю"
-              />
-              <input
-                v-model="newPassword"
-                type="password"
-                class="field w-full"
-                placeholder="новый пароль"
-                minlength="8"
-                maxlength="128"
-              />
-              <div class="flex gap-2">
-                <button class="btn btn-primary" :disabled="pwBusy">Сохранить</button>
-                <button type="button" class="btn btn-ghost" @click="showPasswordForm = false">Отмена</button>
-              </div>
-            </form>
-            <p v-if="pwError" class="mt-1 text-sm text-[var(--bad)]">{{ pwError }}</p>
-            <p v-if="pwStatus" class="mt-1 text-sm text-[var(--good)]">{{ pwStatus }}</p>
-          </div>
-
-          <div class="flex flex-wrap gap-2 border-t border-[var(--border)] pt-3">
-            <button class="btn btn-ghost" @click="logout">Выйти</button>
-          </div>
-          <p v-if="sessionActionError" class="text-sm text-[var(--bad)]">{{ sessionActionError }}</p>
+      <div>
+        <div class="flex items-center justify-between gap-2">
+          <template v-if="!editingName">
+            <p class="font-semibold">{{ me.name }}</p>
+            <button class="text-sm text-[var(--accent)]" @click="startEditName">изменить имя</button>
+          </template>
+          <form v-else class="flex flex-1 gap-2" @submit.prevent="saveName">
+            <input v-model="nameDraft" class="field flex-1" maxlength="40" autofocus />
+            <button class="btn btn-primary" :disabled="nameBusy">Сохранить</button>
+            <button type="button" class="btn btn-ghost" @click="editingName = false">Отмена</button>
+          </form>
         </div>
+        <p v-if="nameError" class="mt-1 text-sm text-[var(--bad)]">{{ nameError }}</p>
+      </div>
+
+      <div class="border-t border-[var(--border)] pt-3">
+        <p class="mb-2 text-sm text-[var(--muted)]">Тема</p>
+        <div class="flex gap-2">
+          <button
+            v-for="(meta, key) in THEME_META"
+            :key="key"
+            type="button"
+            class="flex flex-1 items-center justify-center gap-1.5 rounded-full px-3 py-2 text-sm font-semibold transition"
+            :class="
+              theme === key
+                ? 'bg-[var(--accent)] text-white'
+                : 'bg-[var(--bg-soft)] text-[var(--muted)] hover:text-[var(--fg)]'
+            "
+            :title="meta.label"
+            :data-test="'theme-' + key"
+            @click="setTheme(key as Theme)"
+          >
+            <component :is="THEME_ICON[key as Theme]" :size="15" :stroke-width="2.25" />
+            {{ THEME_SHORT[key as Theme] }}
+          </button>
         </div>
-      </Transition>
-    </Teleport>
+      </div>
+
+      <div class="border-t border-[var(--border)] pt-3">
+        <p class="mb-2 text-sm text-[var(--muted)]">Цвет</p>
+        <div class="flex gap-3">
+          <button
+            v-for="(meta, key) in PALETTE_META"
+            :key="key"
+            type="button"
+            class="flex h-9 w-9 items-center justify-center rounded-full border-2 transition"
+            :style="{
+              background: meta.swatch,
+              borderColor: palette === key ? meta.swatch : 'transparent',
+              boxShadow: palette === key ? `0 0 0 2px var(--card), 0 0 0 4px ${meta.swatch}` : 'none',
+            }"
+            :title="meta.label"
+            :aria-label="meta.label"
+            @click="setPalette(key as Palette)"
+          >
+            <Check v-if="palette === key" :size="16" :stroke-width="3" color="#fff" />
+          </button>
+        </div>
+      </div>
+
+      <div class="border-t border-[var(--border)] pt-3">
+        <div class="flex items-center gap-2 text-sm">
+          <span class="text-[var(--muted)]">Telegram:</span>
+          <span v-if="me.telegram.linked">@{{ me.telegram.username || '—' }}</span>
+          <button v-else class="text-[var(--accent)]" :disabled="tg.busy.value" @click="linkTelegram">
+            {{ tg.busy.value ? 'ждём подтверждения в Telegram…' : 'привязать' }}
+          </button>
+        </div>
+        <p v-if="tg.error.value" class="mt-1 text-sm text-[var(--bad)]">{{ tg.error.value }}</p>
+      </div>
+
+      <div class="border-t border-[var(--border)] pt-3">
+        <button v-if="!showPasswordForm" class="btn btn-ghost" @click="showPasswordForm = true">
+          {{ hasPassword ? 'Сменить пароль' : 'Задать пароль' }}
+        </button>
+        <form v-else class="mt-2 space-y-2" @submit.prevent="submitPassword">
+          <input
+            v-if="hasPassword"
+            v-model="currentPassword"
+            type="password"
+            class="field w-full"
+            placeholder="текущий пароль"
+          />
+          <input
+            v-if="!hasPassword"
+            v-model="pwEmail"
+            type="email"
+            class="field w-full"
+            placeholder="email для входа по паролю"
+          />
+          <input
+            v-model="newPassword"
+            type="password"
+            class="field w-full"
+            placeholder="новый пароль"
+            minlength="8"
+            maxlength="128"
+          />
+          <div class="flex gap-2">
+            <button class="btn btn-primary" :disabled="pwBusy">Сохранить</button>
+            <button type="button" class="btn btn-ghost" @click="showPasswordForm = false">Отмена</button>
+          </div>
+        </form>
+        <p v-if="pwError" class="mt-1 text-sm text-[var(--bad)]">{{ pwError }}</p>
+        <p v-if="pwStatus" class="mt-1 text-sm text-[var(--good)]">{{ pwStatus }}</p>
+      </div>
+
+      <div class="flex flex-wrap gap-2 border-t border-[var(--border)] pt-3">
+        <button class="btn btn-ghost" @click="logout">Выйти</button>
+      </div>
+      <p v-if="sessionActionError" class="text-sm text-[var(--bad)]">{{ sessionActionError }}</p>
+    </ModalShell>
   </div>
 </template>
-
-<style scoped>
-.modal-overlay-enter-active,
-.modal-overlay-leave-active {
-  transition: opacity 0.18s ease;
-}
-.modal-overlay-enter-from,
-.modal-overlay-leave-to {
-  opacity: 0;
-}
-.modal-overlay-enter-active .modal-panel,
-.modal-overlay-leave-active .modal-panel {
-  transition: transform 0.18s ease, opacity 0.18s ease;
-}
-.modal-overlay-enter-from .modal-panel,
-.modal-overlay-leave-to .modal-panel {
-  opacity: 0;
-  transform: scale(0.95) translateY(6px);
-}
-</style>

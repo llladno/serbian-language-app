@@ -5,7 +5,7 @@
 // it just changed.
 import { RouterLink } from 'vue-router'
 import { useToasts } from '../lib/toasts'
-import FeatherIcon from './FeatherIcon.vue'
+import SeedIcon from './SeedIcon.vue'
 
 const { items, dismiss } = useToasts()
 </script>
@@ -30,7 +30,7 @@ const { items, dismiss } = useToasts()
             <p class="truncate text-sm text-[var(--muted)]">{{ t.text }}</p>
           </div>
           <span v-if="t.reward" class="flex shrink-0 items-center gap-1 font-extrabold text-[var(--accent)]">
-            +{{ t.reward }}<FeatherIcon :size="15" />
+            +{{ t.reward }}<SeedIcon :size="15" />
           </span>
         </RouterLink>
       </TransitionGroup>

@@ -1,5 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { captureAttribution, getStoredAttribution } from './attribution'
+import {
+  captureAttribution,
+  captureReferral,
+  clearStoredReferral,
+  getStoredAttribution,
+  getStoredReferral,
+} from './attribution'
 
 function setUrl(search: string) {
   window.history.replaceState({}, '', '/' + search)
@@ -46,5 +52,50 @@ describe('captureAttribution', () => {
     captureAttribution()
     captureAttribution()
     expect(fetchSpy).toHaveBeenCalledTimes(1)
+  })
+})
+
+describe('invite link', () => {
+  beforeEach(() => {
+    localStorage.clear()
+    setUrl('')
+  })
+
+  it('remembers the code from /register?ref=', () => {
+    setUrl('?ref=abcd2345')
+    captureReferral()
+    expect(getStoredReferral()).toBe('abcd2345')
+  })
+
+  it('takes the code case-insensitively, as people retype links', () => {
+    setUrl('?ref=ABCD2345')
+    captureReferral()
+    expect(getStoredReferral()).toBe('abcd2345')
+  })
+
+  it('ignores junk instead of storing it', () => {
+    for (const bad of ['', 'x', '<script>', 'a b c d e f', 'a'.repeat(40)]) {
+      setUrl('?ref=' + encodeURIComponent(bad))
+      captureReferral()
+      expect(getStoredReferral()).toBe('')
+    }
+  })
+
+  it('lets a newer link replace an older one', () => {
+    setUrl('?ref=aaaa2222')
+    captureReferral()
+    setUrl('?ref=bbbb3333')
+    captureReferral()
+    expect(getStoredReferral()).toBe('bbbb3333')
+  })
+
+  it('keeps the code when the URL no longer has it, until it is cleared', () => {
+    setUrl('?ref=abcd2345')
+    captureReferral()
+    setUrl('')
+    captureReferral()
+    expect(getStoredReferral()).toBe('abcd2345')
+    clearStoredReferral()
+    expect(getStoredReferral()).toBe('')
   })
 })

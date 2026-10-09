@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Turn the raw feather renders into the small pixel-art PNGs the app ships.
+"""Turn the raw sunflower-seed renders into the small pixel-art WebPs the app ships.
 
 The generator returns 1200x896 JPGs on a near-white background: pixel art in
 look, but not on a real pixel grid (blocks drift between 8 and 13 source
@@ -7,11 +7,11 @@ pixels) and smeared by JPEG noise. So instead of trying to recover the grid, we
 cut the background, trim to the subject, scale down to the size the art is
 actually worth, and re-flatten the colours. The result is a small sprite that
 the UI blows back up with `image-rendering: pixelated`, which is what makes the
-edges hard again.
+edges hard again. Saved as lossless WebP: smaller than PNG here and no ringing.
 
-    python3 docs/feather-effects/crop-feathers.py
+    python3 docs/seed-effects/crop-seeds.py
 
-Reads docs/feather-effects/raw/*.jpg, writes web/src/assets/currency/*.png.
+Reads docs/seed-effects/raw/*.jpg, writes web/src/assets/currency/*.webp.
 """
 import os
 
@@ -21,14 +21,18 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 RAW = os.path.join(HERE, "raw")
 OUT = os.path.abspath(os.path.join(HERE, "..", "..", "web", "src", "assets", "currency"))
 
-# name -> width of the sprite we keep. The single feather is an icon (chip,
-# quest reward, modal), the piles only ever appear large, so they keep more
-# detail; the sizes also keep the three piles visibly bigger than one another.
-TARGETS = {"feather": 40, "pile-1": 72, "pile-2": 88, "pile-3": 104}
+# name -> width of the sprite we keep. The single seed is an icon (chip, quest
+# reward, modal), the other three only ever appear large, so they keep more
+# detail; the sizes also keep them visibly bigger than one another.
+#   seed          one seed        (balance 0)
+#   seeds-few     four seeds      (under 100)
+#   seeds-handful a heap of seeds (under 1000)
+#   seeds-sack    a sack of seeds (1000 and up)
+TARGETS = {"seed": 28, "seeds-few": 56, "seeds-handful": 72, "seeds-sack": 68}
 
-# Colours left after flattening. More than the four palette tones because the
-# piles shade overlapping feathers against each other.
-COLORS = 12
+# Colours left after flattening: gold, its highlight, two stripe tones, the
+# outline, plus the burlap tones of the sack and the shading between overlaps.
+COLORS = 16
 
 # Distance from the sampled background colour, in RGB units, at which a pixel
 # is still background. Generous because JPEG rings the near-white plate.
@@ -78,8 +82,8 @@ def main() -> None:
             img = img.crop(bbox)
         height = max(1, round(img.height * width / img.width))
         img = flatten(img.resize((width, height), Image.LANCZOS))
-        dst = os.path.join(OUT, name + ".png")
-        img.save(dst)
+        dst = os.path.join(OUT, name + ".webp")
+        img.save(dst, "WEBP", lossless=True, quality=100, method=6)
         print(f"{name}: {img.size[0]}x{img.size[1]} -> {os.path.relpath(dst)}")
 
 

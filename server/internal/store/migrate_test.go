@@ -438,3 +438,209 @@ func TestMigration012Schema(t *testing.T) {
 		t.Fatalf("bot_outbox.broadcast_id missing: %v", err)
 	}
 }
+
+// Migration 019 fills the quest's channel in on a database that never had one,
+// and leaves a channel somebody already chose alone.
+func TestMigration019FillsOnlyAnEmptyChannel(t *testing.T) {
+	channelAfter := func(t *testing.T, before string) string {
+		t.Helper()
+		s := openStoreAtVersion(t, 18)
+		mustExec(t, s, `UPDATE economy_settings SET value = ? WHERE key = 'telegram_channel'`, before)
+		if err := s.runMigrations(); err != nil {
+			t.Fatalf("run migrations: %v", err)
+		}
+		var v string
+		if err := s.db.QueryRow(`SELECT value FROM economy_settings WHERE key = 'telegram_channel'`).Scan(&v); err != nil {
+			t.Fatal(err)
+		}
+		return v
+	}
+
+	if got := channelAfter(t, ""); got != "@ucimosrb" {
+		t.Errorf("empty channel became %q, want @ucimosrb", got)
+	}
+	if got := channelAfter(t, "@pockets_money"); got != "@pockets_money" {
+		t.Errorf("a chosen channel became %q, want it kept", got)
+	}
+}
+
+// Migration 020 moves a database seeded before Level 4 existed to the new
+// prices, rewards and quests, leaves anything edited in the admin panel alone,
+// and writes nothing on a database the seed has not run on yet.
+func TestMigration020Level4Economy(t *testing.T) {
+	seedOld := func(t *testing.T) *Store {
+		t.Helper()
+		s := openStoreAtVersion(t, 19)
+		mustExec(t, s, `INSERT INTO economy_settings (key, value, updated_at) VALUES ('economy_seeded', '1', 'x')`)
+		mustExec(t, s, `INSERT INTO economy_settings (key, value, updated_at) VALUES ('economy_lessons_seeded', '1', 'x')`)
+		for _, p := range []struct {
+			ref, title string
+			price      int
+		}{{"4", "Уровень 4 — Мнения и жизнь", 500}, {"5", "Уровень 5 — Уверенно", 1000}} {
+			mustExec(t, s, `INSERT INTO products (kind, ref, title, description, price, created_at, updated_at)
+				VALUES ('phase_unlock', ?, ?, '', ?, 'x', 'x')`, p.ref, p.title, p.price)
+		}
+		mustExec(t, s, `INSERT INTO quests (kind, target, param, title, reward, created_at, updated_at)
+			VALUES ('telegram_subscribed', 1, '', 'Подписаться на канал', 15, 'x', 'x')`)
+		mustExec(t, s, `INSERT INTO quests (kind, target, param, title, reward, created_at, updated_at)
+			VALUES ('streak_days', 7, '', 'Стрик 7 дней', 10, 'x', 'x')`)
+		return s
+	}
+	count := func(t *testing.T, s *Store, q string, a ...any) int {
+		t.Helper()
+		var n int
+		if err := s.db.QueryRow(q, a...).Scan(&n); err != nil {
+			t.Fatal(err)
+		}
+		return n
+	}
+
+	t.Run("old seed values are replaced", func(t *testing.T) {
+		s := seedOld(t)
+		if err := s.runMigrations(); err != nil {
+			t.Fatalf("run migrations: %v", err)
+		}
+		if got := count(t, s, `SELECT price FROM products WHERE kind = 'phase_unlock' AND ref = '4'`); got != 230 {
+			t.Errorf("level 4 price = %d, want 230", got)
+		}
+		if got := count(t, s, `SELECT price FROM products WHERE kind = 'phase_unlock' AND ref = '5'`); got != 375 {
+			t.Errorf("level 5 price = %d, want 375", got)
+		}
+		if got := count(t, s, `SELECT COUNT(*) FROM products WHERE title LIKE '%Падежи в жизни%'`); got != 1 {
+			t.Errorf("level 4 title was not renamed")
+		}
+		if got := count(t, s, `SELECT reward FROM quests WHERE kind = 'telegram_subscribed'`); got != 20 {
+			t.Errorf("telegram reward = %d, want 20", got)
+		}
+		if got := count(t, s, `SELECT reward FROM quests WHERE kind = 'streak_days' AND target = 7`); got != 60 {
+			t.Errorf("7-day streak reward = %d, want 60", got)
+		}
+		if got := count(t, s, `SELECT reward FROM quests WHERE kind = 'streak_days' AND target = 3`); got != 20 {
+			t.Errorf("3-day streak reward = %d, want 20", got)
+		}
+		if got := count(t, s, `SELECT reward FROM quests WHERE kind = 'phase_completed' AND param = '4'`); got != 22 {
+			t.Errorf("level 4 completion reward = %d, want 22", got)
+		}
+		if got := count(t, s, `SELECT COUNT(*) FROM quests WHERE kind = 'lesson_completed'`); got != 18 {
+			t.Errorf("lesson reward rows = %d, want 18 (lessons 42..59)", got)
+		}
+		if got := count(t, s, `SELECT SUM(reward) FROM quests WHERE kind = 'lesson_completed'`); got != 88 {
+			t.Errorf("lesson rewards add up to %d, want 88 (14 x 4 + 4 x 8)", got)
+		}
+	})
+
+	t.Run("admin edits survive", func(t *testing.T) {
+		s := seedOld(t)
+		mustExec(t, s, `UPDATE products SET price = 700 WHERE kind = 'phase_unlock' AND ref = '4'`)
+		mustExec(t, s, `UPDATE quests SET reward = 99 WHERE kind = 'streak_days' AND target = 7`)
+		if err := s.runMigrations(); err != nil {
+			t.Fatalf("run migrations: %v", err)
+		}
+		if got := count(t, s, `SELECT price FROM products WHERE kind = 'phase_unlock' AND ref = '4'`); got != 700 {
+			t.Errorf("an edited price became %d, want 700 kept", got)
+		}
+		if got := count(t, s, `SELECT reward FROM quests WHERE kind = 'streak_days' AND target = 7`); got != 99 {
+			t.Errorf("an edited reward became %d, want 99 kept", got)
+		}
+	})
+
+	t.Run("an unseeded database gets nothing", func(t *testing.T) {
+		s := openStoreAtVersion(t, 19)
+		if err := s.runMigrations(); err != nil {
+			t.Fatalf("run migrations: %v", err)
+		}
+		if got := count(t, s, `SELECT COUNT(*) FROM quests`); got != 0 {
+			t.Errorf("%d quests on a database the seed has not run on, want 0", got)
+		}
+	})
+
+	t.Run("running twice adds nothing", func(t *testing.T) {
+		s := seedOld(t)
+		if err := s.runMigrations(); err != nil {
+			t.Fatal(err)
+		}
+		before := count(t, s, `SELECT COUNT(*) FROM quests`)
+		if err := s.runMigrations(); err != nil {
+			t.Fatal(err)
+		}
+		if after := count(t, s, `SELECT COUNT(*) FROM quests`); after != before {
+			t.Errorf("quests went from %d to %d on a second run", before, after)
+		}
+	})
+}
+
+// Migration 021 renames the currency from пёрышки to зёрнышки on a database that
+// still holds 017's names, and leaves a name somebody typed into the admin alone.
+func TestMigration021RenamesOnlyTheOldDefault(t *testing.T) {
+	nameAfter := func(t *testing.T, before string) string {
+		t.Helper()
+		s := openStoreAtVersion(t, 20)
+		mustExec(t, s, `UPDATE economy_settings SET value = ? WHERE key = 'currency_name_many'`, before)
+		if err := s.runMigrations(); err != nil {
+			t.Fatalf("run migrations: %v", err)
+		}
+		var v string
+		if err := s.db.QueryRow(`SELECT value FROM economy_settings WHERE key = 'currency_name_many'`).Scan(&v); err != nil {
+			t.Fatal(err)
+		}
+		return v
+	}
+	if got := nameAfter(t, "пёрышек"); got != "зёрнышек" {
+		t.Errorf("old default became %q, want зёрнышек", got)
+	}
+	if got := nameAfter(t, "орешков"); got != "орешков" {
+		t.Errorf("a chosen name became %q, want it kept", got)
+	}
+}
+
+// Migration 022 adds the invite-a-friend quest to a database that has already
+// been seeded (a fresh one gets it from the seed), exactly once, and writes
+// nothing where the seed has not run yet.
+func TestMigration022InviteQuest(t *testing.T) {
+	count := func(t *testing.T, s *Store) int {
+		t.Helper()
+		var n int
+		if err := s.db.QueryRow(`SELECT COUNT(*) FROM quests WHERE kind = 'friends_invited'`).Scan(&n); err != nil {
+			t.Fatal(err)
+		}
+		return n
+	}
+
+	t.Run("seeded database gets the quest once", func(t *testing.T) {
+		s := openStoreAtVersion(t, 21)
+		mustExec(t, s, `INSERT INTO economy_settings (key, value, updated_at) VALUES ('economy_seeded', '1', 'x')`)
+		if err := s.runMigrations(); err != nil {
+			t.Fatalf("run migrations: %v", err)
+		}
+		if got := count(t, s); got != 1 {
+			t.Fatalf("invite quests = %d, want 1", got)
+		}
+		var reward int
+		if err := s.db.QueryRow(`SELECT reward FROM quests WHERE kind = 'friends_invited'`).Scan(&reward); err != nil || reward != 30 {
+			t.Fatalf("reward = %d (%v), want 30", reward, err)
+		}
+	})
+
+	t.Run("unseeded database is left to the seed", func(t *testing.T) {
+		s := openStoreAtVersion(t, 21)
+		if err := s.runMigrations(); err != nil {
+			t.Fatalf("run migrations: %v", err)
+		}
+		if got := count(t, s); got != 0 {
+			t.Fatalf("invite quests = %d, want 0 before the seed", got)
+		}
+	})
+
+	t.Run("an existing invite quest is not duplicated", func(t *testing.T) {
+		s := openStoreAtVersion(t, 21)
+		mustExec(t, s, `INSERT INTO economy_settings (key, value, updated_at) VALUES ('economy_seeded', '1', 'x')`)
+		mustExec(t, s, `INSERT INTO quests (kind, target, param, title, reward, created_at, updated_at)
+			VALUES ('friends_invited', 1, '', 'Пригласить друга', 50, 'x', 'x')`)
+		if err := s.runMigrations(); err != nil {
+			t.Fatalf("run migrations: %v", err)
+		}
+		if got := count(t, s); got != 1 {
+			t.Fatalf("invite quests = %d, want 1", got)
+		}
+	})
+}

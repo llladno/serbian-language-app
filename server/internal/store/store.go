@@ -1037,6 +1037,35 @@ type AttemptSummary struct {
 	Correct bool
 }
 
+// FirstTry counts, for the exercises of a lesson the learner has answered at
+// all, how many were right the first time they were answered. Later attempts
+// (an exercise sent back to the end of its step, or redone after a reset of
+// the lesson's page) do not change it: the first answer is what says whether
+// the material was already known.
+func (u *UserStore) FirstTry(lesson string) (answered, right int, err error) {
+	rows, err := u.db.Query(`
+SELECT a.correct
+FROM attempts a
+JOIN (SELECT exercise_id, MIN(id) AS mid FROM attempts
+      WHERE user_id = ? AND lesson = ? GROUP BY exercise_id) earliest
+  ON a.id = earliest.mid`, u.user, lesson)
+	if err != nil {
+		return 0, 0, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var c int
+		if err := rows.Scan(&c); err != nil {
+			return 0, 0, err
+		}
+		answered++
+		if c != 0 {
+			right++
+		}
+	}
+	return answered, right, rows.Err()
+}
+
 // LessonAttempts returns the latest attempt per exercise for a lesson.
 func (u *UserStore) LessonAttempts(lesson string) (map[string]AttemptSummary, error) {
 	rows, err := u.db.Query(`

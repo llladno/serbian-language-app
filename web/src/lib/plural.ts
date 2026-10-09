@@ -1,4 +1,4 @@
-// Russian plural forms: 1 пёрышко, 2 пёрышка, 5 пёрышек. The three words come
+// Russian plural forms: 1 зёрнышко, 2 зёрнышка, 5 зёрнышек. The three words come
 // from the admin panel (economy_settings), so the app never hardcodes the name
 // of the currency — only the rule for picking between the forms.
 export function pluralRu(n: number, one: string, few: string, many: string): string {

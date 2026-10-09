@@ -152,9 +152,9 @@ const (
 	defaultDailyGoal         = 10
 	defaultRepairWindowHours = 48
 	defaultDrip              = `[[1,1],[30,2],[100,3]]`
-	defaultCurrencyNameOne   = "пёрышко"
-	defaultCurrencyNameFew   = "пёрышка"
-	defaultCurrencyNameMany  = "пёрышек"
+	defaultCurrencyNameOne   = "зёрнышко"
+	defaultCurrencyNameFew   = "зёрнышка"
+	defaultCurrencyNameMany  = "зёрнышек"
 )
 
 // Settings is the parsed economy_settings table.

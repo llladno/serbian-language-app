@@ -12,11 +12,11 @@ var seedNow = time.Date(2026, 9, 29, 0, 0, 0, 0, time.UTC)
 
 // seedPhases stands in for the course when a test only cares about the fixed
 // catalogue. Phase "1" has four lessons, enough for one of them to land on the
-// every-fourth bump; the paid phases pay nothing for lessons, same as the real
+// every-fourth bump; phase 5 pays nothing for lessons, same as the real
 // course.
 var seedPhases = []economy.PhaseLessons{
 	{ID: "1", Lessons: []string{"00", "01", "02", "03"}},
-	{ID: "4", Lessons: []string{"42", "43"}},
+	{ID: "5", Lessons: []string{"60", "61"}},
 }
 
 // realPhases is the course as the seed sees it, or a skip when the content
@@ -51,8 +51,8 @@ func TestSeededEconomyMatchesTheDesign(t *testing.T) {
 	for _, q := range quests {
 		pool += q.Reward
 	}
-	if pool != 638 {
-		t.Fatalf("quest pool = %d, want 638 (see the design doc's economy table)", pool)
+	if pool != 853 {
+		t.Fatalf("quest pool = %d, want 853 (see the design doc's economy table)", pool)
 	}
 
 	products, err := s.ListProducts(true)
@@ -60,8 +60,8 @@ func TestSeededEconomyMatchesTheDesign(t *testing.T) {
 		t.Fatalf("list products: %v", err)
 	}
 	want := map[string]int64{
-		"phase_unlock:4":           500,
-		"phase_unlock:5":           1000,
+		"phase_unlock:4":           230,
+		"phase_unlock:5":           375,
 		"consumable:streak_repair": 25,
 	}
 	got := map[string]int64{}
@@ -77,16 +77,47 @@ func TestSeededEconomyMatchesTheDesign(t *testing.T) {
 		}
 	}
 
-	// The economy's shape as an assertion. Level 4 must be reachable on quests
-	// alone — that is the whole promise of "100% + все задания" — and Level 5
-	// must not be, or the daily streak drip has no purpose. Anyone editing the
-	// seeds and breaking that relationship fails here rather than finding out
-	// from users.
-	if got["phase_unlock:4"] > pool {
-		t.Fatalf("Level 4 costs %d but the entire quest pool is %d", got["phase_unlock:4"], pool)
+	// The economy's shape as an assertion: both prices are derived from the
+	// rewards, so editing one without the other fails here rather than being
+	// discovered by users.
+	//   Level 4 = what the free levels pay + the Telegram quest.
+	//   Level 5 = Level 4's price + what Level 4 pays + the 100-words and
+	//             100-reviews quests.
+	reward := func(kind string, target int, param string) int64 {
+		for _, q := range quests {
+			if q.Kind == kind && q.Target == target && q.Param == param {
+				return q.Reward
+			}
+		}
+		t.Fatalf("no seeded %s quest with target %d / param %q", kind, target, param)
+		return 0
 	}
-	if got["phase_unlock:5"] <= pool {
-		t.Fatalf("Level 5 costs %d, which the quest pool (%d) already covers", got["phase_unlock:5"], pool)
+	phasePay := map[string]int64{}
+	lessonPhase := map[string]string{}
+	for _, ph := range realPhases(t) {
+		for _, id := range ph.Lessons {
+			lessonPhase[id] = ph.ID
+		}
+	}
+	for _, q := range quests {
+		switch q.Kind {
+		case economy.QuestPhaseCompleted:
+			phasePay[q.Param] += q.Reward
+		case economy.QuestLessonCompleted:
+			phasePay[lessonPhase[q.Param]] += q.Reward
+		}
+	}
+	telegram := reward(economy.QuestTelegramSubscribed, 1, "")
+	wantLevel4 := phasePay["1"] + phasePay["2"] + phasePay["3"] + telegram
+	if got["phase_unlock:4"] != wantLevel4 {
+		t.Errorf("Level 4 costs %d, want free levels (%d) + Telegram (%d) = %d",
+			got["phase_unlock:4"], phasePay["1"]+phasePay["2"]+phasePay["3"], telegram, wantLevel4)
+	}
+	wantLevel5 := got["phase_unlock:4"] + phasePay["4"] +
+		reward(economy.QuestVocabLearned, 100, "") + reward(economy.QuestReviewsDone, 100, "")
+	if got["phase_unlock:5"] != wantLevel5 {
+		t.Errorf("Level 5 costs %d, want Level 4 price + Level 4 pay (%d) + 100 words + 100 reviews = %d",
+			got["phase_unlock:5"], phasePay["4"], wantLevel5)
 	}
 }
 
@@ -130,7 +161,7 @@ func TestLessonRewardsMatchPhaseTotals(t *testing.T) {
 	for _, want := range []struct {
 		phase string
 		total int64
-	}{{"1", 50}, {"2", 70}, {"3", 90}} {
+	}{{"1", 50}, {"2", 70}, {"3", 90}, {"4", 110}} {
 		if perPhase[want.phase] != want.total {
 			t.Errorf("phase %s pays %d in total, want %d", want.phase, perPhase[want.phase], want.total)
 		}
@@ -140,10 +171,9 @@ func TestLessonRewardsMatchPhaseTotals(t *testing.T) {
 			}
 		}
 	}
-	// The paid levels stay out of it: their lessons would hand the learner part
-	// of the next level's price back.
-	if perPhase["4"] != 0 || perPhase["5"] != 0 {
-		t.Errorf("paid phases pay %d and %d, want 0", perPhase["4"], perPhase["5"])
+	// Level 5 is the last one for sale: nothing follows it to discount.
+	if perPhase["5"] != 0 {
+		t.Errorf("phase 5 pays %d, want 0", perPhase["5"])
 	}
 }
 

@@ -4,7 +4,7 @@
 Draws each sparkle at native resolution, saves it at 1x and 8x (nearest
 neighbour, no smoothing), plus 1x/8x sprite sheets. Run from anywhere:
 
-    python3 docs/feather-effects/gen_sparkles.py
+    python3 docs/seed-effects/gen_sparkles.py
 """
 import math
 import os
@@ -17,7 +17,7 @@ OUT = os.path.join(HERE, "sparkles")
 # name -> half-length k of the arms; the sprite is (2k+1) x (2k+1) pixels.
 SIZES = {"s": 2, "m": 3, "l": 4, "xl": 6}
 
-# name -> (arm colour, bright core colour). All from the feather palette.
+# name -> (arm colour, bright core colour). All from the seed palette.
 COLORS = {
     "pale": ("#F6D88A", "#FFF3D1"),
     "gold": ("#E3B04B", "#F6D88A"),

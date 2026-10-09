@@ -34,6 +34,7 @@ function loginViaTelegram() {
   reachGoal('telegram_login_click')
   tg.start((user?: SessionUser) => {
     if (user) session.user = user
+    void session.settleReferral()
     reachGoal('telegram_login_success')
     goNext()
   })

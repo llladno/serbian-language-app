@@ -9,7 +9,7 @@ import type { SessionUser } from '../types'
 
 const POLL_INTERVAL_MS = 1500
 
-export function useTelegramStart(kind: 'login' | 'link') {
+export function useTelegramStart(kind: 'login' | 'link', opts: { intent?: 'channel' } = {}) {
   const busy = ref(false)
   const error = ref<string | null>(null)
   let timer: ReturnType<typeof setInterval> | undefined
@@ -34,7 +34,7 @@ export function useTelegramStart(kind: 'login' | 'link') {
 
     let token: string
     try {
-      const res = kind === 'login' ? await api.telegramLoginStart() : await api.telegramLinkStart()
+      const res = kind === 'login' ? await api.telegramLoginStart() : await api.telegramLinkStart(opts.intent)
       token = res.token
       if (popup) popup.location.href = res.url
       else window.open(res.url, '_blank')

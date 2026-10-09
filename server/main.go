@@ -156,7 +156,9 @@ func main() {
 		ob := store.OutboxButton{}
 		if button != nil {
 			ob.Label = button.Label
-			if button.WebAppURL != "" {
+			if button.ChannelURL != "" {
+				ob.Type, ob.Target = "channel_check", button.ChannelURL
+			} else if button.WebAppURL != "" {
 				ob.Type, ob.Target = "web_app", button.WebAppURL
 			} else {
 				ob.Type, ob.Target = "url", button.URL

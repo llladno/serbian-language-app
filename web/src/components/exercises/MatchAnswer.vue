@@ -4,9 +4,12 @@
 import { computed, reactive, ref } from 'vue'
 import { RefreshCw } from 'lucide-vue-next'
 import { api } from '../../api'
+import { useWrongGoesToEnd } from '../../lib/lessonRules'
 import type { CheckResult, LessonAttempt } from '../../types'
 import BottomBar from '../BottomBar.vue'
 import HintButton from '../HintButton.vue'
+import PhraseSpeak from '../PhraseSpeak.vue'
+import PromptSpeak from '../PromptSpeak.vue'
 
 const props = defineProps<{
   lesson: string
@@ -26,6 +29,13 @@ const selectedLeft = ref<string | null>(null)
 const selectedRight = ref<string | null>(null)
 const result = ref<CheckResult | null>(null)
 const fromPrior = ref(!!props.prior)
+
+// After a mistake the way forward is the lesson's own button (the exercise
+// comes back at the end of the step), not an instant redo.
+const wrongGoesToEnd = useWrongGoesToEnd()
+const showRetry = computed(
+  () => (fromPrior.value || !!result.value) && !(wrongGoesToEnd.value && result.value && !result.value.ok),
+)
 const pending = ref(false)
 
 const complete = computed(() => props.left.every((l) => l in picks))
@@ -109,7 +119,7 @@ function retry() {
 <template>
   <div class="relative text-center">
     <button
-      v-if="fromPrior || result"
+      v-if="showRetry"
       class="icon-btn absolute right-0 top-0"
       title="Переделать"
       @click="retry"
@@ -119,6 +129,7 @@ function retry() {
 
     <p class="mb-5 flex flex-wrap items-center justify-center gap-1.5 whitespace-pre-wrap px-8 text-xl font-medium">
       {{ prompt }}
+      <PromptSpeak :prompt="prompt" />
       <HintButton v-if="explain && !result && !fromPrior" :text="explain" />
     </p>
 
@@ -131,30 +142,32 @@ function retry() {
     <template v-else>
       <div class="mx-auto grid max-w-sm grid-cols-2 gap-2.5">
         <div class="flex flex-col gap-2">
-          <button
-            v-for="l in left"
-            :key="l"
-            type="button"
-            class="btn serbian w-full"
-            :class="leftClass(l)"
-            :disabled="!!result"
-            @click="tapLeft(l)"
-          >
-            {{ l }}
-          </button>
+          <div v-for="l in left" :key="l" class="flex items-center gap-1">
+            <button
+              type="button"
+              class="btn serbian w-full"
+              :class="leftClass(l)"
+              :disabled="!!result"
+              @click="tapLeft(l)"
+            >
+              {{ l }}
+            </button>
+            <PhraseSpeak :text="l" :size="24" />
+          </div>
         </div>
         <div class="flex flex-col gap-2">
-          <button
-            v-for="r in choices"
-            :key="r"
-            type="button"
-            class="btn serbian w-full"
-            :class="rightClass(r)"
-            :disabled="!!result"
-            @click="tapRight(r)"
-          >
-            {{ r }}
-          </button>
+          <div v-for="r in choices" :key="r" class="flex items-center gap-1">
+            <button
+              type="button"
+              class="btn serbian w-full"
+              :class="rightClass(r)"
+              :disabled="!!result"
+              @click="tapRight(r)"
+            >
+              {{ r }}
+            </button>
+            <PhraseSpeak :text="r" :size="24" />
+          </div>
         </div>
       </div>
 

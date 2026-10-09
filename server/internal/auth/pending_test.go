@@ -105,3 +105,18 @@ func TestPendingStoreResolveUnknownTokenIsNoop(t *testing.T) {
 	s.Resolve("never-issued", "usr_x") // must not panic
 	s.Fail("never-issued", "oops")     // must not panic
 }
+
+func TestPendingStoreRemembersWhatALinkWasFor(t *testing.T) {
+	s := NewPendingStore()
+	plain, _ := s.Create("user-1")
+	channel, _ := s.CreateFor("user-1", "channel")
+	if got := s.Intent(plain); got != "" {
+		t.Errorf("plain link intent = %q, want none", got)
+	}
+	if got := s.Intent(channel); got != "channel" {
+		t.Errorf("channel link intent = %q, want channel", got)
+	}
+	if got := s.Intent("never-issued"); got != "" {
+		t.Errorf("unknown token intent = %q, want none", got)
+	}
+}

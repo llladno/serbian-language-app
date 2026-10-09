@@ -5,24 +5,34 @@
 //
 // Design note: everything else in the app is rounded, soft and quiet. Here one
 // thing is loud — the quest that can be claimed right now — and the devices
-// that carry it are the brand's own: gold means money (the feather palette,
+// that carry it are the brand's own: gold means money (the seed palette,
 // the same in every theme), the accent means progress, and progress is drawn
 // as hard pixel blocks rather than a smooth bar.
-import { computed, onMounted, ref } from 'vue'
-import { Check } from 'lucide-vue-next'
+import { computed, onBeforeUnmount, onMounted, reactive, ref } from 'vue'
+import { Check, Send, UserPlus } from 'lucide-vue-next'
 import { useWalletStore } from '../stores/wallet'
 import { useRewardModal } from '../lib/rewardModal'
 import { authErrorMessage } from '../lib/authErrors'
-import { pileFor } from '../lib/feathers'
+import { pileFor } from '../lib/seeds'
 import { pluralRu } from '../lib/plural'
+import { openTelegramLink } from '../telegram'
+import { useTelegramStart } from '../lib/telegramStart'
+import { useToasts } from '../lib/toasts'
+import { useInviteModal } from '../lib/inviteModal'
 import { groupQuests } from '../lib/questGroups'
-import FeatherIcon from '../components/FeatherIcon.vue'
+import SeedIcon from '../components/SeedIcon.vue'
 import SegmentBar from '../components/SegmentBar.vue'
+import InviteModal from '../components/InviteModal.vue'
 import AnimatedNumber from '../components/AnimatedNumber.vue'
 import type { Quest } from '../types'
 
 const wallet = useWalletStore()
 const { celebrate } = useRewardModal()
+const invite = useInviteModal()
+
+// The invite quest pays the same for everyone; the modal quotes the number from
+// the quest itself, so changing the reward in the admin panel needs no deploy.
+const inviteReward = computed(() => wallet.quests.find((q) => q.kind === 'friends_invited')?.reward ?? 0)
 
 const loadError = ref<string | null>(null)
 const claimError = ref<string | null>(null)
@@ -36,7 +46,61 @@ async function load() {
     loadError.value = authErrorMessage(e)
   }
 }
-onMounted(load)
+onMounted(() => {
+  load()
+  document.addEventListener('visibilitychange', onBackToTheApp)
+})
+onBeforeUnmount(() => document.removeEventListener('visibilitychange', onBackToTheApp))
+
+// Quests that happen outside the app (subscribing to the channel) are only seen
+// by the server, so coming back from Telegram is the moment to ask again. This
+// one is not silent: a quest that finished while the learner was away says so.
+function onBackToTheApp() {
+  if (document.visibilityState === 'visible') wallet.loadQuests().catch(() => {})
+}
+
+// The channel button has three ways to go, depending on who is pressing it:
+//   - Telegram is linked: straight to the channel, then a "check" button here;
+//   - already subscribed: the quest is simply done, there is no button;
+//   - Telegram is not linked: to the bot, which links it and then offers the
+//     subscribe and check buttons itself. Coming back, the list asks again.
+const toasts = useToasts()
+const visited = reactive<Record<number, boolean>>({})
+const rechecking = ref<number | null>(null)
+const tg = useTelegramStart('link', { intent: 'channel' })
+
+function viaTheBot() {
+  tg.start(() => {
+    toasts.push({
+      title: 'Telegram привязан',
+      text: 'Подпишись на канал в боте и нажми «Проверить подписку»',
+    })
+    wallet.loadQuests(true).catch(() => {})
+  })
+}
+
+function goToChannel(q: Quest, e: Event) {
+  visited[q.id] = true
+  // Inside Telegram the link opens in Telegram; elsewhere the anchor does it.
+  if (q.url && openTelegramLink(q.url)) e.preventDefault()
+}
+
+async function recheck(q: Quest) {
+  rechecking.value = q.id
+  try {
+    await wallet.loadQuests(true)
+    const done = !!wallet.quests.find((x) => x.id === q.id)?.done
+    toasts.push(
+      done
+        ? { title: 'Подписка найдена', text: 'Задание выполнено, награду можно забрать', to: '/quests' }
+        : { title: 'Подписки пока не видно', text: 'Подпишись на канал и проверь ещё раз' },
+    )
+  } catch (e) {
+    claimError.value = authErrorMessage(e)
+  } finally {
+    rechecking.value = null
+  }
+}
 
 // A ladder (5 → 10 → 20 уроков) shows only the rung in progress, so finishing
 // one visibly turns the card into the next.
@@ -102,7 +166,7 @@ async function claim(q: Quest) {
           :value="wallet.balance"
           :max="wallet.goal.price_effective"
           :segments="20"
-          tone="feather"
+          tone="seed"
         />
         <p class="mt-2 text-sm text-[var(--muted)]">
           <template v-if="left > 0">
@@ -129,16 +193,17 @@ async function claim(q: Quest) {
     <template v-else>
       <section v-if="ready.length" class="space-y-3">
         <h2 class="px-1 font-bold">Можно забрать</h2>
-        <div v-for="q in ready" :key="q.id" class="plate p-4" data-test="quest-ready">
-          <div class="flex items-baseline justify-between gap-3">
-            <p class="font-bold">{{ q.title }}</p>
-            <span class="flex shrink-0 items-center gap-1 font-extrabold">
-              +{{ q.reward }}<FeatherIcon :size="16" />
-            </span>
+        <div v-for="q in ready" :key="q.id" class="plate flex flex-wrap items-center gap-x-3 gap-y-3 p-4 sm:flex-nowrap" data-test="quest-ready">
+          <div class="reward reward-ready" data-test="quest-reward">
+            <SeedIcon :size="20" />
+            <span>+{{ q.reward }}</span>
           </div>
-          <p v-if="q.description" class="mt-0.5 text-sm text-[var(--muted)]">{{ q.description }}</p>
+          <div class="min-w-0 flex-1">
+            <p class="font-bold">{{ q.title }}</p>
+            <p v-if="q.description" class="mt-0.5 text-sm text-[var(--muted)]">{{ q.description }}</p>
+          </div>
           <button
-            class="btn btn-feather mt-3 w-full"
+            class="btn btn-seed btn-side w-full sm:w-auto"
             :disabled="busyId === q.id"
             :data-test="'claim-' + q.id"
             @click="claim(q)"
@@ -151,28 +216,83 @@ async function claim(q: Quest) {
       <section v-if="active.length" class="space-y-3">
         <h2 class="px-1 font-bold">В процессе</h2>
         <div class="card overflow-hidden">
+          <!-- Reward on the left, the thing to do on the right: the eye reads
+               "what do I get" first and the button is always under the thumb. -->
           <div
             v-for="(q, i) in active"
             :key="q.id"
-            class="px-4 py-3.5"
+            class="flex flex-wrap items-center gap-x-3 gap-y-3 px-4 py-3.5 sm:flex-nowrap"
             :class="i > 0 ? 'border-t border-[var(--border)]' : ''"
+            data-test="quest-active"
           >
-            <div class="flex items-baseline justify-between gap-3">
-              <p class="font-semibold">{{ q.title }}</p>
-              <span class="flex shrink-0 items-center gap-1 text-sm font-bold text-[var(--muted)]">
-                {{ q.reward }}<FeatherIcon :size="13" />
-              </span>
+            <div class="reward" data-test="quest-reward">
+              <SeedIcon :size="18" />
+              <span>{{ q.reward }}</span>
             </div>
-            <p v-if="q.description" class="mt-0.5 text-sm text-[var(--muted)]">
-              {{ q.description }}
-            </p>
-            <!-- A yes/no quest has nothing to count, and a row of empty blocks
-                 for "not subscribed yet" would be a progress bar about nothing. -->
-            <div v-if="q.target > 1" class="mt-2.5 flex items-center gap-3">
-              <SegmentBar class="flex-1" :value="q.value" :max="q.target" />
-              <span class="shrink-0 text-xs font-semibold tabular-nums text-[var(--muted)]">
-                {{ Math.min(q.value, q.target) }}/{{ q.target }}
-              </span>
+
+            <div class="min-w-0 flex-1 break-words">
+              <p class="font-semibold">{{ q.title }}</p>
+              <p v-if="q.description" class="mt-0.5 text-sm text-[var(--muted)]">
+                {{ q.description }}
+              </p>
+              <!-- A yes/no quest has nothing to count, and a row of empty blocks
+                   for "not subscribed yet" would be a progress bar about nothing. -->
+              <div v-if="q.target > 1" class="mt-2.5 flex items-center gap-3">
+                <SegmentBar class="flex-1" :value="q.value" :max="q.target" />
+                <span class="shrink-0 text-xs font-semibold tabular-nums text-[var(--muted)]">
+                  {{ Math.min(q.value, q.target) }}/{{ q.target }}
+                </span>
+              </div>
+            </div>
+
+            <!-- Subscribing happens in Telegram, so the row sends the learner there. -->
+            <div
+              v-if="q.url"
+              class="flex w-full shrink-0 gap-2 sm:w-auto sm:flex-col sm:items-stretch"
+              data-test="quest-link"
+            >
+              <button
+                v-if="q.needs_telegram"
+                type="button"
+                class="btn btn-primary btn-side flex-1 sm:flex-none"
+                data-test="quest-go-bot"
+                :disabled="tg.busy.value"
+                @click="viaTheBot"
+              >
+                <Send :size="15" :stroke-width="2.25" />{{ tg.busy.value ? 'Ждём Telegram…' : 'Подписаться' }}
+              </button>
+              <template v-else>
+                <a
+                  :href="q.url"
+                  target="_blank"
+                  rel="noopener"
+                  class="btn btn-primary btn-side flex-1 sm:flex-none"
+                  data-test="quest-go"
+                  @click="goToChannel(q, $event)"
+                >
+                  <Send :size="15" :stroke-width="2.25" />Подписаться
+                </a>
+                <button
+                  v-if="visited[q.id]"
+                  type="button"
+                  class="btn btn-ghost btn-side flex-1 sm:flex-none"
+                  data-test="quest-recheck"
+                  :disabled="rechecking === q.id"
+                  @click="recheck(q)"
+                >
+                  {{ rechecking === q.id ? 'Проверяем…' : 'Проверить' }}
+                </button>
+              </template>
+            </div>
+            <div v-else-if="q.kind === 'friends_invited'" class="w-full shrink-0 sm:w-auto">
+              <button
+                type="button"
+                class="btn btn-primary btn-side w-full sm:w-auto"
+                data-test="quest-invite"
+                @click="invite.openModal()"
+              >
+                <UserPlus :size="15" :stroke-width="2.25" />Пригласить
+              </button>
             </div>
           </div>
         </div>
@@ -188,7 +308,7 @@ async function claim(q: Quest) {
           >
             <Check :size="14" :stroke-width="3" />{{ q.title }}
             <span class="flex items-center gap-0.5 font-semibold">
-              {{ q.reward }}<FeatherIcon :size="12" />
+              {{ q.reward }}<SeedIcon :size="12" />
             </span>
           </span>
         </div>
@@ -198,6 +318,8 @@ async function claim(q: Quest) {
         Заданий пока нет — загляни позже.
       </p>
     </template>
+
+    <InviteModal :reward="inviteReward" />
   </div>
 </template>
 
@@ -213,22 +335,46 @@ async function claim(q: Quest) {
   }
 }
 
+/* The currency column: the same width on every row, so the buttons on the right
+   and the titles in the middle line up down the whole list. */
+.reward {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  width: 44px;
+  font-size: 0.875rem;
+  font-weight: 800;
+  color: var(--muted);
+}
+.reward-ready {
+  color: var(--fg);
+  font-size: 1rem;
+}
+.btn-side {
+  padding: 0.5rem 0.85rem;
+  font-size: 0.875rem;
+  white-space: nowrap;
+  min-width: 8rem;
+}
+
 /* The one loud element on the screen: a quest that can be claimed right now.
    The gold wash is the same colour as the currency, so the plate, its reward
    and its button all say the same thing without a second device. */
 .plate {
-  background: linear-gradient(0deg, var(--feather-wash), var(--feather-wash)), var(--card);
+  background: linear-gradient(0deg, var(--seed-wash), var(--seed-wash)), var(--card);
   border-radius: 20px;
   box-shadow: var(--shadow);
 }
-.btn-feather {
-  background: var(--feather);
-  color: var(--feather-ink);
+.btn-seed {
+  background: var(--seed);
+  color: var(--seed-ink);
 }
-.btn-feather:not(:disabled):hover {
-  background: var(--feather-hi);
+.btn-seed:not(:disabled):hover {
+  background: var(--seed-hi);
 }
-.btn-feather:disabled {
+.btn-seed:disabled {
   opacity: 0.7;
   cursor: not-allowed;
 }

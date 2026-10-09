@@ -2,12 +2,16 @@
 import { computed, ref } from 'vue'
 import { RefreshCw } from 'lucide-vue-next'
 import { api } from '../../api'
+import { useWrongGoesToEnd } from '../../lib/lessonRules'
 import type { CheckResult, LessonAttempt } from '../../types'
 import SerbianKeys from '../SerbianKeys.vue'
 import SpeakButton from '../SpeakButton.vue'
 import GlossedText from '../GlossedText.vue'
 import BottomBar from '../BottomBar.vue'
 import HintButton from '../HintButton.vue'
+import PhraseSpeak from '../PhraseSpeak.vue'
+import PromptSpeak from '../PromptSpeak.vue'
+import { fillSentence } from '../../lib/phraseAudio'
 
 const props = defineProps<{
   lesson: string
@@ -17,6 +21,11 @@ const props = defineProps<{
   audio?: string
   explain?: string
   prior?: LessonAttempt
+  // A dictation for someone who cannot listen: the sentence arrives as text
+  // and is translated into Russian instead of being written down. Everything
+  // about the screen follows from this being set — no speaker, no Serbian
+  // keys, and the answer is Russian.
+  text?: string
 }>()
 
 // fill_blank / fix_error prompts are Serbian sentences — make their words
@@ -25,24 +34,45 @@ const props = defineProps<{
 // sentence to transcribe lives only in the audio.
 const glossPrompt = computed(() => props.type === 'fill_blank' || props.type === 'fix_error')
 
-const emit = defineEmits<{ graded: [ok: boolean, result: CheckResult]; ungraded: []; skip: [] }>()
+const emit = defineEmits<{ graded: [ok: boolean, result: CheckResult, answer: string]; ungraded: []; cantListen: [] }>()
 
 const answer = ref(props.prior?.answer ?? '')
 const result = ref<CheckResult | null>(null)
 const fromPrior = ref(!!props.prior)
+
+// After a mistake the way forward is the lesson's own button (the exercise
+// comes back at the end of the step), not an instant redo.
+const wrongGoesToEnd = useWrongGoesToEnd()
+const showRetry = computed(
+  () => (fromPrior.value || !!result.value) && !(wrongGoesToEnd.value && result.value && !result.value.ok),
+)
 const pending = ref(false)
 
 async function submit() {
   if (pending.value || !answer.value.trim()) return
   pending.value = true
   try {
-    result.value = await api.check(props.lesson, props.exerciseId, { answer: answer.value })
+    result.value = await api.check(props.lesson, props.exerciseId, {
+      answer: answer.value,
+      ...(props.text ? { ru: true } : {}),
+    })
     fromPrior.value = false
-    emit('graded', !!result.value.ok, result.value)
+    emit('graded', !!result.value.ok, result.value, answer.value)
   } finally {
     pending.value = false
   }
 }
+
+// What the speaker under the verdict reads: the whole right sentence (for a
+// gap-fill the prompt's sentence with the gap filled, not just the missing
+// word). A dictation already has its own speaker on top, and the text-only
+// "can't listen" mode answers in Russian.
+const resultPhrase = computed(() => {
+  if (!result.value || props.text || props.type === 'listen') return undefined
+  const word = result.value.ok ? answer.value : result.value.expected
+  if (!word) return undefined
+  return props.type === 'fill_blank' ? fillSentence(props.prompt, word) : word
+})
 
 function retry() {
   result.value = null
@@ -55,7 +85,7 @@ function retry() {
 <template>
   <div class="relative text-center">
     <button
-      v-if="fromPrior || result"
+      v-if="showRetry"
       class="icon-btn absolute right-0 top-0"
       title="Переделать"
       @click="retry"
@@ -63,7 +93,11 @@ function retry() {
       <RefreshCw :size="15" :stroke-width="2.25" />
     </button>
 
-    <div v-if="type === 'listen'" class="mb-5 flex flex-col items-center gap-3 px-8">
+    <div v-if="type === 'listen' && text" class="mb-5 px-8" data-test="listen-as-text">
+      <p class="mb-1.5 text-sm text-[var(--muted)]">{{ prompt }}</p>
+      <p class="serbian whitespace-pre-wrap text-xl font-medium">{{ text }}</p>
+    </div>
+    <div v-else-if="type === 'listen'" class="mb-5 flex flex-col items-center gap-3 px-8">
       <SpeakButton :src="audio" :size="52" />
       <span class="flex items-center gap-1.5 text-sm text-[var(--muted)]">
         {{ prompt || 'Напиши, что слышишь' }}
@@ -73,7 +107,8 @@ function retry() {
         v-if="!fromPrior && !result"
         type="button"
         class="btn btn-ghost text-sm"
-        @click="emit('skip')"
+        data-test="cant-listen"
+        @click="emit('cantListen')"
       >
         не могу прослушать :(
       </button>
@@ -85,6 +120,7 @@ function retry() {
       <p class="flex flex-wrap items-center justify-center gap-1.5 whitespace-pre-wrap text-xl font-medium">
         <GlossedText v-if="glossPrompt" :text="prompt" />
         <template v-else>{{ prompt }}</template>
+        <PromptSpeak :prompt="prompt" />
         <HintButton v-if="explain && !fromPrior && !result" :text="explain" />
       </p>
     </div>
@@ -95,7 +131,7 @@ function retry() {
         <span>{{ prior!.correct ? '✓' : '✗' }}</span>
         <span>{{ prior!.correct ? 'Отвечено верно' : 'Был ответ с ошибкой' }}</span>
       </p>
-      <p class="text-[var(--muted)]">ты писал: <span class="serbian text-[var(--fg)]">{{ prior!.answer }}</span></p>
+      <p class="text-[var(--muted)]">ты писал: <span class="text-[var(--fg)]" :class="{ serbian: !text }">{{ prior!.answer }}</span></p>
     </div>
 
     <form v-if="!fromPrior && !result" class="mx-auto max-w-sm" @submit.prevent="submit">
@@ -107,9 +143,9 @@ function retry() {
         autocorrect="off"
         spellcheck="false"
         class="field w-full text-center"
-        placeholder="ответ…"
+        :placeholder="text ? 'перевод…' : 'ответ…'"
       />
-      <SerbianKeys class="mt-1.5 justify-center" />
+      <SerbianKeys v-if="!text" class="mt-1.5 justify-center" />
     </form>
     <BottomBar v-if="!fromPrior && !result">
       <button class="btn btn-primary w-full" :disabled="pending || !answer.trim()" @click="submit">
@@ -130,7 +166,10 @@ function retry() {
         }}{{ i < result.diff.length - 1 ? ' ' : '' }}</span>
       </p>
       <p v-if="!result.ok && result.expected" class="text-sm">
-        Правильно: <span class="serbian font-semibold">{{ result.expected }}</span>
+        Правильно: <span class="font-semibold" :class="{ serbian: !text }">{{ result.expected }}</span>
+      </p>
+      <p v-if="resultPhrase" class="mt-1 flex justify-center">
+        <PhraseSpeak :text="resultPhrase" />
       </p>
       <p v-if="result.explain" class="mt-1 text-sm text-[var(--muted)]">{{ result.explain }}</p>
     </div>

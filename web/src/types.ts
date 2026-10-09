@@ -4,6 +4,13 @@ export interface Phase {
   id: string
   title: string
   lessons: string[]
+  // A level the learner has not unlocked: its lessons cannot be opened.
+  locked?: boolean
+  // Only on a level that is for sale: what it costs now, and the full price
+  // when a sale is on.
+  price?: number
+  price_effective?: number
+  discount_percent?: number
 }
 
 export interface LessonRef {
@@ -69,7 +76,6 @@ export type ExerciseType =
   | 'fill_blank'
   | 'fix_error'
   | 'conjugate'
-  | 'free'
   | 'listen'
   | 'choice'
   | 'word_bank'
@@ -82,6 +88,7 @@ export interface Exercise {
   forms?: string[]
   meta?: string
   audio?: string
+  text?: string // listen, audio off: the Serbian sentence to translate
   options?: string[]
   bank?: string[]
   left?: string[]
@@ -112,7 +119,6 @@ export interface CheckResult {
   diff?: Chunk[]
   expected?: string
   explain?: string
-  sample?: string
   forms?: FormResult[]
   match?: Record<string, boolean>
   near_miss?: boolean
@@ -125,7 +131,7 @@ export interface CheckPayload {
   answer?: string
   answers?: string[]
   pairs?: Record<string, string>
-  self?: boolean
+  ru?: boolean // listen, audio off: the answer is a Russian translation
 }
 
 export interface LessonAttempt {
@@ -315,12 +321,12 @@ export type TelegramPoll =
   | { status: 'ok'; user?: SessionUser }
   | { status: 'error'; error: string }
 
-// -- Экономика (пёрышки) --
+// -- Экономика (зёрнышки) --
 
 export interface Wallet {
   balance: number
   // Three Russian forms of the currency name, straight from the admin panel:
-  // "1 пёрышко", "2 пёрышка", "5 пёрышек". See lib/plural.ts.
+  // "1 зёрнышко", "2 зёрнышка", "5 зёрнышек". See lib/plural.ts.
   currency_one: string
   currency_few: string
   currency_many: string
@@ -339,11 +345,31 @@ export interface Quest {
   reward: number
   done: boolean
   claimed: boolean
+  // Where to go to do a quest that happens outside the app (the channel to
+  // subscribe to). Absent once the quest is done.
+  url?: string
+  // On the subscription quest: this account has no Telegram linked, so the
+  // subscription could not be seen however many times the learner subscribes.
+  needs_telegram?: boolean
+}
+
+// The learner's own invite link. `url` is ready to share as it is.
+export interface Referral {
+  code: string
+  url: string
+  // Friends who joined through the link and confirmed their account.
+  friends: number
 }
 
 export interface ClaimResult {
   reward: number
   balance: number
+}
+
+export interface PurchaseResult {
+  paid: number
+  balance: number
+  replayed: boolean
 }
 
 export interface ShopItem {
@@ -364,4 +390,17 @@ export interface LessonCompletion {
   // What finishing this lesson paid. 0 when the lesson has no reward of its
   // own, or when it had already been finished before.
   reward: number
+  // Absent from an older server.
+  stats?: LessonStats
+}
+
+// What the end-of-lesson screen shows.
+export interface LessonStats {
+  // Exercises answered at all, and how many of them were missed the first time.
+  answered: number
+  mistakes: number
+  // Share answered right the first time, 0..100. Meaningless when answered is 0.
+  percent: number
+  // Words the lesson introduces.
+  new_words: number
 }

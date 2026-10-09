@@ -80,12 +80,15 @@ type exerciseBlockDTO struct {
 }
 
 type exerciseDTO struct {
-	ID      string   `json:"id"`
-	Type    string   `json:"type"`
-	Prompt  string   `json:"prompt"`
-	Forms   []string `json:"forms,omitempty"`
-	Meta    string   `json:"meta,omitempty"`
-	Audio   string   `json:"audio,omitempty"`   // listen: clip under /audio/
+	ID     string   `json:"id"`
+	Type   string   `json:"type"`
+	Prompt string   `json:"prompt"`
+	Forms  []string `json:"forms,omitempty"`
+	Meta   string   `json:"meta,omitempty"`
+	Audio  string   `json:"audio,omitempty"` // listen: clip under /audio/
+	// Text is the Serbian sentence of a listen exercise, sent only in audio=off
+	// mode: the learner translates it into Russian instead of writing it down.
+	Text    string   `json:"text,omitempty"`
 	Options []string `json:"options,omitempty"` // choice (correct answer omitted)
 	Bank    []string `json:"bank,omitempty"`    // word_bank chips (accept omitted)
 	Left    []string `json:"left,omitempty"`    // match: left column
@@ -95,6 +98,18 @@ type exerciseDTO struct {
 	// so the client can offer it as a pre-answer hint, not just a post-check
 	// explanation.
 	Explain string `json:"explain,omitempty"`
+}
+
+// lessonStatsDTO is what the end-of-lesson screen shows. Percent is of the
+// exercises answered right the first time they were answered, so it is not
+// always 100 even though a step cannot be finished with an exercise still
+// wrong. Answered is 0 for a lesson with nothing to answer, and the screen
+// then has no percentage to show.
+type lessonStatsDTO struct {
+	Answered int `json:"answered"`
+	Mistakes int `json:"mistakes"`
+	Percent  int `json:"percent"`
+	NewWords int `json:"new_words"`
 }
 
 type attemptDTO struct {
@@ -107,7 +122,6 @@ type checkResultDTO struct {
 	Diff     []checker.Chunk  `json:"diff,omitempty"`
 	Expected string           `json:"expected,omitempty"`
 	Explain  string           `json:"explain,omitempty"`
-	Sample   string           `json:"sample,omitempty"`
 	Forms    []checker.Result `json:"forms,omitempty"`
 	Match    map[string]bool  `json:"match,omitempty"` // match: per-pair correctness
 	NearMiss bool             `json:"near_miss,omitempty"`

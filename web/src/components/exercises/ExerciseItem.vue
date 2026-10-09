@@ -2,13 +2,12 @@
 import type { Exercise, LessonAttempt } from '../../types'
 import TextAnswer from './TextAnswer.vue'
 import ConjugateAnswer from './ConjugateAnswer.vue'
-import FreeAnswer from './FreeAnswer.vue'
 import ChoiceAnswer from './ChoiceAnswer.vue'
 import WordBankAnswer from './WordBankAnswer.vue'
 import MatchAnswer from './MatchAnswer.vue'
 
 defineProps<{ lesson: string; exercise: Exercise; prior?: LessonAttempt }>()
-defineEmits<{ graded: [ok: boolean]; ungraded: []; skip: [] }>()
+defineEmits<{ graded: [ok: boolean]; ungraded: []; cantListen: [] }>()
 
 const textTypes = ['translate', 'fill_blank', 'fix_error', 'listen']
 </script>
@@ -21,15 +20,6 @@ const textTypes = ['translate', 'fill_blank', 'fix_error', 'listen']
     :prompt="exercise.prompt"
     :forms="exercise.forms ?? []"
     :meta="exercise.meta"
-    :prior="prior"
-    @graded="$emit('graded', $event)"
-    @ungraded="$emit('ungraded')"
-  />
-  <FreeAnswer
-    v-else-if="exercise.type === 'free'"
-    :lesson="lesson"
-    :exercise-id="exercise.id"
-    :prompt="exercise.prompt"
     :prior="prior"
     @graded="$emit('graded', $event)"
     @ungraded="$emit('ungraded')"
@@ -75,10 +65,11 @@ const textTypes = ['translate', 'fill_blank', 'fix_error', 'listen']
     :type="exercise.type as 'translate' | 'fill_blank' | 'fix_error' | 'listen'"
     :prompt="exercise.prompt"
     :audio="exercise.audio"
+    :text="exercise.text"
     :explain="exercise.explain"
     :prior="prior"
     @graded="$emit('graded', $event)"
     @ungraded="$emit('ungraded')"
-    @skip="$emit('skip')"
+    @cant-listen="$emit('cantListen')"
   />
 </template>

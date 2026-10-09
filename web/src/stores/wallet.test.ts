@@ -30,9 +30,9 @@ describe('wallet store', () => {
   it('renders amounts with the currency name the server gave it', async () => {
     vi.spyOn(api, 'wallet').mockResolvedValue({
       balance: 21,
-      currency_one: 'пёрышко',
-      currency_few: 'пёрышка',
-      currency_many: 'пёрышек',
+      currency_one: 'зёрнышко',
+      currency_few: 'зёрнышка',
+      currency_many: 'зёрнышек',
       streak_days: 3,
     })
     const w = useWalletStore()
@@ -41,8 +41,8 @@ describe('wallet store', () => {
     await w.refresh()
 
     expect(w.balance).toBe(21)
-    expect(w.amount(21)).toBe('21 пёрышко')
-    expect(w.amount(15)).toBe('15 пёрышек')
+    expect(w.amount(21)).toBe('21 зёрнышко')
+    expect(w.amount(15)).toBe('15 зёрнышек')
   })
 
   it('takes the balance from the claim response, not from adding up the reward', async () => {
