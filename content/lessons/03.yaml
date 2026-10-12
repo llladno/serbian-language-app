@@ -2,7 +2,10 @@ lesson: "03"
 title: "Пожалуйста, спасибо (Molim, hvala)"
 subtitle: "вежливые слова, текст, диктант, проверка"
 teaches:
-  [molim, molim-vas, hvala, nema-na-cemu, izvini, oprosti, izvolite, nema-problema]
+  [
+    molim, molim-vas, hvala, nema-na-cemu, izvini, oprosti, izvolite,
+    nema-problema, drago-mi-je, takodje,
+  ]
 
 steps:
   - id: "03.1"

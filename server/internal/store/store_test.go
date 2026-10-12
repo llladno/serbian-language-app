@@ -400,20 +400,35 @@ func TestGradeCardPersistsAndLogsReview(t *testing.T) {
 
 func TestAddAttemptAndWeakExercises(t *testing.T) {
 	_, u := newUser(t)
+	// failed twice, then fixed: no longer weak
 	u.AddAttempt(Attempt{"02-C-1", "02", "C", "x", false}, day0)
 	u.AddAttempt(Attempt{"02-C-1", "02", "C", "y", false}, day0)
 	u.AddAttempt(Attempt{"02-C-1", "02", "C", "radi", true}, day0)
 	u.AddAttempt(Attempt{"02-B-1", "02", "B", "ok", true}, day0)
+	// right once, then wrong: weak until it is answered correctly again
+	u.AddAttempt(Attempt{"02-C-2", "02", "C", "ok", true}, day0)
+	u.AddAttempt(Attempt{"02-C-2", "02", "C", "x", false}, day0)
+	// failed once and never retried: weak
+	u.AddAttempt(Attempt{"02-C-3", "02", "C", "x", false}, day0)
 
 	w, err := u.WeakExercises(10)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(w) != 1 {
+	if len(w) != 2 {
 		t.Fatalf("weak = %+v", w)
 	}
-	if w[0].ExerciseID != "02-C-1" || w[0].Wrong != 2 || w[0].Total != 3 {
+	if w[0].ExerciseID != "02-C-2" || w[0].Wrong != 1 || w[0].Total != 2 {
 		t.Errorf("weak[0] = %+v", w[0])
+	}
+	if w[1].ExerciseID != "02-C-3" || w[1].Wrong != 1 || w[1].Total != 1 {
+		t.Errorf("weak[1] = %+v", w[1])
+	}
+
+	u.AddAttempt(Attempt{"02-C-2", "02", "C", "ok", true}, day0)
+	u.AddAttempt(Attempt{"02-C-3", "02", "C", "ok", true}, day0)
+	if w, _ := u.WeakExercises(10); len(w) != 0 {
+		t.Errorf("weak after fixing = %+v", w)
 	}
 }
 

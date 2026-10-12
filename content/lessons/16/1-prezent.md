@@ -6,10 +6,10 @@
 |---|---|---|---|
 | ja | imam | radim | pišem |
 | ti | imaš | radiš | pišeš |
-| on / ona | ima | radi | piše |
+| on / ona / ono | ima | radi | piše |
 | mi | imamo | radimo | pišemo |
 | vi | imate | radite | pišete |
-| oni | imaju | rade | pišu |
+| oni / one / ona | imaju | rade | pišu |
 
 *(имам, имаш, има… радим, радиш, ради… пишем, пишеш, пише)*
 
@@ -20,7 +20,9 @@
   [жи́вэти, гово́рити, у́чити, ми́слити] → `živim, govorim`
   [жи́вим, гово́рим]
 - **-em:** `pisati, ići` [пи́сати, и́чи] *(idem)*, `razumeti` [разумэ́ти]
-  *(razumem)*
+  *(razumem)*: `razumem, razumeš, razume, razumemo, razumete,` **`razumeju`**
+  [ра́зумэм, ра́зумэш, ра́зумэ, ра́зумэмо, ра́зумэтэ, ра́зумэю] — у глаголов
+  на `-eti` форма «они» оканчивается на `-eju`, а не на `-u`.
 
 > Окончания почти как в русском: `radiš` [ра́диш] ≈ «работаешь», `radi`
 > [ра́ди] ≈ «работает».

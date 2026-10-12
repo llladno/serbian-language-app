@@ -1,7 +1,7 @@
 lesson: "04"
 title: "Это я (Jesam ja)"
 subtitle: "глагол быть, откуда я, где живу"
-teaches: [biti, zemlja]
+teaches: [biti, zemlja, zovem-se, kako-se-zoves, ja-sam]
 
 steps:
   - id: "04.1"
@@ -58,7 +58,7 @@ steps:
 
   - id: "04.3"
     kind: teach
-    title: "Откуда я и где живу"
+    title: "Имя, откуда я, где живу"
     md: "04/3-odakle.md"
 
   - id: "04.4"
@@ -87,3 +87,8 @@ steps:
         prompt: "Собери: «я из Сербии»"
         bank: ["Ja", "sam", "iz", "Srbije"]
         accept: ["Ja sam iz Srbije."]
+      - id: "04.4.5"
+        type: word_bank
+        prompt: "Собери: «меня зовут Ана»"
+        bank: ["Zovem", "se", "Ana"]
+        accept: ["Zovem se Ana."]

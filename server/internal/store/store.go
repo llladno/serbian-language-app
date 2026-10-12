@@ -953,15 +953,17 @@ func (u *UserStore) AddAttempt(a Attempt, now time.Time) error {
 	return tx.Commit()
 }
 
-// WeakExercises returns exercises failed at least half the time (>= 2 attempts).
+// WeakExercises returns the exercises whose most recent attempt was wrong, with
+// their lifetime wrong/total counts. An exercise leaves the list as soon as the
+// learner answers it correctly, so a mistake that has been fixed never lingers.
 func (u *UserStore) WeakExercises(limit int) ([]WeakExercise, error) {
 	rows, err := u.db.Query(`
-SELECT exercise_id, lesson, SUM(1 - correct) AS wrong, COUNT(*) AS total
-FROM attempts
-WHERE user_id = ?
-GROUP BY exercise_id, lesson
-HAVING COUNT(*) >= 2 AND SUM(1 - correct) * 2 >= COUNT(*)
-ORDER BY wrong DESC, total DESC
+SELECT a.exercise_id, a.lesson, w.wrong, w.total
+FROM attempts a
+JOIN (SELECT exercise_id, MAX(id) AS last_id, SUM(1 - correct) AS wrong, COUNT(*) AS total
+      FROM attempts WHERE user_id = ? GROUP BY exercise_id) w ON a.id = w.last_id
+WHERE a.correct = 0
+ORDER BY w.wrong DESC, w.total DESC, a.exercise_id
 LIMIT ?`, u.user, limit)
 	if err != nil {
 		return nil, err

@@ -302,7 +302,7 @@
   cyrillic: "како се зовеш? / зовете?"
   transcription: "ка́ко сэ зо́вэш? / зо́вэтэ?"
   ru: "как тебя / вас зовут?"
-  lesson: "02"
+  lesson: "04"
   pos: "phrase"
   tags: ["intro"]
   example_sr: "Kako se zoveš?"
@@ -313,7 +313,7 @@
   cyrillic: "зовем се…"
   transcription: "зо́вэм сэ…"
   ru: "меня зовут…"
-  lesson: "02"
+  lesson: "04"
   pos: "phrase"
   tags: ["intro"]
   example_sr: "Zovem se Griša."
@@ -324,7 +324,7 @@
   cyrillic: "ја сам…"
   transcription: "я сам…"
   ru: "я … (имя / профессия)"
-  lesson: "02"
+  lesson: "04"
   pos: "phrase"
   tags: ["intro"]
   example_sr: "Ja sam Griša, iz Rusije."
@@ -335,7 +335,7 @@
   cyrillic: "драго ми је"
   transcription: "дра́го ми е"
   ru: "приятно познакомиться"
-  lesson: "02"
+  lesson: "03"
   pos: "phrase"
   tags: ["intro"]
   example_sr: "Drago mi je, ja sam Ana."
@@ -346,7 +346,7 @@
   cyrillic: "такође"
   transcription: "тако́дьжэ"
   ru: "тоже, взаимно"
-  lesson: "02"
+  lesson: "03"
   pos: "adv"
   tags: ["intro"]
   example_sr: "Drago mi je. — Takođe!"
