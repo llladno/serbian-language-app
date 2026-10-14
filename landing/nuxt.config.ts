@@ -44,6 +44,7 @@ export default defineNuxtConfig({
         '/blog',
         '/sitemap.xml',
         '/rss.xml',
+        '/llms-full.txt',
         ...blogPostRoutes,
       ],
     },

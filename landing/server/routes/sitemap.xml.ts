@@ -1,8 +1,9 @@
 const SITE_URL = 'https://ucimo.ru'
 
-const staticUrls = [
-  { loc: '/', changefreq: 'weekly', priority: '1.0' },
-  { loc: '/blog', changefreq: 'weekly', priority: '0.8' },
+// Home and /blog change whenever a post is published, so their lastmod follows the newest post.
+const staticUrls = (lastmod: string) => [
+  { loc: '/', changefreq: 'weekly', priority: '1.0', lastmod },
+  { loc: '/blog', changefreq: 'weekly', priority: '0.8', lastmod },
   { loc: '/privacy', changefreq: 'yearly', priority: '0.3' },
   { loc: '/terms', changefreq: 'yearly', priority: '0.3' },
 ]
@@ -13,8 +14,12 @@ export default defineEventHandler(async (event) => {
     .select('path', 'date')
     .all()
 
+  const newest = posts.length
+    ? new Date(posts[0].date).toISOString().slice(0, 10)
+    : new Date().toISOString().slice(0, 10)
+
   const urls = [
-    ...staticUrls,
+    ...staticUrls(newest),
     ...posts.map((post) => ({
       loc: post.path,
       changefreq: 'monthly',

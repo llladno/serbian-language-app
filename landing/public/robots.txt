@@ -1,4 +1,20 @@
+# ucimo.ru: public pages are open to search engines and AI crawlers.
+# Only the app's API is closed; signed-in screens have no content worth indexing.
+# AI search and answer engines are listed explicitly so the blog, llms.txt and llms-full.txt can be read and cited.
+
 User-agent: *
+User-agent: GPTBot
+User-agent: OAI-SearchBot
+User-agent: ChatGPT-User
+User-agent: ClaudeBot
+User-agent: Claude-SearchBot
+User-agent: Claude-User
+User-agent: PerplexityBot
+User-agent: Perplexity-User
+User-agent: Google-Extended
+User-agent: Applebot-Extended
+User-agent: YandexBot
 Allow: /
+Disallow: /api/
 
 Sitemap: https://ucimo.ru/sitemap.xml

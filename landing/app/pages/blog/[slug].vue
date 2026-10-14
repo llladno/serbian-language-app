@@ -46,6 +46,7 @@ const ogImage = page.value.og_image
   ? `https://ucimo.ru${page.value.og_image}`
   : 'https://ucimo.ru/og-image.png'
 const isoDate = new Date(page.value.date).toISOString()
+const faq = (page.value.faq ?? []) as { q: string; a: string }[]
 
 useSeoMeta({
   title: page.value.title,
@@ -80,6 +81,7 @@ useHead({
             datePublished: isoDate,
             dateModified: isoDate,
             inLanguage: 'ru',
+            keywords: (page.value.keywords ?? []).join(', '),
             image: ogImage,
             mainEntityOfPage: url,
             author: { '@type': 'Organization', name: 'ucimo', url: 'https://ucimo.ru/' },
@@ -89,6 +91,18 @@ useHead({
               logo: { '@type': 'ImageObject', url: 'https://ucimo.ru/favicon.png' },
             },
           },
+          ...(faq.length
+            ? [
+                {
+                  '@type': 'FAQPage',
+                  mainEntity: faq.map((item) => ({
+                    '@type': 'Question',
+                    name: item.q,
+                    acceptedAnswer: { '@type': 'Answer', text: item.a },
+                  })),
+                },
+              ]
+            : []),
           {
             '@type': 'BreadcrumbList',
             itemListElement: [
