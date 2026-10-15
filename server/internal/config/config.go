@@ -5,6 +5,7 @@ package config
 
 import (
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/grisha/serbian-app/server/internal/mail"
@@ -60,6 +61,10 @@ type Config struct {
 	// /api/telegram/webhook is unaffected either way — only where Telegram
 	// is told to deliver updates changes. From TELEGRAM_WEBHOOK_URL.
 	TelegramWebhookURL string
+	// TelegramAdminIDs are the Telegram user ids allowed to run the bot's /stats command
+	// (the lead-magnet funnel). Anyone can run /id to learn theirs. From
+	// TELEGRAM_ADMIN_IDS, a comma-separated list; empty disables /stats.
+	TelegramAdminIDs []int64
 	// TributeAPIKey authenticates the Tribute donation webhook
 	// (POST /api/tribute/webhook): Tribute signs every request with
 	// HMAC-SHA256(key=TributeAPIKey, msg=body) in the "trbt-signature"
@@ -93,8 +98,30 @@ func Load() Config {
 		TelegramWebhookSecret: os.Getenv("TELEGRAM_WEBHOOK_SECRET"),
 		TelegramAPIBase:       os.Getenv("TELEGRAM_API_BASE"),
 		TelegramWebhookURL:    os.Getenv("TELEGRAM_WEBHOOK_URL"),
+		TelegramAdminIDs:      parseIDList(os.Getenv("TELEGRAM_ADMIN_IDS")),
 		TributeAPIKey:         os.Getenv("TRIBUTE_API_KEY"),
 	}
+}
+
+// parseIDList reads "123, 456" into ids, skipping anything that is not a number.
+func parseIDList(raw string) []int64 {
+	var ids []int64
+	for _, part := range strings.Split(raw, ",") {
+		if id, err := strconv.ParseInt(strings.TrimSpace(part), 10, 64); err == nil {
+			ids = append(ids, id)
+		}
+	}
+	return ids
+}
+
+// IsTelegramAdmin reports whether tgID may run the bot's admin commands.
+func (c Config) IsTelegramAdmin(tgID int64) bool {
+	for _, id := range c.TelegramAdminIDs {
+		if id == tgID {
+			return true
+		}
+	}
+	return false
 }
 
 // Secure reports whether the app is served over HTTPS, which gates

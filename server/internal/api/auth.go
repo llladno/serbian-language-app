@@ -907,6 +907,11 @@ func (h handlers) telegramWebhook(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if cq := update.CallbackQuery; cq != nil {
+		if strings.HasPrefix(cq.Data, leadCallbackPrefix) {
+			h.leadMagnetCheckPressed(cq.ID, cq.Data, cq.From.ID,
+				telegram.DisplayName(cq.From.FirstName, cq.From.Username))
+			return
+		}
 		h.channelCheckPressed(cq.ID, cq.Data, cq.From.ID,
 			telegram.DisplayName(cq.From.FirstName, cq.From.Username))
 		return
@@ -919,9 +924,16 @@ func (h handlers) telegramWebhook(w http.ResponseWriter, r *http.Request) {
 
 	token, ok := telegram.ParseStartToken(update.Message.Text)
 	if !ok {
+		if h.botCommand(chatID, update.Message.From.ID, name, update.Message.Text) {
+			return
+		}
 		if telegram.IsBareStart(update.Message.Text) {
 			h.sendBotMessage(chatID, telegram.MsgStartGreeting, name, h.miniAppButton())
 		}
+		return
+	}
+	if slug, source, isLead := parseLeadPayload(token); isLead {
+		h.leadMagnetStart(chatID, update.Message.From.ID, name, slug, source)
 		return
 	}
 	callerUserID, ok := h.TelegramPending.Lookup(token)

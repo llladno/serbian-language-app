@@ -707,8 +707,8 @@ func TestUpgradeFromProductionAtMigration012(t *testing.T) {
 	if got, want := count(`SELECT COUNT(*) FROM schema_migrations`), count(`SELECT COUNT(DISTINCT version) FROM schema_migrations`); got != want {
 		t.Errorf("schema_migrations has repeated versions: %d rows, %d distinct", got, want)
 	}
-	if got := count(`SELECT MAX(version) FROM schema_migrations`); got != 22 {
-		t.Errorf("latest version = %d, want 22", got)
+	if got := count(`SELECT MAX(version) FROM schema_migrations`); got != 24 {
+		t.Errorf("latest version = %d, want 24", got)
 	}
 	// the new columns are there, and an existing learner has no code until asked
 	if got := count(`SELECT COUNT(*) FROM users WHERE referral_code IS NOT NULL OR referred_by IS NOT NULL`); got != 0 {
