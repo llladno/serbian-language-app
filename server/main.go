@@ -156,17 +156,7 @@ func main() {
 		telegramWebhookSecret = secret
 	}
 	enqueueTelegramMessage := func(chatID int64, text string, button *telegram.InlineButton, priority int) {
-		ob := store.OutboxButton{}
-		if button != nil {
-			ob.Label = button.Label
-			if button.ChannelURL != "" {
-				ob.Type, ob.Target = "channel_check", button.ChannelURL
-			} else if button.WebAppURL != "" {
-				ob.Type, ob.Target = "web_app", button.WebAppURL
-			} else {
-				ob.Type, ob.Target = "url", button.URL
-			}
-		}
+		ob := outbox.ButtonRow(button)
 		if err := st.EnqueueBotMessage(chatID, text, ob, priority, time.Now()); err != nil {
 			log.Printf("telegram: enqueue message: %v", err)
 		}

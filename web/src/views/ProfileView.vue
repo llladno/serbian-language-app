@@ -16,6 +16,7 @@ import LeaderboardCard from '../components/LeaderboardCard.vue'
 import ModalShell from '../components/ModalShell.vue'
 import SupportCard from '../components/SupportCard.vue'
 import DonateCard from '../components/DonateCard.vue'
+import BotPrefsSection from '../components/BotPrefsSection.vue'
 import SeedIcon from '../components/SeedIcon.vue'
 import { pluralRu } from '../lib/plural'
 import type { LeaderRow, Me, Progress, Vocab } from '../types'
@@ -222,7 +223,7 @@ async function logout() {
               </div>
               <div class="flex flex-wrap items-center gap-x-2 gap-y-1">
                 <span class="text-[var(--muted)]">Почта:</span>
-                <span v-if="me.email">{{ me.email }}</span>
+                <span v-if="me.email" class="min-w-0 break-all">{{ me.email }}</span>
                 <span v-else class="text-[var(--muted)]">не указана</span>
                 <span
                   v-if="me.email"
@@ -338,6 +339,10 @@ async function logout() {
           </button>
         </div>
         <p v-if="tg.error.value" class="mt-1 text-sm text-[var(--bad)]">{{ tg.error.value }}</p>
+      </div>
+
+      <div class="border-t border-[var(--border)] pt-3">
+        <BotPrefsSection />
       </div>
 
       <div class="border-t border-[var(--border)] pt-3">

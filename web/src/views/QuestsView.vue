@@ -23,6 +23,7 @@ import { groupQuests } from '../lib/questGroups'
 import SeedIcon from '../components/SeedIcon.vue'
 import SegmentBar from '../components/SegmentBar.vue'
 import InviteModal from '../components/InviteModal.vue'
+import TariffsBanner from '../components/TariffsBanner.vue'
 import AnimatedNumber from '../components/AnimatedNumber.vue'
 import type { Quest } from '../types'
 
@@ -177,6 +178,8 @@ async function claim(q: Quest) {
         </p>
       </template>
     </section>
+
+    <TariffsBanner />
 
     <p v-if="loadError" class="card p-5 text-sm text-[var(--bad)]">{{ loadError }}</p>
     <p v-if="claimError" class="card p-5 text-sm text-[var(--bad)]" data-test="claim-error">

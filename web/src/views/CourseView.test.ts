@@ -33,7 +33,10 @@ function wallet(balance: number) {
 }
 
 function mountView() {
-  return mount(CourseView, { global: { stubs: { teleport: true } }, attachTo: document.body })
+  return mount(CourseView, {
+    global: { stubs: { teleport: true, RouterLink: { props: ['to'], template: '<a :href="to"><slot /></a>' } } },
+    attachTo: document.body,
+  })
 }
 
 beforeEach(() => {
@@ -68,6 +71,40 @@ describe('CourseView: levels for sale', () => {
     await w.find('[data-test="locked-16"]').trigger('click')
     expect(w.find('[data-test="unlock-missing"]').text()).toContain('Не хватает 130')
     expect(w.find('[data-test="unlock-buy"]').exists()).toBe(false)
+  })
+
+  it('when short of seeds, the next level can be opened for rubles instead', async () => {
+    const w = mountView()
+    await flushPromises()
+    await w.find('[data-test="locked-16"]').trigger('click')
+    const pay = w.find('[data-test="unlock-pay"]')
+    expect(pay.text()).toContain('Открыть сразу за 249')
+    expect(pay.attributes('href')).toBe('/tariffs')
+    expect(w.find('[data-test="unlock-order"]').exists()).toBe(false)
+    // earning is still on offer, next to paying
+    expect(w.find('[data-test="unlock-quests"]').attributes('href')).toBe('/quests')
+  })
+
+  it('a level that is not the next one is answered with the year, and says why', async () => {
+    const three: Course = {
+      title: 'Курс',
+      phases: [
+        { id: '1', title: 'Уровень 1', lessons: ['00'], locked: false },
+        { id: '2', title: 'Уровень 2', lessons: ['16'], locked: true, price: 230, price_effective: 230 },
+        { id: '3', title: 'Уровень 3', lessons: ['30'], locked: true, price: 375, price_effective: 375 },
+      ],
+      lessons: ['00', '16', '30'].map((id) => ({ id, title: id, subtitle: '', planned: false, status: 'not_started' as const })),
+    }
+    vi.spyOn(api, 'course').mockResolvedValue(three)
+    vi.spyOn(api, 'shop').mockResolvedValue({
+      items: [PRODUCT, { ...PRODUCT, id: 8, ref: '3', title: 'Уровень 3', price: 375, price_effective: 375 }],
+    })
+    const w = mountView()
+    await flushPromises()
+    await w.find('[data-test="locked-30"]').trigger('click')
+    expect(w.find('[data-test="unlock-pay"]').text()).toContain('Все уровни')
+    expect(w.find('[data-test="unlock-pay"]').text()).toContain('1\u00a0000')
+    expect(w.find('[data-test="unlock-order"]').text()).toContain('Уровень 2')
   })
 
   it('offers to buy when the balance is enough, then reloads the course and closes', async () => {

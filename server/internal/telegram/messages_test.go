@@ -33,6 +33,7 @@ func TestDefaultMessagesHaveEveryKey(t *testing.T) {
 		MsgStartGreeting, MsgLoginSuccessNew, MsgLoginSuccessExisting,
 		MsgLoginTokenExpired, MsgLoginError, MsgLinkSuccess, MsgLinkTaken, MsgLinkError,
 		MsgChannelPrompt, MsgChannelOK, MsgChannelNotYet,
+		MsgPrefsStopped, MsgPrefsMenu, MsgPrefsNoAccount,
 	}
 	if len(DefaultMessages) != len(want) {
 		t.Fatalf("DefaultMessages has %d entries, want %d", len(DefaultMessages), len(want))

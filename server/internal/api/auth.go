@@ -883,8 +883,14 @@ func (h handlers) telegramWebhook(w http.ResponseWriter, r *http.Request) {
 
 	var update struct {
 		CallbackQuery *struct {
-			ID   string `json:"id"`
-			Data string `json:"data"`
+			ID      string `json:"id"`
+			Data    string `json:"data"`
+			Message *struct {
+				MessageID int64 `json:"message_id"`
+				Chat      struct {
+					ID int64 `json:"id"`
+				} `json:"chat"`
+			} `json:"message"`
 			From struct {
 				ID        int64  `json:"id"`
 				Username  string `json:"username"`
@@ -907,6 +913,13 @@ func (h handlers) telegramWebhook(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if cq := update.CallbackQuery; cq != nil {
+		var chatID, messageID int64
+		if cq.Message != nil {
+			chatID, messageID = cq.Message.Chat.ID, cq.Message.MessageID
+		}
+		if h.prefPressed(cq.ID, cq.Data, cq.From.ID, chatID, messageID) {
+			return
+		}
 		h.channelCheckPressed(cq.ID, cq.Data, cq.From.ID,
 			telegram.DisplayName(cq.From.FirstName, cq.From.Username))
 		return
@@ -916,6 +929,16 @@ func (h handlers) telegramWebhook(w http.ResponseWriter, r *http.Request) {
 	}
 	chatID := update.Message.Chat.ID
 	name := telegram.DisplayName(update.Message.From.FirstName, update.Message.From.Username)
+
+	// Opting out is a command anyone may type, linked or not.
+	switch {
+	case telegram.IsCommand(update.Message.Text, "stop"):
+		h.botStop(chatID, update.Message.From.ID, name)
+		return
+	case telegram.IsCommand(update.Message.Text, "settings"):
+		h.botSettings(chatID, update.Message.From.ID, name)
+		return
+	}
 
 	token, ok := telegram.ParseStartToken(update.Message.Text)
 	if !ok {

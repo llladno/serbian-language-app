@@ -28,18 +28,7 @@ func ProcessNext(st *store.Store, botToken string, now time.Time) (ok bool, retr
 		return false, 0, nil
 	}
 
-	var button *telegram.InlineButton
-	if msg.Button.Type != "" {
-		button = &telegram.InlineButton{Label: msg.Button.Label}
-		switch msg.Button.Type {
-		case "web_app":
-			button.WebAppURL = msg.Button.Target
-		case "url":
-			button.URL = msg.Button.Target
-		case "channel_check":
-			button.ChannelURL = msg.Button.Target
-		}
-	}
+	button := buttonFromRow(msg.Button)
 
 	sendErr := telegram.SendMessageWithButton(botToken, msg.ChatID, msg.Text, button)
 	if sendErr == nil {
@@ -55,4 +44,49 @@ func ProcessNext(st *store.Store, botToken string, now time.Time) (ok bool, retr
 		return true, 0, err
 	}
 	return true, 0, nil
+}
+
+// ButtonRow is how a button is stored in bot_outbox: one (label, type, target)
+// triple, whatever the keyboard. Presets (the channel pair, the settings
+// toggles) keep their whole state in target.
+func ButtonRow(b *telegram.InlineButton) store.OutboxButton {
+	if b == nil {
+		return store.OutboxButton{}
+	}
+	ob := store.OutboxButton{Label: b.Label}
+	switch {
+	case b.Prefs != nil:
+		ob.Type, ob.Target = "prefs", b.Prefs.Encode()
+	case b.PrefOff != "":
+		ob.Type, ob.Target = "pref_off", string(b.PrefOff)
+	case b.ChannelURL != "":
+		ob.Type, ob.Target = "channel_check", b.ChannelURL
+	case b.WebAppURL != "":
+		ob.Type, ob.Target = "web_app", b.WebAppURL
+	default:
+		ob.Type, ob.Target = "url", b.URL
+	}
+	return ob
+}
+
+// buttonFromRow is ButtonRow's inverse, used when the row is finally sent.
+func buttonFromRow(ob store.OutboxButton) *telegram.InlineButton {
+	if ob.Type == "" {
+		return nil
+	}
+	b := &telegram.InlineButton{Label: ob.Label}
+	switch ob.Type {
+	case "web_app":
+		b.WebAppURL = ob.Target
+	case "url":
+		b.URL = ob.Target
+	case "channel_check":
+		b.ChannelURL = ob.Target
+	case "pref_off":
+		b.PrefOff = telegram.PrefCategory(ob.Target)
+	case "prefs":
+		st := telegram.DecodePrefsState(ob.Target)
+		b.Prefs = &st
+	}
+	return b
 }

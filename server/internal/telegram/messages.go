@@ -22,6 +22,11 @@ const (
 	MsgChannelPrompt MessageKey = "channel_prompt"
 	MsgChannelOK     MessageKey = "channel_ok"
 	MsgChannelNotYet MessageKey = "channel_not_yet"
+	// Opting out: the answer to /stop, the settings screen behind /settings,
+	// and the answer from someone whose Telegram is not linked to an account.
+	MsgPrefsStopped   MessageKey = "prefs_stopped"
+	MsgPrefsMenu      MessageKey = "prefs_menu"
+	MsgPrefsNoAccount MessageKey = "prefs_no_account"
 )
 
 // SupportURL is where every "написать в поддержку" button and @-mention
@@ -68,6 +73,12 @@ var DefaultMessages = map[MessageKey]string{
 		"Возвращайся в приложение и забирай награду.",
 	MsgChannelNotYet: "Пока не вижу подписки, {name} 🤔\n\n" +
 		"Подпишись на канал и нажми «Проверить подписку» ещё раз.",
+	MsgPrefsStopped: "Хорошо, {name}, больше не пишу про учёбу, тариф и новости.\n\n" +
+		"Служебные сообщения всё равно придут: вход, оплата, открытый доступ. Вернуть всё обратно — /settings.",
+	MsgPrefsMenu: "Что мне можно тебе писать, {name}? Нажми, чтобы включить или выключить.\n\n" +
+		"Вход и оплату я пишу всегда. Остановить всё сразу — /stop.",
+	MsgPrefsNoAccount: "Пока ничего не пишу: этот Telegram не привязан ни к одному аккаунту Учимо. " +
+		"Привязать можно в приложении, в профиле.",
 }
 
 // Substitute replaces every "{name}" placeholder in text with name.

@@ -167,6 +167,8 @@ func Handler(deps Deps) http.Handler {
 	// bridge must not reach anything that moves money. /api/shop is
 	// account-scoped (it reports what you own), so it belongs here too.
 	root.HandleFunc("GET /api/me/wallet", h.requireSession(h.getWallet))
+	root.HandleFunc("GET /api/me/bot-prefs", h.requireSession(h.getBotPrefs))
+	root.HandleFunc("PUT /api/me/bot-prefs", h.requireSession(h.putBotPrefs))
 	root.HandleFunc("GET /api/me/quests", h.requireSession(h.listQuests))
 	root.HandleFunc("POST /api/me/quests/{id}/claim", h.requireSession(h.claimQuest))
 	root.HandleFunc("GET /api/me/referral", h.requireSession(h.getReferral))
@@ -488,7 +490,7 @@ func (h handlers) getExercises(w http.ResponseWriter, r *http.Request) {
 	for _, b := range h.Course().Exercises[id] {
 		bd := exerciseBlockDTO{ID: b.ID, Title: b.Title, Instruction: b.Instruction}
 		for _, e := range b.Exercises {
-			d := exerciseDTO{ID: e.ID, Type: e.Type, Prompt: e.Prompt, Forms: e.Forms, Meta: e.Meta, Audio: e.Audio, Explain: e.Explain}
+			d := exerciseDTO{ID: e.ID, Type: e.Type, Prompt: e.Prompt, Forms: e.Forms, Meta: e.Meta, Audio: e.Audio, Explain: e.Explain, Hint: e.Hint}
 			switch e.Type {
 			case "listen":
 				// A learner who cannot listen gets the sentence as text to
@@ -612,10 +614,17 @@ func (h handlers) checkExercise(w http.ResponseWriter, r *http.Request) {
 			resp.Explain = "" // it explains how the sentence is spelled, not what it means
 		}
 		res := checker.Check(req.Answer, accept)
+		if !res.OK && ex.Type == "fill_blank" {
+			// Typing the whole sentence into the blank is not a mistake.
+			if full := checker.Check(req.Answer, content.FillSentences(ex.Prompt, accept)); full.OK {
+				res = full
+			}
+		}
 		resp.OK = res.OK
 		resp.Diff = res.Diff
 		resp.Expected = res.Expected
 		resp.NearMiss = res.NearMiss
+		resp.Typo = res.Typo
 		recordAnswer = req.Answer
 		correct = res.OK
 	}
@@ -1198,7 +1207,7 @@ func (h handlers) reviewGradeGram(w http.ResponseWriter, r *http.Request) {
 		due = updated.Due.Format("2006-01-02")
 	}
 	writeJSON(w, 200, gramCheckResultDTO{
-		OK: res.OK, Expected: res.Expected, NearMiss: res.NearMiss,
+		OK: res.OK, Expected: res.Expected, NearMiss: res.NearMiss, Typo: res.Typo,
 		Due: due, IntervalDays: updated.IntervalDays, State: string(updated.State),
 	})
 }

@@ -17,7 +17,7 @@ const (
 )
 
 // OutboxButton is the inline button (if any) attached to a queued message.
-// Type is "web_app", "url", or "" for no button.
+// Type is "web_app", "url", "channel_check", "pref_off", "prefs", or "" for no button.
 type OutboxButton struct {
 	Label  string
 	Type   string

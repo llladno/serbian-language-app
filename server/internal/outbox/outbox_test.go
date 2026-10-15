@@ -169,3 +169,67 @@ func TestProcessNextSendsTheChannelKeyboard(t *testing.T) {
 		t.Errorf("reply_markup = %s, want the channel link and the check callback", markup)
 	}
 }
+
+// Every keyboard has to survive being flattened into one (label, type, target)
+// row and rebuilt, or a reminder's "stop" button would arrive as a dead link.
+func TestButtonRowRoundTrip(t *testing.T) {
+	prefs := telegram.PrefsState{Learning: true, News: true}
+	cases := []struct {
+		name string
+		in   *telegram.InlineButton
+		want store.OutboxButton
+	}{
+		{"none", nil, store.OutboxButton{}},
+		{"web app", &telegram.InlineButton{Label: "Открыть", WebAppURL: "https://x/app"}, store.OutboxButton{Label: "Открыть", Type: "web_app", Target: "https://x/app"}},
+		{"link", &telegram.InlineButton{Label: "Сайт", URL: "https://x"}, store.OutboxButton{Label: "Сайт", Type: "url", Target: "https://x"}},
+		{"channel", &telegram.InlineButton{ChannelURL: "https://t.me/c"}, store.OutboxButton{Type: "channel_check", Target: "https://t.me/c"}},
+		{"stop button", &telegram.InlineButton{Label: telegram.PrefOffLabel, PrefOff: telegram.PrefLearning}, store.OutboxButton{Label: telegram.PrefOffLabel, Type: "pref_off", Target: "learning"}},
+		{"settings", &telegram.InlineButton{Prefs: &prefs}, store.OutboxButton{Type: "prefs", Target: "101"}},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			row := ButtonRow(tc.in)
+			if row != tc.want {
+				t.Fatalf("ButtonRow = %+v, want %+v", row, tc.want)
+			}
+			back := buttonFromRow(row)
+			if tc.in == nil {
+				if back != nil {
+					t.Fatalf("buttonFromRow(empty) = %+v, want nil", back)
+				}
+				return
+			}
+			if back.Label != tc.in.Label || back.WebAppURL != tc.in.WebAppURL || back.URL != tc.in.URL ||
+				back.ChannelURL != tc.in.ChannelURL || back.PrefOff != tc.in.PrefOff {
+				t.Errorf("round trip = %+v, want %+v", back, tc.in)
+			}
+			if (back.Prefs == nil) != (tc.in.Prefs == nil) || (back.Prefs != nil && *back.Prefs != *tc.in.Prefs) {
+				t.Errorf("round trip prefs = %+v, want %+v", back.Prefs, tc.in.Prefs)
+			}
+		})
+	}
+}
+
+// The button reaches Telegram as callback_data the webhook understands.
+func TestProcessNextSendsTheStopButton(t *testing.T) {
+	var markup string
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		r.ParseForm()
+		markup = r.Form.Get("reply_markup")
+		w.Write([]byte(`{"ok":true,"result":true}`))
+	}))
+	defer srv.Close()
+	defer telegram.SetAPIBase(srv.URL)()
+
+	st := newTestStore(t)
+	row := ButtonRow(&telegram.InlineButton{Label: telegram.PrefOffLabel, PrefOff: telegram.PrefLearning})
+	if err := st.EnqueueBotMessage(555, "hi", row, store.PriorityNormal, time.Now()); err != nil {
+		t.Fatal(err)
+	}
+	if _, _, err := ProcessNext(st, "tok", time.Now()); err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(markup, `"callback_data":"prefoff:learning"`) {
+		t.Errorf("reply_markup = %s, want a prefoff:learning callback", markup)
+	}
+}

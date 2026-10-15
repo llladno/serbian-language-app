@@ -327,7 +327,7 @@ describe('QuestsView', () => {
       expect(link.value).toBe(REFERRAL.url)
       const tg = document.body.querySelector('[data-test="invite-telegram"]') as HTMLAnchorElement
       expect(tg.href).toBe(
-        'https://t.me/share/url?url=' + encodeURIComponent(REFERRAL.url) + '&text=' + encodeURIComponent('Учу сербский в UCIMO — уроки, повторение слов и озвучка. Заходи по моей ссылке:'),
+        'https://t.me/share/url?url=' + encodeURIComponent(REFERRAL.url) + '&text=' + encodeURIComponent('Учу сербский в ucimo: уроки, повторение слов и озвучка. Присоединяйся!'),
       )
       expect(document.body.textContent).toContain('30')
       w.unmount()

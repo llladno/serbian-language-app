@@ -138,11 +138,18 @@ func SetWebhook(botToken, webhookURL, secretToken string) error {
 // that channel) and "check" (a callback the webhook answers). It is a preset,
 // not two free buttons, because the outbox stores one button per message as
 // (label, type, target) and this keeps that shape.
+//
+// Two more presets cover opting out of messages (see PrefCategory): PrefOff is a
+// single "stop these" button under a reminder, Prefs is the settings screen's
+// keyboard with one toggle per category. Like ChannelURL they are presets so
+// the outbox row keeps its (label, type, target) shape.
 type InlineButton struct {
 	Label      string
 	WebAppURL  string
 	URL        string
 	ChannelURL string
+	PrefOff    PrefCategory
+	Prefs      *PrefsState
 }
 
 // The channel keyboard's wording, and the callback_data its "check" button
@@ -164,7 +171,11 @@ func SendMessageWithButton(botToken string, chatID int64, text string, button *I
 	}
 	if button != nil {
 		var rows [][]map[string]any
-		if button.ChannelURL != "" {
+		if button.Prefs != nil {
+			rows = prefsRows(*button.Prefs)
+		} else if button.PrefOff != "" {
+			rows = [][]map[string]any{{{"text": button.Label, "callback_data": CallbackPrefOff + string(button.PrefOff)}}}
+		} else if button.ChannelURL != "" {
 			rows = [][]map[string]any{
 				{{"text": SubscribeLabel, "url": button.ChannelURL}},
 				{{"text": CheckLabel, "callback_data": CallbackCheckChannel}},

@@ -40,9 +40,7 @@ The word "задание" is overloaded in Russian. In this doc and in code:
 There is no "pay with money" unlock path. Money, when it arrives, buys currency
 (see Out of scope), never a level directly.
 
-**Content status (2026-10-08):** lessons `00`–`59` are authored, i.e. phases 1–4.
-Phase 5 (`60`–`77`) is declared in `course.yaml` but has no content yet, so its
-product is for sale before it can be read — the shop copy says "скоро".
+**Content status (2026-10-14):** lessons `00`–`77` are authored, i.e. all five phases. Until 2026-10-14 phase 5 (`60`–`77`) was declared in `course.yaml` without content, so the shop kept it quiet ("скоро"); with lessons in place it is for sale at its price (375). Level 5 pays nothing for lessons (`lessonPay` knows only phases 1–4), so authoring it does not change the economy: the prices stay derived from the payouts of levels 1–4.
 
 ## Data model
 

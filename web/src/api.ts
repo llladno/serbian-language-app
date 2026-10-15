@@ -27,6 +27,7 @@ import type {
   LessonCompletion,
   ShopItem,
   PurchaseResult,
+  BotPrefs,
 } from './types'
 import { getStoredAttribution, getStoredReferral } from './attribution'
 
@@ -139,6 +140,9 @@ export const api = {
   sendSupportMessage: (message: string) =>
     request<{ status: string }>('/me/support', { method: 'POST', body: JSON.stringify({ message }) }),
   wallet: () => request<Wallet>('/me/wallet'),
+  botPrefs: () => request<BotPrefs>('/me/bot-prefs'),
+  setBotPrefs: (patch: Partial<BotPrefs>) =>
+    request<BotPrefs>('/me/bot-prefs', { method: 'PUT', body: JSON.stringify(patch) }),
   quests: () => request<{ quests: Quest[] }>('/me/quests'),
   shop: () => request<{ items: ShopItem[] }>('/shop'),
   // The key makes a retry after a lost response return the original purchase

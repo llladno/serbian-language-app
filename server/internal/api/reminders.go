@@ -36,6 +36,12 @@ var inactivityMessages = []string{
 
 func pickMessage(msgs []string) string { return msgs[rand.Intn(len(msgs))] }
 
+// stopButton is the "no more of these" button every reminder carries, so
+// leaving costs one tap rather than a search through settings.
+func stopButton() *telegram.InlineButton {
+	return &telegram.InlineButton{Label: telegram.PrefOffLabel, PrefOff: telegram.PrefLearning}
+}
+
 // RunReminderSweep is one pass of the bot's reminder job. For every account
 // with a linked Telegram chat it checks two independent conditions:
 //
@@ -67,6 +73,16 @@ func RunReminderSweep(deps Deps, now time.Time) error {
 	today := now.UTC().Format("2006-01-02")
 
 	for _, tu := range users {
+		// Study reminders are opt-out: someone who switched them off (in the
+		// profile, with /stop, or under an earlier reminder) hears nothing.
+		prefs, err := deps.Store.BotPrefs(tu.UserID)
+		if err != nil {
+			log.Printf("reminder sweep: prefs for %s: %v", tu.UserID, err)
+			continue
+		}
+		if !prefs.Learning {
+			continue
+		}
 		state, err := deps.Store.BotReminderState(tu.UserID)
 		if err != nil {
 			log.Printf("reminder sweep: state for %s: %v", tu.UserID, err)
@@ -79,7 +95,7 @@ func RunReminderSweep(deps Deps, now time.Time) error {
 			if err != nil {
 				log.Printf("reminder sweep: queue for %s: %v", tu.UserID, err)
 			} else if len(rows) == 0 {
-				deps.EnqueueTelegramMessage(tu.ChatID, pickMessage(allDoneMessages), nil, telegram.PriorityNormal)
+				deps.EnqueueTelegramMessage(tu.ChatID, pickMessage(allDoneMessages), stopButton(), telegram.PriorityNormal)
 				if err := deps.Store.SetBotReminderAllDoneDate(tu.UserID, today); err != nil {
 					log.Printf("reminder sweep: save all-done state for %s: %v", tu.UserID, err)
 				}
@@ -93,7 +109,7 @@ func RunReminderSweep(deps Deps, now time.Time) error {
 			continue
 		}
 		if now.Sub(last) >= reminderInactivityAfter && state.InactiveSentAt.Before(last) {
-			deps.EnqueueTelegramMessage(tu.ChatID, pickMessage(inactivityMessages), nil, telegram.PriorityNormal)
+			deps.EnqueueTelegramMessage(tu.ChatID, pickMessage(inactivityMessages), stopButton(), telegram.PriorityNormal)
 			if err := deps.Store.SetBotReminderInactiveSentAt(tu.UserID, now); err != nil {
 				log.Printf("reminder sweep: save inactivity state for %s: %v", tu.UserID, err)
 			}

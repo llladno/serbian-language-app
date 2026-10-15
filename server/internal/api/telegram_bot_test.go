@@ -403,6 +403,7 @@ type fakeBotAPI struct {
 	mu      sync.Mutex
 	status  string
 	answers []string
+	edits   []string // reply_markup of every editMessageReplyMarkup call
 }
 
 func newFakeBotAPI(t *testing.T, status string) *fakeBotAPI {
@@ -421,6 +422,9 @@ func newFakeBotAPI(t *testing.T, status string) *fakeBotAPI {
 			_, _ = w.Write([]byte(`{"ok":true,"result":{"status":"` + f.status + `"}}`))
 		case strings.HasSuffix(r.URL.Path, "/answerCallbackQuery"):
 			f.answers = append(f.answers, r.Form.Get("text"))
+			_, _ = w.Write([]byte(`{"ok":true,"result":true}`))
+		case strings.HasSuffix(r.URL.Path, "/editMessageReplyMarkup"):
+			f.edits = append(f.edits, r.Form.Get("reply_markup"))
 			_, _ = w.Write([]byte(`{"ok":true,"result":true}`))
 		default:
 			_, _ = w.Write([]byte(`{"ok":true,"result":true}`))
@@ -455,6 +459,13 @@ func linkForChannel(t *testing.T, h http.Handler, st *store.Store, intentBody st
 
 func callbackUpdate(fromID int64, data string) string {
 	return fmt.Sprintf(`{"callback_query":{"id":"cb-1","data":%q,"from":{"id":%d,"first_name":"Chan"}}}`, data, fromID)
+}
+
+// callbackOnMessage is a button press that also says which message the button
+// sits under, which is what lets the webhook redraw that message's keyboard.
+func callbackOnMessage(fromID int64, data string, messageID int64) string {
+	return fmt.Sprintf(`{"callback_query":{"id":"cb-1","data":%q,"from":{"id":%d,"first_name":"Chan"},"message":{"message_id":%d,"chat":{"id":%d}}}}`,
+		data, fromID, messageID, fromID)
 }
 
 func TestLinkForTheChannelQuestAsksForTheSubscription(t *testing.T) {

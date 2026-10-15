@@ -94,6 +94,7 @@ export interface Exercise {
   left?: string[]
   right?: string[]
   explain?: string
+  hint?: string // 💡 nudge shown before answering (never contains the answer)
 }
 
 export interface ExerciseBlock {
@@ -112,6 +113,7 @@ export interface FormResult {
   ok: boolean
   expected: string
   diff?: Chunk[]
+  typo?: boolean // accepted despite a spelling slip; `expected` is the right spelling
 }
 
 export interface CheckResult {
@@ -122,6 +124,7 @@ export interface CheckResult {
   forms?: FormResult[]
   match?: Record<string, boolean>
   near_miss?: boolean
+  typo?: boolean // accepted despite a spelling slip; `expected` is the right spelling
   line?: string
   line_ru?: string
   line_audio?: string
@@ -206,6 +209,7 @@ export interface GramCheckResult {
   ok: boolean
   expected?: string
   near_miss?: boolean
+  typo?: boolean
   due: string
   interval_days: number
   state: string
@@ -403,4 +407,12 @@ export interface LessonStats {
   percent: number
   // Words the lesson introduces.
   new_words: number
+}
+
+// Which Telegram messages the account accepts. Service messages (sign-in, a
+// payment received) are not here: they cannot be switched off.
+export interface BotPrefs {
+  learning: boolean
+  billing: boolean
+  news: boolean
 }

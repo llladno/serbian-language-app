@@ -6,11 +6,14 @@ import SeedIcon from './SeedIcon.vue'
 import { ApiError } from '../api'
 import { useWalletStore } from '../stores/wallet'
 import { useCourseStore } from '../stores/course'
+import { useTariffsStore } from '../stores/tariffs'
+import { offerForPhase, rub } from '../lib/tariffs'
 import { useToasts } from '../lib/toasts'
 import { useUnlockModal } from '../lib/unlockModal'
 
 const wallet = useWalletStore()
 const courseStore = useCourseStore()
+const tariffs = useTariffsStore()
 const { phaseId, closeModal } = useUnlockModal()
 
 const phase = computed(() => courseStore.course?.phases.find((p) => p.id === phaseId.value) ?? null)
@@ -19,6 +22,12 @@ const price = computed(() => product.value?.price_effective ?? phase.value?.pric
 const fullPrice = computed(() => product.value?.price ?? phase.value?.price ?? 0)
 const missing = computed(() => Math.max(0, price.value - wallet.balance))
 const canAfford = computed(() => missing.value === 0)
+
+// Short of зёрнышки, the way forward is to pay: the level if this is the next
+// one, otherwise the year (a later level cannot be opened out of order).
+const offer = computed(() =>
+  phaseId.value ? offerForPhase(courseStore.course, phaseId.value, tariffs.prices, tariffs.hasPaidLevel) : null,
+)
 
 const buying = ref(false)
 const error = ref('')
@@ -88,8 +97,18 @@ async function buy() {
           Не хватает {{ wallet.amount(missing) }}: у тебя {{ wallet.amount(wallet.balance) }} из {{ price }}. Зёрнышки
           дают за уроки, повторения, серию занятий и задания.
         </p>
+        <template v-if="offer">
+          <p v-if="offer.kind === 'year'" class="text-sm text-[var(--muted)]" data-test="unlock-order">
+            По {{ rub(tariffs.levelNow) }} уровни открываются по порядку: сначала «{{ offer.first.title }}». Хочешь
+            сразу этот — открой все уровни.
+          </p>
+          <RouterLink to="/tariffs" class="btn btn-primary w-full" data-test="unlock-pay" @click="closeModal">
+            <template v-if="offer.kind === 'level'">Открыть сразу за {{ rub(offer.price) }}</template>
+            <template v-else>Все уровни — {{ rub(offer.price) }} в год</template>
+          </RouterLink>
+        </template>
         <div class="flex flex-col gap-2 sm:flex-row">
-          <RouterLink to="/quests" class="btn btn-primary flex-1" data-test="unlock-quests" @click="closeModal">
+          <RouterLink to="/quests" class="btn btn-ghost flex-1" data-test="unlock-quests" @click="closeModal">
             Как заработать
           </RouterLink>
           <button class="btn btn-ghost flex-1" @click="closeModal">Понятно</button>
