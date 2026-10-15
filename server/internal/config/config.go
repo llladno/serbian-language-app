@@ -86,10 +86,6 @@ type Config struct {
 	// YooKassaTaxSystem is the receipt's tax_system_code (1..6); 0 leaves it out,
 	// which ЮKassa accepts for a shop with a single tax system. YOOKASSA_TAX_SYSTEM.
 	YooKassaTaxSystem int
-	// YooKassaTestMode only changes what the tariffs page tells the learner (that
-	// no money moves, and which test card to use); the API is the same. From
-	// YOOKASSA_TEST_MODE ("1" or "true").
-	YooKassaTestMode bool
 	// YooKassaAPIBase overrides the ЮKassa API address (tests). YOOKASSA_API_BASE.
 	YooKassaAPIBase string
 }
@@ -125,7 +121,6 @@ func Load() Config {
 		YooKassaShopID:        strings.TrimSpace(os.Getenv("YOOKASSA_SHOP_ID")),
 		YooKassaSecretKey:     strings.TrimSpace(os.Getenv("YOOKASSA_SECRET_KEY")),
 		YooKassaTaxSystem:     parseSmallInt(os.Getenv("YOOKASSA_TAX_SYSTEM")),
-		YooKassaTestMode:      parseBool(os.Getenv("YOOKASSA_TEST_MODE")),
 		YooKassaAPIBase:       strings.TrimSpace(os.Getenv("YOOKASSA_API_BASE")),
 	}
 }
@@ -158,14 +153,6 @@ func parseSmallInt(raw string) int {
 		return 0
 	}
 	return n
-}
-
-func parseBool(raw string) bool {
-	switch strings.ToLower(strings.TrimSpace(raw)) {
-	case "1", "true", "yes":
-		return true
-	}
-	return false
 }
 
 // TariffsAllowed reports whether the account with this email may use the paid

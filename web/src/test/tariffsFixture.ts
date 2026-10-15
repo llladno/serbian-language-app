@@ -19,7 +19,6 @@ export function sessionUser(tariffs: boolean, over: Partial<SessionUser> = {}): 
 export function tariffsInfo(over: Partial<TariffsInfo> = {}): TariffsInfo {
   return {
     payments_ready: true,
-    test_mode: false,
     has_paid_level: false,
     level: { price: 249, regular_price: 299, next: { id: '4', title: 'Уровень 4 — Падежи в жизни' } },
     year: { price: 1000, old_price: 2000 },

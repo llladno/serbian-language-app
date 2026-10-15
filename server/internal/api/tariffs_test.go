@@ -136,7 +136,6 @@ func tariffsAPI(t *testing.T, yk *fakeYooKassa) (http.Handler, *store.Store) {
 			d.Config.YooKassaShopID = "shop-1"
 			d.Config.YooKassaSecretKey = "secret-1"
 			d.Config.YooKassaAPIBase = yk.srv.URL
-			d.Config.YooKassaTestMode = true
 		}
 	})
 	seedPhaseProduct(t, st, "B", 230)
@@ -152,7 +151,6 @@ func listedUser(t *testing.T, h http.Handler, st *store.Store) (string, *http.Co
 
 type tariffsResp struct {
 	PaymentsReady bool `json:"payments_ready"`
-	TestMode      bool `json:"test_mode"`
 	HasPaidLevel  bool `json:"has_paid_level"`
 	Level         struct {
 		Price        int64 `json:"price"`
@@ -296,7 +294,7 @@ func TestTariffsShowTheAgreedPricesAndTheNextLevel(t *testing.T) {
 	_, c := listedUser(t, h, st)
 	got := getTariffsOf(t, h, c)
 
-	if !got.PaymentsReady || !got.TestMode || got.HasPaidLevel {
+	if !got.PaymentsReady || got.HasPaidLevel {
 		t.Errorf("flags = %+v", got)
 	}
 	if got.Level.Price != 249 || got.Level.RegularPrice != 299 {

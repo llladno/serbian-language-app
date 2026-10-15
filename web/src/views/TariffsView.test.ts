@@ -93,12 +93,18 @@ describe('TariffsView: the two plans', () => {
     expect(year.get('[data-test="year-price"] .was').text()).toBe('2 000 ₽')
     expect(year.text()).toContain('83')
   })
+})
 
-  it('says how to pay in the test shop, and only in the test shop', async () => {
-    const w = await mountView({ test_mode: true })
-    expect(w.get('[data-test="test-mode"]').text()).toContain('5555 5555 5555 4444')
-    const live = await mountView({ test_mode: false })
-    expect(live.find('[data-test="test-mode"]').exists()).toBe(false)
+describe('TariffsView: the offer', () => {
+  // The terms are shown where the money is asked for, and open in a new tab so
+  // the learner does not lose the screen.
+  it('says paying means accepting the public offer, and links to it', async () => {
+    const w = await mountView()
+    expect(w.get('[data-test="offer-note"]').text()).toContain('Оплачивая')
+    const link = w.get('[data-test="offer-link"]')
+    expect(link.attributes('href')).toBe('/oferta')
+    expect(link.attributes('target')).toBe('_blank')
+    expect(link.attributes('rel')).toContain('noopener')
   })
 })
 

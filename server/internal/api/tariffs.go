@@ -94,10 +94,8 @@ type tariffsDTO struct {
 	// PaymentsReady is false until the shop's credentials are set: the screens
 	// still show, the buttons say payment is not connected yet.
 	PaymentsReady bool `json:"payments_ready"`
-	// TestMode: the shop is ЮKassa's test shop, no money moves.
-	TestMode     bool `json:"test_mode"`
-	HasPaidLevel bool `json:"has_paid_level"`
-	Level        struct {
+	HasPaidLevel  bool `json:"has_paid_level"`
+	Level         struct {
 		Price        int64 `json:"price"`
 		RegularPrice int64 `json:"regular_price"`
 		Next         *struct {
@@ -156,7 +154,6 @@ func (h handlers) getTariffs(w http.ResponseWriter, r *http.Request) {
 
 	var out tariffsDTO
 	out.PaymentsReady = h.Config.YooKassaConfigured()
-	out.TestMode = h.Config.YooKassaTestMode
 	out.HasPaidLevel = hasPaid
 	out.Level.Price = rubles(levelPriceKopecks(level, hasPaid))
 	out.Level.RegularPrice = rubles(level.PriceKopecks)

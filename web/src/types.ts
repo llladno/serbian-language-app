@@ -423,8 +423,6 @@ export interface BotPrefs {
 export interface TariffsInfo {
   // False until the shop's credentials are set on the server.
   payments_ready: boolean
-  // The shop is ЮKassa's test shop: no money moves.
-  test_mode: boolean
   has_paid_level: boolean
   level: {
     // What the next level costs this learner now (249 the first time, 299 after).

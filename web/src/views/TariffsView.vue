@@ -100,15 +100,6 @@ onMounted(async () => {
       </p>
     </header>
 
-    <!-- The shop is ЮKassa's test shop: say so, and say how to pay in it. -->
-    <section v-if="tariffs.testMode" class="card p-4 text-sm" data-test="test-mode">
-      <p class="font-bold">Тестовая оплата</p>
-      <p class="mt-1 text-[var(--muted)]">
-        Деньги не списываются. На странице оплаты введи карту <span class="font-semibold text-[var(--fg)]">5555 5555 5555 4444</span>,
-        любой срок в будущем и любой CVC.
-      </p>
-    </section>
-
     <section v-if="tariffs.ready && !tariffs.paymentsReady" class="card p-4 text-sm" data-test="not-connected">
       <p class="font-bold">Оплата ещё не подключена</p>
       <p class="mt-1 text-[var(--muted)]">Цены можно посмотреть, а кнопки заработают, когда подключим платёжную систему.</p>
@@ -203,6 +194,13 @@ onMounted(async () => {
         </button>
       </section>
     </div>
+
+    <p class="px-1 text-center text-xs text-[var(--muted)]" data-test="offer-note">
+      Оплачивая, ты принимаешь условия
+      <a href="/oferta" target="_blank" rel="noopener" class="font-semibold underline underline-offset-2" data-test="offer-link"
+        >публичной оферты</a
+      >.
+    </p>
 
     <p class="px-1 text-center text-sm text-[var(--muted)]">
       Не хочется платить? Зёрнышки за уроки и задания тоже открывают уровни —

@@ -41,6 +41,7 @@ export default defineNuxtConfig({
         '/',
         '/privacy',
         '/terms',
+        '/oferta',
         '/blog',
         '/sitemap.xml',
         '/rss.xml',

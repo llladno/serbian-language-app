@@ -6,6 +6,7 @@
         <NuxtLink to="/blog">Блог</NuxtLink>
         <NuxtLink to="/privacy">Политика конфиденциальности</NuxtLink>
         <NuxtLink to="/terms">Условия использования</NuxtLink>
+        <NuxtLink to="/oferta">Публичная оферта</NuxtLink>
         <a id="cookie-settings" href="#">Настройки cookie</a>
       </nav>
     </div>

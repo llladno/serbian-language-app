@@ -30,8 +30,7 @@ stand before this goes to everybody.
   `payments`, `user_entitlements.expires_at`.
 - **Configuration (Dokploy env).** `TARIFFS_EMAILS`; `YOOKASSA_SHOP_ID` and
   `YOOKASSA_SECRET_KEY` (the shop's credentials, test shop first; payments stay
-  "not connected" until both are set); `YOOKASSA_TEST_MODE=true` (only changes the hint
-  on the page); optional `YOOKASSA_TAX_SYSTEM` (1..6) if the shop has several tax
+  "not connected" until both are set); optional `YOOKASSA_TAX_SYSTEM` (1..6) if the shop has several tax
   systems; `YOOKASSA_API_BASE` is for tests. In ЮKassa's cabinet set the HTTP
   notification URL to `https://ucimo.ru/api/yookassa/webhook` for `payment.succeeded`
   and `payment.canceled`.

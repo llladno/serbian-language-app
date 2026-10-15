@@ -459,7 +459,7 @@ localStorage). `GET .../exercises?audio=off` отдаёт `say` как `text`
 которое что-то выдаёт, и оно не верит вызывающему: сумма и номер заказа сверяются, статус
 берётся у ЮKassa; вебхук ЮKassa не подписан, из тела берётся только id платежа).
 `store.CompletePayment` выдаёт одной транзакцией. Env: `YOOKASSA_SHOP_ID`,
-`YOOKASSA_SECRET_KEY`, `YOOKASSA_TEST_MODE`, `YOOKASSA_TAX_SYSTEM`, `TARIFFS_EMAILS`.
+`YOOKASSA_SECRET_KEY`, `YOOKASSA_TAX_SYSTEM`, `TARIFFS_EMAILS`.
 Тестовые карты ЮKassa: `5555 5555 5555 4444` (успех), `…4477` (3-D Secure), `…4642` (нет денег).
 
 ### Личный слой

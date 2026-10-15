@@ -6,6 +6,7 @@ const staticUrls = (lastmod: string) => [
   { loc: '/blog', changefreq: 'weekly', priority: '0.8', lastmod },
   { loc: '/privacy', changefreq: 'yearly', priority: '0.3' },
   { loc: '/terms', changefreq: 'yearly', priority: '0.3' },
+  { loc: '/oferta', changefreq: 'yearly', priority: '0.3' },
 ]
 
 export default defineEventHandler(async (event) => {

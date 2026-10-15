@@ -29,7 +29,6 @@ export const useTariffsStore = defineStore('tariffs', () => {
   const yearUntil = computed(() => info.value?.year.until ?? null)
   const yearActive = computed(() => yearUntil.value !== null && new Date(yearUntil.value) > new Date())
   const paymentsReady = computed(() => info.value?.payments_ready ?? false)
-  const testMode = computed(() => info.value?.test_mode ?? false)
 
   async function load(force = false) {
     if (!enabled.value || loading.value) return
@@ -74,7 +73,7 @@ export const useTariffsStore = defineStore('tariffs', () => {
 
   return {
     info, loading, paying, enabled, ready, levelNow, levelRegular, yearPrice, yearOld,
-    hasPaidLevel, yearUntil, yearActive, paymentsReady, testMode, load, pay, checkOrder,
+    hasPaidLevel, yearUntil, yearActive, paymentsReady, load, pay, checkOrder,
   }
 })
 
