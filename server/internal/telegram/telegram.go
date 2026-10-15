@@ -150,6 +150,10 @@ type InlineButton struct {
 	ChannelURL string
 	PrefOff    PrefCategory
 	Prefs      *PrefsState
+	// CheckData, with ChannelURL, is the callback_data of the "check" button instead of
+	// CallbackCheckChannel — how a flow other than the subscription quest (the lead-magnet
+	// PDF) gets its own answer. At most 64 bytes, Telegram's limit.
+	CheckData string
 }
 
 // The channel keyboard's wording, and the callback_data its "check" button
@@ -176,9 +180,13 @@ func SendMessageWithButton(botToken string, chatID int64, text string, button *I
 		} else if button.PrefOff != "" {
 			rows = [][]map[string]any{{{"text": button.Label, "callback_data": CallbackPrefOff + string(button.PrefOff)}}}
 		} else if button.ChannelURL != "" {
+			check := CallbackCheckChannel
+			if button.CheckData != "" {
+				check = button.CheckData
+			}
 			rows = [][]map[string]any{
 				{{"text": SubscribeLabel, "url": button.ChannelURL}},
-				{{"text": CheckLabel, "callback_data": CallbackCheckChannel}},
+				{{"text": CheckLabel, "callback_data": check}},
 			}
 		} else {
 			btn := map[string]any{"text": button.Label}
