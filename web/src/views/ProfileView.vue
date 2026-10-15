@@ -220,13 +220,13 @@ async function logout() {
                 <span v-if="me.telegram.linked">@{{ me.telegram.username || '—' }}</span>
                 <span v-else class="text-[var(--muted)]">не привязан</span>
               </div>
-              <div class="flex items-center gap-2">
+              <div class="flex flex-wrap items-center gap-x-2 gap-y-1">
                 <span class="text-[var(--muted)]">Почта:</span>
                 <span v-if="me.email">{{ me.email }}</span>
                 <span v-else class="text-[var(--muted)]">не указана</span>
                 <span
                   v-if="me.email"
-                  class="rounded-full px-2 py-0.5 text-xs font-semibold"
+                  class="shrink-0 rounded-full px-2 py-0.5 text-xs font-semibold"
                   :style="
                     me.email_verified
                       ? { background: 'color-mix(in srgb, var(--good) 16%, transparent)', color: 'var(--good)' }

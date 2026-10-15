@@ -21,6 +21,9 @@ const (
 // the product instead of looking like a generic system notice.
 const (
 	brandBG     = "#f7f9f7"
+	brandPage   = "#eef4f2" // page background behind the card
+	brandHero   = "#d8eeeb" // mint hero band
+	brandSubtle = "#8a9496" // small print
 	brandCard   = "#ffffff"
 	brandBorder = "#e2f1ed"
 	brandFG     = "#172326"
@@ -118,43 +121,6 @@ const verifyTextSrc = `Привет, {{.Name}}!
 — ucimo
 `
 
-const verifyHTMLSrc = `<!doctype html>
-<html lang="ru">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="color-scheme" content="light">
-</head>
-<body style="margin:0;padding:0;background:` + brandBG + `;">
-<div style="display:none;max-height:0;overflow:hidden;opacity:0;mso-hide:all;">Осталось подтвердить почту — одна ссылка, и можно начинать заниматься&#8203;</div>
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:` + brandBG + `;">
-<tr><td align="center" style="padding:32px 16px;">
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:440px;width:100%;">
-<tr><td align="center" style="padding-bottom:20px;">
-<span style="font-family:` + fontSerif + `;font-size:22px;font-weight:600;color:` + brandAccent + `;letter-spacing:0.02em;">ucimo</span>
-</td></tr>
-<tr><td style="background:` + brandCard + `;border:1px solid ` + brandBorder + `;border-radius:20px;padding:32px 28px;">
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding-bottom:16px;">
-<img src="{{.Image}}" width="120" alt="ucimo" style="display:block;width:120px;max-width:120px;height:auto;">
-</td></tr></table>
-<p style="margin:0 0 12px;font-family:` + fontSans + `;font-size:17px;font-weight:700;color:` + brandFG + `;">Привет, {{.Name}}!</p>
-<p style="margin:0 0 24px;font-family:` + fontSans + `;font-size:14px;color:` + brandMuted + `;">Осталось подтвердить почту, чтобы начать заниматься сербским.</p>
-<table role="presentation" cellpadding="0" cellspacing="0"><tr><td style="border-radius:12px;background:` + brandAccent + `;">
-<a href="{{.Link}}" style="display:inline-block;padding:13px 26px;font-family:` + fontSans + `;font-size:15px;font-weight:700;color:#ffffff;text-decoration:none;border-radius:12px;">Подтвердить почту</a>
-</td></tr></table>
-<p style="margin:24px 0 0;font-family:` + fontSans + `;font-size:13px;color:` + brandMuted + `;">Если кнопка не работает, открой ссылку напрямую:<br><a href="{{.Link}}" style="color:` + brandAccent + `;word-break:break-all;">{{.Link}}</a></p>
-<p style="margin:16px 0 0;font-family:` + fontSans + `;font-size:13px;color:` + brandMuted + `;">Если ты не регистрировался, просто удали это письмо.</p>
-</td></tr>
-<tr><td align="center" style="padding-top:20px;">
-<p style="margin:0;font-family:` + fontSans + `;font-size:12px;color:` + brandMuted + `;">— ucimo · сербский с нуля</p>
-</td></tr>
-</table>
-</td></tr>
-</table>
-</body>
-</html>
-`
-
 const resetTextSrc = `Привет, {{.Name}}!
 
 Ты просил сбросить пароль. Задай новый по ссылке:
@@ -163,43 +129,6 @@ const resetTextSrc = `Привет, {{.Name}}!
 Ссылка скоро перестанет работать. Если это был не ты — ничего делать не нужно.
 
 — ucimo
-`
-
-const resetHTMLSrc = `<!doctype html>
-<html lang="ru">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="color-scheme" content="light">
-</head>
-<body style="margin:0;padding:0;background:` + brandBG + `;">
-<div style="display:none;max-height:0;overflow:hidden;opacity:0;mso-hide:all;">Задай новый пароль — ссылка скоро перестанет работать&#8203;</div>
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:` + brandBG + `;">
-<tr><td align="center" style="padding:32px 16px;">
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:440px;width:100%;">
-<tr><td align="center" style="padding-bottom:20px;">
-<span style="font-family:` + fontSerif + `;font-size:22px;font-weight:600;color:` + brandAccent + `;letter-spacing:0.02em;">ucimo</span>
-</td></tr>
-<tr><td style="background:` + brandCard + `;border:1px solid ` + brandBorder + `;border-radius:20px;padding:32px 28px;">
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding-bottom:16px;">
-<img src="{{.Image}}" width="120" alt="ucimo" style="display:block;width:120px;max-width:120px;height:auto;">
-</td></tr></table>
-<p style="margin:0 0 12px;font-family:` + fontSans + `;font-size:17px;font-weight:700;color:` + brandFG + `;">Привет, {{.Name}}!</p>
-<p style="margin:0 0 24px;font-family:` + fontSans + `;font-size:14px;color:` + brandMuted + `;">Ты просил сбросить пароль. Задай новый по ссылке ниже.</p>
-<table role="presentation" cellpadding="0" cellspacing="0"><tr><td style="border-radius:12px;background:` + brandAccent + `;">
-<a href="{{.Link}}" style="display:inline-block;padding:13px 26px;font-family:` + fontSans + `;font-size:15px;font-weight:700;color:#ffffff;text-decoration:none;border-radius:12px;">Задать новый пароль</a>
-</td></tr></table>
-<p style="margin:24px 0 0;font-family:` + fontSans + `;font-size:13px;color:` + brandMuted + `;">Если кнопка не работает, открой ссылку напрямую:<br><a href="{{.Link}}" style="color:` + brandAccent + `;word-break:break-all;">{{.Link}}</a></p>
-<p style="margin:16px 0 0;font-family:` + fontSans + `;font-size:13px;color:` + brandMuted + `;">Ссылка скоро перестанет работать. Если это был не ты — ничего делать не нужно.</p>
-</td></tr>
-<tr><td align="center" style="padding-top:20px;">
-<p style="margin:0;font-family:` + fontSans + `;font-size:12px;color:` + brandMuted + `;">— ucimo · сербский с нуля</p>
-</td></tr>
-</table>
-</td></tr>
-</table>
-</body>
-</html>
 `
 
 const alreadyTextSrc = `Привет, {{.Name}}!
@@ -217,44 +146,6 @@ const alreadyTextSrc = `Привет, {{.Name}}!
 — ucimo
 `
 
-const alreadyHTMLSrc = `<!doctype html>
-<html lang="ru">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="color-scheme" content="light">
-</head>
-<body style="margin:0;padding:0;background:` + brandBG + `;">
-<div style="display:none;max-height:0;overflow:hidden;opacity:0;mso-hide:all;">Кто-то только что попробовал зарегистрироваться с твоей почтой&#8203;</div>
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:` + brandBG + `;">
-<tr><td align="center" style="padding:32px 16px;">
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:440px;width:100%;">
-<tr><td align="center" style="padding-bottom:20px;">
-<span style="font-family:` + fontSerif + `;font-size:22px;font-weight:600;color:` + brandAccent + `;letter-spacing:0.02em;">ucimo</span>
-</td></tr>
-<tr><td style="background:` + brandCard + `;border:1px solid ` + brandBorder + `;border-radius:20px;padding:32px 28px;">
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding-bottom:16px;">
-<img src="{{.Image}}" width="120" alt="ucimo" style="display:block;width:120px;max-width:120px;height:auto;">
-</td></tr></table>
-<p style="margin:0 0 12px;font-family:` + fontSans + `;font-size:17px;font-weight:700;color:` + brandFG + `;">Привет, {{.Name}}!</p>
-<p style="margin:0 0 8px;font-family:` + fontSans + `;font-size:14px;color:` + brandMuted + `;">Кто-то только что попробовал зарегистрироваться с этой почтой.</p>
-<p style="margin:0 0 24px;font-family:` + fontSans + `;font-size:14px;color:` + brandMuted + `;">Если это был ты — возможно, ты уже заходил сюда раньше.</p>
-<table role="presentation" cellpadding="0" cellspacing="0"><tr><td style="border-radius:12px;background:` + brandAccent + `;">
-<a href="{{.LoginLink}}" style="display:inline-block;padding:13px 26px;font-family:` + fontSans + `;font-size:15px;font-weight:700;color:#ffffff;text-decoration:none;border-radius:12px;">Войти</a>
-</td></tr></table>
-<p style="margin:24px 0 0;font-family:` + fontSans + `;font-size:13px;color:` + brandMuted + `;">Не помнишь пароль — <a href="{{.ForgotLink}}" style="color:` + brandAccent + `;">восстанови доступ</a>.</p>
-<p style="margin:16px 0 0;font-family:` + fontSans + `;font-size:13px;color:` + brandMuted + `;">Если это был не ты, просто удали это письмо.</p>
-</td></tr>
-<tr><td align="center" style="padding-top:20px;">
-<p style="margin:0;font-family:` + fontSans + `;font-size:12px;color:` + brandMuted + `;">— ucimo · сербский с нуля</p>
-</td></tr>
-</table>
-</td></tr>
-</table>
-</body>
-</html>
-`
-
 const passwordChangedTextSrc = `Привет, {{.Name}}!
 
 Пароль от твоего аккаунта только что изменили.
@@ -267,42 +158,104 @@ const passwordChangedTextSrc = `Привет, {{.Name}}!
 — ucimo
 `
 
-const passwordChangedHTMLSrc = `<!doctype html>
+// Shared HTML layout for every message: mint hero with the wordmark and the
+// mascot, a heading with a short lead, one big button, an optional note box and
+// a small-print footer. Arguments are template sources (they may reference
+// {{.Name}}, {{.Link}} ...). Table skeleton + inline styles so it survives
+// Outlook/Gmail.
+type htmlMsg struct {
+	Preheader string
+	Heading   string
+	Lead      string
+	BtnLabel  string
+	BtnLink   string
+	BtnColor  string
+	Box       string // optional note box content (HTML), "" to skip
+	Small     string // small print under the card (HTML)
+}
+
+func (m htmlMsg) src() string {
+	const f = "font-family:" + fontSans + ";"
+	box := ""
+	if m.Box != "" {
+		box = `<tr><td style="padding:24px 32px 0;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:` + brandBG + `;border-radius:16px;"><tr><td style="padding:16px 20px;` + f + `font-size:14px;line-height:1.5;color:` + brandMuted + `;">` + m.Box + `</td></tr></table>
+</td></tr>
+`
+	}
+	return `<!doctype html>
 <html lang="ru">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light">
 </head>
-<body style="margin:0;padding:0;background:` + brandBG + `;">
-<div style="display:none;max-height:0;overflow:hidden;opacity:0;mso-hide:all;">Пароль от твоего аккаунта только что изменили&#8203;</div>
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:` + brandBG + `;">
-<tr><td align="center" style="padding:32px 16px;">
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:440px;width:100%;">
-<tr><td align="center" style="padding-bottom:20px;">
-<span style="font-family:` + fontSerif + `;font-size:22px;font-weight:600;color:` + brandAccent + `;letter-spacing:0.02em;">ucimo</span>
+<body style="margin:0;padding:0;background:` + brandPage + `;">
+<div style="display:none;max-height:0;overflow:hidden;opacity:0;mso-hide:all;">` + m.Preheader + `&#8203;</div>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:` + brandPage + `;">
+<tr><td align="center" style="padding:36px 16px;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:480px;width:100%;background:` + brandCard + `;border-radius:24px;overflow:hidden;">
+<tr><td align="center" style="background:` + brandHero + `;padding:28px 24px;">
+<div style="font-family:` + fontSerif + `;font-size:20px;font-weight:600;color:` + brandAccent + `;letter-spacing:0.04em;padding-bottom:20px;">ucimo</div>
+<img src="{{.Image}}" width="130" alt="" style="display:block;width:130px;max-width:130px;height:auto;margin:0 auto;padding:6px;">
 </td></tr>
-<tr><td style="background:` + brandCard + `;border:1px solid ` + brandBorder + `;border-radius:20px;padding:32px 28px;">
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding-bottom:16px;">
-<img src="{{.Image}}" width="120" alt="ucimo" style="display:block;width:120px;max-width:120px;height:auto;">
+<tr><td style="padding:32px 32px 0;">
+<h1 style="margin:0 0 10px;` + f + `font-size:24px;line-height:1.25;font-weight:800;color:` + brandFG + `;text-align:center;">` + m.Heading + `</h1>
+<p style="margin:0;` + f + `font-size:15px;line-height:1.55;color:` + brandMuted + `;text-align:center;">` + m.Lead + `</p>
+</td></tr>
+<tr><td align="center" style="padding:24px 32px 0;">
+<table role="presentation" cellpadding="0" cellspacing="0"><tr><td style="border-radius:14px;background:` + m.BtnColor + `;">
+<a href="` + m.BtnLink + `" style="display:inline-block;padding:15px 34px;` + f + `font-size:16px;font-weight:700;color:#ffffff;text-decoration:none;border-radius:14px;">` + m.BtnLabel + `</a>
 </td></tr></table>
-<p style="margin:0 0 12px;font-family:` + fontSans + `;font-size:17px;font-weight:700;color:` + brandFG + `;">Привет, {{.Name}}!</p>
-<p style="margin:0 0 8px;font-family:` + fontSans + `;font-size:14px;color:` + brandMuted + `;">Пароль от твоего аккаунта только что изменили.</p>
-<p style="margin:0 0 24px;font-family:` + fontSans + `;font-size:14px;color:` + brandMuted + `;">Если это был ты — всё в порядке, делать ничего не нужно.</p>
-<table role="presentation" cellpadding="0" cellspacing="0"><tr><td style="border-radius:12px;background:` + brandDanger + `;">
-<a href="{{.ForgotLink}}" style="display:inline-block;padding:13px 26px;font-family:` + fontSans + `;font-size:15px;font-weight:700;color:#ffffff;text-decoration:none;border-radius:12px;">Восстановить доступ</a>
-</td></tr></table>
-<p style="margin:24px 0 0;font-family:` + fontSans + `;font-size:13px;color:` + brandMuted + `;">Если это был не ты — используй кнопку выше, чтобы сразу сменить пароль.</p>
 </td></tr>
-<tr><td align="center" style="padding-top:20px;">
-<p style="margin:0;font-family:` + fontSans + `;font-size:12px;color:` + brandMuted + `;">— ucimo · сербский с нуля</p>
-</td></tr>
+` + box + `<tr><td style="padding:20px 32px 28px;` + f + `font-size:12px;line-height:1.5;color:` + brandSubtle + `;text-align:center;">` + m.Small + `</td></tr>
 </table>
+<p style="margin:18px 0 0;` + f + `font-size:12px;color:` + brandSubtle + `;">ucimo · сербский с нуля</p>
 </td></tr>
 </table>
 </body>
 </html>
 `
+}
+
+const (
+	linkFallback = `Кнопка не работает? Скопируй ссылку в браузер:<br><a href="{{.Link}}" style="color:` + brandAccent + `;word-break:break-all;">{{.Link}}</a>`
+)
+
+var (
+	verifyHTMLSrc = htmlMsg{
+		Preheader: "Одна ссылка — и можно начинать учить сербский",
+		Heading:   "Добро пожаловать, {{.Name}}!",
+		Lead:      "Осталось подтвердить почту — так мы сможем вернуть доступ, если ты забудешь пароль.",
+		BtnLabel:  "Подтвердить почту", BtnLink: "{{.Link}}", BtnColor: brandAccent,
+		Box:   `<div style="font-weight:700;color:` + brandFG + `;margin-bottom:6px;">Что дальше</div>1&nbsp;&nbsp;Нажми кнопку — почта подтверждена<br>2&nbsp;&nbsp;Пройди первый урок — это пять минут<br>3&nbsp;&nbsp;Заходи каждый день, и серия не прервётся`,
+		Small: linkFallback + `<br><br>Если ты не регистрировался, просто удали это письмо.`,
+	}.src()
+
+	resetHTMLSrc = htmlMsg{
+		Preheader: "Задай новый пароль — ссылка скоро перестанет работать",
+		Heading:   "Сброс пароля",
+		Lead:      "Привет, {{.Name}}! Ты просил сбросить пароль — задай новый по кнопке ниже.",
+		BtnLabel:  "Задать новый пароль", BtnLink: "{{.Link}}", BtnColor: brandAccent,
+		Small: linkFallback + `<br><br>Ссылка скоро перестанет работать. Если это был не ты — ничего делать не нужно.`,
+	}.src()
+
+	alreadyHTMLSrc = htmlMsg{
+		Preheader: "Кто-то только что попробовал зарегистрироваться с твоей почтой",
+		Heading:   "Привет, {{.Name}}!",
+		Lead:      "Кто-то только что попробовал зарегистрироваться с этой почтой. Если это был ты — возможно, ты уже заходил сюда раньше.",
+		BtnLabel:  "Войти", BtnLink: "{{.LoginLink}}", BtnColor: brandAccent,
+		Small: `Не помнишь пароль — <a href="{{.ForgotLink}}" style="color:` + brandAccent + `;">восстанови доступ</a>.<br><br>Если это был не ты, просто удали это письмо.`,
+	}.src()
+
+	passwordChangedHTMLSrc = htmlMsg{
+		Preheader: "Пароль от твоего аккаунта только что изменили",
+		Heading:   "Пароль изменён",
+		Lead:      "Привет, {{.Name}}! Пароль от твоего аккаунта только что изменили. Если это был ты — всё в порядке, делать ничего не нужно.",
+		BtnLabel:  "Это был не я", BtnLink: "{{.ForgotLink}}", BtnColor: brandDanger,
+		Small: `Если это был не ты — нажми кнопку выше, чтобы сразу сменить пароль.`,
+	}.src()
+)
 
 // Templates are parsed once at init; a parse error is a build-time bug.
 var (
