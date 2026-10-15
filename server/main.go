@@ -1,12 +1,15 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"flag"
+	"io"
 	"io/fs"
 	"log"
 	"net/http"
 	"os"
+	"path"
 	"path/filepath"
 	"strings"
 	"time"
@@ -295,6 +298,11 @@ func cacheControl(h http.Handler) http.Handler {
 // payload, ...) — whatever Nuxt actually generated. Any path that isn't one
 // of those files falls through to appHandler unchanged — that covers every
 // one of the app's own client-side routes.
+//
+// Nuxt writes page routes as directories ("blog/x/index.html"). The canonical
+// URL, the sitemap and the internal links have no trailing slash, so the
+// slash-less URL answers 200 with the page itself (http.FileServer would 301 it
+// to "blog/x/"), and the slashed duplicate redirects to the canonical form.
 func landingHandler(files fs.FS, appHandler http.Handler) http.Handler {
 	fileServer := http.FileServer(http.FS(files))
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -303,17 +311,59 @@ func landingHandler(files fs.FS, appHandler http.Handler) http.Handler {
 			p = "index.html"
 		} else {
 			// fs.Stat rejects a trailing slash (invalid per io/fs path
-			// rules) — trim it so a directory route like "privacy/" (which
-			// http.FileServer produces via its own redirect-to-slash for
-			// "privacy") still resolves to the "privacy" directory below.
+			// rules), so trim it before looking the route up.
 			p = strings.TrimSuffix(p, "/")
 		}
-		if _, err := fs.Stat(files, p); err != nil {
+		info, err := fs.Stat(files, p)
+		if err != nil {
 			appHandler.ServeHTTP(w, r)
 			return
 		}
+		if info.IsDir() {
+			if page, ok := openDirIndex(files, p); ok {
+				defer page.Close()
+				if r.URL.Path != "/" && strings.HasSuffix(r.URL.Path, "/") {
+					target := strings.TrimSuffix(r.URL.Path, "/")
+					if r.URL.RawQuery != "" {
+						target += "?" + r.URL.RawQuery
+					}
+					http.Redirect(w, r, target, http.StatusMovedPermanently)
+					return
+				}
+				serveIndex(w, r, page)
+				return
+			}
+		}
 		fileServer.ServeHTTP(w, r)
 	})
+}
+
+// openDirIndex opens dir/index.html if the directory has one.
+func openDirIndex(files fs.FS, dir string) (fs.File, bool) {
+	f, err := files.Open(path.Join(dir, "index.html"))
+	if err != nil {
+		return nil, false
+	}
+	return f, true
+}
+
+// serveIndex writes an opened index.html as the response body.
+func serveIndex(w http.ResponseWriter, r *http.Request, f fs.File) {
+	st, err := f.Stat()
+	if err != nil {
+		http.Error(w, "internal error", http.StatusInternalServerError)
+		return
+	}
+	if rs, ok := f.(io.ReadSeeker); ok {
+		http.ServeContent(w, r, "index.html", st.ModTime(), rs)
+		return
+	}
+	data, err := io.ReadAll(f)
+	if err != nil {
+		http.Error(w, "internal error", http.StatusInternalServerError)
+		return
+	}
+	http.ServeContent(w, r, "index.html", st.ModTime(), bytes.NewReader(data))
 }
 
 // spaHandler serves static files and falls back to index.html for
