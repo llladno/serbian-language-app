@@ -4,6 +4,8 @@ import { setActivePinia, createPinia } from 'pinia'
 import CourseView from './CourseView.vue'
 import { api, ApiError } from '../api'
 import { useUnlockModal } from '../lib/unlockModal'
+import { useSessionStore } from '../stores/session'
+import { enableTariffs, sessionUser, tariffsInfo } from '../test/tariffsFixture'
 import type { Course } from '../types'
 
 vi.mock('vue-router', () => ({
@@ -74,15 +76,33 @@ describe('CourseView: levels for sale', () => {
   })
 
   it('when short of seeds, the next level can be opened for rubles instead', async () => {
+    vi.spyOn(api, 'tariffs').mockResolvedValue(tariffsInfo())
     const w = mountView()
+    enableTariffs()
     await flushPromises()
     await w.find('[data-test="locked-16"]').trigger('click')
+    await flushPromises()
     const pay = w.find('[data-test="unlock-pay"]')
     expect(pay.text()).toContain('Открыть сразу за 249')
     expect(pay.attributes('href')).toBe('/tariffs')
     expect(w.find('[data-test="unlock-order"]').exists()).toBe(false)
     // earning is still on offer, next to paying
     expect(w.find('[data-test="unlock-quests"]').attributes('href')).toBe('/quests')
+  })
+
+  // The gate: the same screen, the same shortfall, and no way to pay for an
+  // account the server has not opened tariffs for. Earning stays the main way.
+  it('offers no payment to an account that does not have tariffs', async () => {
+    const tariffs = vi.spyOn(api, 'tariffs')
+    const w = mountView()
+    useSessionStore().user = sessionUser(false)
+    await flushPromises()
+    await w.find('[data-test="locked-16"]').trigger('click')
+    await flushPromises()
+    expect(w.find('[data-test="unlock-missing"]').exists()).toBe(true)
+    expect(w.find('[data-test="unlock-pay"]').exists()).toBe(false)
+    expect(w.find('[data-test="unlock-quests"]').classes()).toContain('btn-primary')
+    expect(tariffs).not.toHaveBeenCalled()
   })
 
   it('a level that is not the next one is answered with the year, and says why', async () => {
@@ -99,9 +119,12 @@ describe('CourseView: levels for sale', () => {
     vi.spyOn(api, 'shop').mockResolvedValue({
       items: [PRODUCT, { ...PRODUCT, id: 8, ref: '3', title: 'Уровень 3', price: 375, price_effective: 375 }],
     })
+    vi.spyOn(api, 'tariffs').mockResolvedValue(tariffsInfo())
     const w = mountView()
+    enableTariffs()
     await flushPromises()
     await w.find('[data-test="locked-30"]').trigger('click')
+    await flushPromises()
     expect(w.find('[data-test="unlock-pay"]').text()).toContain('Все уровни')
     expect(w.find('[data-test="unlock-pay"]').text()).toContain('1\u00a0000')
     expect(w.find('[data-test="unlock-order"]').text()).toContain('Уровень 2')

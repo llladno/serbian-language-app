@@ -13,6 +13,7 @@ interface TgWebApp {
   setBackgroundColor?: (c: string) => void
   onEvent?: (e: string, cb: () => void) => void
   openTelegramLink?: (url: string) => void
+  openLink?: (url: string, options?: { try_instant_view?: boolean }) => void
 }
 
 function tg(): TgWebApp | undefined {
@@ -32,6 +33,22 @@ export function openTelegramLink(url: string): boolean {
   } catch {
     return false
   }
+}
+
+// Opens a web page in the phone's own browser, leaving the Mini App where it is.
+// For a payment page: the buyer pays outside Telegram (see the tariffs spec,
+// "Inside Telegram"). Falls back to a new tab when there is no Mini App.
+export function openExternalLink(url: string) {
+  const wa = tg()
+  if (wa?.openLink) {
+    try {
+      wa.openLink(url, { try_instant_view: false })
+      return
+    } catch {
+      // fall through to a plain tab
+    }
+  }
+  window.open(url, '_blank')
 }
 
 export function isTelegram() {

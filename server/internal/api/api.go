@@ -169,6 +169,15 @@ func Handler(deps Deps) http.Handler {
 	root.HandleFunc("GET /api/me/wallet", h.requireSession(h.getWallet))
 	root.HandleFunc("GET /api/me/bot-prefs", h.requireSession(h.getBotPrefs))
 	root.HandleFunc("PUT /api/me/bot-prefs", h.requireSession(h.putBotPrefs))
+
+	// Paid tariffs. Closed to everyone but the accounts in TARIFFS_EMAILS: the
+	// endpoints answer 404 to anyone else, as if they did not exist.
+	root.HandleFunc("GET /api/me/tariffs", h.requireTariffs(h.getTariffs))
+	root.HandleFunc("POST /api/me/orders", h.requireTariffs(h.createOrder))
+	root.HandleFunc("GET /api/me/orders/{id}", h.requireTariffs(h.getOrder))
+	// ЮKassa's payment notification: no session, its body is never trusted (see
+	// yookassaWebhook), exempt from the origin check like the other webhooks.
+	root.HandleFunc("POST /api/yookassa/webhook", h.yookassaWebhook)
 	root.HandleFunc("GET /api/me/quests", h.requireSession(h.listQuests))
 	root.HandleFunc("POST /api/me/quests/{id}/claim", h.requireSession(h.claimQuest))
 	root.HandleFunc("GET /api/me/referral", h.requireSession(h.getReferral))
@@ -279,6 +288,13 @@ func (h handlers) phaseAccess(us *store.UserStore) (map[string]bool, map[string]
 		return nil, nil, err
 	}
 	now := h.Now()
+	// A running year opens every level, and with nothing locked there is nothing
+	// to price either.
+	if _, running, err := us.AllAccessUntil(now); err != nil {
+		return nil, nil, err
+	} else if running {
+		return map[string]bool{}, map[string]phaseDTO{}, nil
+	}
 	locked := map[string]bool{}
 	info := map[string]phaseDTO{}
 	for _, p := range products {

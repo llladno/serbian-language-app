@@ -153,6 +153,12 @@ type sessionUserDTO struct {
 		Linked   bool   `json:"linked"`
 		Username string `json:"username"`
 	} `json:"telegram"`
+	// Features are parts of the app that are not open to everyone yet. The
+	// client uses them to hide screens; the server enforces the same rule on
+	// the endpoints behind them.
+	Features struct {
+		Tariffs bool `json:"tariffs"`
+	} `json:"features"`
 }
 
 // deviceDTO is one active session in the profile "devices" list. ID is an

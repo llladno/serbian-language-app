@@ -108,8 +108,9 @@ func clientIP(r *http.Request) string {
 }
 
 // summaryToDTO maps the denormalized request summary onto the wire shape
-// shared by GET /api/auth/session and GET /api/me.
-func summaryToDTO(userID string, s userSummary) sessionUserDTO {
+// shared by GET /api/auth/session and GET /api/me. Features says which
+// not-yet-public parts of the app this account may see.
+func (h handlers) summaryToDTO(userID string, s userSummary) sessionUserDTO {
 	dto := sessionUserDTO{
 		ID:            userID,
 		Name:          s.Name,
@@ -118,6 +119,7 @@ func summaryToDTO(userID string, s userSummary) sessionUserDTO {
 	}
 	dto.Telegram.Linked = s.TelegramLinked
 	dto.Telegram.Username = s.TelegramUsername
+	dto.Features.Tariffs = h.tariffsEnabled(s)
 	return dto
 }
 
@@ -319,7 +321,7 @@ func (h handlers) login(w http.ResponseWriter, r *http.Request) {
 		fail(w, http.StatusInternalServerError, "internal error")
 		return
 	}
-	writeJSON(w, http.StatusOK, summaryToDTO(id.UserID, sum))
+	writeJSON(w, http.StatusOK, h.summaryToDTO(id.UserID, sum))
 }
 
 // logout drops the current session and clears the cookie. It is mounted on
@@ -360,7 +362,7 @@ func (h handlers) currentSession(w http.ResponseWriter, r *http.Request) {
 			sum.Name = row.Name
 		}
 	}
-	writeJSON(w, http.StatusOK, summaryToDTO(ac.UserID, sum))
+	writeJSON(w, http.StatusOK, h.summaryToDTO(ac.UserID, sum))
 }
 
 // verifyEmail handles GET /api/auth/verify?token=. It consumes the token, marks
@@ -589,7 +591,7 @@ func (h handlers) resetPassword(w http.ResponseWriter, r *http.Request) {
 		fail(w, http.StatusInternalServerError, "internal error")
 		return
 	}
-	writeJSON(w, http.StatusOK, summaryToDTO(idn.UserID, sum))
+	writeJSON(w, http.StatusOK, h.summaryToDTO(idn.UserID, sum))
 }
 
 // telegramMaxAge is how old a Telegram auth_date may be before a sign-in is
@@ -785,7 +787,7 @@ func (h handlers) finishTelegramLogin(w http.ResponseWriter, r *http.Request, us
 		fail(w, http.StatusInternalServerError, "internal error")
 		return
 	}
-	writeJSON(w, http.StatusOK, summaryToDTO(userID, sum))
+	writeJSON(w, http.StatusOK, h.summaryToDTO(userID, sum))
 }
 
 // telegramStartFor generates a one-time /start deep-link token bound to
@@ -853,7 +855,7 @@ func (h handlers) telegramPoll(w http.ResponseWriter, r *http.Request) {
 		}
 		writeJSON(w, http.StatusOK, map[string]any{
 			"status": "ok",
-			"user":   summaryToDTO(res.ResolvedUserID, sum),
+			"user":   h.summaryToDTO(res.ResolvedUserID, sum),
 		})
 	}
 }

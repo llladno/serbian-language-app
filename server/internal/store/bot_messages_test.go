@@ -19,6 +19,10 @@ func TestBotMessageTextUnknownKeyIsNotFound(t *testing.T) {
 
 func TestSetAndGetBotMessageText(t *testing.T) {
 	s := newStore(t)
+	// bot_messages is shared config, not truncated between tests on Postgres:
+	// put the text back, or the migration test that runs next sees "Updated text".
+	original, _, _ := s.BotMessageText("start_greeting")
+	t.Cleanup(func() { _ = s.SetBotMessageText("start_greeting", original, day0) })
 	if err := s.SetBotMessageText("start_greeting", "Custom text", day0); err != nil {
 		t.Fatalf("SetBotMessageText: %v", err)
 	}

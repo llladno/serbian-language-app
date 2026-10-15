@@ -4,20 +4,9 @@
 //   level - the NEXT level the learner has not opened, forever
 //   year  - every level for 365 days, new ones included
 //
-// TARIFF_DEFAULTS stands in for GET /api/tariffs until the backend exists; the
-// numbers are the ones agreed on 2026-10-14 and will be admin-editable.
+// The prices and who has paid come from the server (stores/tariffs.ts); this
+// file is the pure part: which level is "next", what to offer, how to show money.
 import type { Course, Phase } from '../types'
-
-export interface TariffPrices {
-  // Whole rubles. The server will speak kopecks; the screen never needs them.
-  level: { price: number; firstPrice: number }
-  year: { price: number; oldPrice: number }
-}
-
-export const TARIFF_DEFAULTS: TariffPrices = {
-  level: { price: 299, firstPrice: 249 },
-  year: { price: 1000, oldPrice: 2000 },
-}
 
 // A locked level counts as "for sale" once at least one of its lessons is
 // written - the same rule CourseView uses to decide between a price tag and
@@ -32,11 +21,6 @@ export function nextLockedLevel(course: Course | null): Phase | null {
   if (!course) return null
   const planned = new Set(course.lessons.filter((l) => l.planned).map((l) => l.id))
   return course.phases.find((p) => forSale(p, (id) => planned.has(id))) ?? null
-}
-
-// 249 for the very first level purchase, 299 afterwards.
-export function levelPrice(prices: TariffPrices['level'], hasPaidLevel: boolean): number {
-  return hasPaidLevel || prices.firstPrice <= 0 ? prices.price : prices.firstPrice
 }
 
 // "1 000 ₽" - a no-break space between the thousands and before the sign, so a
@@ -61,14 +45,13 @@ export type Offer =
 export function offerForPhase(
   course: Course | null,
   phaseId: string,
-  prices: TariffPrices,
-  hasPaidLevel: boolean,
+  quote: { levelPrice: number; yearPrice: number },
 ): Offer | null {
   const next = nextLockedLevel(course)
   const asked = course?.phases.find((p) => p.id === phaseId)
   if (!next || !asked || !asked.locked) return null
-  if (asked.id === next.id) return { kind: 'level', level: asked, price: levelPrice(prices.level, hasPaidLevel) }
-  return { kind: 'year', level: asked, first: next, price: prices.year.price }
+  if (asked.id === next.id) return { kind: 'level', level: asked, price: quote.levelPrice }
+  return { kind: 'year', level: asked, first: next, price: quote.yearPrice }
 }
 
 // Whole days from `now` until `until` (an ISO date), never below 0.

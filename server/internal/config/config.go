@@ -71,6 +71,27 @@ type Config struct {
 	// header. Empty disables the webhook (falls through as a no-op 200).
 	// From TRIBUTE_API_KEY.
 	TributeAPIKey string
+
+	// TariffsEmails are the accounts, by VERIFIED email address, that see and can
+	// use the paid tariffs (the level and year pages, offers, orders). Everyone
+	// else gets neither the screens nor the endpoints. Empty means nobody. Matched
+	// case-insensitively. From TARIFFS_EMAILS, a comma-separated list.
+	TariffsEmails []string
+	// YooKassaShopID and YooKassaSecretKey are the credentials of the ЮKassa shop
+	// that takes the payments: the test shop's while testing, the real one's at
+	// launch. Both empty means payments are not connected and orders are refused.
+	// From YOOKASSA_SHOP_ID and YOOKASSA_SECRET_KEY.
+	YooKassaShopID    string
+	YooKassaSecretKey string
+	// YooKassaTaxSystem is the receipt's tax_system_code (1..6); 0 leaves it out,
+	// which ЮKassa accepts for a shop with a single tax system. YOOKASSA_TAX_SYSTEM.
+	YooKassaTaxSystem int
+	// YooKassaTestMode only changes what the tariffs page tells the learner (that
+	// no money moves, and which test card to use); the API is the same. From
+	// YOOKASSA_TEST_MODE ("1" or "true").
+	YooKassaTestMode bool
+	// YooKassaAPIBase overrides the ЮKassa API address (tests). YOOKASSA_API_BASE.
+	YooKassaAPIBase string
 }
 
 // Load reads the configuration from the environment. Missing variables take
@@ -100,6 +121,12 @@ func Load() Config {
 		TelegramWebhookURL:    os.Getenv("TELEGRAM_WEBHOOK_URL"),
 		TelegramAdminIDs:      parseIDList(os.Getenv("TELEGRAM_ADMIN_IDS")),
 		TributeAPIKey:         os.Getenv("TRIBUTE_API_KEY"),
+		TariffsEmails:         parseEmailList(os.Getenv("TARIFFS_EMAILS")),
+		YooKassaShopID:        strings.TrimSpace(os.Getenv("YOOKASSA_SHOP_ID")),
+		YooKassaSecretKey:     strings.TrimSpace(os.Getenv("YOOKASSA_SECRET_KEY")),
+		YooKassaTaxSystem:     parseSmallInt(os.Getenv("YOOKASSA_TAX_SYSTEM")),
+		YooKassaTestMode:      parseBool(os.Getenv("YOOKASSA_TEST_MODE")),
+		YooKassaAPIBase:       strings.TrimSpace(os.Getenv("YOOKASSA_API_BASE")),
 	}
 }
 
@@ -112,6 +139,54 @@ func parseIDList(raw string) []int64 {
 		}
 	}
 	return ids
+}
+
+// parseEmailList reads "a@x.com, B@y.org" into lower-cased addresses.
+func parseEmailList(raw string) []string {
+	var out []string
+	for _, part := range strings.Split(raw, ",") {
+		if e := strings.ToLower(strings.TrimSpace(part)); e != "" {
+			out = append(out, e)
+		}
+	}
+	return out
+}
+
+func parseSmallInt(raw string) int {
+	n, err := strconv.Atoi(strings.TrimSpace(raw))
+	if err != nil || n < 0 || n > 6 {
+		return 0
+	}
+	return n
+}
+
+func parseBool(raw string) bool {
+	switch strings.ToLower(strings.TrimSpace(raw)) {
+	case "1", "true", "yes":
+		return true
+	}
+	return false
+}
+
+// TariffsAllowed reports whether the account with this email may use the paid
+// tariffs. The caller must already have established that the email is verified:
+// an address someone merely typed at registration proves nothing.
+func (c Config) TariffsAllowed(email string) bool {
+	email = strings.ToLower(strings.TrimSpace(email))
+	if email == "" {
+		return false
+	}
+	for _, e := range c.TariffsEmails {
+		if e == email {
+			return true
+		}
+	}
+	return false
+}
+
+// YooKassaConfigured reports whether payments are connected.
+func (c Config) YooKassaConfigured() bool {
+	return c.YooKassaShopID != "" && c.YooKassaSecretKey != ""
 }
 
 // IsTelegramAdmin reports whether tgID may run the bot's admin commands.

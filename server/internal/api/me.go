@@ -40,7 +40,7 @@ func (h handlers) getMe(w http.ResponseWriter, r *http.Request) {
 		fail(w, http.StatusInternalServerError, "internal error")
 		return
 	}
-	dto := meDTO{sessionUserDTO: summaryToDTO(ac.UserID, sum), Sessions: []deviceDTO{}}
+	dto := meDTO{sessionUserDTO: h.summaryToDTO(ac.UserID, sum), Sessions: []deviceDTO{}}
 	for _, s := range sessions {
 		dto.Sessions = append(dto.Sessions, deviceDTO{
 			ID:         s.TokenHash[:12],
@@ -102,7 +102,7 @@ func (h handlers) patchMe(w http.ResponseWriter, r *http.Request) {
 		fail(w, http.StatusInternalServerError, "internal error")
 		return
 	}
-	writeJSON(w, http.StatusOK, summaryToDTO(ac.UserID, sum))
+	writeJSON(w, http.StatusOK, h.summaryToDTO(ac.UserID, sum))
 }
 
 // changePassword handles POST /api/me/password, {current, new, email}. Two
@@ -289,7 +289,7 @@ func (h handlers) linkTelegram(w http.ResponseWriter, r *http.Request) {
 		fail(w, http.StatusInternalServerError, "internal error")
 		return
 	}
-	writeJSON(w, http.StatusOK, summaryToDTO(ac.UserID, sum))
+	writeJSON(w, http.StatusOK, h.summaryToDTO(ac.UserID, sum))
 }
 
 // telegramLinkStart handles POST /api/me/telegram/start (requireSession). It

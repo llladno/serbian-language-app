@@ -88,7 +88,7 @@ func checkOrigin(cfg config.Config, next http.Handler) http.Handler {
 			next.ServeHTTP(w, r)
 			return
 		}
-		if r.URL.Path == "/api/telegram/webhook" || r.URL.Path == "/api/tribute/webhook" {
+		if r.URL.Path == "/api/telegram/webhook" || r.URL.Path == "/api/tribute/webhook" || r.URL.Path == "/api/yookassa/webhook" {
 			next.ServeHTTP(w, r)
 			return
 		}

@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import type { RouteLocationNormalized } from 'vue-router'
-import { resolveGuard } from './router'
+import { resolveGuard, waitForFreshSession } from './router'
 import { useSessionStore } from './stores/session'
 import type { SessionUser } from './types'
 
@@ -74,5 +74,53 @@ describe('resolveGuard', () => {
     const session = useSessionStore()
     session.user = verifiedUser({ email: '', email_verified: false, telegram: { linked: true, username: 'g' } })
     expect(resolveGuard(route('profile'), session)).toBe(true)
+  })
+
+  // Tariffs are not open to everyone: the address leads nowhere for an account
+  // the server has not opened them for, and the screen never renders.
+  it('sends an account without tariffs from /tariffs to /profile', () => {
+    const session = useSessionStore()
+    session.user = verifiedUser({ features: { tariffs: false } })
+    expect(resolveGuard(route('tariffs'), session)).toEqual({ path: '/profile' })
+  })
+
+  it('also does so for a session that predates the features flag', () => {
+    const session = useSessionStore()
+    session.user = verifiedUser()
+    expect(resolveGuard(route('tariffs'), session)).toEqual({ path: '/profile' })
+  })
+
+  it('lets an account that has tariffs through', () => {
+    const session = useSessionStore()
+    session.user = verifiedUser({ features: { tariffs: true } })
+    expect(resolveGuard(route('tariffs'), session)).toBe(true)
+  })
+
+  it('an account with tariffs but an unverified email still goes to /verify first', () => {
+    const session = useSessionStore()
+    session.user = verifiedUser({ features: { tariffs: true }, email_verified: false })
+    expect(resolveGuard(route('tariffs'), session)).toEqual({ path: '/verify' })
+  })
+})
+
+describe('waitForFreshSession', () => {
+  it('is immediate once the server has answered', async () => {
+    const session = useSessionStore()
+    session.refreshed = true
+    await expect(waitForFreshSession(session)).resolves.toBeUndefined()
+  })
+
+  // A page painted from the cached account must not decide a closed screen
+  // from that cache: it waits until the server has said who this really is.
+  it('waits for the server while only the cached account is known', async () => {
+    const session = useSessionStore()
+    session.refreshed = false
+    let done = false
+    const p = waitForFreshSession(session).then(() => (done = true))
+    await Promise.resolve()
+    expect(done).toBe(false)
+    session.refreshed = true
+    await p
+    expect(done).toBe(true)
   })
 })

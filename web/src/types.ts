@@ -284,6 +284,8 @@ export interface SessionUser {
   email: string
   email_verified: boolean
   telegram: { linked: boolean; username: string }
+  // Parts of the app that are not open to everyone yet; the server decides.
+  features?: { tariffs: boolean }
 }
 
 export interface SessionDevice {
@@ -415,4 +417,29 @@ export interface BotPrefs {
   learning: boolean
   billing: boolean
   news: boolean
+}
+
+// What the tariffs screen needs from GET /api/me/tariffs. Prices are whole rubles.
+export interface TariffsInfo {
+  // False until the shop's credentials are set on the server.
+  payments_ready: boolean
+  // The shop is ЮKassa's test shop: no money moves.
+  test_mode: boolean
+  has_paid_level: boolean
+  level: {
+    // What the next level costs this learner now (249 the first time, 299 after).
+    price: number
+    regular_price: number
+    next: { id: string; title: string } | null
+  }
+  year: { price: number; old_price: number; until?: string }
+}
+
+export type TariffCode = 'level' | 'year'
+
+export interface Order {
+  id: number
+  tariff: TariffCode
+  status: 'pending' | 'succeeded' | 'canceled'
+  confirmation_url?: string
 }

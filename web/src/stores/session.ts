@@ -51,6 +51,10 @@ export const useSessionStore = defineStore('session', () => {
   const user = ref<SessionUser | null>(readCachedUser())
   // Only true when we have no guess to show at all — see readCachedUser().
   const loading = ref(!user.value)
+  // True once the server has answered about this account in this page load. The
+  // cached guess above is good enough to paint with, but not to decide who may
+  // see a screen that is closed to most people.
+  const refreshed = ref(false)
 
   async function fetchSession() {
     const hadGuess = !!user.value
@@ -82,6 +86,7 @@ export const useSessionStore = defineStore('session', () => {
       }
     } finally {
       loading.value = false
+      refreshed.value = true
     }
   }
 
@@ -123,6 +128,7 @@ export const useSessionStore = defineStore('session', () => {
   return {
     user,
     loading,
+    refreshed,
     fetchSession,
     settleReferral,
     login,

@@ -42,6 +42,8 @@ export function resolveGuard(to: RouteLocationNormalized, session: ReturnType<ty
   // by construction (nothing to verify) - only force the gate when there is
   // an actual unverified email on the account, never merely "not true".
   if (session.user.email && !session.user.email_verified) return { path: '/verify' }
+  // Not open to everyone yet: the server's features flag says who may see it.
+  if (name === 'tariffs' && !session.user.features?.tariffs) return { path: '/profile' }
   return true
 }
 
@@ -55,6 +57,24 @@ function waitForSession(session: ReturnType<typeof useSessionStore>): Promise<vo
       () => session.loading,
       (loading) => {
         if (!loading) {
+          unwatch()
+          resolve()
+        }
+      },
+    )
+  })
+}
+
+// Like waitForSession, but for a screen that only some accounts may see: the
+// cached account the page painted with is not enough to decide, so wait for the
+// server's own answer about who this is.
+export function waitForFreshSession(session: ReturnType<typeof useSessionStore>): Promise<void> {
+  if (session.refreshed) return Promise.resolve()
+  return new Promise((resolve) => {
+    const unwatch = watch(
+      () => session.refreshed,
+      (refreshed) => {
+        if (refreshed) {
           unwatch()
           resolve()
         }
@@ -88,6 +108,7 @@ const router = createRouter({
 router.beforeEach(async (to) => {
   const session = useSessionStore()
   await waitForSession(session)
+  if (to.name === 'tariffs') await waitForFreshSession(session)
   return resolveGuard(to, session)
 })
 

@@ -26,8 +26,14 @@ const canAfford = computed(() => missing.value === 0)
 // Short of зёрнышки, the way forward is to pay: the level if this is the next
 // one, otherwise the year (a later level cannot be opened out of order).
 const offer = computed(() =>
-  phaseId.value ? offerForPhase(courseStore.course, phaseId.value, tariffs.prices, tariffs.hasPaidLevel) : null,
+  phaseId.value && tariffs.ready
+    ? offerForPhase(courseStore.course, phaseId.value, { levelPrice: tariffs.levelNow, yearPrice: tariffs.yearPrice })
+    : null,
 )
+// The prices are fetched once a level is tapped, not on every screen.
+watch(phaseId, (id) => {
+  if (id) tariffs.load()
+})
 
 const buying = ref(false)
 const error = ref('')
@@ -108,7 +114,13 @@ async function buy() {
           </RouterLink>
         </template>
         <div class="flex flex-col gap-2 sm:flex-row">
-          <RouterLink to="/quests" class="btn btn-ghost flex-1" data-test="unlock-quests" @click="closeModal">
+          <RouterLink
+            to="/quests"
+            class="btn flex-1"
+            :class="offer ? 'btn-ghost' : 'btn-primary'"
+            data-test="unlock-quests"
+            @click="closeModal"
+          >
             Как заработать
           </RouterLink>
           <button class="btn btn-ghost flex-1" @click="closeModal">Понятно</button>

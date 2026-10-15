@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { TARIFF_DEFAULTS, daysLeft, levelPrice, nextLockedLevel, offerForPhase, perMonth, rub } from './tariffs'
+import { daysLeft, nextLockedLevel, offerForPhase, perMonth, rub } from './tariffs'
 import type { Course } from '../types'
 
 function course(over: Partial<Course> = {}): Course {
@@ -46,17 +46,6 @@ describe('nextLockedLevel', () => {
   })
 })
 
-describe('levelPrice', () => {
-  it('charges the first-purchase price once, then the regular one', () => {
-    expect(levelPrice(TARIFF_DEFAULTS.level, false)).toBe(249)
-    expect(levelPrice(TARIFF_DEFAULTS.level, true)).toBe(299)
-  })
-
-  it('has no first-purchase price when it is set to 0', () => {
-    expect(levelPrice({ price: 299, firstPrice: 0 }, false)).toBe(299)
-  })
-})
-
 describe('rub and perMonth', () => {
   it('keeps the amount and the sign on one line', () => {
     expect(rub(249)).toBe('249 ₽')
@@ -69,27 +58,30 @@ describe('rub and perMonth', () => {
   })
 })
 
+// What the server quotes the learner: the level at the first-purchase price.
+const QUOTE = { levelPrice: 249, yearPrice: 1000 }
+
 describe('offerForPhase', () => {
   it('offers the level itself when it is the next one to open', () => {
-    const o = offerForPhase(course(), '4', TARIFF_DEFAULTS, false)
+    const o = offerForPhase(course(), '4', QUOTE)
     expect(o).toMatchObject({ kind: 'level', price: 249 })
     expect(o?.level.id).toBe('4')
   })
 
-  it('charges the regular price once the learner has paid for a level before', () => {
-    expect(offerForPhase(course(), '4', TARIFF_DEFAULTS, true)).toMatchObject({ kind: 'level', price: 299 })
+  it('quotes whatever the server priced the level at (the regular price after a first purchase)', () => {
+    expect(offerForPhase(course(), '4', { levelPrice: 299, yearPrice: 1000 })).toMatchObject({ kind: 'level', price: 299 })
   })
 
   it('offers the year for a later level, because levels open in order', () => {
-    const o = offerForPhase(course(), '5', TARIFF_DEFAULTS, false)
+    const o = offerForPhase(course(), '5', QUOTE)
     expect(o).toMatchObject({ kind: 'year', price: 1000 })
     expect(o?.kind === 'year' && o.first.id).toBe('4')
   })
 
   it('offers nothing for a level that is already open, or that does not exist', () => {
-    expect(offerForPhase(course(), '3', TARIFF_DEFAULTS, false)).toBeNull()
-    expect(offerForPhase(course(), '99', TARIFF_DEFAULTS, false)).toBeNull()
-    expect(offerForPhase(null, '4', TARIFF_DEFAULTS, false)).toBeNull()
+    expect(offerForPhase(course(), '3', QUOTE)).toBeNull()
+    expect(offerForPhase(course(), '99', QUOTE)).toBeNull()
+    expect(offerForPhase(null, '4', QUOTE)).toBeNull()
   })
 })
 

@@ -17,6 +17,7 @@ import ModalShell from '../components/ModalShell.vue'
 import SupportCard from '../components/SupportCard.vue'
 import DonateCard from '../components/DonateCard.vue'
 import BotPrefsSection from '../components/BotPrefsSection.vue'
+import TariffsCard from '../components/TariffsCard.vue'
 import SeedIcon from '../components/SeedIcon.vue'
 import { pluralRu } from '../lib/plural'
 import type { LeaderRow, Me, Progress, Vocab } from '../types'
@@ -259,6 +260,7 @@ async function logout() {
       </div>
     </Transition>
 
+    <TariffsCard v-if="me" />
     <SupportCard v-if="me" />
     <DonateCard v-if="me" />
 

@@ -443,6 +443,25 @@ localStorage). `GET .../exercises?audio=off` отдаёт `say` как `text`
 (`outbox.ButtonRow`/`buttonFromRow`, тест на круг туда-обратно). Что ещё бот мог бы
 писать и с какими правилами частоты — `docs/TELEGRAM_MESSAGES.md`.
 
+### Тарифы и оплата рублями
+
+Подробно — `docs/superpowers/specs/2026-10-14-tariffs-design.md`. Коротко: «Уровень»
+(следующий закрытый уровень навсегда, 249 ₽ в первый раз, потом 299 ₽) и «Год» (все
+уровни на 365 дней, 1000 ₽), оплата через ЮKassa, разовая, без автопродления.
+
+**Закрыто для всех, кроме `TARIFFS_EMAILS`** (подтверждённые почты через запятую). Сервер
+отдаёт `features.tariffs` в аккаунте и отвечает 404 на `/api/me/tariffs`, `/api/me/orders*`
+всем остальным; фронт прячет страницу, баннер, кнопку оплаты в окне «не хватает зёрнышек» и
+карточку в профиле (`stores/tariffs.ts` → `enabled`). Новая точка входа в оплату обязана
+проверять `tariffs.enabled`.
+
+Деньги: `internal/yookassa` (клиент), `api/tariffs.go` (`settlePayment` — единственное место,
+которое что-то выдаёт, и оно не верит вызывающему: сумма и номер заказа сверяются, статус
+берётся у ЮKassa; вебхук ЮKassa не подписан, из тела берётся только id платежа).
+`store.CompletePayment` выдаёт одной транзакцией. Env: `YOOKASSA_SHOP_ID`,
+`YOOKASSA_SECRET_KEY`, `YOOKASSA_TEST_MODE`, `YOOKASSA_TAX_SYSTEM`, `TARIFFS_EMAILS`.
+Тестовые карты ЮKassa: `5555 5555 5555 4444` (успех), `…4477` (3-D Secure), `…4642` (нет денег).
+
 ### Личный слой
 
 `content/persona.yaml` (`name`, `city`, `job`, …). Загрузчик подставляет

@@ -6,7 +6,7 @@
 // Gold stays the currency's colour (see TariffsView): the banner is accent
 // teal, and the swallow handing over a seed is the same picture the invite
 // screen uses for "a gift", so it reads as one family.
-import { computed } from 'vue'
+import { computed, onMounted } from 'vue'
 import { useWalletStore } from '../stores/wallet'
 import { useTariffsStore } from '../stores/tariffs'
 import { rub } from '../lib/tariffs'
@@ -15,7 +15,9 @@ import scene from '../assets/invite-scene.webp'
 const wallet = useWalletStore()
 const tariffs = useTariffsStore()
 
-const show = computed(() => !!wallet.goal && !tariffs.yearActive)
+onMounted(() => tariffs.load())
+
+const show = computed(() => tariffs.ready && !!wallet.goal && !tariffs.yearActive)
 </script>
 
 <template>
@@ -30,7 +32,7 @@ const show = computed(() => !!wallet.goal && !tariffs.yearActive)
           Открыть за {{ rub(tariffs.levelNow) }}
         </RouterLink>
         <RouterLink to="/tariffs" class="all" data-test="banner-year">
-          Все уровни на год — {{ rub(tariffs.prices.year.price) }}
+          Все уровни на год — {{ rub(tariffs.yearPrice) }}
         </RouterLink>
       </div>
     </div>

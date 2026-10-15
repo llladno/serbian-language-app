@@ -28,6 +28,9 @@ import type {
   ShopItem,
   PurchaseResult,
   BotPrefs,
+  TariffsInfo,
+  TariffCode,
+  Order,
 } from './types'
 import { getStoredAttribution, getStoredReferral } from './attribution'
 
@@ -140,6 +143,10 @@ export const api = {
   sendSupportMessage: (message: string) =>
     request<{ status: string }>('/me/support', { method: 'POST', body: JSON.stringify({ message }) }),
   wallet: () => request<Wallet>('/me/wallet'),
+  tariffs: () => request<TariffsInfo>('/me/tariffs'),
+  createOrder: (tariff: TariffCode) =>
+    request<Order>('/me/orders', { method: 'POST', body: JSON.stringify({ tariff }) }),
+  order: (id: number) => request<Order>(`/me/orders/${id}`),
   botPrefs: () => request<BotPrefs>('/me/bot-prefs'),
   setBotPrefs: (patch: Partial<BotPrefs>) =>
     request<BotPrefs>('/me/bot-prefs', { method: 'PUT', body: JSON.stringify(patch) }),

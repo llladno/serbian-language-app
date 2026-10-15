@@ -1,7 +1,44 @@
 # Tariffs (paid access for rubles) — design
 
-Status: **draft for review, nothing implemented.** Decisions below were made in chat
-on 2026-10-14; the open items at the end block the build.
+Status: **built 2026-10-15 and open only to the accounts in `TARIFFS_EMAILS`**, paying
+through ЮKassa's TEST shop. Everyone else sees nothing and gets 404 from the endpoints.
+Decisions below were made in chat on 2026-10-14/15; the open items at the end still
+stand before this goes to everybody.
+
+## As built
+
+- **Who sees it.** `TARIFFS_EMAILS` (comma-separated). An account qualifies when its
+  email is on the list AND verified; `features.tariffs` in the account DTO tells the
+  client, `requireTariffs` enforces it (404) on `GET /api/me/tariffs`,
+  `POST /api/me/orders`, `GET /api/me/orders/{id}`. The client hides the page, the
+  banner, the modal's pay button and the profile card from everyone else; `/tariffs`
+  redirects to `/profile` (after waiting for the server's own answer about who is
+  signed in, not the cached account).
+- **Money.** `internal/yookassa` creates a payment the buyer confirms on ЮKassa's page
+  (`capture: true`, redirect, receipt with the account's email, `vat_code` 1) and reads
+  one back. `settlePayment` is the only code that grants anything and it never trusts
+  its caller: the amount and the order id must match what we asked for and ЮKassa must
+  say `succeeded` and `paid`. Notifications (`POST /api/yookassa/webhook`) are not
+  signed, so the body is used only for the payment id; the return page
+  (`/tariffs?order=ID`) and opening the tariffs screen settle pending payments too, so
+  it works before the notification URL is configured.
+- **What it grants.** `CompletePayment` flips the payment and grants in one
+  transaction: a level is a `phase_unlock` entitlement (forever); a year is
+  `all_access/year` with `expires_at`, extended from the current end when paid early.
+  `phaseAccess` opens every level while a year runs.
+- **Data.** Migration 025: `tariffs` (seeded: level 299/249, year 1000/2000, 365 days),
+  `payments`, `user_entitlements.expires_at`.
+- **Configuration (Dokploy env).** `TARIFFS_EMAILS`; `YOOKASSA_SHOP_ID` and
+  `YOOKASSA_SECRET_KEY` (the shop's credentials, test shop first; payments stay
+  "not connected" until both are set); `YOOKASSA_TEST_MODE=true` (only changes the hint
+  on the page); optional `YOOKASSA_TAX_SYSTEM` (1..6) if the shop has several tax
+  systems; `YOOKASSA_API_BASE` is for tests. In ЮKassa's cabinet set the HTTP
+  notification URL to `https://ucimo.ru/api/yookassa/webhook` for `payment.succeeded`
+  and `payment.canceled`.
+- **Testing in the test shop.** Card `5555 5555 5555 4444` (no 3-D Secure), any future
+  date, any CVC; `5555 5555 5555 4477` asks for 3-D Secure; `5555 5555 5555 4642`
+  declines for insufficient funds. ЮKassa also asks to check receipts in the test shop
+  (Настройки → «Режим проверки чеков») before going live.
 
 ## Goal
 
