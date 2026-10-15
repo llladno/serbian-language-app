@@ -92,6 +92,51 @@ describe('TextAnswer', () => {
 
 // A dictation for someone who cannot listen: the sentence is shown and
 // translated into Russian.
+describe('TextAnswer, soft acceptance and fix_error', () => {
+  it('tells the learner how a word is spelled when the answer passed with a typo', async () => {
+    vi.spyOn(api, 'check').mockResolvedValue({ ok: true, typo: true, expected: 'Dobro veče' })
+    const w = mount(TextAnswer, { props: { ...props, type: 'fill_blank' as const, prompt: 'Dobro ___!' } , global: { stubs: { RouterLink: true } } })
+    await w.find('input').setValue('dobro veće')
+    await w.find('form').trigger('submit')
+    await flushPromises()
+
+    expect(w.text()).toContain('Верно')
+    expect(w.text()).toContain('проверь написание')
+    expect(w.text()).toContain('Dobro veče')
+    expect(w.emitted('graded')?.[0]?.[0]).toBe(true)
+  })
+
+  it('does not nag about spelling on a plain correct answer', async () => {
+    vi.spyOn(api, 'check').mockResolvedValue({ ok: true, expected: 'Zdravo!' })
+    const w = mount(TextAnswer, { props })
+    await w.find('input').setValue('Zdravo!')
+    await w.find('form').trigger('submit')
+    await flushPromises()
+    expect(w.text()).not.toContain('проверь написание')
+  })
+
+  it('starts a fix_error from the wrong sentence, so the learner edits instead of retyping', () => {
+    const w = mount(TextAnswer, {
+      props: { ...props, type: 'fix_error' as const, prompt: 'Iz Rusije.' },
+      global: { stubs: { RouterLink: true } },
+    })
+    expect((w.find('input').element as HTMLInputElement).value).toBe('Iz Rusije.')
+  })
+
+  it('leaves a fix_error empty when its prompt carries a Russian note', () => {
+    const w = mount(TextAnswer, {
+      props: { ...props, type: 'fix_error' as const, prompt: 'Ana kaže: «Gladan sam.» (Ана — женщина)' },
+      global: { stubs: { RouterLink: true } },
+    })
+    expect((w.find('input').element as HTMLInputElement).value).toBe('')
+  })
+
+  it('keeps other types empty', () => {
+    const w = mount(TextAnswer, { props })
+    expect((w.find('input').element as HTMLInputElement).value).toBe('')
+  })
+})
+
 describe('TextAnswer, a dictation read as text', () => {
   const listen = {
     lesson: '03',

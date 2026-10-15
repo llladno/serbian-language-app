@@ -220,7 +220,7 @@ function lineOf(t: { exercise_id?: string; sr?: string; ru?: string; audio?: str
             :exercise-id="turns[v.index].exercise_id!"
             :prompt="byID[turns[v.index].exercise_id!].prompt"
             :options="byID[turns[v.index].exercise_id!].options ?? []"
-            :explain="byID[turns[v.index].exercise_id!].explain"
+            :explain="byID[turns[v.index].exercise_id!].hint || byID[turns[v.index].exercise_id!].explain"
             @graded="(ok, res, ans) => onGraded(turns[v.index].exercise_id!, ok, res, ans)"
           />
 
@@ -230,7 +230,7 @@ function lineOf(t: { exercise_id?: string; sr?: string; ru?: string; audio?: str
             :exercise-id="turns[v.index].exercise_id!"
             :type="byID[turns[v.index].exercise_id!].type as 'translate' | 'fill_blank'"
             :prompt="byID[turns[v.index].exercise_id!].prompt"
-            :explain="byID[turns[v.index].exercise_id!].explain"
+            :explain="byID[turns[v.index].exercise_id!].hint || byID[turns[v.index].exercise_id!].explain"
             @graded="(ok, res, ans) => onGraded(turns[v.index].exercise_id!, ok, res, ans)"
           />
         </template>

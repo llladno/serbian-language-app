@@ -23,7 +23,7 @@ const copied = ref(false)
 const input = ref<HTMLInputElement | null>(null)
 let copiedTimer: ReturnType<typeof setTimeout> | undefined
 
-const SHARE_TEXT = 'Учу сербский в UCIMO — уроки, повторение слов и озвучка. Заходи по моей ссылке:'
+const SHARE_TEXT = 'Учу сербский в ucimo: уроки, повторение слов и озвучка. Присоединяйся!'
 const canShare = typeof navigator !== 'undefined' && typeof navigator.share === 'function'
 
 async function load() {

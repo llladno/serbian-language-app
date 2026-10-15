@@ -107,6 +107,9 @@ function retry() {
     </BottomBar>
 
     <div v-if="result" class="mx-auto mt-4 max-w-sm text-sm pop">
+      <p v-for="(r, i) in result.forms" :key="'t' + i" v-show="r.ok && r.typo" class="text-[var(--warning)]">
+        {{ forms[i] }}: засчитано, но пишется <span class="serbian font-semibold">{{ r.expected }}</span>
+      </p>
       <p v-for="(r, i) in result.forms" :key="i" v-show="!r.ok" class="text-[var(--muted)]">
         {{ forms[i] }} → <span class="serbian font-semibold text-[var(--fg)]">{{ r.expected }}</span>
       </p>

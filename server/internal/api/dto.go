@@ -98,6 +98,9 @@ type exerciseDTO struct {
 	// so the client can offer it as a pre-answer hint, not just a post-check
 	// explanation.
 	Explain string `json:"explain,omitempty"`
+	// Hint is the pre-answer 💡 nudge (never contains the answer — enforced at
+	// load time by content.validateHint). Falls back to Explain on the client.
+	Hint string `json:"hint,omitempty"`
 }
 
 // lessonStatsDTO is what the end-of-lesson screen shows. Percent is of the
@@ -125,6 +128,9 @@ type checkResultDTO struct {
 	Forms    []checker.Result `json:"forms,omitempty"`
 	Match    map[string]bool  `json:"match,omitempty"` // match: per-pair correctness
 	NearMiss bool             `json:"near_miss,omitempty"`
+	// Typo: the answer was accepted despite a spelling slip (see
+	// checker/tolerance.go); Expected then carries the correct spelling.
+	Typo bool `json:"typo,omitempty"`
 
 	// dialogue: the canonical line this answer produces, so the chat can show
 	// a bubble without a second request — sent whether the answer was right
@@ -246,6 +252,7 @@ type gramCheckResultDTO struct {
 	OK       bool   `json:"ok"`
 	Expected string `json:"expected,omitempty"`
 	NearMiss bool   `json:"near_miss,omitempty"`
+	Typo     bool   `json:"typo,omitempty"`
 
 	Due          string `json:"due"`
 	IntervalDays int    `json:"interval_days"`

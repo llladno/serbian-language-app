@@ -4,11 +4,11 @@ import "testing"
 
 func TestNormalize(t *testing.T) {
 	cases := map[string]string{
-		"  Zdravo!  ":     "zdravo",
-		"Kako   si?":      "kako si",
-		"Iz Rusije sam.":  "iz rusije sam",
-		"“Ćao”":           "ćao",
-		"Drago mi je . ":  "drago mi je",
+		"  Zdravo!  ":      "zdravo",
+		"Kako   si?":       "kako si",
+		"Iz Rusije sam.":   "iz rusije sam",
+		"“Ćao”":            "ćao",
+		"Drago mi je . ":   "drago mi je",
 		"Zdravo! Kako si?": "zdravo kako si",
 	}
 	for in, want := range cases {
@@ -80,8 +80,13 @@ func TestCheckForms(t *testing.T) {
 		[]string{"govorim", "govoris", "govori"},
 		[][]string{{"govorim"}, {"govoriš"}, {"govori"}},
 	)
-	if !rs[0].OK || rs[1].OK || !rs[2].OK {
+	// "govoris" is a missing diacritic: forgiven, but flagged as a typo.
+	if !rs[0].OK || !rs[1].OK || !rs[1].Typo || !rs[2].OK {
 		t.Errorf("results = %+v", rs)
+	}
+	bad := CheckForms([]string{"govorim", "govorit", "govori"}, [][]string{{"govorim"}, {"govoriš"}, {"govori"}})
+	if bad[1].OK {
+		t.Errorf("a different last letter is a different form, not a typo: %+v", bad[1])
 	}
 }
 

@@ -234,6 +234,9 @@ onUnmounted(() => window.removeEventListener('keydown', onKey))
             <p class="font-semibold" :class="gramResult.ok ? 'text-[var(--good)]' : 'text-[var(--bad)]'">
               {{ gramResult.ok ? '✓ Верно' : gramResult.near_miss ? 'Почти — опечатка?' : '✗ Не то' }}
             </p>
+            <p v-if="gramResult.ok && gramResult.typo && gramResult.expected" class="text-sm text-[var(--warning)]">
+              Засчитано, но проверь написание: <span class="serbian font-semibold">{{ gramResult.expected }}</span>
+            </p>
             <p v-if="!gramResult.ok && gramResult.expected" class="text-sm">
               Правильно: <span class="serbian font-semibold">{{ gramResult.expected }}</span>
             </p>

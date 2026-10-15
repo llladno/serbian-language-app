@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -1044,4 +1045,58 @@ func doCookieWithKey(h http.Handler, c *http.Cookie, method, path, body, key str
 	rr := httptest.NewRecorder()
 	h.ServeHTTP(rr, r)
 	return rr
+}
+
+func TestCheckForgivesCyrillicAndFlagsTypos(t *testing.T) {
+	h, _ := newTestAPI(t)
+	check := func(ans string) checkResultDTO {
+		rr := do(h, "POST", "/api/lessons/01/exercises/01-A-1/check", `{"answer":`+strconv.Quote(ans)+`}`)
+		if rr.Code != 200 {
+			t.Fatalf("%d %s", rr.Code, rr.Body)
+		}
+		return decodeBody[checkResultDTO](t, rr)
+	}
+	if r := check("Здраво! Како си?"); !r.OK || r.Typo {
+		t.Errorf("Serbian Cyrillic should be plain correct: %+v", r)
+	}
+	if r := check("Zdrvo! Kako si?"); !r.OK || !r.Typo || r.Expected != "Zdravo! Kako si?" {
+		t.Errorf("a dropped letter in the stem should pass flagged as a typo with the right spelling: %+v", r)
+	}
+	if r := check("Zdravo! Kako su?"); r.OK {
+		t.Errorf("su is a different form, not a typo: %+v", r)
+	}
+}
+
+func TestFillBlankAcceptsTheWholeSentence(t *testing.T) {
+	h, _ := newTestAPI(t)
+	for _, ans := range []string{"sam", "Ja sam ovde", "ja sam ovde."} {
+		rr := do(h, "POST", "/api/lessons/90/exercises/90.2.2/check", `{"answer":`+strconv.Quote(ans)+`}`)
+		if res := decodeBody[checkResultDTO](t, rr); !res.OK {
+			t.Errorf("%q should be accepted: %+v", ans, res)
+		}
+	}
+	rr := do(h, "POST", "/api/lessons/90/exercises/90.2.2/check", `{"answer":"Ja si ovde"}`)
+	if res := decodeBody[checkResultDTO](t, rr); res.OK || res.Expected != "sam" {
+		t.Errorf("a wrong full sentence must fail and still point at the word: %+v", res)
+	}
+}
+
+func TestExerciseListCarriesHint(t *testing.T) {
+	h, _ := newTestAPI(t)
+	rr := do(h, "GET", "/api/lessons/90/exercises", "")
+	blocks := decodeBody[[]exerciseBlockDTO](t, rr)
+	var got string
+	for _, b := range blocks {
+		for _, e := range b.Exercises {
+			if e.ID == "90.2.2" {
+				got = e.Hint
+			}
+		}
+	}
+	if got == "" {
+		t.Fatalf("hint missing from the exercise list: %s", rr.Body)
+	}
+	if strings.Contains(rr.Body.String(), `"sam"`) {
+		t.Errorf("the accepted answer leaked: %s", rr.Body)
+	}
 }

@@ -36,7 +36,13 @@ const glossPrompt = computed(() => props.type === 'fill_blank' || props.type ===
 
 const emit = defineEmits<{ graded: [ok: boolean, result: CheckResult, answer: string]; ungraded: []; cantListen: [] }>()
 
-const answer = ref(props.prior?.answer ?? '')
+// fix_error: start from the wrong sentence so the learner edits it instead of
+// retyping (people were typing only the missing word — «ja sam» — and failing).
+// Prompts with Russian notes in them can't be edited as-is, so those start empty.
+function startingAnswer() {
+  return props.type === 'fix_error' && !/[А-Яа-яЁё]/.test(props.prompt) ? props.prompt : ''
+}
+const answer = ref(props.prior?.answer ?? startingAnswer())
 const result = ref<CheckResult | null>(null)
 const fromPrior = ref(!!props.prior)
 
@@ -77,7 +83,7 @@ const resultPhrase = computed(() => {
 function retry() {
   result.value = null
   fromPrior.value = false
-  answer.value = ''
+  answer.value = startingAnswer()
   emit('ungraded')
 }
 </script>
@@ -143,7 +149,7 @@ function retry() {
         autocorrect="off"
         spellcheck="false"
         class="field w-full text-center"
-        :placeholder="text ? 'перевод…' : 'ответ…'"
+        :placeholder="text ? 'перевод…' : type === 'fix_error' ? 'исправь предложение…' : 'ответ…'"
       />
       <SerbianKeys v-if="!text" class="mt-1.5 justify-center" />
     </form>
@@ -160,6 +166,9 @@ function retry() {
       >
         <span>{{ result.ok ? '✓' : '✗' }}</span>
         <span>{{ result.ok ? 'Верно' : result.near_miss ? 'Почти — опечатка?' : 'Не совсем' }}</span>
+      </p>
+      <p v-if="result.ok && result.typo && result.expected" class="mb-1 text-sm text-[var(--warning)]">
+        Засчитано, но проверь написание: <span class="font-semibold" :class="{ serbian: !text }">{{ result.expected }}</span>
       </p>
       <p v-if="result.diff?.length && !result.ok" class="mb-1">
         <span v-for="(c, i) in result.diff" :key="i" :class="c.ok ? '' : 'chunk-wrong'">{{ c.text

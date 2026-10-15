@@ -20,6 +20,11 @@ type Result struct {
 	// NearMiss is true when a wrong answer is within a couple of characters
 	// of the closest accepted variant — likely a typo or a missing diacritic.
 	NearMiss bool `json:"near_miss,omitempty"`
+	// Typo is true when OK was granted despite a spelling slip in one word (a
+	// missing/swapped diacritic or a one-letter typo away from the word's
+	// ending — see tolerance.go). Expected then holds the correct spelling so
+	// the UI can say how the word is really written.
+	Typo bool `json:"typo,omitempty"`
 }
 
 var punct = map[rune]bool{
@@ -62,6 +67,22 @@ func Check(answer string, accept []string) Result {
 	for _, a := range accept {
 		if Normalize(a) == na {
 			return Result{OK: true, Expected: a}
+		}
+	}
+	// Serbian typed in Cyrillic is just as right as Latin (the course teaches both scripts).
+	if lat, ok := SerbianCyrillicToLatin(answer); ok {
+		nl := Normalize(lat)
+		for _, a := range accept {
+			if Normalize(a) == nl {
+				return Result{OK: true, Expected: a}
+			}
+		}
+		na = nl
+	}
+	// One spelling slip in one word is forgiven, but flagged (tolerance.go).
+	if toks := strings.Fields(na); len(toks) > 0 {
+		if v, ok := softMatch(toks, accept); ok {
+			return Result{OK: true, Expected: v, Typo: true}
 		}
 	}
 	best := ""
