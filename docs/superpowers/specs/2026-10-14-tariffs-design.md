@@ -1,14 +1,16 @@
 # Tariffs (paid access for rubles) — design
 
-Status: **built 2026-10-15 and open only to the accounts in `TARIFFS_EMAILS`**, paying
-through ЮKassa's TEST shop. Everyone else sees nothing and gets 404 from the endpoints.
+Status: **built 2026-10-15 and open only to the accounts in `TARIFFS_EMAILS` (paying
+through ЮKassa's TEST shop) and `TBANK_EMAILS` (paying through Т-Касса's DEMO terminal,
+added 2026-10-16)**. Everyone else sees nothing and gets 404 from the endpoints.
 Decisions below were made in chat on 2026-10-14/15; the open items at the end still
 stand before this goes to everybody.
 
 ## As built
 
-- **Who sees it.** `TARIFFS_EMAILS` (comma-separated). An account qualifies when its
-  email is on the list AND verified; `features.tariffs` in the account DTO tells the
+- **Who sees it.** `TARIFFS_EMAILS` (comma-separated; pay through ЮKassa) and
+  `TBANK_EMAILS` (pay through Т-Касса; an address in both pays through Т-Касса). An
+  account qualifies when its email is on a list AND verified; `features.tariffs` in the account DTO tells the
   client, `requireTariffs` enforces it (404) on `GET /api/me/tariffs`,
   `POST /api/me/orders`, `GET /api/me/orders/{id}`. The client hides the page, the
   banner, the modal's pay button and the profile card from everyone else; `/tariffs`
@@ -22,6 +24,26 @@ stand before this goes to everybody.
   signed, so the body is used only for the payment id; the return page
   (`/tariffs?order=ID`) and opening the tariffs screen settle pending payments too, so
   it works before the notification URL is configured.
+- **Two payment services.** `api/payproviders.go` puts ЮKassa and Т-Касса behind one
+  interface (`Create`, `State`); `config.PaymentProviderFor(email)` picks the service by
+  the account's address, the payment row records it (`payments.provider`), and
+  `settlePayment` settles a payment with the service that made it, so nothing else in the
+  order, grant or screens knows which one it is. `internal/tbank` is the Т-Касса client:
+  `Init` returns the bank's page (`PaymentURL`), `GetState` reads a payment, `Sign` is the
+  bank's Token (SHA-256 over the request's top-level values sorted by name plus the
+  terminal password; tested with the worked examples from the bank's docs). A payment is
+  paid when the bank says `CONFIRMED`, failed on `REJECTED`/`AUTH_FAIL`/`CANCELED`/
+  `DEADLINE_EXPIRED`/`ATTEMPTS_EXPIRED`. Unlike ЮKassa's, Т-Касса's notifications
+  (`POST /api/tbank/webhook`) are signed, so a bad Token is refused (400); a good one is
+  still only a nudge: the truth comes from `GetState`. The bank wants the body `OK` with
+  200 within ten seconds, otherwise it retries hourly for a day and daily for a month,
+  so a failure to ask the bank is answered 500. `NotificationURL`, `SuccessURL` and
+  `FailURL` are sent with every payment, so nothing needs setting in the bank's cabinet.
+  The `OrderId` sent is `<our order id>-<unix time>` (the bank wants a fresh one and a
+  terminal can serve several environments). The bank's API hosts present a chain that
+  ends in the Минцифры root CA, which the runtime image does not trust: the root and
+  intermediate are embedded (`internal/tbank/russian_trusted_ca.pem`) and trusted by
+  this client only.
 - **What it grants.** `CompletePayment` flips the payment and grants in one
   transaction: a level is a `phase_unlock` entitlement (forever); a year is
   `all_access/year` with `expires_at`, extended from the current end when paid early.
@@ -34,6 +56,16 @@ stand before this goes to everybody.
   systems; `YOOKASSA_API_BASE` is for tests. In ЮKassa's cabinet set the HTTP
   notification URL to `https://ucimo.ru/api/yookassa/webhook` for `payment.succeeded`
   and `payment.canceled`.
+- **Configuration for Т-Касса (Dokploy env).** `TBANK_EMAILS`; `TBANK_TERMINAL_KEY` and
+  `TBANK_PASSWORD` (the terminal's credentials: the DEMO terminal first, which is reached
+  at the same host as a real one and moves no money; payments stay "not connected" until
+  both are set); `TBANK_TAXATION` (`osn`, `usn_income` (default), `usn_income_outcome`,
+  `esn`, `patent`: the receipt's tax system; the bank requires it, and it must match what
+  the seller really uses); `TBANK_API_BASE` is for tests. Receipt items go out as service,
+  full payment, no VAT (the seller is not a VAT payer). The bank's separate
+  `rest-api-test` host is only for real terminals from a whitelisted IP; not used.
+  Run `TBANK_LIVE_TERMINAL_KEY=... TBANK_LIVE_PASSWORD=... go test ./server/internal/tbank
+  -run Live -v` to check the signature, receipt and trust against the real bank.
 - **Testing in the test shop.** Card `5555 5555 5555 4444` (no 3-D Secure), any future
   date, any CVC; `5555 5555 5555 4477` asks for 3-D Secure; `5555 5555 5555 4642`
   declines for insufficient funds. ЮKassa also asks to check receipts in the test shop

@@ -73,10 +73,15 @@ type Config struct {
 	TributeAPIKey string
 
 	// TariffsEmails are the accounts, by VERIFIED email address, that see and can
-	// use the paid tariffs (the level and year pages, offers, orders). Everyone
-	// else gets neither the screens nor the endpoints. Empty means nobody. Matched
-	// case-insensitively. From TARIFFS_EMAILS, a comma-separated list.
+	// use the paid tariffs (the level and year pages, offers, orders), paying
+	// through ЮKassa. Everyone else gets neither the screens nor the endpoints.
+	// Empty means nobody. Matched case-insensitively. From TARIFFS_EMAILS, a
+	// comma-separated list.
 	TariffsEmails []string
+	// TBankEmails are accounts that see the same tariffs but pay through Т-Касса
+	// (Т-Банк) instead. An address in both lists pays through Т-Касса. From
+	// TBANK_EMAILS.
+	TBankEmails []string
 	// YooKassaShopID and YooKassaSecretKey are the credentials of the ЮKassa shop
 	// that takes the payments: the test shop's while testing, the real one's at
 	// launch. Both empty means payments are not connected and orders are refused.
@@ -88,6 +93,17 @@ type Config struct {
 	YooKassaTaxSystem int
 	// YooKassaAPIBase overrides the ЮKassa API address (tests). YOOKASSA_API_BASE.
 	YooKassaAPIBase string
+	// TBankTerminalKey and TBankPassword are the Т-Касса terminal's credentials:
+	// the test terminal's (its key ends in DEMO) while testing, the real one's at
+	// launch. Both empty means Т-Касса is not connected. From TBANK_TERMINAL_KEY
+	// and TBANK_PASSWORD.
+	TBankTerminalKey string
+	TBankPassword    string
+	// TBankTaxation is the tax system printed on the receipt: osn, usn_income,
+	// usn_income_outcome, esn or patent. From TBANK_TAXATION, default usn_income.
+	TBankTaxation string
+	// TBankAPIBase overrides the Т-Касса API address (tests). TBANK_API_BASE.
+	TBankAPIBase string
 }
 
 // Load reads the configuration from the environment. Missing variables take
@@ -118,11 +134,26 @@ func Load() Config {
 		TelegramAdminIDs:      parseIDList(os.Getenv("TELEGRAM_ADMIN_IDS")),
 		TributeAPIKey:         os.Getenv("TRIBUTE_API_KEY"),
 		TariffsEmails:         parseEmailList(os.Getenv("TARIFFS_EMAILS")),
+		TBankEmails:           parseEmailList(os.Getenv("TBANK_EMAILS")),
 		YooKassaShopID:        strings.TrimSpace(os.Getenv("YOOKASSA_SHOP_ID")),
 		YooKassaSecretKey:     strings.TrimSpace(os.Getenv("YOOKASSA_SECRET_KEY")),
 		YooKassaTaxSystem:     parseSmallInt(os.Getenv("YOOKASSA_TAX_SYSTEM")),
 		YooKassaAPIBase:       strings.TrimSpace(os.Getenv("YOOKASSA_API_BASE")),
+		TBankTerminalKey:      strings.TrimSpace(os.Getenv("TBANK_TERMINAL_KEY")),
+		TBankPassword:         strings.TrimSpace(os.Getenv("TBANK_PASSWORD")),
+		TBankTaxation:         taxationOr(os.Getenv("TBANK_TAXATION"), "usn_income"),
+		TBankAPIBase:          strings.TrimSpace(os.Getenv("TBANK_API_BASE")),
 	}
+}
+
+// taxationOr reads a receipt tax system, falling back to def for anything the
+// bank would not accept.
+func taxationOr(raw, def string) string {
+	switch v := strings.ToLower(strings.TrimSpace(raw)); v {
+	case "osn", "usn_income", "usn_income_outcome", "esn", "patent":
+		return v
+	}
+	return def
 }
 
 // parseIDList reads "123, 456" into ids, skipping anything that is not a number.
@@ -155,25 +186,49 @@ func parseSmallInt(raw string) int {
 	return n
 }
 
-// TariffsAllowed reports whether the account with this email may use the paid
-// tariffs. The caller must already have established that the email is verified:
-// an address someone merely typed at registration proves nothing.
-func (c Config) TariffsAllowed(email string) bool {
+// Payment services an account can be sent to.
+const (
+	ProviderYooKassa = "yookassa"
+	ProviderTBank    = "tbank"
+)
+
+// PaymentProviderFor says which payment service the account with this email
+// pays through: ProviderTBank for an address in TBANK_EMAILS, ProviderYooKassa
+// for one in TARIFFS_EMAILS, "" for everyone else (who see no payments at all).
+// The caller must already have established that the email is verified: an
+// address someone merely typed at registration proves nothing.
+func (c Config) PaymentProviderFor(email string) string {
 	email = strings.ToLower(strings.TrimSpace(email))
 	if email == "" {
-		return false
+		return ""
+	}
+	for _, e := range c.TBankEmails {
+		if e == email {
+			return ProviderTBank
+		}
 	}
 	for _, e := range c.TariffsEmails {
 		if e == email {
-			return true
+			return ProviderYooKassa
 		}
 	}
-	return false
+	return ""
 }
 
-// YooKassaConfigured reports whether payments are connected.
+// TariffsAllowed reports whether the account with this email may use the paid
+// tariffs at all (through either payment service).
+func (c Config) TariffsAllowed(email string) bool {
+	return c.PaymentProviderFor(email) != ""
+}
+
+// YooKassaConfigured reports whether ЮKassa payments are connected.
 func (c Config) YooKassaConfigured() bool {
 	return c.YooKassaShopID != "" && c.YooKassaSecretKey != ""
+}
+
+// TBankConfigured reports whether Т-Касса payments are connected.
+func (c Config) TBankConfigured() bool {
+	return c.TBankTerminalKey != "" && c.TBankPassword != ""
 }
 
 // IsTelegramAdmin reports whether tgID may run the bot's admin commands.

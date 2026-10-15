@@ -178,6 +178,8 @@ func Handler(deps Deps) http.Handler {
 	// ЮKassa's payment notification: no session, its body is never trusted (see
 	// yookassaWebhook), exempt from the origin check like the other webhooks.
 	root.HandleFunc("POST /api/yookassa/webhook", h.yookassaWebhook)
+	// Т-Касса's: signed with the terminal password, which tbankWebhook checks.
+	root.HandleFunc("POST /api/tbank/webhook", h.tbankWebhook)
 	root.HandleFunc("GET /api/me/quests", h.requireSession(h.listQuests))
 	root.HandleFunc("POST /api/me/quests/{id}/claim", h.requireSession(h.claimQuest))
 	root.HandleFunc("GET /api/me/referral", h.requireSession(h.getReferral))

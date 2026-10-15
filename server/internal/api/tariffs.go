@@ -10,21 +10,19 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/grisha/serbian-app/server/internal/config"
 	"github.com/grisha/serbian-app/server/internal/store"
-	"github.com/grisha/serbian-app/server/internal/yookassa"
 )
 
 // Paying rubles for the paid levels. Spec: docs/superpowers/specs/2026-10-14-tariffs-design.md.
 //
-// Everything here is closed to all but the accounts in TARIFFS_EMAILS (see
-// tariffsEnabled): the screens hide themselves from the features flag in the
-// account DTO, and the endpoints answer 404 as if they did not exist.
-
-// providerYooKassa is the payments.provider value for ЮKassa.
-const providerYooKassa = "yookassa"
+// Everything here is closed to all but the accounts in TARIFFS_EMAILS (paying
+// through ЮKassa) and TBANK_EMAILS (paying through Т-Касса); see tariffsEnabled
+// and payproviders.go. The screens hide themselves from the features flag in
+// the account DTO, and the endpoints answer 404 as if they did not exist.
 
 // pendingWindow is how far back a learner's unfinished payments are still
-// re-checked with ЮKassa when they open the tariffs screen.
+// re-checked with their payment service when they open the tariffs screen.
 const pendingWindow = 48 * time.Hour
 
 // tariffsEnabled reports whether this account may use the tariffs: its email
@@ -43,15 +41,6 @@ func (h handlers) requireTariffs(next http.HandlerFunc) http.HandlerFunc {
 		}
 		next(w, r)
 	})
-}
-
-func (h handlers) yookassa() *yookassa.Client {
-	return &yookassa.Client{
-		ShopID:    h.Config.YooKassaShopID,
-		SecretKey: h.Config.YooKassaSecretKey,
-		Base:      h.Config.YooKassaAPIBase,
-		TaxSystem: h.Config.YooKassaTaxSystem,
-	}
 }
 
 // nextLockedPhase is the level "Уровень" would open: the first level in course
@@ -117,7 +106,7 @@ func (h handlers) getTariffs(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// A learner who just paid and came back before the notification did should
-	// see their level open, so ask ЮKassa about anything still waiting.
+	// see their level open, so ask the payment service about anything still waiting.
 	h.settlePending(r.Context(), ac.UserID)
 
 	level, err := h.Store.Tariff(store.TariffLevel)
@@ -153,7 +142,8 @@ func (h handlers) getTariffs(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var out tariffsDTO
-	out.PaymentsReady = h.Config.YooKassaConfigured()
+	prov := h.providerFor(ac.Summary.Email)
+	out.PaymentsReady = prov != nil && prov.Configured()
 	out.HasPaidLevel = hasPaid
 	out.Level.Price = rubles(levelPriceKopecks(level, hasPaid))
 	out.Level.RegularPrice = rubles(level.PriceKopecks)
@@ -182,9 +172,10 @@ func orderToDTO(p store.Payment) orderDTO {
 	return orderDTO{ID: p.ID, Tariff: p.TariffCode, Status: p.Status}
 }
 
-// createOrder starts a payment: it records it, asks ЮKassa for a payment the
-// buyer confirms on ЮKassa's own page, and returns that page's address. Nothing
-// is granted here; that happens in settlePayment, once ЮKassa says it was paid.
+// createOrder starts a payment: it records it, asks the account's payment
+// service for a payment the buyer completes on the service's own page, and
+// returns that page's address. Nothing is granted here; that happens in
+// settlePayment, once the service says it was paid.
 func (h handlers) createOrder(w http.ResponseWriter, r *http.Request) {
 	ac, ok := authFrom(r)
 	if !ok {
@@ -198,7 +189,8 @@ func (h handlers) createOrder(w http.ResponseWriter, r *http.Request) {
 		fail(w, http.StatusBadRequest, "bad request body")
 		return
 	}
-	if !h.Config.YooKassaConfigured() {
+	prov := h.providerFor(ac.Summary.Email)
+	if prov == nil || !prov.Configured() {
 		fail(w, http.StatusServiceUnavailable, "payments_unavailable")
 		return
 	}
@@ -243,37 +235,39 @@ func (h handlers) createOrder(w http.ResponseWriter, r *http.Request) {
 	// open to accounts that have a verified one.
 	pid, err := h.Store.CreatePayment(store.Payment{
 		UserID: ac.UserID, TariffCode: tariff.Code, GrantedPhase: phase, AmountKopecks: amount,
-		Provider: providerYooKassa, ReceiptContact: ac.Summary.Email,
+		Provider: prov.Name(), ReceiptContact: ac.Summary.Email,
 	}, h.Now())
 	if err != nil {
 		log.Printf("orders: create: %v", err)
 		fail(w, http.StatusInternalServerError, "internal error")
 		return
 	}
-	yp, err := h.yookassa().Create(r.Context(), yookassa.CreateInput{
-		AmountKopecks:  amount,
-		Description:    description,
-		ReturnURL:      h.Config.AppBaseURL + "/tariffs?order=" + strconv.FormatInt(pid, 10),
-		Email:          ac.Summary.Email,
-		Metadata:       map[string]string{"order_id": strconv.FormatInt(pid, 10), "tariff": tariff.Code},
-		IdempotenceKey: "order-" + strconv.FormatInt(pid, 10),
+	created, err := prov.Create(r.Context(), payCreate{
+		OrderID:       pid,
+		AmountKopecks: amount,
+		Description:   description,
+		Email:         ac.Summary.Email,
+		Tariff:        tariff.Code,
+		ReturnURL:     h.Config.AppBaseURL + "/tariffs?order=" + strconv.FormatInt(pid, 10),
+		NotifyURL:     h.Config.AppBaseURL + "/api/" + prov.Name() + "/webhook",
 	})
-	if err != nil || yp.ConfirmationURL == "" {
-		log.Printf("orders: yookassa create (order %d): %v", pid, err)
+	if err != nil || created.PayURL == "" {
+		log.Printf("orders: %s create (order %d): %v", prov.Name(), pid, err)
 		_ = h.Store.CancelPayment(pid)
 		fail(w, http.StatusBadGateway, "payment_failed")
 		return
 	}
-	if err := h.Store.SetPaymentProviderID(pid, yp.ID, yp.Test); err != nil {
+	if err := h.Store.SetPaymentProviderID(pid, created.ProviderPaymentID, created.Test); err != nil {
 		log.Printf("orders: link provider id (order %d): %v", pid, err)
 		fail(w, http.StatusInternalServerError, "internal error")
 		return
 	}
-	writeJSON(w, http.StatusOK, orderDTO{ID: pid, Tariff: tariff.Code, Status: store.PaymentPending, ConfirmationURL: yp.ConfirmationURL})
+	writeJSON(w, http.StatusOK, orderDTO{ID: pid, Tariff: tariff.Code, Status: store.PaymentPending, ConfirmationURL: created.PayURL})
 }
 
-// getOrder is what the page the buyer returns to calls: it asks ЮKassa where the
-// payment stands, settles it, and says. Only the buyer's own orders.
+// getOrder is what the page the buyer returns to calls: it asks the payment
+// service where the payment stands, settles it, and says. Only the buyer's own
+// orders.
 func (h handlers) getOrder(w http.ResponseWriter, r *http.Request) {
 	ac, ok := authFrom(r)
 	if !ok {
@@ -300,9 +294,6 @@ func (h handlers) getOrder(w http.ResponseWriter, r *http.Request) {
 
 // settlePending settles every unfinished payment of one learner.
 func (h handlers) settlePending(ctx context.Context, userID string) {
-	if !h.Config.YooKassaConfigured() {
-		return
-	}
 	pending, err := h.Store.PendingPayments(userID, h.Now().Add(-pendingWindow))
 	if err != nil {
 		log.Printf("tariffs: pending payments: %v", err)
@@ -315,33 +306,38 @@ func (h handlers) settlePending(ctx context.Context, userID string) {
 	}
 }
 
-// settlePayment asks ЮKassa where a payment stands and acts on the answer: paid
-// opens what was bought, canceled closes the order. It is the only place that
-// grants anything, and it never believes the caller about the outcome. It is safe
-// to run twice at once (a notification and the return page): CompletePayment
-// grants once.
+// settlePayment asks the service that made a payment where it stands and acts
+// on the answer: paid opens what was bought, failed closes the order. It is the
+// only place that grants anything, and it never believes the caller about the
+// outcome. It is safe to run twice at once (a notification and the return page):
+// CompletePayment grants once.
 func (h handlers) settlePayment(ctx context.Context, p store.Payment) (store.Payment, error) {
-	if p.Status != store.PaymentPending || p.ProviderPaymentID == "" || !h.Config.YooKassaConfigured() {
+	if p.Status != store.PaymentPending || p.ProviderPaymentID == "" {
 		return p, nil
 	}
-	yp, err := h.yookassa().Get(ctx, p.ProviderPaymentID)
+	prov := h.providerNamed(p.Provider)
+	if prov == nil || !prov.Configured() {
+		return p, nil
+	}
+	st, err := prov.State(ctx, p.ProviderPaymentID)
 	if err != nil {
 		return p, err
 	}
-	// The payment ЮKassa describes must be the one we asked for. A mismatch is
-	// not "not paid yet", it is something wrong, so it is left pending and logged.
-	if yp.AmountKopecks != p.AmountKopecks {
+	// The payment the service describes must be the one we asked for. A mismatch
+	// is not "not paid yet", it is something wrong, so it is left pending and
+	// logged.
+	if st.AmountKopecks != p.AmountKopecks {
 		return p, errors.New("amount differs from the order")
 	}
-	if oid := yp.Metadata["order_id"]; oid != "" && oid != strconv.FormatInt(p.ID, 10) {
-		return p, errors.New("payment belongs to another order")
+	if st.OrderRef != 0 && st.OrderRef != p.ID {
+		return p, errOrderMismatch
 	}
 	switch {
-	case yp.Status == "succeeded" && yp.Paid:
+	case st.Paid:
 		if _, err := h.Store.CompletePayment(p.ID, h.Now()); err != nil {
 			return p, err
 		}
-	case yp.Status == "canceled":
+	case st.Failed:
 		if err := h.Store.CancelPayment(p.ID); err != nil {
 			return p, err
 		}
@@ -378,7 +374,7 @@ func (h handlers) yookassaWebhook(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		return
 	}
-	p, err := h.Store.PaymentByProviderID(providerYooKassa, n.Object.ID)
+	p, err := h.Store.PaymentByProviderID(config.ProviderYooKassa, n.Object.ID)
 	if err != nil {
 		// Not one of ours (another integration on the same shop, or a payment
 		// from before this one existed).
@@ -391,4 +387,51 @@ func (h handlers) yookassaWebhook(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(http.StatusOK)
+}
+
+// tbankWebhook receives Т-Касса's notifications. Unlike ЮKassa's they are signed,
+// so one that is not signed with our terminal's password is refused (400). A
+// signed one is still only a nudge: the payment id is taken from it and the truth
+// is fetched with GetState by settlePayment. The bank wants exactly "OK" with a
+// 200 within ten seconds, and otherwise retries for a day and then daily for a
+// month, so a failure to ask the bank or to write the grant is answered 500;
+// anything we have nothing to do with is answered OK.
+func (h handlers) tbankWebhook(w http.ResponseWriter, r *http.Request) {
+	ok := func() {
+		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+		w.WriteHeader(http.StatusOK)
+		_, _ = io.WriteString(w, "OK")
+	}
+	prov, _ := h.providerNamed(config.ProviderTBank).(tbankProvider)
+	if !prov.Configured() {
+		ok()
+		return
+	}
+	body, err := io.ReadAll(http.MaxBytesReader(w, r.Body, 1<<20))
+	if err != nil {
+		fail(w, http.StatusBadRequest, "bad body")
+		return
+	}
+	n, err := prov.c.ParseNotification(body)
+	if err != nil {
+		fail(w, http.StatusBadRequest, "bad notification")
+		return
+	}
+	// Receipt and card-binding notifications arrive here too; they carry no
+	// payment status and there is nothing to settle for them.
+	if n.PaymentID == "" || n.Status == "" {
+		ok()
+		return
+	}
+	p, err := h.Store.PaymentByProviderID(config.ProviderTBank, n.PaymentID)
+	if err != nil {
+		ok()
+		return
+	}
+	if _, err := h.settlePayment(r.Context(), p); err != nil {
+		log.Printf("tbank webhook: settle %d: %v", p.ID, err)
+		fail(w, http.StatusInternalServerError, "try again")
+		return
+	}
+	ok()
 }

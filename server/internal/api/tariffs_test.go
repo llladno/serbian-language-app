@@ -121,6 +121,14 @@ func (f *fakeYooKassa) count() int {
 // pointed at the fake, and the listed email allowed to use the tariffs.
 func tariffsAPI(t *testing.T, yk *fakeYooKassa) (http.Handler, *store.Store) {
 	t.Helper()
+	return tariffsAPIWith(t, yk, nil)
+}
+
+// tariffsAPIWith is tariffsAPI with Т-Касса as well: tbankEmail pays through the
+// fake bank, listedEmail through the fake ЮKassa. Either fake may be nil, which
+// leaves that service without credentials.
+func tariffsAPIWith(t *testing.T, yk *fakeYooKassa, tb *fakeTBank) (http.Handler, *store.Store) {
+	t.Helper()
 	h, st := newTestAPIWith(t, func(d *Deps) {
 		d.Async = func(f func()) { f() }
 		base := d.Course()
@@ -132,10 +140,17 @@ func tariffsAPI(t *testing.T, yk *fakeYooKassa) (http.Handler, *store.Store) {
 		}
 		d.Course = func() *content.Course { return &three }
 		d.Config.TariffsEmails = []string{listedEmail}
+		d.Config.TBankEmails = []string{tbankEmail}
 		if yk != nil {
 			d.Config.YooKassaShopID = "shop-1"
 			d.Config.YooKassaSecretKey = "secret-1"
 			d.Config.YooKassaAPIBase = yk.srv.URL
+		}
+		if tb != nil {
+			d.Config.TBankTerminalKey = tb.terminal
+			d.Config.TBankPassword = tb.password
+			d.Config.TBankAPIBase = tb.srv.URL
+			d.Config.TBankTaxation = "usn_income"
 		}
 	})
 	seedPhaseProduct(t, st, "B", 230)

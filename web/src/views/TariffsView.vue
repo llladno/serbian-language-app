@@ -49,8 +49,8 @@ async function pay(tariff: TariffCode) {
   }
 }
 
-// Coming back from ЮKassa (?order=ID): ask where the payment stands, say so, and
-// refresh what the payment may have opened.
+// Coming back from the payment service (?order=ID): ask where the payment
+// stands, say so, and refresh what the payment may have opened.
 const returning = ref(false)
 
 async function settleReturn(id: number, attempt = 0) {

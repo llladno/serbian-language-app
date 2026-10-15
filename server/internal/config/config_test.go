@@ -123,3 +123,63 @@ func TestTelegramBotID(t *testing.T) {
 		t.Fatalf("TelegramBotID() on malformed token: got %q, want empty", got)
 	}
 }
+
+func TestPaymentProviderIsChosenByTheAccountsEmail(t *testing.T) {
+	clearEnv(t)
+	t.Setenv("TARIFFS_EMAILS", "Greg@Example.com, both@example.com")
+	t.Setenv("TBANK_EMAILS", " man@example.com ,BOTH@example.com")
+	c := Load()
+	for email, want := range map[string]string{
+		"greg@example.com": ProviderYooKassa,
+		"GREG@EXAMPLE.COM": ProviderYooKassa,
+		"man@example.com":  ProviderTBank,
+		// an address in both lists pays through Т-Касса, the newer of the two
+		"both@example.com":   ProviderTBank,
+		"other@example.com":  "",
+		"":                   "",
+		"  ":                 "",
+		"greg@example.com.x": "",
+	} {
+		if got := c.PaymentProviderFor(email); got != want {
+			t.Errorf("PaymentProviderFor(%q) = %q, want %q", email, got, want)
+		}
+		if got := c.TariffsAllowed(email); got != (want != "") {
+			t.Errorf("TariffsAllowed(%q) = %t", email, got)
+		}
+	}
+}
+
+func TestNobodyIsListedByDefault(t *testing.T) {
+	clearEnv(t)
+	t.Setenv("TARIFFS_EMAILS", "")
+	t.Setenv("TBANK_EMAILS", "")
+	if c := Load(); c.TariffsAllowed("anyone@example.com") || c.TBankConfigured() || c.YooKassaConfigured() {
+		t.Errorf("a bare environment lists someone or connects a service: %+v", c)
+	}
+}
+
+func TestTBankSettings(t *testing.T) {
+	clearEnv(t)
+	t.Setenv("TBANK_TERMINAL_KEY", " 123DEMO ")
+	t.Setenv("TBANK_PASSWORD", "pw")
+	t.Setenv("TBANK_TAXATION", "")
+	c := Load()
+	if !c.TBankConfigured() || c.TBankTerminalKey != "123DEMO" || c.TBankPassword != "pw" {
+		t.Errorf("credentials: %+v", c)
+	}
+	if c.TBankTaxation != "usn_income" {
+		t.Errorf("TBankTaxation default = %q, want usn_income", c.TBankTaxation)
+	}
+	t.Setenv("TBANK_TAXATION", " Patent ")
+	if got := Load().TBankTaxation; got != "patent" {
+		t.Errorf("TBANK_TAXATION=Patent -> %q", got)
+	}
+	t.Setenv("TBANK_TAXATION", "whatever")
+	if got := Load().TBankTaxation; got != "usn_income" {
+		t.Errorf("a tax system the bank would refuse -> %q, want the default", got)
+	}
+	t.Setenv("TBANK_PASSWORD", "")
+	if Load().TBankConfigured() {
+		t.Error("configured without a password")
+	}
+}

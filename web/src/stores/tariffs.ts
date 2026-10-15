@@ -44,9 +44,9 @@ export const useTariffsStore = defineStore('tariffs', () => {
     }
   }
 
-  // Starts a payment and takes the learner to ЮKassa's page for it. Inside the
-  // Telegram Mini App that page opens in the phone's browser: digital goods are
-  // not paid for inside Telegram (spec, "Inside Telegram").
+  // Starts a payment and takes the learner to the payment service's page for it.
+  // Inside the Telegram Mini App that page opens in the phone's browser: digital
+  // goods are not paid for inside Telegram (spec, "Inside Telegram").
   async function pay(tariff: TariffCode): Promise<void> {
     if (paying.value) return
     paying.value = tariff
@@ -63,8 +63,9 @@ export const useTariffsStore = defineStore('tariffs', () => {
     }
   }
 
-  // Where a payment stands, after the learner comes back from ЮKassa. The server
-  // asks ЮKassa itself, and settles the order if it was paid.
+  // Where a payment stands, after the learner comes back from the payment
+  // service. The server asks the service itself, and settles the order if it was
+  // paid.
   async function checkOrder(id: number): Promise<Order> {
     const order = await api.order(id)
     if (order.status === 'succeeded') await load(true)
