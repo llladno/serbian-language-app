@@ -8,7 +8,7 @@
 | `minut` [ми́нут] | `minuta` [ми́нута] | `petnaest minuta` [пэ́тнаэст ми́нута] |
 | `sat` [сат] | `sati` [са́ти] | `pet sati` [пэт са́ти] |
 | `dan` [дан] | `dana` [да́на] | `dvadeset dana` [два́дэсэт да́на] |
-| `godina` [годи́на] | `godina` [годи́на] | `trideset godina` [три́дэсэт годи́на] |
+| `godina` [го́дина] | `godina` [го́дина] | `trideset godina` [три́дэсэт го́дина] |
 | `put` [пут] | `puta` [пу́та] | `pet puta` [пэт пу́та] *(пять раз)* |
 | `kuća` [ку́ча] | `kuća` [ку́ча] | `pet kuća` [пэт ку́ча] |
 | `knjiga` [кни́га] | `knjiga` [кни́га] | `mnogo knjiga` [мно́го кни́га] |

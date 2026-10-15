@@ -16,4 +16,4 @@
 
 - `Idem u grad.` [И́дэм у град.] → `Živim u gradu.` [Жи́вим у гра́ду.]
 - `Idem na more.` [И́дэм на мо́рэ.] → `Ana je na moru.` [А́на е на мо́ру.]
-- `Idem u kuhinju.` [И́дэм у кухи́ню.] → `Kafa je u kuhinji.` [Ка́фа е у кухи́ни.]
+- `Idem u kuhinju.` [И́дэм у ку́хиню.] → `Kafa je u kuhinji.` [Ка́фа е у ку́хини.]

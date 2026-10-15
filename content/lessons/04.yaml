@@ -24,11 +24,18 @@ steps:
         prompt: "«Ана из Сербии» —"
         options: ["Ana je iz Srbije.", "Ana si iz Srbije.", "Ana sam iz Srbije."]
         answer: "Ana je iz Srbije."
+      - id: "04.2.8"
+        type: choice
+        prompt: "«Ты не студент» —"
+        options: ["Ti nisi student.", "Ti nije student.", "Ti ne si student."]
+        answer: "Ti nisi student."
+        explain: "Отрицание «быть» — одно слово: ni + форма, как в таблице (ti → nisi). «ne si» отдельно не говорят."
       - id: "04.2.3"
         type: fill_blank
         prompt: "Ti ___ student? (ты)"
         accept: ["si"]
       - id: "04.2.4"
+        hint: "Отрицание «быть» — одно слово, оно начинается на ni-. Для «он» смотри правый столбец таблицы."
         type: fill_blank
         prompt: "«Он не студент» → On ___ student."
         accept: ["nije"]
@@ -39,11 +46,13 @@ steps:
         bank: ["Ja", "nisam", "student"]
         accept: ["Ja nisam student."]
       - id: "04.2.6"
+        hint: "Не хватает подлежащего и короткой формы «быть» для «я» (на -m). Перепиши предложение целиком."
         type: fix_error
         prompt: "Iz Rusije."
         accept: ["Ja sam iz Rusije.", "Iz Rusije sam."]
         explain: "Без подлежащего и «sam» это не предложение — добавь «Ja sam» (или «sam» в конце)."
       - id: "04.2.7"
+        hint: "Шесть коротких форм — все в таблице теории (левый столбец). У «мы», «вы» и «они» форма начинается на s-."
         type: conjugate
         prompt: "biti — быть"
         forms: ["ja", "ti", "on/ona/ono", "mi", "vi", "oni/one/ona"]

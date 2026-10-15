@@ -1,0 +1,249 @@
+lesson: "76"
+title: "Читаю и слушаю (Čitanje i slušanje)"
+subtitle: "новости, вывески, сериалы без субтитров"
+teaches:
+  [vesti, naslov, dnevnik, objava, titlovi, glumac, program]
+
+steps:
+  - id: "76.1"
+    kind: teach
+    title: "Новости и заголовки"
+    md: "76/1-vesti.md"
+
+  - id: "76.2"
+    kind: practice
+    title: "Новости"
+    also_ok: ["vesti", "naslov", "gradu", "struje", "kiše", "kasni", "petnaest", "minuta", "gledam", "čitam"]
+    exercises:
+      - id: "76.2.1"
+        type: choice
+        prompt: "«Смотрю новости» —"
+        options: ["Gledam vesti.", "Gledam vest.", "Gledam vestima."]
+        answer: "Gledam vesti."
+      - id: "76.2.2"
+        type: choice
+        prompt: "Заголовок: «В городе нет электричества» —"
+        options: ["Nema struje u gradu.", "Nema struja u gradu.", "Nema struju u gradu."]
+        answer: "Nema struje u gradu."
+      - id: "76.2.3"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["vesti", "новости"]
+          - ["naslov", "заголовок"]
+          - ["dnevnik", "вечерние новости"]
+          - ["objava", "объявление, пост"]
+      - id: "76.2.4"
+        type: fill_blank
+        prompt: "«Читаю заголовок» → Čitam ___."
+        accept: ["naslov"]
+        hint: "Слово «заголовок» — в начале теории."
+      - id: "76.2.5"
+        type: fill_blank
+        prompt: "«Смотрю новости» → Gledam ___."
+        accept: ["vesti"]
+        hint: "Слово «новости» — множественное, женского рода; оно в теории."
+      - id: "76.2.6"
+        type: word_bank
+        prompt: "Собери: «Автобус опаздывает из-за дождя»"
+        bank: ["Autobus", "kasni", "zbog", "kiše", "kiša", "kasnim"]
+        accept: ["Autobus kasni zbog kiše."]
+      - id: "76.2.7"
+        type: fix_error
+        prompt: "Nema struja u gradu."
+        accept: ["Nema struje u gradu."]
+        explain: "После «nema» нужен родительный падеж."
+      - id: "76.2.8"
+        type: translate
+        prompt: "Автобус опаздывает на пятнадцать минут."
+        accept: ["Autobus kasni petnaest minuta."]
+        hint: "Числа от пяти — со словом «минута» в родительном множественного (урок 47)."
+
+  - id: "76.3"
+    kind: teach
+    title: "Сериалы без субтитров"
+    md: "76/3-serije.md"
+
+  - id: "76.4"
+    kind: practice
+    title: "Сериалы"
+    also_ok: ["seriju", "titlova", "glumac", "program", "programu", "gledam"]
+    exercises:
+      - id: "76.4.1"
+        type: choice
+        prompt: "«Смотрю без субтитров» —"
+        options: ["Gledam bez titlova.", "Gledam bez titlovi.", "Gledam bez titlove."]
+        answer: "Gledam bez titlova."
+      - id: "76.4.2"
+        type: choice
+        prompt: "«Я смотрю сериал» —"
+        options: ["Gledam seriju.", "Gledam serija.", "Gledam seriji."]
+        answer: "Gledam seriju."
+      - id: "76.4.3"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["serija", "сериал"]
+          - ["titlovi", "субтитры"]
+          - ["glumac", "актёр"]
+          - ["program", "программа передач"]
+      - id: "76.4.4"
+        type: fill_blank
+        prompt: "«Я смотрю сериал» → Gledam ___."
+        accept: ["seriju"]
+        hint: "Винительный: слова на -a меняют конец на -u."
+      - id: "76.4.5"
+        type: fill_blank
+        prompt: "«Без субтитров» → Bez ___."
+        accept: ["titlova"]
+        hint: "После «bez» — родительный множественного: -ovi меняется на -ova."
+      - id: "76.4.6"
+        type: word_bank
+        prompt: "Собери: «Мне нравится актёр»"
+        bank: ["Sviđa", "mi", "se", "glumac", "me", "glumca"]
+        accept: ["Sviđa mi se glumac."]
+      - id: "76.4.7"
+        type: fix_error
+        prompt: "Gledam seriji."
+        accept: ["Gledam seriju."]
+        explain: "Смотреть что? — винительный: -a меняется на -u."
+      - id: "76.4.8"
+        type: translate
+        prompt: "Я не понимаю всё, но понимаю много."
+        accept: ["Ne razumem sve, ali razumem mnogo."]
+        hint: "«Всё» — sve; «но» — ali."
+
+  - id: "76.5"
+    kind: reading
+    title: "Новости дня"
+    md: "76/5-vesti-citanje.md"
+    also_ok: ["Vesti", "vode", "struje", "Novom", "Sadu", "juče", "Majstori", "kvaru", "pada", "Srbiji", "broj", "kasni", "petnaest", "minuta", "kiše", "rade"]
+    exercises:
+      - id: "76.5.1"
+        type: choice
+        prompt: "Что случилось в Нови-Саде?"
+        options: ["Nema struje.", "Nema vode.", "Nema interneta."]
+        answer: "Nema struje."
+      - id: "76.5.2"
+        type: choice
+        prompt: "Какая погода будет завтра?"
+        options: ["Pada kiša.", "Toplo je.", "Hladno je."]
+        answer: "Pada kiša."
+      - id: "76.5.3"
+        type: choice
+        prompt: "Из-за чего опаздывает автобус?"
+        options: ["Zbog kiše.", "Zbog kvara.", "Zbog struje."]
+        answer: "Zbog kiše."
+
+  - id: "76.6"
+    kind: reading
+    title: "Вывеска"
+    md: "76/6-natpisi.md"
+    also_ok: ["Radno", "osam", "šesnaest", "Nedeljom", "zatvoreno", "Zabranjeno", "pušenje", "Kupatilo", "desno"]
+    exercises:
+      - id: "76.6.1"
+        type: choice
+        prompt: "Когда закрыто?"
+        options: ["Nedeljom.", "Subotom.", "Petkom."]
+        answer: "Nedeljom."
+      - id: "76.6.2"
+        type: choice
+        prompt: "До скольки работает?"
+        options: ["Do šesnaest sati.", "Do osam sati.", "Do dvanaest sati."]
+        answer: "Do šesnaest sati."
+      - id: "76.6.3"
+        type: choice
+        prompt: "Что запрещено?"
+        options: ["Pušenje.", "Čitanje.", "Pevanje."]
+        answer: "Pušenje."
+
+  - id: "76.7"
+    kind: dialogue
+    title: "Gledaš li seriju?"
+    scene: "Подруга спрашивает про сериал, который ты смотришь."
+    voice: f
+    also_ok: ["gledaš", "razumeš", "gledamo", "glumac", "seriju", "titlova"]
+    turns:
+      - who: npc
+        sr: "Zdravo! Gledaš li seriju?"
+        ru: "Привет! Ты смотришь сериал?"
+
+      - who: me
+        sr: "Da, gledam seriju bez titlova."
+        ru: "Да, смотрю сериал без субтитров."
+        exercise:
+          id: "76.7.1"
+          type: choice
+          prompt: "Скажи: «Да, смотрю сериал без субтитров»"
+          options:
+            - "Da, gledam seriju bez titlova."
+            - "Da, gledam seriju bez titlovi."
+            - "Da, gledam serija bez titlova."
+          answer: "Da, gledam seriju bez titlova."
+
+      - who: npc
+        sr: "Zaista? Razumeš li sve?"
+        ru: "Правда? Ты всё понимаешь?"
+
+      - who: me
+        sr: "Ne razumem sve, ali razumem mnogo."
+        ru: "Не всё, но многое."
+        exercise:
+          id: "76.7.2"
+          type: translate
+          prompt: "Скажи: «Не всё понимаю, но многое»"
+          accept: ["Ne razumem sve, ali razumem mnogo."]
+          hint: "«Всё» — sve; «но» — ali; глагол «понимаю» повторяется."
+
+      - who: npc
+        sr: "Lepo! Sviđa li ti se glumac?"
+        ru: "Здорово! Тебе нравится актёр?"
+
+      - who: me
+        sr: "Sviđa mi se glumac."
+        ru: "Мне нравится актёр."
+        exercise:
+          id: "76.7.3"
+          type: choice
+          prompt: "Скажи: «Мне нравится актёр»"
+          options: ["Sviđa mi se glumac.", "Sviđam se glumac.", "Sviđa me glumac."]
+          answer: "Sviđa mi se glumac."
+
+      - who: npc
+        sr: "Hajde da gledamo zajedno u subotu!"
+        ru: "Давай посмотрим вместе в субботу!"
+
+      - who: me
+        sr: "Može!"
+        ru: "Можно!"
+        exercise:
+          id: "76.7.4"
+          type: choice
+          prompt: "Согласись"
+          options: ["Može!", "Šteta!", "Živeli!"]
+          answer: "Može!"
+
+  - id: "76.8"
+    kind: practice
+    title: "Диктант"
+    mixed: true
+    also_ok: ["vesti", "struje", "gradu", "seriju", "titlova"]
+    exercises:
+      - id: "76.8.1"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Gledam vesti."
+        accept: ["Gledam vesti."]
+        ru: ["Смотрю новости", "Я смотрю новости", "Смотрю вечерние новости"]
+      - id: "76.8.2"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Nema struje u gradu."
+        accept: ["Nema struje u gradu."]
+        ru: ["В городе нет электричества", "В городе нет света", "В городе отключили электричество"]
+      - id: "76.8.3"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Gledam seriju bez titlova."
+        accept: ["Gledam seriju bez titlova."]
+        ru: ["Я смотрю сериал без субтитров", "Смотрю сериал без субтитров", "Смотрю сериал без титров"]

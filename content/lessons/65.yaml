@@ -1,0 +1,241 @@
+lesson: "65"
+title: "Проблемы (Problemi)"
+subtitle: "жалоба, что сломалось, kvar"
+teaches:
+  [pokvariti-se, kvar, curiti, slavina, struja, ruter, desiti-se, svetlo]
+
+steps:
+  - id: "65.1"
+    kind: teach
+    title: "Что-то сломалось"
+    md: "65/1-pokvarilo-se.md"
+
+  - id: "65.2"
+    kind: practice
+    title: "Что сломалось"
+    also_ok: ["pokvario", "pokvarila", "pokvarilo", "desilo", "internet", "grejanje", "lampa", "ruter"]
+    exercises:
+      - id: "65.2.1"
+        type: choice
+        prompt: "«Не работает отопление» —"
+        options: ["Ne radi grejanje.", "Ne radim grejanje.", "Grejanje ne radiš."]
+        answer: "Ne radi grejanje."
+      - id: "65.2.2"
+        type: choice
+        prompt: "«Сломалась лампа» —"
+        options: ["Pokvarila se lampa.", "Pokvario se lampa.", "Pokvarilo se lampa."]
+        answer: "Pokvarila se lampa."
+      - id: "65.2.3"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["pokvariti se", "сломаться"]
+          - ["kvar", "поломка"]
+          - ["šta se desilo?", "что случилось?"]
+          - ["ruter", "роутер"]
+      - id: "65.2.4"
+        type: fill_blank
+        prompt: "«Сломалось отопление» → Pokvarilo se ___."
+        accept: ["grejanje"]
+        hint: "Средний род — причастие на -lo; само слово «отопление» — из урока 50."
+      - id: "65.2.5"
+        type: fill_blank
+        prompt: "«Что случилось?» → Šta se ___?"
+        accept: ["desilo"]
+        hint: "Прошедшее время среднего рода: окончание -lo; глагол — из теории."
+      - id: "65.2.6"
+        type: word_bank
+        prompt: "Собери: «Сломался роутер»"
+        bank: ["Pokvario", "se", "ruter", "Pokvarila", "lampa"]
+        accept: ["Pokvario se ruter."]
+      - id: "65.2.7"
+        type: fix_error
+        prompt: "Pokvarila se ruter."
+        accept: ["Pokvario se ruter."]
+        explain: "Род причастия зависит от сломавшейся вещи, а не от говорящего."
+      - id: "65.2.8"
+        type: translate
+        prompt: "У меня не работает интернет."
+        accept: ["Ne radi mi internet.", "Internet mi ne radi.", "Ne radi internet.", "Moj internet ne radi."]
+        hint: "«Не работает» — ne radi; «у меня» можно опустить или сказать коротким mi."
+      - id: "65.2.9"
+        type: translate
+        prompt: "Вчера сломался роутер."
+        accept:
+          - "Juče se pokvario ruter."
+          - "Pokvario se ruter juče."
+          - "Ruter se pokvario juče."
+          - "Ruter se juče pokvario."
+        hint: "Прошедшее: причастие на -o, потому что ruter — мужского рода."
+
+  - id: "65.3"
+    kind: teach
+    title: "Течёт, нет света"
+    md: "65/3-curi.md"
+
+  - id: "65.4"
+    kind: practice
+    title: "Течёт, нет, не работает"
+    also_ok: ["struje", "vode", "interneta", "svetla", "curi", "slavina", "juče", "grejanja", "tople", "ni"]
+    exercises:
+      - id: "65.4.1"
+        type: choice
+        prompt: "«Течёт кран» —"
+        options: ["Curi slavina.", "Curim slavina.", "Curi se slavina."]
+        answer: "Curi slavina."
+      - id: "65.4.2"
+        type: choice
+        prompt: "«Нет электричества» —"
+        options: ["Nema struje.", "Nema struja.", "Nema struju."]
+        answer: "Nema struje."
+      - id: "65.4.3"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["curi", "течёт"]
+          - ["nema struje", "нет электричества"]
+          - ["nema vode", "нет воды"]
+          - ["od juče", "со вчерашнего дня"]
+      - id: "65.4.4"
+        type: fill_blank
+        prompt: "«Нет воды» → Nema ___."
+        accept: ["vode"]
+        hint: "После «nema» — родительный: у женских слов на -a конец меняется на -e."
+      - id: "65.4.5"
+        type: fill_blank
+        prompt: "«Не работает со вчерашнего дня» → Ne radi od ___."
+        accept: ["juče"]
+        hint: "Слово «вчера» — из урока 39."
+      - id: "65.4.6"
+        type: word_bank
+        prompt: "Собери: «Нет электричества со вчерашнего дня»"
+        bank: ["Nema", "struje", "od", "juče", "struja", "struju"]
+        accept: ["Nema struje od juče."]
+      - id: "65.4.7"
+        type: fix_error
+        prompt: "Nema struja."
+        accept: ["Nema struje."]
+        explain: "После «nema» нужен родительный падеж."
+      - id: "65.4.8"
+        type: translate
+        prompt: "У меня течёт кран."
+        accept: ["Curi mi slavina.", "Slavina mi curi.", "Curi slavina."]
+        hint: "Течёт — curi; «у меня» можно сказать коротким mi или опустить."
+      - id: "65.4.9"
+        type: translate
+        prompt: "Нет света и нет интернета."
+        accept: ["Nema svetla i nema interneta.", "Nema svetla ni interneta."]
+        hint: "После «nema» всё в родительном: -o меняется на -a, а слово на согласную получает -a."
+
+  - id: "65.5"
+    kind: reading
+    title: "Сообщение подруге"
+    md: "65/5-citanje.md"
+    also_ok: ["pokvario", "interneta", "pomogneš", "možeš"]
+    exercises:
+      - id: "65.5.1"
+        type: choice
+        prompt: "Что сломалось у Марко?"
+        options: ["Ruter.", "Lampa.", "Slavina."]
+        answer: "Ruter."
+      - id: "65.5.2"
+        type: choice
+        prompt: "Чего у него нет?"
+        options: ["Interneta.", "Struje.", "Hleba."]
+        answer: "Interneta."
+      - id: "65.5.3"
+        type: choice
+        prompt: "Что Марко просит?"
+        options: ["Pomoć.", "Novac.", "Čaj."]
+        answer: "Pomoć."
+
+  - id: "65.6"
+    kind: dialogue
+    title: "Imam problem u stanu"
+    scene: "Ты звонишь хозяину квартиры и рассказываешь о поломке."
+    voice: m
+    also_ok: ["pokvario", "stanu", "juče", "ruter", "interneta", "svetla"]
+    turns:
+      - who: npc
+        sr: "Halo?"
+        ru: "Алло?"
+
+      - who: me
+        sr: "Dobar dan. Imam problem u stanu."
+        ru: "Добрый день. У меня проблема в квартире."
+        exercise:
+          id: "65.6.1"
+          type: choice
+          prompt: "Поздоровайся и скажи, что у тебя проблема в квартире"
+          options:
+            - "Dobar dan. Imam problem u stanu."
+            - "Dobar dan. Imam problem u stan."
+            - "Dobar dan. Imam problem stanu."
+          answer: "Dobar dan. Imam problem u stanu."
+
+      - who: npc
+        sr: "Šta se desilo?"
+        ru: "Что случилось?"
+
+      - who: me
+        sr: "Pokvario se ruter."
+        ru: "Сломался роутер."
+        exercise:
+          id: "65.6.2"
+          type: choice
+          prompt: "Скажи: «Сломался роутер»"
+          options: ["Pokvario se ruter.", "Pokvarila se ruter.", "Pokvarilo se ruter."]
+          answer: "Pokvario se ruter."
+
+      - who: npc
+        sr: "Od kad ne radi?"
+        ru: "С каких пор он не работает?"
+
+      - who: me
+        sr: "Ne radi od juče."
+        ru: "Не работает со вчерашнего дня."
+        exercise:
+          id: "65.6.3"
+          type: fill_blank
+          prompt: "«Не работает со вчерашнего дня» → Ne radi od ___."
+          accept: ["juče"]
+          hint: "Слово «вчера» — из урока 39."
+
+      - who: npc
+        sr: "Žao mi je. Šta još ne radi?"
+        ru: "Мне жаль. Что ещё не работает?"
+
+      - who: me
+        sr: "Nema interneta."
+        ru: "Нет интернета."
+        exercise:
+          id: "65.6.4"
+          type: translate
+          prompt: "Скажи: «Нет интернета»"
+          accept: ["Nema interneta."]
+          hint: "После «nema» — родительный: слово на согласную получает -a."
+
+  - id: "65.7"
+    kind: practice
+    title: "Диктант"
+    mixed: true
+    also_ok: ["pokvario", "struje", "juče", "grejanje"]
+    exercises:
+      - id: "65.7.1"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Ne radi grejanje."
+        accept: ["Ne radi grejanje."]
+        ru: ["Не работает отопление", "Отопление не работает"]
+      - id: "65.7.2"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Pokvario se ruter."
+        accept: ["Pokvario se ruter."]
+        ru: ["Сломался роутер", "Роутер сломался"]
+      - id: "65.7.3"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Nema struje od juče."
+        accept: ["Nema struje od juče."]
+        ru: ["Нет электричества со вчерашнего дня", "Со вчерашнего дня нет электричества", "Нет света со вчерашнего дня"]

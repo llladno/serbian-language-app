@@ -196,7 +196,7 @@ func decodeDialogue(dir, rel string, s stepYAML, step *Step, seenEx map[string]b
 		}
 		turn := Turn{Who: t.Who, SR: t.SR, RU: t.RU}
 		clip := fmt.Sprintf("%s-t%d.mp3", s.ID, n)
-		if _, err := os.Stat(filepath.Join(dir, "audio", clip)); err == nil {
+		if clipPresent(filepath.Join(dir, "audio", clip)) {
 			turn.Audio = clip
 		}
 

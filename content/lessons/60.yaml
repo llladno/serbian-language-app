@@ -1,0 +1,291 @@
+lesson: "60"
+title: "Чувства (Osećanja)"
+subtitle: "как ты себя чувствуешь, базовые эмоции"
+teaches:
+  [srecan, tuzan, ljut, nervozan, zabrinut, dosadno, lako, jako, radovati, brinuti, sta-ti-je]
+
+steps:
+  - id: "60.1"
+    kind: teach
+    title: "Как ты себя чувствуешь"
+    md: "60/1-kako-si.md"
+
+  - id: "60.2"
+    kind: practice
+    title: "Я чувствую себя…"
+    also_ok: ["srećna", "srećan", "srećana", "ljuta", "ljutan", "umorna", "nervozna", "nervozan", "veoma"]
+    exercises:
+      - id: "60.2.1"
+        type: choice
+        prompt: "Женщина говорит: «Я счастлива» —"
+        options: ["Srećna sam.", "Srećan sam.", "Srećana sam."]
+        answer: "Srećna sam."
+        explain: "Женская форма — мужская плюс -a; у слов на -an гласная перед n выпадает."
+      - id: "60.2.2"
+        type: choice
+        prompt: "Мужчина говорит: «Я злой» —"
+        options: ["Ljut sam.", "Ljuta sam.", "Ljutan sam."]
+        answer: "Ljut sam."
+      - id: "60.2.3"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["srećan", "счастливый"]
+          - ["tužan", "грустный"]
+          - ["ljut", "злой"]
+          - ["zabrinut", "обеспокоенный"]
+      - id: "60.2.4"
+        type: fill_blank
+        prompt: "«Я очень устал» → ___ sam umoran."
+        accept: ["Jako", "Mnogo", "Veoma"]
+        hint: "Слово «очень» — в теории, сразу под таблицей."
+      - id: "60.2.5"
+        type: fill_blank
+        prompt: "«Я очень счастлива» → Jako sam ___."
+        accept: ["srećna"]
+        hint: "Говорит женщина: к мужской форме добавь -a (гласная перед n выпадает)."
+      - id: "60.2.6"
+        type: word_bank
+        prompt: "Собери: «Я немного нервничаю» (говорит женщина)"
+        bank: ["Malo", "sam", "nervozna", "nervozan", "jako"]
+        accept: ["Malo sam nervozna."]
+      - id: "60.2.7"
+        type: fix_error
+        prompt: "Ana je ljut."
+        accept: ["Ana je ljuta."]
+        explain: "Про женщину — женская форма: к мужской добавь -a."
+      - id: "60.2.8"
+        type: translate
+        prompt: "Я очень устал."
+        accept: ["Jako sam umoran.", "Mnogo sam umoran.", "Veoma sam umoran.", "Ja sam jako umoran.", "Ja sam mnogo umoran.", "Ja sam veoma umoran."]
+        hint: "Порядок: «очень», потом sam, потом прилагательное."
+
+  - id: "60.3"
+    kind: teach
+    title: "Мне скучно, мне легко"
+    md: "60/3-mi-je.md"
+
+  - id: "60.4"
+    kind: practice
+    title: "Мне… (mi je)"
+    also_ok: ["dosadan", "tebi", "meni"]
+    exercises:
+      - id: "60.4.1"
+        type: choice
+        prompt: "«Мне скучно» —"
+        options: ["Dosadno mi je.", "Dosadan sam.", "Dosadno sam."]
+        answer: "Dosadno mi je."
+      - id: "60.4.2"
+        type: choice
+        prompt: "«Мне легко» —"
+        options: ["Lako mi je.", "Lako me je.", "Lako sam."]
+        answer: "Lako mi je."
+      - id: "60.4.3"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["dosadno mi je", "мне скучно"]
+          - ["lako mi je", "мне легко"]
+          - ["teško mi je", "мне тяжело"]
+          - ["žao mi je", "мне жаль"]
+      - id: "60.4.4"
+        type: fill_blank
+        prompt: "«Мне жаль» → Žao ___ je."
+        accept: ["mi"]
+        hint: "Короткое «мне» — то же, что в «Drago … je» из урока 3."
+      - id: "60.4.5"
+        type: fill_blank
+        prompt: "«Тебе скучно?» → Dosadno ___ je?"
+        accept: ["ti"]
+        hint: "«Тебе» — короткая форма дательного из урока 51."
+      - id: "60.4.6"
+        type: word_bank
+        prompt: "Собери: «Мне очень тяжело»"
+        bank: ["Jako", "mi", "je", "teško", "sam", "me"]
+        accept: ["Jako mi je teško.", "Teško mi je jako."]
+      - id: "60.4.7"
+        type: fix_error
+        prompt: "Lako me je."
+        accept: ["Lako mi je."]
+        explain: "«Мне» — это mi (дательный). Форма me значит «меня» и здесь не подходит."
+      - id: "60.4.8"
+        type: translate
+        prompt: "Мне скучно, а тебе?"
+        accept: ["Dosadno mi je, a tebi?", "Meni je dosadno, a tebi?"]
+        hint: "Слово-чувство идёт первым, короткое «мне» — сразу за ним."
+
+  - id: "60.5"
+    kind: teach
+    title: "Радует, беспокоит — и почему"
+    md: "60/5-raduje-me.md"
+
+  - id: "60.6"
+    kind: practice
+    title: "Радует, беспокоит, из-за чего"
+    also_ok: ["kiše", "posla", "tebe", "tvoja", "posao", "poslu", "brinem"]
+    exercises:
+      - id: "60.6.1"
+        type: choice
+        prompt: "«Меня радует твоё сообщение» —"
+        options: ["Raduje me tvoja poruka.", "Raduje mi tvoja poruka.", "Radujem tvoja poruka."]
+        answer: "Raduje me tvoja poruka."
+      - id: "60.6.2"
+        type: choice
+        prompt: "«Меня беспокоит работа» —"
+        options: ["Brine me posao.", "Brine me posla.", "Brinem posao."]
+        answer: "Brine me posao."
+        explain: "Причина чувства — подлежащее, значит, в именительном."
+      - id: "60.6.3"
+        type: choice
+        prompt: "«Я нервничаю из-за работы» —"
+        options: ["Nervozan sam zbog posla.", "Nervozan sam zbog posao.", "Nervozan sam zbog poslu."]
+        answer: "Nervozan sam zbog posla."
+      - id: "60.6.4"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["raduje me", "меня радует"]
+          - ["brine me", "меня беспокоит"]
+          - ["zbog", "из-за"]
+          - ["zato što", "потому что"]
+      - id: "60.6.5"
+        type: fill_blank
+        prompt: "«Меня беспокоит работа» → Brine ___ posao."
+        accept: ["me"]
+        hint: "Человек здесь в винительном — как в «Boli … glava» из урока 39."
+      - id: "60.6.6"
+        type: fill_blank
+        prompt: "«Мне грустно из-за дождя» → Tužan sam zbog ___."
+        accept: ["kiše"]
+        hint: "После «zbog» — родительный: у женских слов на -a конец меняется на -e."
+      - id: "60.6.7"
+        type: word_bank
+        prompt: "Собери: «Я зол на тебя»"
+        bank: ["Ljut", "sam", "na", "tebe", "tebi", "ljuta"]
+        accept: ["Ljut sam na tebe.", "Na tebe sam ljut."]
+      - id: "60.6.8"
+        type: fix_error
+        prompt: "Brine mi posao."
+        accept: ["Brine me posao."]
+        explain: "Здесь человек — «меня» (винительный), а не «мне»."
+      - id: "60.6.9"
+        type: translate
+        prompt: "Я обеспокоена из-за работы."
+        accept: ["Zabrinuta sam zbog posla.", "Ja sam zabrinuta zbog posla.", "Zbog posla sam zabrinuta."]
+        hint: "После «из-за» — родительный; у слова на -ao окончание -ao превращается в -la."
+
+  - id: "60.7"
+    kind: reading
+    title: "Письмо подруге"
+    md: "60/7-citanje.md"
+    also_ok: ["umorna", "srećna", "nervozna", "počinjem"]
+    exercises:
+      - id: "60.7.1"
+        type: choice
+        prompt: "Как Ана себя чувствует сегодня?"
+        options: ["Umorna je, ali srećna.", "Tužna je i ljuta.", "Bolesna je."]
+        answer: "Umorna je, ali srećna."
+      - id: "60.7.2"
+        type: choice
+        prompt: "Почему Ана нервничает?"
+        options: ["Sutra počinje novi posao.", "Nema para.", "Ima temperaturu."]
+        answer: "Sutra počinje novi posao."
+      - id: "60.7.3"
+        type: choice
+        prompt: "Что ещё беспокоит Ану?"
+        options: ["Autobus.", "Kiša.", "Stan."]
+        answer: "Autobus."
+
+  - id: "60.8"
+    kind: dialogue
+    title: "Šta ti je?"
+    scene: "Подруга замечает, что ты не в духе, и спрашивает, что с тобой."
+    voice: f
+    also_ok: ["kafić", "kafića", "posla", "tužan"]
+    turns:
+      - who: npc
+        sr: "Zdravo! Šta ti je?"
+        ru: "Привет! Что с тобой?"
+
+      - who: me
+        sr: "Zdravo. Malo sam tužan."
+        ru: "Привет. Мне немного грустно."
+        exercise:
+          id: "60.8.1"
+          type: choice
+          prompt: "Поздоровайся и скажи, что тебе немного грустно"
+          options:
+            - "Zdravo. Malo sam tužan."
+            - "Zdravo. Malo mi je tužan."
+            - "Zdravo. Malo sam tužno."
+          answer: "Zdravo. Malo sam tužan."
+
+      - who: npc
+        sr: "Žao mi je. Zbog posla?"
+        ru: "Мне жаль. Из-за работы?"
+
+      - who: me
+        sr: "Da, teško mi je zbog posla."
+        ru: "Да, мне тяжело из-за работы."
+        exercise:
+          id: "60.8.2"
+          type: translate
+          prompt: "Скажи: «Да, мне тяжело из-за работы»"
+          accept: ["Da, teško mi je zbog posla.", "Da, zbog posla mi je teško."]
+          hint: "«Мне тяжело» — слово-чувство и mi je; причину добавь через zbog."
+
+      - who: npc
+        sr: "Hajde da idemo u kafić! Hoćeš li?"
+        ru: "Давай сходим в кафе! Пойдёшь?"
+
+      - who: me
+        sr: "Može! To me raduje."
+        ru: "Можно! Меня это радует."
+        exercise:
+          id: "60.8.3"
+          type: choice
+          prompt: "Согласись и скажи, что тебя это радует"
+          options:
+            - "Može! To me raduje."
+            - "Može! To mi raduje."
+            - "Može! To radujem."
+          answer: "Može! To me raduje."
+
+      - who: npc
+        sr: "Dobro. Sutra u osam ispred kafića?"
+        ru: "Хорошо. Завтра в восемь перед кафе?"
+
+      - who: me
+        sr: "Dogovorili smo se!"
+        ru: "Договорились!"
+        exercise:
+          id: "60.8.4"
+          type: choice
+          prompt: "Подтверди: договорились"
+          options: ["Dogovorili smo se!", "Žao mi je.", "Šta ti je?"]
+          answer: "Dogovorili smo se!"
+
+  - id: "60.9"
+    kind: practice
+    title: "Диктант"
+    mixed: true
+    also_ok: ["srećna"]
+    exercises:
+      - id: "60.9.1"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Jako sam srećna."
+        accept: ["Jako sam srećna."]
+        ru: ["Я очень счастлива", "Я очень рада", "Я так счастлива"]
+      - id: "60.9.2"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Dosadno mi je."
+        accept: ["Dosadno mi je."]
+        ru: ["Мне скучно", "Мне скучновато"]
+      - id: "60.9.3"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Brine me posao."
+        accept: ["Brine me posao."]
+        ru: ["Меня беспокоит работа", "Работа меня беспокоит", "Меня тревожит работа"]

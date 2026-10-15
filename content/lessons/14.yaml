@@ -50,6 +50,7 @@ steps:
         bank: ["Zovem", "se", "Ana"]
         accept: ["Zovem se Ana."]
       - id: "14.2.5"
+        hint: "Первое слово начинается на od-, второе — короткая форма «быть» для «ты» (урок 04)."
         type: translate
         prompt: "Откуда ты?"
         accept: ["Odakle si?"]
@@ -83,6 +84,7 @@ steps:
         bank: ["Ovo", "je", "moj", "tata"]
         accept: ["Ovo je moj tata."]
       - id: "14.3.5"
+        hint: "«Нет» = ne + imam, слитно. «Сестра» после него — как в «Imam sestru»: -a → -u."
         type: translate
         prompt: "У меня нет сестры."
         accept: ["Nemam sestru."]
@@ -107,6 +109,7 @@ steps:
           - ["sto", "сто"]
           - ["pet", "пять"]
       - id: "14.4.3"
+        hint: "После числа 5 и больше слово «год» стоит в одной форме — на -a."
         type: fill_blank
         prompt: "«Мне 30 лет» → Imam trideset ___."
         accept: ["godina"]
@@ -116,6 +119,7 @@ steps:
         bank: ["Koliko", "košta"]
         accept: ["Koliko košta?"]
       - id: "14.4.5"
+        hint: "Буквально «сколько есть часов»; первое слово то же, что в «Koliko košta?»."
         type: translate
         prompt: "Который час?"
         accept: ["Koliko je sati?"]

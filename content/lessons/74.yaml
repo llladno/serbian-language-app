@@ -1,0 +1,241 @@
+lesson: "74"
+title: "Small talk (Small talk)"
+subtitle: "поддержать беседу, реагировать, вставные фразы"
+teaches:
+  [zaista, stvarno, steta, ziveli, bas, sta-ima, hvala-na-pitanju, nema-problema]
+
+steps:
+  - id: "74.1"
+    kind: teach
+    title: "Начать разговор"
+    md: "74/1-razgovor.md"
+
+  - id: "74.2"
+    kind: practice
+    title: "С соседом"
+    also_ok: ["komšija", "komšinice", "pitanju", "sviđa", "Srbija", "ima"]
+    exercises:
+      - id: "74.2.1"
+        type: choice
+        prompt: "«Что нового?» —"
+        options: ["Šta ima?", "Šta imam?", "Šta ima je?"]
+        answer: "Šta ima?"
+      - id: "74.2.2"
+        type: choice
+        prompt: "«Спасибо, что спросили» —"
+        options: ["Hvala na pitanju.", "Hvala za pitanje.", "Hvala u pitanju."]
+        answer: "Hvala na pitanju."
+      - id: "74.2.3"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["šta ima?", "что нового?"]
+          - ["komšija", "сосед"]
+          - ["baš lepo", "как хорошо"]
+          - ["hvala na pitanju", "спасибо, что спросили"]
+      - id: "74.2.4"
+        type: fill_blank
+        prompt: "«Какая хорошая погода!» → ___ lepo vreme!"
+        accept: ["Baš"]
+        hint: "Короткое усилительное слово — в теории, второй пункт."
+      - id: "74.2.5"
+        type: fill_blank
+        prompt: "«Добрый день, сосед!» → Dobar dan, ___!"
+        accept: ["komšija"]
+        hint: "Слово «сосед» — в начале теории."
+      - id: "74.2.6"
+        type: word_bank
+        prompt: "Собери: «Как тебе нравится Сербия?»"
+        bank: ["Kako", "ti", "se", "sviđa", "Srbija", "Srbiju", "mi"]
+        accept: ["Kako ti se sviđa Srbija?"]
+      - id: "74.2.7"
+        type: fix_error
+        prompt: "Hvala za pitanje."
+        accept: ["Hvala na pitanju."]
+        explain: "Устойчивое выражение: «спасибо на вопросе» — предлог и падеж другие."
+      - id: "74.2.8"
+        type: translate
+        prompt: "Какая хорошая погода, сосед!"
+        accept: ["Baš lepo vreme, komšija!", "Baš je lepo vreme, komšija!"]
+        hint: "Начни с усилительного слова из теории; сосед — komšija."
+      - id: "74.2.9"
+        type: translate
+        prompt: "Хорошо, спасибо, что спросили. А ты?"
+        accept: ["Dobro, hvala na pitanju. A ti?", "Dobro je, hvala na pitanju. A ti?"]
+        hint: "Устойчивое выражение — из теории; «а ты?» — a ti."
+
+  - id: "74.3"
+    kind: teach
+    title: "Реакции"
+    md: "74/3-reakcije.md"
+
+  - id: "74.4"
+    kind: practice
+    title: "Что ответить"
+    also_ok: ["zaista", "stvarno", "šteta", "živeli", "problema", "problem"]
+    exercises:
+      - id: "74.4.1"
+        type: choice
+        prompt: "Друг говорит: «Завтра не смогу прийти». Ты расстроен:"
+        options: ["Šteta!", "Živeli!", "Dobro jutro!"]
+        answer: "Šteta!"
+      - id: "74.4.2"
+        type: choice
+        prompt: "Друг: «Я случайно разбил чашку». Ты успокаиваешь:"
+        options: ["Nema problema.", "Živeli!", "Laku noć."]
+        answer: "Nema problema."
+      - id: "74.4.3"
+        type: choice
+        prompt: "Вы с друзьями поднимаете бокалы:"
+        options: ["Živeli!", "Šteta!", "Izvinite!"]
+        answer: "Živeli!"
+      - id: "74.4.4"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["zaista", "правда, действительно"]
+          - ["stvarno", "в самом деле"]
+          - ["šteta", "жаль"]
+          - ["živeli", "за здоровье"]
+      - id: "74.4.5"
+        type: fill_blank
+        prompt: "«Жаль!» → ___!"
+        accept: ["Šteta"]
+        hint: "Слово из теории про реакции; начинается с буквы Š."
+      - id: "74.4.6"
+        type: fill_blank
+        prompt: "«Без проблем» → Nema ___."
+        accept: ["problema"]
+        hint: "После «nema» — родительный: слово на согласную получает -a."
+      - id: "74.4.7"
+        type: word_bank
+        prompt: "Собери: «Правда? Жаль!»"
+        bank: ["Zaista", "Šteta", "Živeli", "Stvarno"]
+        accept: ["Zaista? Šteta!", "Stvarno? Šteta!"]
+      - id: "74.4.8"
+        type: fix_error
+        prompt: "Nema problem."
+        accept: ["Nema problema."]
+        explain: "После «nema» нужен родительный падеж."
+      - id: "74.4.9"
+        type: translate
+        prompt: "Правда? Жаль, но без проблем."
+        accept: ["Zaista? Šteta, ali nema problema.", "Stvarno? Šteta, ali nema problema."]
+        hint: "Три готовых выражения из теории; «но» — ali."
+
+  - id: "74.5"
+    kind: reading
+    title: "С соседкой у подъезда"
+    md: "74/5-citanje.md"
+    also_ok: ["komšinice", "Jovana", "Marko", "tačno", "novo", "mi", "drago"]
+    exercises:
+      - id: "74.5.1"
+        type: choice
+        prompt: "Как погода?"
+        options: ["Lepo je vreme.", "Pada kiša.", "Hladno je."]
+        answer: "Lepo je vreme."
+      - id: "74.5.2"
+        type: choice
+        prompt: "Что нравится Йоване?"
+        options: ["Novi Sad.", "Beograd.", "Kiša."]
+        answer: "Novi Sad."
+      - id: "74.5.3"
+        type: choice
+        prompt: "Как Марко обращается к Йоване?"
+        options: ["Komšinice.", "Doktore.", "Majstore."]
+        answer: "Komšinice."
+
+  - id: "74.6"
+    kind: dialogue
+    title: "Sa komšijom"
+    scene: "Ты встретил соседку у входа и завёл разговор."
+    voice: f
+    also_ok: ["ima", "novo", "pitanju", "tačno", "doviđenja", "mi", "sviđa"]
+    turns:
+      - who: npc
+        sr: "Dobar dan! Šta ima?"
+        ru: "Добрый день! Что нового?"
+
+      - who: me
+        sr: "Ništa novo. Hvala na pitanju."
+        ru: "Ничего нового. Спасибо, что спросили."
+        exercise:
+          id: "74.6.1"
+          type: choice
+          prompt: "Ответь: «Ничего нового. Спасибо, что спросили»"
+          options:
+            - "Ništa novo. Hvala na pitanju."
+            - "Ništa nov. Hvala za pitanje."
+            - "Ništa novo. Hvala u pitanju."
+          answer: "Ništa novo. Hvala na pitanju."
+
+      - who: npc
+        sr: "Baš lepo vreme danas!"
+        ru: "Какая сегодня хорошая погода!"
+
+      - who: me
+        sr: "Zaista, baš lepo vreme."
+        ru: "Правда, очень хорошая погода."
+        exercise:
+          id: "74.6.2"
+          type: translate
+          prompt: "Скажи: «Правда, очень хорошая погода»"
+          accept: ["Zaista, baš lepo vreme.", "Stvarno, baš lepo vreme."]
+          hint: "«Правда» — одно из слов из теории про реакции; дальше — как у соседки."
+
+      - who: npc
+        sr: "Kako ti se sviđa Srbija?"
+        ru: "Как тебе нравится Сербия?"
+
+      - who: me
+        sr: "Mnogo mi se sviđa Srbija."
+        ru: "Мне очень нравится Сербия."
+        exercise:
+          id: "74.6.3"
+          type: translate
+          prompt: "Скажи: «Мне очень нравится Сербия»"
+          accept:
+            - "Mnogo mi se sviđa Srbija."
+            - "Srbija mi se mnogo sviđa."
+            - "Jako mi se sviđa Srbija."
+            - "Srbija mi se jako sviđa."
+          hint: "Предмет — в именительном (Srbija); «мне» — mi."
+
+      - who: npc
+        sr: "Drago mi je. Doviđenja, komšija!"
+        ru: "Рада слышать. До свидания, сосед!"
+
+      - who: me
+        sr: "Doviđenja!"
+        ru: "До свидания!"
+        exercise:
+          id: "74.6.4"
+          type: choice
+          prompt: "Попрощайся"
+          options: ["Doviđenja!", "Dobro jutro!", "Laku noć!"]
+          answer: "Doviđenja!"
+
+  - id: "74.7"
+    kind: practice
+    title: "Диктант"
+    mixed: true
+    also_ok: ["ima", "problema"]
+    exercises:
+      - id: "74.7.1"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Šta ima?"
+        accept: ["Šta ima?"]
+        ru: ["Что нового?", "Что нового", "Как дела? Что слышно?"]
+      - id: "74.7.2"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Baš lepo vreme!"
+        accept: ["Baš lepo vreme!"]
+        ru: ["Какая хорошая погода", "Какая хорошая погода!", "Очень хорошая погода"]
+      - id: "74.7.3"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Nema problema."
+        accept: ["Nema problema."]
+        ru: ["Без проблем", "Нет проблем", "Проблем нет"]

@@ -36,6 +36,7 @@ steps:
           - ["podne", "полдень"]
           - ["ponoć", "полночь"]
       - id: "10.2.4"
+        hint: "Начинается на pod-, пять букв, оканчивается на -e."
         type: fill_blank
         prompt: "«полдень» по-сербски — ___"
         accept: ["podne"]
@@ -66,6 +67,7 @@ steps:
         options: ["Koji je tvoj broj?", "Koliko je broj?", "Gde je broj?"]
         answer: "Koji je tvoj broj?"
       - id: "10.4.3"
+        hint: "Слово из урока про телефон. После «пришлю» — винительный: -a → -u."
         type: fill_blank
         prompt: "«Пришлю тебе сообщение» → Poslaću ti ___."
         accept: ["poruku"]
@@ -134,6 +136,7 @@ steps:
           - ["trideset", "тридцать"]
           - ["sto", "сто"]
       - id: "10.7.3"
+        hint: "После числа 5 и больше слово «год» стоит в одной форме — на -a."
         type: fill_blank
         prompt: "«мне 25 лет» → Imam dvadeset pet ___."
         accept: ["godina"]
@@ -143,6 +146,7 @@ steps:
         bank: ["Koliko", "košta", "kafa"]
         accept: ["Koliko košta kafa?"]
       - id: "10.7.5"
+        hint: "Буквально «сколько я должен?»: нужен глагол «должен» для «я» (корень dug-)."
         type: translate
         prompt: "Сколько с меня?"
         accept: ["Koliko dugujem?"]

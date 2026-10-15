@@ -1,0 +1,397 @@
+lesson: "77"
+title: "Большая проверка (Velika provera)"
+subtitle: "итоговые ролёвки, план дальше"
+teaches: []
+
+steps:
+  - id: "77.1"
+    kind: reading
+    title: "Два года в Сербии"
+    md: "77/1-citanje.md"
+    also_ok: ["rođen", "preselio", "radi", "trči", "otišao", "opštinu", "treba", "mu", "prijava", "adrese", "počela", "blizu", "gleda", "dnevnik", "serije", "titlova", "nada", "ostati", "zauvek", "kiša", "vikendom", "uveče", "firmi", "Novom", "Sadu", "Srbiji"]
+    exercises:
+      - id: "77.1.1"
+        type: choice
+        prompt: "Когда Марко переехал в Сербию?"
+        options: ["Pre dve godine.", "Pre pet godina.", "Juče."]
+        answer: "Pre dve godine."
+      - id: "77.1.2"
+        type: choice
+        prompt: "Куда он пошёл сначала?"
+        options: ["U banku.", "U opštinu.", "Na posao."]
+        answer: "U banku."
+      - id: "77.1.3"
+        type: choice
+        prompt: "Что он смотрит вечером?"
+        options: ["Dnevnik i serije.", "Fudbal.", "Film."]
+        answer: "Dnevnik i serije."
+
+  - id: "77.2"
+    kind: practice
+    title: "Рассказ и планы"
+    mixed: true
+    also_ok: ["Preselila", "preselio", "bio", "kuće", "dana", "Dok", "čekao", "čitao", "ostati", "ostanem", "zauvek", "stigao", "nazvao", "Anu", "Ani", "otišao"]
+    exercises:
+      - id: "77.2.1"
+        type: choice
+        prompt: "Женщина говорит: «Я переехала в Сербию два года назад» —"
+        options:
+          - "Preselila sam se u Srbiju pre dve godine."
+          - "Preselio sam se u Srbiju pre dve godine."
+          - "Preselila sam u Srbiju pre dve godine."
+        answer: "Preselila sam se u Srbiju pre dve godine."
+      - id: "77.2.2"
+        type: choice
+        prompt: "«К счастью, я был дома» —"
+        options: ["Srećom, bio sam kod kuće.", "Srećno, bio sam kod kuće.", "Srećan, bio sam kod kuće."]
+        answer: "Srećom, bio sam kod kuće."
+      - id: "77.2.3"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["rođen sam", "я родился"]
+          - ["jednog dana", "когда-нибудь"]
+          - ["najzad", "наконец"]
+          - ["slučajno", "случайно"]
+      - id: "77.2.4"
+        type: fill_blank
+        prompt: "«Через год» → Za godinu ___."
+        accept: ["dana"]
+        hint: "Устойчивое выражение: «год дней»."
+      - id: "77.2.5"
+        type: fill_blank
+        prompt: "«Пока я ждал автобус, я читал» → ___ sam čekao autobus, čitao sam."
+        accept: ["Dok"]
+        hint: "Короткий союз «пока» — из урока про рассказ."
+      - id: "77.2.6"
+        type: word_bank
+        prompt: "Собери: «Надеюсь, что останусь здесь навсегда»"
+        bank: ["Nadam", "se", "da", "ću", "ostati", "ovde", "zauvek", "ostanem"]
+        accept: ["Nadam se da ću ostati ovde zauvek."]
+      - id: "77.2.7"
+        type: fix_error
+        prompt: "Kad sam stigao kući, nazvao sam Ani."
+        accept: ["Kad sam stigao kući, nazvao sam Anu."]
+        explain: "Позвонить кому? — тут винительный: nazvati + кого."
+      - id: "77.2.8"
+        type: translate
+        prompt: "Два года назад я переехал в Сербию, а теперь работаю в фирме."
+        accept:
+          - "Pre dve godine sam se preselio u Srbiju, a sada radim u firmi."
+          - "Pre dve godine sam se preselio u Srbiju a sada radim u firmi."
+        hint: "«Два года назад» — pre и godine; «переехал» — возвратный глагол."
+
+  - id: "77.3"
+    kind: practice
+    title: "Работа и документы"
+    mixed: true
+    also_ok: ["iskustva", "pasoša", "kopija", "kopiju", "petka", "Potpišite", "opštinu", "dokument", "prevod", "ugovor", "godinu", "dana", "plata", "boravak"]
+    exercises:
+      - id: "77.3.1"
+        type: choice
+        prompt: "«У меня пять лет опыта» —"
+        options: ["Imam pet godina iskustva.", "Imam pet godina iskustvo.", "Imam pet godine iskustva."]
+        answer: "Imam pet godina iskustva."
+      - id: "77.3.2"
+        type: choice
+        prompt: "«Мне нужна копия паспорта» —"
+        options: ["Treba mi kopija pasoša.", "Treba mi kopija pasoš.", "Treba mi kopiju pasoša."]
+        answer: "Treba mi kopija pasoša."
+      - id: "77.3.3"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["plata", "зарплата"]
+          - ["ugovor", "договор"]
+          - ["boravak", "вид на жительство"]
+          - ["prevod", "перевод"]
+      - id: "77.3.4"
+        type: fill_blank
+        prompt: "«Срок — до пятницы» → Rok je do ___."
+        accept: ["petka"]
+        hint: "После «do» — родительный: petak теряет гласную."
+      - id: "77.3.5"
+        type: fill_blank
+        prompt: "«Подпишите здесь» → ___ ovde."
+        accept: ["Potpišite"]
+        hint: "Глагол potpisati; повелительное «вы» на -ite."
+      - id: "77.3.6"
+        type: word_bank
+        prompt: "Собери: «Мне нужен договор на год»"
+        bank: ["Treba", "mi", "ugovor", "na", "godinu", "dana", "godina"]
+        accept: ["Treba mi ugovor na godinu dana."]
+      - id: "77.3.7"
+        type: fix_error
+        prompt: "Idem u opštini."
+        accept: ["Idem u opštinu."]
+        explain: "Куда? — винительный, а не «где?»."
+      - id: "77.3.8"
+        type: translate
+        prompt: "Мне нужен документ и перевод."
+        accept: ["Treba mi dokument i prevod."]
+        hint: "Оба слова мужского рода, без изменений."
+
+  - id: "77.4"
+    kind: practice
+    title: "Разговор и реакции"
+    mixed: true
+    also_ok: ["igramo", "igram", "Šteta", "Ajde", "Hajde", "dosadan", "kafu", "častim", "pravu", "vremena", "nemam"]
+    exercises:
+      - id: "77.4.1"
+        type: choice
+        prompt: "«Давай поиграем в футбол в субботу!» —"
+        options: ["Hajde da igramo fudbal u subotu!", "Hajde da igram fudbal u subotu!", "Hajde igramo fudbal u subotu!"]
+        answer: "Hajde da igramo fudbal u subotu!"
+      - id: "77.4.2"
+        type: choice
+        prompt: "Друг говорит: «Завтра не смогу прийти». Ты расстроен:"
+        options: ["Šteta!", "Živeli!", "Dobro jutro!"]
+        answer: "Šteta!"
+      - id: "77.4.3"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["slažem se", "я согласен"]
+          - ["baš lepo", "как хорошо"]
+          - ["ja častim", "я угощаю"]
+          - ["šta ima?", "что нового?"]
+      - id: "77.4.4"
+        type: fill_blank
+        prompt: "«Ну пошли!» (разговорно) → ___, idemo!"
+        accept: ["Ajde", "Hajde"]
+        hint: "Слово «давай» — в таблице урока про Нови-Сад."
+      - id: "77.4.5"
+        type: fill_blank
+        prompt: "«Меня радует твоя идея» → Raduje ___ tvoja ideja."
+        accept: ["me"]
+        hint: "Радует «меня» — винительный, как в «Boli … glava»."
+      - id: "77.4.6"
+        type: word_bank
+        prompt: "Собери: «Мне кажется, фильм скучный»"
+        bank: ["Čini", "mi", "se", "da", "je", "film", "dosadan", "dosadno"]
+        accept: ["Čini mi se da je film dosadan."]
+      - id: "77.4.7"
+        type: fix_error
+        prompt: "Idemo na planina."
+        accept: ["Idemo na planinu."]
+        explain: "Куда? — винительный: -a меняется на -u."
+      - id: "77.4.8"
+        type: translate
+        prompt: "Мне кажется, ты прав, но у меня нет времени."
+        accept: ["Čini mi se da si u pravu, ali nemam vremena."]
+        hint: "«Мне кажется» и «ты прав» — выражения из урока про мнения."
+
+  - id: "77.5"
+    kind: dialogue
+    title: "Razgovor za posao"
+    scene: "Ты на собеседовании: итог всего, что ты выучил про работу."
+    voice: f
+    also_ok: ["sedite", "oglas", "oglasa", "vaš", "vaše", "iskustva", "počnete", "ponudu", "ugovor", "godinu", "dana", "odgovara"]
+    turns:
+      - who: npc
+        sr: "Dobar dan! Izvolite, sedite."
+        ru: "Добрый день! Прошу, садитесь."
+
+      - who: me
+        sr: "Dobar dan. Vidim vaš oglas."
+        ru: "Добрый день. Я вижу ваше объявление."
+        exercise:
+          id: "77.5.1"
+          type: choice
+          prompt: "Скажи: «Добрый день. Я вижу ваше объявление»"
+          options: ["Dobar dan. Vidim vaš oglas.", "Dobar dan. Vidim vaš oglasa.", "Dobar dan. Vidim vaše oglas."]
+          answer: "Dobar dan. Vidim vaš oglas."
+
+      - who: npc
+        sr: "Imate li iskustva?"
+        ru: "У вас есть опыт?"
+
+      - who: me
+        sr: "Da, imam pet godina iskustva."
+        ru: "Да, у меня пять лет опыта."
+        exercise:
+          id: "77.5.2"
+          type: translate
+          prompt: "Скажи: «Да, у меня пять лет опыта»"
+          accept: ["Da, imam pet godina iskustva."]
+          hint: "После «pet godina» — родительный: «опыт» получает -a."
+
+      - who: npc
+        sr: "Kada možete da počnete?"
+        ru: "Когда вы можете начать?"
+
+      - who: me
+        sr: "Mogu da počnem odmah."
+        ru: "Могу начать сразу."
+        exercise:
+          id: "77.5.3"
+          type: fill_blank
+          prompt: "«Могу начать сразу» → Mogu da počnem ___."
+          accept: ["odmah"]
+          hint: "Слово «сразу» — из урока про собеседование."
+
+      - who: npc
+        sr: "Dobro. Imamo ponudu za vas. Ugovor je na godinu dana."
+        ru: "Хорошо. У нас есть для вас предложение. Договор на год."
+
+      - who: me
+        sr: "Hvala, odgovara mi."
+        ru: "Спасибо, мне подходит."
+        exercise:
+          id: "77.5.4"
+          type: choice
+          prompt: "Скажи: «Спасибо, мне подходит»"
+          options: ["Hvala, odgovara mi.", "Hvala, odgovaram mi.", "Hvala, odgovara me."]
+          answer: "Hvala, odgovara mi."
+
+  - id: "77.6"
+    kind: dialogue
+    title: "Novi komšija"
+    scene: "Новый сосед знакомится с тобой у подъезда."
+    voice: m
+    also_ok: ["komšija", "vaš", "odakle", "ste", "vikendom", "igram", "zanimljivo", "radite", "subotu", "častim", "Moskvi", "dogovorili"]
+    turns:
+      - who: npc
+        sr: "Dobar dan! Ja sam vaš komšija. Odakle ste?"
+        ru: "Добрый день! Я ваш сосед. Откуда вы?"
+
+      - who: me
+        sr: "Rođen sam u Moskvi, a sada živim u Novom Sadu."
+        ru: "Я родился в Москве, а сейчас живу в Нови-Саде."
+        exercise:
+          id: "77.6.1"
+          type: choice
+          prompt: "Скажи, где родился и где сейчас живёшь"
+          options:
+            - "Rođen sam u Moskvi, a sada živim u Novom Sadu."
+            - "Rođen sam u Moskva, a sada živim u Novom Sadu."
+            - "Rođen sam u Moskvi, a sada živim u Novi Sad."
+          answer: "Rođen sam u Moskvi, a sada živim u Novom Sadu."
+
+      - who: npc
+        sr: "Zanimljivo! Šta radite vikendom?"
+        ru: "Интересно! Что вы делаете по выходным?"
+
+      - who: me
+        sr: "Vikendom igram fudbal."
+        ru: "По выходным я играю в футбол."
+        exercise:
+          id: "77.6.2"
+          type: translate
+          prompt: "Скажи: «По выходным я играю в футбол»"
+          accept: ["Vikendom igram fudbal."]
+          hint: "«По выходным» — одно слово на -om; «играть в футбол» — igrati и винительный."
+
+      - who: npc
+        sr: "Lepo! Hajde da idemo na kafu u subotu."
+        ru: "Здорово! Давайте сходим на кофе в субботу."
+
+      - who: me
+        sr: "Može! Ja častim!"
+        ru: "Можно! Я угощаю!"
+        exercise:
+          id: "77.6.3"
+          type: choice
+          prompt: "Согласись и скажи, что угощаешь"
+          options: ["Može! Ja častim!", "Može! Ja častiš!", "Može! Mi častim!"]
+          answer: "Može! Ja častim!"
+
+      - who: npc
+        sr: "Dogovorili smo se! Doviđenja, komšija!"
+        ru: "Договорились! До свидания, сосед!"
+
+      - who: me
+        sr: "Doviđenja!"
+        ru: "До свидания!"
+        exercise:
+          id: "77.6.4"
+          type: choice
+          prompt: "Попрощайся"
+          options: ["Doviđenja!", "Dobro jutro!", "Laku noć!"]
+          answer: "Doviđenja!"
+
+  - id: "77.7"
+    kind: practice
+    title: "Диктант"
+    mixed: true
+    also_ok: ["otišao", "opštinu", "dobra", "čekao", "čitao", "vesti", "nazvaću", "majstora", "struje"]
+    exercises:
+      - id: "77.7.1"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Prvo sam otišao u banku, zatim u opštinu."
+        accept: ["Prvo sam otišao u banku, zatim u opštinu."]
+        ru: ["Сначала я пошёл в банк, затем в муниципалитет", "Сначала я зашёл в банк, потом в муниципалитет", "Сначала в банк, затем в муниципалитет, я ходил"]
+      - id: "77.7.2"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Čini mi se da je serija dobra."
+        accept: ["Čini mi se da je serija dobra."]
+        ru: ["Мне кажется, сериал хороший", "Мне кажется, что сериал хороший", "Кажется, сериал хороший"]
+      - id: "77.7.3"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Dok sam čekao autobus, čitao sam vesti."
+        accept: ["Dok sam čekao autobus, čitao sam vesti."]
+        ru: ["Пока я ждал автобус, я читал новости", "Пока ждал автобус, читал новости", "Пока я ждал автобуса, я читал новости"]
+      - id: "77.7.4"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Nema struje od juče, nazvaću majstora."
+        accept: ["Nema struje od juče, nazvaću majstora."]
+        ru: ["Нет электричества со вчерашнего дня, я позвоню мастеру", "Со вчерашнего дня нет электричества, позвоню мастеру", "Электричества нет со вчерашнего дня, позвоню мастеру"]
+
+  - id: "77.8"
+    kind: checkpoint
+    title: "Итоговая проверка уровня 5"
+    also_ok: ["Volela", "Volim", "zakažem", "termin", "Mogli", "biste", "bih", "ponovite", "onda", "zatim", "došao", "kući", "planinu", "pokvario", "ruter", "interneta", "govoriti", "bolje", "godinu", "dana"]
+    exercises:
+      - id: "77.8.1"
+        type: choice
+        prompt: "Женщина говорит: «Я бы хотела записаться на приём» —"
+        options: ["Volela bih da zakažem termin.", "Volela da zakažem termin.", "Volim bih da zakažem termin."]
+        answer: "Volela bih da zakažem termin."
+      - id: "77.8.2"
+        type: choice
+        prompt: "«Не могли бы вы повторить?» —"
+        options: ["Mogli biste li da ponovite?", "Mogli bih li da ponovite?", "Možete biste li da ponovite?"]
+        answer: "Mogli biste li da ponovite?"
+      - id: "77.8.3"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["Ajde, idemo!", "Ну пошли!"]
+          - ["Nema problema.", "Без проблем"]
+          - ["Šteta!", "Жаль!"]
+          - ["Živeli!", "За здоровье!"]
+      - id: "77.8.4"
+        type: fill_blank
+        prompt: "«Мне жаль» → Žao ___ je."
+        accept: ["mi"]
+        hint: "Короткое «мне» — то же, что в «Drago … je» из урока 3."
+      - id: "77.8.5"
+        type: word_bank
+        prompt: "Собери: «Сначала я пошёл в банк, потом пришёл домой»"
+        bank: ["Prvo", "sam", "otišao", "u", "banku", "onda", "došao", "kući", "zatim"]
+        accept:
+          - "Prvo sam otišao u banku, onda sam došao kući."
+          - "Prvo sam otišao u banku, zatim sam došao kući."
+      - id: "77.8.6"
+        type: fix_error
+        prompt: "Pokvario se lampa."
+        accept: ["Pokvarila se lampa."]
+        explain: "Род причастия зависит от сломавшейся вещи."
+      - id: "77.8.7"
+        type: translate
+        prompt: "Мне нужен мастер: сломался роутер и нет интернета."
+        accept:
+          - "Treba mi majstor: pokvario se ruter i nema interneta."
+          - "Treba mi majstor, pokvario se ruter i nema interneta."
+        hint: "«Сломался» — как в уроке 65; после «nema» родительный."
+      - id: "77.8.8"
+        type: translate
+        prompt: "Я надеюсь, что через год буду говорить лучше."
+        accept:
+          - "Nadam se da ću za godinu dana govoriti bolje."
+          - "Nadam se da ću govoriti bolje za godinu dana."
+        hint: "«Надеюсь» — nadati se; «через год» — выражение из урока 63."

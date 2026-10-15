@@ -11,13 +11,13 @@
 - { id: "pismo", sr: "pismo", transcription: "пи́смо", means: "письмо / алфавит", group: "top", emoji: "✉️" }
 - { id: "jutro", sr: "jutro", transcription: "ю́тро", means: "утро", group: "top", emoji: "🌅" }
 - { id: "sutra", sr: "sutra", transcription: "су́тра", means: "завтра", not: "утро", group: "top", emoji: "📅" }
-- { id: "prekosutra", sr: "prekosutra", transcription: "прэкосу́тра", means: "послезавтра", group: "top", emoji: "📆" }
+- { id: "prekosutra", sr: "prekosutra", transcription: "прэ́косутра", means: "послезавтра", group: "top", emoji: "📆" }
 - { id: "juce", sr: "juče", transcription: "ю́чэ", means: "вчера", group: "top", emoji: "⏮️" }
 - { id: "stolica", sr: "stolica", transcription: "сто́лица", means: "стул", not: "столица", correct: "prestonica / glavni grad", group: "top", image: "stolica.jpg" }
 - { id: "pas", sr: "pas", transcription: "пас", means: "собака", not: "пояс", correct: "kaiš / pojas", group: "top", image: "pas.jpg" }
 - { id: "zivot", sr: "život", transcription: "жи́вот", means: "жизнь", not: "живот", correct: "stomak / trbuh", group: "top", emoji: "🌱" }
 - { id: "pravac", sr: "pravac", transcription: "пра́вац", means: "направление", group: "top", emoji: "🧭" }
-- { id: "umoran", sr: "umoran", transcription: "умо́ран", means: "усталый", not: "умный", correct: "pametan", group: "top", emoji: "😩" }
+- { id: "umoran", sr: "umoran", transcription: "у́моран", means: "усталый", not: "умный", correct: "pametan", group: "top", emoji: "😩" }
 - { id: "pametan", sr: "pametan", transcription: "па́мэтан", means: "умный", not: "памятный", group: "top", emoji: "🧠" }
 - { id: "trudna", sr: "trudna", transcription: "тру́дна", means: "беременная", not: "трудная", correct: "teška", group: "top", emoji: "🤰" }
 - { id: "vredan", sr: "vredan", transcription: "врэ́дан", means: "усердный / ценный", not: "вредный", correct: "štetan", group: "top", emoji: "💪" }
@@ -60,7 +60,7 @@
 
 # ---- Мелкие частые ----
 - { id: "direktno", sr: "direktno", transcription: "дирэ́ктно", means: "напрямую", group: "small", emoji: "➡️" }
-- { id: "upravo", sr: "upravo", transcription: "упра́во", means: "как раз / только что", not: "управа", group: "small", emoji: "🎯" }
+- { id: "upravo", sr: "upravo", transcription: "у́право", means: "как раз / только что", not: "управа", group: "small", emoji: "🎯" }
 - { id: "bas", sr: "baš", transcription: "баш", means: "как раз / прямо (усилит.)", group: "small", emoji: "💯" }
 - { id: "odmah", sr: "odmah", transcription: "о́дмах", means: "сразу", group: "small", emoji: "⚡" }
 - { id: "samo", sr: "samo", transcription: "са́мо", means: "только", not: "само", group: "small", emoji: "☝️" }
@@ -69,9 +69,10 @@
 - { id: "ceo", sr: "ceo", transcription: "цэ́о", means: "целый / весь", group: "small", emoji: "🥧" }
 - { id: "pravi", sr: "pravi", transcription: "пра́ви", means: "настоящий", not: "правый", group: "small", emoji: "💎" }
 - { id: "grad", sr: "grad", transcription: "град", means: "город", not: "град (осадки — по контексту тоже grad)", group: "small", emoji: "🏙️" }
-- { id: "godina", sr: "godina", transcription: "годи́на", means: "год", group: "small", emoji: "🎂" }
+- { id: "godina", sr: "godina", transcription: "го́дина", means: "год", group: "small", emoji: "🎂" }
 - { id: "doba", sr: "doba", transcription: "до́ба", means: "пора / эпоха", group: "small", emoji: "⏳" }
 - { id: "kosa", sr: "kosa", transcription: "ко́са", means: "волосы / коса", group: "small", emoji: "💇" }
 - { id: "brak", sr: "brak", transcription: "брак", means: "брак (супружество)", not: "брак (дефект)", correct: "kvar / greška", group: "small", emoji: "💍" }
 - { id: "glava", sr: "glava", transcription: "гла́ва", means: "голова / глава (книги)", group: "small", emoji: "🗣️" }
 - { id: "jezik", sr: "jezik", transcription: "е́зик", means: "язык (речь и орган)", group: "small", emoji: "👅" }
+- { id: "dosadno", sr: "dosadno", transcription: "до́садно", means: "скучно", not: "досадно (обидно)", group: "small", emoji: "🥱" }

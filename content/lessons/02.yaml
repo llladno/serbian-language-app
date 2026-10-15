@@ -64,8 +64,9 @@ steps:
       - id: "02.4.3"
         type: fill_blank
         prompt: "Другу: «Kako ___?»"
-        accept: ["si"]
+        accept: ["si", "ide"]
       - id: "02.4.4"
+        hint: "Глагол «žalim» возвратный: к нему нужно маленькое слово se, и оно стоит ПОСЛЕ глагола."
         type: word_bank
         prompt: "Собери ответ: «нормально, не жалуюсь»"
         bank: ["Može", "ne", "žalim", "se"]

@@ -90,6 +90,7 @@ steps:
         options: ["Imate li sitno?", "Koliko sitno?", "Sitno je."]
         answer: "Imate li sitno?"
       - id: "12.6.3"
+        hint: "«Сколько с меня?» = «сколько я должен?». Нужен глагол «должен» для «я» (корень dug-)."
         type: fill_blank
         prompt: "«Сколько с меня?» → Koliko ___?"
         accept: ["dugujem"]

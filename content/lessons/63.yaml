@@ -1,0 +1,239 @@
+lesson: "63"
+title: "Рассказ о себе II (Priča o sebi II)"
+subtitle: "взрослая жизнь, планы"
+teaches:
+  [preseliti-se, nadati-se, ostati, zauvek, buducnost, nauciti, jednog-dana, jos-uvek]
+
+steps:
+  - id: "63.1"
+    kind: teach
+    title: "Переезд и семья"
+    md: "63/1-selidba.md"
+
+  - id: "63.2"
+    kind: practice
+    title: "Переезд и семья"
+    also_ok: ["Srbiju", "preselio", "preselila", "godine", "ženu", "muža", "sina", "ćerku", "učim"]
+    exercises:
+      - id: "63.2.1"
+        type: choice
+        prompt: "«Два года назад» —"
+        options: ["Pre dve godine.", "Pre dve godina.", "Pre dva godine."]
+        answer: "Pre dve godine."
+      - id: "63.2.2"
+        type: choice
+        prompt: "Женщина говорит: «Я переехала в Сербию» —"
+        options: ["Preselila sam se u Srbiju.", "Preselila sam u Srbiju.", "Preselio sam se u Srbiju."]
+        answer: "Preselila sam se u Srbiju."
+      - id: "63.2.3"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["preseliti se", "переехать"]
+          - ["još uvek", "всё ещё"]
+          - ["ćerka", "дочь"]
+          - ["pre dve godine", "два года назад"]
+      - id: "63.2.4"
+        type: fill_blank
+        prompt: "«У меня есть жена» → Imam ___."
+        accept: ["ženu"]
+        hint: "Винительный женского рода: конец -a меняется на -u."
+      - id: "63.2.5"
+        type: fill_blank
+        prompt: "«У меня есть муж» → Imam ___."
+        accept: ["muža"]
+        hint: "Муж — одушевлённый, мужской род: винительный совпадает с родительным (урок 44)."
+      - id: "63.2.6"
+        type: word_bank
+        prompt: "Собери: «Два года назад я переехал в Сербию»"
+        bank: ["Pre", "dve", "godine", "sam", "se", "preselio", "u", "Srbiju", "Srbiji"]
+        accept:
+          - "Pre dve godine sam se preselio u Srbiju."
+          - "Preselio sam se u Srbiju pre dve godine."
+      - id: "63.2.7"
+        type: fix_error
+        prompt: "Pre dve godina sam se preselio u Srbiju."
+        accept: ["Pre dve godine sam se preselio u Srbiju."]
+        explain: "После «два, три, четыре» слово «год» меняется иначе, чем после «пять» и дальше."
+      - id: "63.2.8"
+        type: translate
+        prompt: "У меня есть жена и дочь."
+        accept: ["Imam ženu i ćerku."]
+        hint: "Оба существительных в винительном: -a меняется на -u."
+      - id: "63.2.9"
+        type: translate
+        prompt: "Я всё ещё учу сербский."
+        accept: ["Još uvek učim srpski.", "Ja još uvek učim srpski."]
+        hint: "«Всё ещё» — два слова из теории."
+
+  - id: "63.3"
+    kind: teach
+    title: "Планы на будущее"
+    md: "63/3-planovi.md"
+
+  - id: "63.4"
+    kind: practice
+    title: "Планы"
+    also_ok: ["Srbiji", "ostanem", "naučiti", "kuću", "godinu", "dana", "budućnosti", "govoriti", "bolje"]
+    exercises:
+      - id: "63.4.1"
+        type: choice
+        prompt: "«Я планирую остаться в Сербии» —"
+        options: ["Planiram da ostanem u Srbiji.", "Planiram ostanem u Srbiji.", "Planiram da ostanem u Srbiju."]
+        answer: "Planiram da ostanem u Srbiji."
+      - id: "63.4.2"
+        type: choice
+        prompt: "«Надеюсь, что выучу сербский» —"
+        options: ["Nadam se da ću naučiti srpski.", "Nadam da ću naučiti srpski.", "Nadam se da naučiti srpski."]
+        answer: "Nadam se da ću naučiti srpski."
+      - id: "63.4.3"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["za godinu dana", "через год"]
+          - ["jednog dana", "когда-нибудь"]
+          - ["zauvek", "навсегда"]
+          - ["u budućnosti", "в будущем"]
+      - id: "63.4.4"
+        type: fill_blank
+        prompt: "«Через год» → Za godinu ___."
+        accept: ["dana"]
+        hint: "Устойчивое выражение: «год дней» — слово, которое значит «дней»."
+      - id: "63.4.5"
+        type: fill_blank
+        prompt: "«Когда-нибудь я куплю дом» → ___ dana ću kupiti kuću."
+        accept: ["Jednog"]
+        hint: "Первое слово выражения «когда-нибудь» — «одного» (родительный от jedan)."
+      - id: "63.4.6"
+        type: word_bank
+        prompt: "Собери: «Не знаю, останусь ли навсегда»"
+        bank: ["Ne", "znam", "da", "li", "ću", "ostati", "zauvek", "ostanem"]
+        accept: ["Ne znam da li ću ostati zauvek."]
+      - id: "63.4.7"
+        type: fix_error
+        prompt: "Nadam da ću naučiti srpski."
+        accept: ["Nadam se da ću naučiti srpski."]
+        explain: "Глагол «надеяться» по-сербски возвратный."
+      - id: "63.4.8"
+        type: translate
+        prompt: "Я надеюсь, что останусь здесь навсегда."
+        accept:
+          - "Nadam se da ću ostati ovde zauvek."
+          - "Nadam se da ću zauvek ostati ovde."
+          - "Nadam se da ću ostati zauvek ovde."
+        hint: "«Надеюсь» — nadati se; «останусь» — ću и инфинитив."
+      - id: "63.4.9"
+        type: translate
+        prompt: "Что ты планируешь на будущее?"
+        accept: ["Šta planiraš u budućnosti?", "Šta planiraš za budućnost?"]
+        hint: "«В будущем» — выражение из теории; планируешь — planirati."
+
+  - id: "63.5"
+    kind: reading
+    title: "Анина история"
+    md: "63/5-citanje.md"
+    also_ok: ["preselila", "rođena", "godinu", "dana", "govoriti", "bolje", "ostanem", "ćerku", "muža", "učim", "vratiti", "zauvek"]
+    exercises:
+      - id: "63.5.1"
+        type: choice
+        prompt: "Когда Ана переехала в Сербию?"
+        options: ["Pre dve godine.", "Pre pet godina.", "Pre godinu dana."]
+        answer: "Pre dve godine."
+      - id: "63.5.2"
+        type: choice
+        prompt: "Кто есть у Аны?"
+        options: ["Muž i ćerka.", "Žena i sin.", "Samo ćerka."]
+        answer: "Muž i ćerka."
+      - id: "63.5.3"
+        type: choice
+        prompt: "Что Ана планирует?"
+        options: ["Da ostane ovde.", "Da se vrati u Moskvu.", "Da ide u školu."]
+        answer: "Da ostane ovde."
+
+  - id: "63.6"
+    kind: dialogue
+    title: "Šta planiraš?"
+    scene: "Знакомый спрашивает, давно ли ты в Сербии и что планируешь."
+    voice: f
+    also_ok: ["porodicu", "ostaneš", "ženu", "sina", "zauvek"]
+    turns:
+      - who: npc
+        sr: "Kad si se preselio u Srbiju?"
+        ru: "Когда ты переехал в Сербию?"
+
+      - who: me
+        sr: "Pre dve godine."
+        ru: "Два года назад."
+        exercise:
+          id: "63.6.1"
+          type: translate
+          prompt: "Скажи: «Два года назад»"
+          accept: ["Pre dve godine."]
+          hint: "«Назад» — pre; после «два» слово «год» стоит в родительном единственного."
+
+      - who: npc
+        sr: "Imaš li porodicu ovde?"
+        ru: "У тебя здесь есть семья?"
+
+      - who: me
+        sr: "Da, imam ženu i sina."
+        ru: "Да, у меня жена и сын."
+        exercise:
+          id: "63.6.2"
+          type: choice
+          prompt: "Скажи: «Да, у меня жена и сын»"
+          options: ["Da, imam ženu i sina.", "Da, imam žena i sin.", "Da, imam ženu i sin."]
+          answer: "Da, imam ženu i sina."
+
+      - who: npc
+        sr: "Planiraš li da ostaneš?"
+        ru: "Ты планируешь остаться?"
+
+      - who: me
+        sr: "Da, planiram da ostanem zauvek."
+        ru: "Да, я планирую остаться навсегда."
+        exercise:
+          id: "63.6.3"
+          type: fill_blank
+          prompt: "«Да, я планирую остаться навсегда» → Da, planiram da ostanem ___."
+          accept: ["zauvek"]
+          hint: "Слово «навсегда» — в теории про планы."
+
+      - who: npc
+        sr: "Lepo! Drago mi je zbog tebe."
+        ru: "Здорово! Я рад за тебя."
+
+      - who: me
+        sr: "Hvala!"
+        ru: "Спасибо!"
+        exercise:
+          id: "63.6.4"
+          type: choice
+          prompt: "Поблагодари"
+          options: ["Hvala!", "Izvinite!", "Dobro jutro!"]
+          answer: "Hvala!"
+
+  - id: "63.7"
+    kind: practice
+    title: "Диктант"
+    mixed: true
+    also_ok: ["preselio", "ženu", "sina", "ostati"]
+    exercises:
+      - id: "63.7.1"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Pre dve godine sam se preselio u Srbiju."
+        accept: ["Pre dve godine sam se preselio u Srbiju."]
+        ru: ["Два года назад я переехал в Сербию", "Я переехал в Сербию два года назад", "Два года назад я переселился в Сербию"]
+      - id: "63.7.2"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Imam ženu i sina."
+        accept: ["Imam ženu i sina."]
+        ru: ["У меня жена и сын", "У меня есть жена и сын"]
+      - id: "63.7.3"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Nadam se da ću ostati zauvek."
+        accept: ["Nadam se da ću ostati zauvek."]
+        ru: ["Надеюсь, что останусь навсегда", "Я надеюсь, что останусь навсегда", "Надеюсь остаться навсегда"]

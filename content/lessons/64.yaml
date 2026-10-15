@@ -1,0 +1,242 @@
+lesson: "64"
+title: "Телефон (Telefon)"
+subtitle: "звонки, javiću se, договориться о звонке"
+teaches:
+  [halo, nazvati, cuti, sacekati, ostaviti, razgovarati, linija, veza, voleo-bih, mogli-biste-li]
+
+steps:
+  - id: "64.1"
+    kind: teach
+    title: "Звонок"
+    md: "64/1-poziv.md"
+
+  - id: "64.2"
+    kind: practice
+    title: "Телефонный разговор"
+    also_ok: ["zove", "nazvaću", "čujem", "Markom", "zauzeta", "loša", "sačekajte", "razgovaram"]
+    exercises:
+      - id: "64.2.1"
+        type: choice
+        prompt: "«Кто звонит?» —"
+        options: ["Ko zove?", "Ko zovem?", "Šta zove?"]
+        answer: "Ko zove?"
+      - id: "64.2.2"
+        type: choice
+        prompt: "«Плохо тебя слышу» —"
+        options: ["Ne čujem te dobro.", "Ne čuješ me dobro.", "Ne čujem ti dobro."]
+        answer: "Ne čujem te dobro."
+      - id: "64.2.3"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["halo", "алло"]
+          - ["javiću se", "дам знать"]
+          - ["linija je zauzeta", "линия занята"]
+          - ["veza je loša", "связь плохая"]
+      - id: "64.2.4"
+        type: fill_blank
+        prompt: "«Я позвоню тебе позже» → ___ te kasnije."
+        accept: ["Nazvaću"]
+        hint: "Позвонить (один раз) — nazvati; будущее с «ću» пишется слитно, как «javiću»."
+      - id: "64.2.5"
+        type: fill_blank
+        prompt: "«Можно поговорить с Марко?» → Mogu li da razgovaram sa ___?"
+        accept: ["Markom"]
+        hint: "После «sa» — творительный: у слов на -o конец -om."
+      - id: "64.2.6"
+        type: word_bank
+        prompt: "Собери: «Линия занята, я позвоню тебе позже»"
+        bank: ["Linija", "je", "zauzeta", "nazvaću", "te", "kasnije", "zauzet"]
+        accept:
+          - "Linija je zauzeta, nazvaću te kasnije."
+          - "Nazvaću te kasnije, linija je zauzeta."
+      - id: "64.2.7"
+        type: fix_error
+        prompt: "Ne čujem ti dobro."
+        accept: ["Ne čujem te dobro."]
+        explain: "«Тебя» — винительный, а не «тебе»."
+      - id: "64.2.8"
+        type: translate
+        prompt: "Алло? Кто звонит?"
+        accept: ["Halo? Ko zove?"]
+        hint: "Оба слова — из начала теории."
+      - id: "64.2.9"
+        type: translate
+        prompt: "Связь плохая, я тебя не слышу."
+        accept:
+          - "Veza je loša, ne čujem te."
+          - "Veza je loša, ne čujem te dobro."
+          - "Veza je loša i ne čujem te."
+        hint: "Слышу — čuti; «тебя» — короткая форма, которая идёт сразу после «не слышу»."
+
+  - id: "64.3"
+    kind: teach
+    title: "Вежливо: «бы»"
+    md: "64/3-ljubazno.md"
+
+  - id: "64.4"
+    kind: practice
+    title: "Вежливые просьбы"
+    also_ok: ["bih", "bi", "biste", "bismo", "voleo", "volela", "mogli", "sačekate", "razgovaram", "ponovite", "Markom", "Anom"]
+    exercises:
+      - id: "64.4.1"
+        type: choice
+        prompt: "«Я бы хотел поговорить с Марко» —"
+        options: ["Voleo bih da razgovaram sa Markom.", "Volim bih da razgovaram sa Markom.", "Voleo da razgovaram sa Markom."]
+        answer: "Voleo bih da razgovaram sa Markom."
+      - id: "64.4.2"
+        type: choice
+        prompt: "«Не могли бы вы подождать?» —"
+        options: ["Mogli biste li da sačekate?", "Mogli bih li da sačekate?", "Možete biste li da sačekate?"]
+        answer: "Mogli biste li da sačekate?"
+      - id: "64.4.3"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["bih", "бы (я)"]
+          - ["biste", "бы (вы)"]
+          - ["bismo", "бы (мы)"]
+          - ["bi", "бы (ты, он, она)"]
+      - id: "64.4.4"
+        type: fill_blank
+        prompt: "«Я бы хотел кофе» → Voleo ___ kafu."
+        accept: ["bih"]
+        hint: "Это «бы» для «я» — слово из таблицы."
+      - id: "64.4.5"
+        type: fill_blank
+        prompt: "«Не могли бы вы повторить?» → Mogli ___ li da ponovite?"
+        accept: ["biste"]
+        hint: "«Бы» для «вы» — из таблицы."
+      - id: "64.4.6"
+        type: word_bank
+        prompt: "Собери: «Я бы хотела поговорить с Аной»"
+        bank: ["Volela", "bih", "da", "razgovaram", "sa", "Anom", "Ana", "Voleo"]
+        accept: ["Volela bih da razgovaram sa Anom."]
+      - id: "64.4.7"
+        type: fix_error
+        prompt: "Voleo bih razgovaram sa Markom."
+        accept: ["Voleo bih da razgovaram sa Markom."]
+        explain: "Между «бы хотел» и действием нужно связующее слово."
+      - id: "64.4.8"
+        type: translate
+        prompt: "Я бы хотела поговорить с Марко."
+        accept: ["Volela bih da razgovaram sa Markom."]
+        hint: "«Я бы» (женщина): причастие на -la, затем bih."
+      - id: "64.4.9"
+        type: translate
+        prompt: "Не могли бы вы немного подождать?"
+        accept: ["Mogli biste li da sačekate malo?", "Mogli biste li malo da sačekate?"]
+        hint: "Начало — как в теории: mogli, biste, li, потом da и глагол."
+
+  - id: "64.5"
+    kind: reading
+    title: "Разговор по телефону"
+    md: "64/5-citanje.md"
+    also_ok: ["napolje", "vidimo", "bolje"]
+    exercises:
+      - id: "64.5.1"
+        type: choice
+        prompt: "Что не так со связью?"
+        options: ["Veza je loša.", "Linija je zauzeta.", "Nema poruke."]
+        answer: "Veza je loša."
+      - id: "64.5.2"
+        type: choice
+        prompt: "Что Марко хочет?"
+        options: ["Da se vide u petak.", "Da se vide u subotu.", "Da Ana ostane ovde."]
+        answer: "Da se vide u petak."
+      - id: "64.5.3"
+        type: choice
+        prompt: "Что обещает Ана?"
+        options: ["Nazvaće ga kasnije.", "Ostaće ovde.", "Neće se javiti."]
+        answer: "Nazvaće ga kasnije."
+
+  - id: "64.6"
+    kind: dialogue
+    title: "Mogu li da razgovaram sa Markom?"
+    scene: "Ты звонишь в офис и просишь соединить с Марко."
+    voice: f
+    also_ok: ["Markom", "zauzet", "zauzeta", "sačekate", "sačekaću", "ostavite", "poruku", "nazvaću", "ga", "doviđenja"]
+    turns:
+      - who: npc
+        sr: "Halo?"
+        ru: "Алло?"
+
+      - who: me
+        sr: "Dobar dan. Voleo bih da razgovaram sa Markom."
+        ru: "Добрый день. Я бы хотел поговорить с Марко."
+        exercise:
+          id: "64.6.1"
+          type: choice
+          prompt: "Поздоровайся и скажи, что хочешь поговорить с Марко"
+          options:
+            - "Dobar dan. Voleo bih da razgovaram sa Markom."
+            - "Dobar dan. Volim bih da razgovaram sa Markom."
+            - "Dobar dan. Voleo da razgovaram sa Markom."
+          answer: "Dobar dan. Voleo bih da razgovaram sa Markom."
+
+      - who: npc
+        sr: "Marko je zauzet. Možete li da sačekate?"
+        ru: "Марко занят. Можете подождать?"
+
+      - who: me
+        sr: "Da, sačekaću."
+        ru: "Да, подожду."
+        exercise:
+          id: "64.6.2"
+          type: translate
+          prompt: "Скажи: «Да, подожду»"
+          accept: ["Da, sačekaću."]
+          hint: "Будущее: глагол sačekati и «ću» слитно, как в «javiću»."
+
+      - who: npc
+        sr: "Žao mi je, linija je zauzeta. Hoćete li da ostavite poruku?"
+        ru: "Мне жаль, линия занята. Хотите оставить сообщение?"
+
+      - who: me
+        sr: "Ne, nazvaću ga kasnije."
+        ru: "Нет, я позвоню ему позже."
+        exercise:
+          id: "64.6.3"
+          type: fill_blank
+          prompt: "«Нет, я позвоню ему позже» → Ne, ___ ga kasnije."
+          accept: ["nazvaću"]
+          hint: "Позвонить — nazvati; будущее с «ću» пишется слитно."
+
+      - who: npc
+        sr: "U redu. Doviđenja."
+        ru: "Хорошо. До свидания."
+
+      - who: me
+        sr: "Doviđenja!"
+        ru: "До свидания!"
+        exercise:
+          id: "64.6.4"
+          type: choice
+          prompt: "Попрощайся"
+          options: ["Doviđenja!", "Dobro jutro!", "Laku noć!"]
+          answer: "Doviđenja!"
+
+  - id: "64.7"
+    kind: practice
+    title: "Диктант"
+    mixed: true
+    also_ok: ["čujem", "nazvaću", "voleo", "bih", "razgovaram", "Markom"]
+    exercises:
+      - id: "64.7.1"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Ne čujem te dobro."
+        accept: ["Ne čujem te dobro."]
+        ru: ["Я плохо тебя слышу", "Тебя плохо слышно", "Я тебя плохо слышу"]
+      - id: "64.7.2"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Voleo bih da razgovaram sa Markom."
+        accept: ["Voleo bih da razgovaram sa Markom."]
+        ru: ["Я бы хотел поговорить с Марко", "Я хотел бы поговорить с Марко", "Хотел бы поговорить с Марко"]
+      - id: "64.7.3"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Nazvaću te kasnije."
+        accept: ["Nazvaću te kasnije."]
+        ru: ["Я позвоню тебе позже", "Позвоню тебе позже", "Я перезвоню тебе позже"]

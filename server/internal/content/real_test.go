@@ -2,6 +2,11 @@ package content
 
 import (
 	"fmt"
+	"io/fs"
+	"os"
+	"path/filepath"
+	"strconv"
+	"strings"
 	"testing"
 )
 
@@ -142,9 +147,119 @@ func TestRealContentLoads(t *testing.T) {
 	if c.Lessons["00"].Planned {
 		t.Error("lesson 00 should have content")
 	}
-	for _, id := range []string{"70", "77"} {
-		if !c.Lessons[id].Planned {
-			t.Errorf("checkpoint lesson %s should be planned", id)
+	// A lesson is "planned" exactly when course.yaml gives it no file: once a
+	// lesson of level 5 gets content it stops being planned, and one without
+	// content must not pretend to have steps.
+	for id, l := range c.Lessons {
+		if l.Planned && len(l.Steps) > 0 {
+			t.Errorf("lesson %s is planned but has %d steps", id, len(l.Steps))
+		}
+		if !l.Planned && len(l.Steps) == 0 {
+			t.Errorf("lesson %s has a file but no steps", id)
+		}
+	}
+}
+
+// TestNoEmptyAudioClips: a zero-byte clip is what a synthesis request leaves
+// behind when it fails half-way. The speaker button would play silence, and
+// scripts/tts.py used to take the empty file for finished audio.
+func TestNoEmptyAudioClips(t *testing.T) {
+	root := "../../../content/audio"
+	err := filepath.WalkDir(root, func(path string, d fs.DirEntry, err error) error {
+		if err != nil || d.IsDir() || !strings.HasSuffix(path, ".mp3") {
+			return err
+		}
+		if st, serr := d.Info(); serr != nil {
+			return serr
+		} else if st.Size() == 0 {
+			t.Errorf("%s is empty (run scripts/tts.py --force --only <id>)", path)
+		}
+		return nil
+	})
+	if err != nil {
+		t.Fatalf("walk %s: %v", root, err)
+	}
+}
+
+func TestClipPresentIgnoresEmptyFiles(t *testing.T) {
+	dir := t.TempDir()
+	empty := filepath.Join(dir, "empty.mp3")
+	full := filepath.Join(dir, "full.mp3")
+	if err := os.WriteFile(empty, nil, 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(full, []byte("x"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if clipPresent(empty) {
+		t.Error("an empty file must not count as audio")
+	}
+	if !clipPresent(full) {
+		t.Error("a non-empty file must count as audio")
+	}
+	if clipPresent(filepath.Join(dir, "missing.mp3")) {
+		t.Error("a missing file must not count as audio")
+	}
+}
+
+// TestLevel5IsFullyAuthored: lessons 60-77 are real manifests with audio for
+// every vocabulary word, dictation and dialogue line. Level 5 was a list of
+// planned stubs until 2026-10-14; this keeps it from quietly turning back into
+// one (or shipping silent buttons).
+func TestLevel5IsFullyAuthored(t *testing.T) {
+	c, err := Load("../../../content")
+	if err != nil {
+		t.Fatalf("real content: %v", err)
+	}
+	// Review lessons open with a reading, the rest with a teach step.
+	readingFirst := map[string]bool{"67": true, "77": true}
+	for i := 60; i <= 77; i++ {
+		id := fmt.Sprintf("%02d", i)
+		l := c.Lessons[id]
+		if l == nil {
+			t.Errorf("lesson %s missing", id)
+			continue
+		}
+		if l.Planned || !l.Manifest {
+			t.Errorf("lesson %s should be a non-planned manifest", id)
+			continue
+		}
+		if len(l.Steps) < 5 {
+			t.Errorf("lesson %s: %d steps, want >= 5", id, len(l.Steps))
+			continue
+		}
+		first := l.Steps[0].Kind
+		if readingFirst[id] && first != "reading" || !readingFirst[id] && first != "teach" {
+			t.Errorf("lesson %s: first step kind = %q", id, first)
+		}
+		hasDialogue, hasListen := false, false
+		for _, s := range l.Steps {
+			if s.Kind == "dialogue" {
+				hasDialogue = true
+				for n, turn := range s.Turns {
+					if turn.Audio == "" {
+						t.Errorf("lesson %s step %s turn %d has no audio (run scripts/tts.py)", id, s.ID, n+1)
+					}
+				}
+			}
+		}
+		for _, b := range c.Exercises[id] {
+			for _, e := range b.Exercises {
+				if e.Type == "listen" {
+					hasListen = true
+					if e.Audio != e.ID+".mp3" {
+						t.Errorf("lesson %s: listen %s has no audio (run scripts/tts.py)", id, e.ID)
+					}
+				}
+			}
+		}
+		if !hasDialogue || !hasListen {
+			t.Errorf("lesson %s: dialogue=%v listen=%v, want both", id, hasDialogue, hasListen)
+		}
+	}
+	for _, v := range c.Vocab {
+		if n, err := strconv.Atoi(v.Lesson); err == nil && n >= 60 && n <= 77 && v.Audio == "" {
+			t.Errorf("vocab %q (lesson %s) has no audio (run scripts/tts.py)", v.ID, v.Lesson)
 		}
 	}
 }

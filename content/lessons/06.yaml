@@ -66,6 +66,7 @@ steps:
         options: ["Nemam sestru.", "Nemam sestra.", "Imam sestru."]
         answer: "Nemam sestru."
       - id: "06.4.3"
+        hint: "После «imam» — винительный падеж: у слов мужского рода (живое существо) в конце добавляется -a."
         type: fill_blank
         prompt: "У меня есть сын: «Imam ___.»"
         accept: ["sina"]
@@ -76,10 +77,12 @@ steps:
         bank: ["Imam", "ženu"]
         accept: ["Imam ženu."]
       - id: "06.4.5"
+        hint: "После «imam» — винительный падеж: у слов мужского рода (живое существо) в конце добавляется -a."
         type: fix_error
         prompt: "Imam brat."
         accept: ["Imam brata."]
       - id: "06.4.6"
+        hint: "Основа «има-»; окончания: -m, -š, без окончания, -mo, -te, -ju."
         type: conjugate
         prompt: "imati — иметь"
         forms: ["ja", "ti", "on/ona/ono", "mi", "vi", "oni/one/ona"]

@@ -25,6 +25,7 @@ steps:
         options: ["Mogu li da vratim?", "Mogu li da zamenim?", "Mogu li da tražim?"]
         answer: "Mogu li da vratim?"
       - id: "13.2.3"
+        hint: "Слово с этикетки: «годности/действия». Оно в родительном падеже («чего?»), окончание -nja."
         type: fill_blank
         prompt: "«Где написан срок годности?» → Gde piše rok ___?"
         accept: ["trajanja"]
@@ -95,6 +96,7 @@ steps:
         accept: ["Treba mi hleb."]
         ru: ["Мне нужен хлеб", "Мне нужно хлеба", "Мне нужен хлебушек"]
       - id: "13.6.2"
+        hint: "Два слова: «сколько» и «я должен». Второе начинается на dug-."
         type: listen
         prompt: "Запиши, что слышишь."
         say: "Koliko dugujem?"
@@ -125,6 +127,7 @@ steps:
           - ["kusur", "сдача"]
           - ["račun", "чек"]
       - id: "13.7.3"
+        hint: "Вопрос к «вы»: глагол «иметь», основа «има-», для «вы» окончание -te."
         type: fill_blank
         prompt: "«У вас есть молоко?» → Da li ___ mleko?"
         accept: ["imate"]
@@ -134,6 +137,7 @@ steps:
         bank: ["Dajte", "mi", "pola", "kile", "sira"]
         accept: ["Dajte mi pola kile sira."]
       - id: "13.7.5"
+        hint: "После «pola» (пол-) слова стоят в родительном: у kilo -o меняется на -e, а «сыр» получает -a в конце."
         type: translate
         prompt: "Дайте мне полкило сыра."
         accept: ["Dajte mi pola kile sira."]
@@ -171,6 +175,7 @@ steps:
         ru: "Две штуки, пожалуйста."
         exercise:
           id: "13.8.2"
+          hint: "Komad — мужского рода, поэтому число мужское: «два», а не «две»."
           type: fill_blank
           prompt: "«Две штуки, пожалуйста» → ___ komada, molim."
           accept: ["Dva"]
@@ -203,9 +208,10 @@ steps:
         ru: "Можно картой?"
         exercise:
           id: "13.8.4"
+          hint: "«Картой» — karticom (творительный). Вопрос строится с глаголом «можно»."
           type: translate
           prompt: "Спроси, можно ли картой"
-          accept: ["Može karticom?", "Da li može karticom?", "Mogu karticom?"]
+          accept: ["Može karticom?", "Da li može karticom?", "Mogu karticom?", "Može li karticom?", "Mogu li karticom?", "Da li mogu karticom?"]
 
       - who: npc
         sr: "Može. Izvolite račun. Prijatno!"

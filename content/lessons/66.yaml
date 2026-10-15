@@ -1,0 +1,244 @@
+lesson: "66"
+title: "Решения (Rešenja)"
+subtitle: "вызвать мастера, договориться о ремонте, сроки"
+teaches:
+  [majstor, popraviti, rok, procena, garancija, u-roku-od]
+
+steps:
+  - id: "66.1"
+    kind: teach
+    title: "Вызвать мастера"
+    md: "66/1-majstor.md"
+
+  - id: "66.2"
+    kind: practice
+    title: "Просьбы мастеру"
+    also_ok: ["popravite", "dođete", "dođem", "bih", "biste", "utorak", "termin"]
+    exercises:
+      - id: "66.2.1"
+        type: choice
+        prompt: "«Мне нужен мастер» —"
+        options: ["Treba mi majstor.", "Treba me majstor.", "Treba majstor mi."]
+        answer: "Treba mi majstor."
+      - id: "66.2.2"
+        type: choice
+        prompt: "«Не могли бы вы починить роутер?» —"
+        options: ["Mogli biste li da popravite ruter?", "Mogli bih li da popravite ruter?", "Možete biste li da popravite ruter?"]
+        answer: "Mogli biste li da popravite ruter?"
+      - id: "66.2.3"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["majstor", "мастер"]
+          - ["popraviti", "починить"]
+          - ["doći", "прийти"]
+          - ["odgovara mi", "мне подходит"]
+      - id: "66.2.4"
+        type: fill_blank
+        prompt: "«Когда вы можете прийти?» → Kada možete da ___?"
+        accept: ["dođete"]
+        hint: "«Прийти» — doći; в форме «вы» окончание -ete."
+      - id: "66.2.5"
+        type: fill_blank
+        prompt: "«Я бы хотел записаться на приём» → Voleo bih da zakažem ___."
+        accept: ["termin"]
+        hint: "Слово «приём» (запись ко времени) — из урока 37."
+      - id: "66.2.6"
+        type: word_bank
+        prompt: "Собери: «Я могу прийти во вторник»"
+        bank: ["Mogu", "da", "dođem", "u", "utorak", "dođete", "utorka"]
+        accept: ["Mogu da dođem u utorak."]
+      - id: "66.2.7"
+        type: fix_error
+        prompt: "Mogli biste li da popravim ruter?"
+        accept: ["Mogli biste li da popravite ruter?"]
+        explain: "Просьба к «вам»: глагол после da тоже в форме «вы»."
+      - id: "66.2.8"
+        type: translate
+        prompt: "Мне нужен мастер, у меня сломался роутер."
+        accept:
+          - "Treba mi majstor, pokvario mi se ruter."
+          - "Treba mi majstor, ruter mi se pokvario."
+          - "Treba mi majstor, pokvario se ruter."
+          - "Treba mi majstor jer se pokvario ruter."
+        hint: "Сломался — как в уроке 65; «потому что» — jer."
+      - id: "66.2.9"
+        type: translate
+        prompt: "Я бы хотела записаться на приём."
+        accept: ["Volela bih da zakažem termin."]
+        hint: "«Я бы хотела»: причастие на -la, затем bih."
+
+  - id: "66.3"
+    kind: teach
+    title: "Сроки, цена, гарантия"
+    md: "66/3-rok.md"
+
+  - id: "66.4"
+    kind: practice
+    title: "Срок и цена"
+    also_ok: ["roku", "garancije", "cene", "procena", "koštati", "dana"]
+    exercises:
+      - id: "66.4.1"
+        type: choice
+        prompt: "«Какой срок?» —"
+        options: ["Koji je rok?", "Koja je rok?", "Šta je rok?"]
+        answer: "Koji je rok?"
+      - id: "66.4.2"
+        type: choice
+        prompt: "«В течение трёх дней» —"
+        options: ["U roku od tri dana.", "U roku od tri dan.", "U rok od tri dana."]
+        answer: "U roku od tri dana."
+      - id: "66.4.3"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["rok", "срок"]
+          - ["procena", "оценка, смета"]
+          - ["garancija", "гарантия"]
+          - ["koliko će koštati?", "сколько будет стоить?"]
+      - id: "66.4.4"
+        type: fill_blank
+        prompt: "«Есть гарантия?» → Ima li ___?"
+        accept: ["garancije"]
+        hint: "После «ima li» — родительный: у женских слов на -a конец меняется на -e."
+      - id: "66.4.5"
+        type: fill_blank
+        prompt: "«В течение трёх дней» → U ___ od tri dana."
+        accept: ["roku"]
+        hint: "«Срок» после «u» — локатив: слово на согласную получает -u."
+      - id: "66.4.6"
+        type: word_bank
+        prompt: "Собери: «Сколько это будет стоить?»"
+        bank: ["Koliko", "će", "to", "koštati", "košta", "ću"]
+        accept: ["Koliko će to koštati?", "Koliko će koštati?"]
+      - id: "66.4.7"
+        type: fix_error
+        prompt: "U roku od tri dan."
+        accept: ["U roku od tri dana."]
+        explain: "После «tri» слово «день» стоит в родительном единственного."
+      - id: "66.4.8"
+        type: translate
+        prompt: "Вы можете починить это за три дня?"
+        accept:
+          - "Možete li da to popravite za tri dana?"
+          - "Možete li to da popravite za tri dana?"
+          - "Možete li to popraviti za tri dana?"
+        hint: "«За три дня» — za и число; «починить» — popraviti, форма «вы»."
+      - id: "66.4.9"
+        type: translate
+        prompt: "Есть гарантия на ремонт?"
+        accept: ["Ima li garancije na popravku?", "Ima li garancije na popravak?"]
+        hint: "После «ima li» — родительный."
+
+  - id: "66.5"
+    kind: reading
+    title: "Мастер приходит во вторник"
+    md: "66/5-citanje.md"
+    also_ok: ["popraviću", "koštaće", "jednog", "mesec", "hiljade", "dinara", "garancija", "dođem"]
+    exercises:
+      - id: "66.5.1"
+        type: choice
+        prompt: "Когда придёт мастер?"
+        options: ["U utorak.", "U sredu.", "U petak."]
+        answer: "U utorak."
+      - id: "66.5.2"
+        type: choice
+        prompt: "Сколько будет стоить?"
+        options: ["Tri hiljade dinara.", "Pet hiljada dinara.", "Ništa."]
+        answer: "Tri hiljade dinara."
+      - id: "66.5.3"
+        type: choice
+        prompt: "Какая гарантия?"
+        options: ["Mesec dana.", "Godinu dana.", "Nema garancije."]
+        answer: "Mesec dana."
+
+  - id: "66.6"
+    kind: dialogue
+    title: "Treba mi majstor"
+    scene: "Ты звонишь мастеру и договариваешься, когда он придёт."
+    voice: m
+    also_ok: ["majstor", "dođete", "odgovara", "garancije"]
+    turns:
+      - who: npc
+        sr: "Halo?"
+        ru: "Алло?"
+
+      - who: me
+        sr: "Dobar dan. Treba mi majstor za ruter."
+        ru: "Добрый день. Мне нужен мастер для роутера."
+        exercise:
+          id: "66.6.1"
+          type: choice
+          prompt: "Поздоровайся и скажи, что нужен мастер для роутера"
+          options:
+            - "Dobar dan. Treba mi majstor za ruter."
+            - "Dobar dan. Treba me majstor za ruter."
+            - "Dobar dan. Treba mi majstor ruter."
+          answer: "Dobar dan. Treba mi majstor za ruter."
+
+      - who: npc
+        sr: "Kada vam odgovara?"
+        ru: "Когда вам удобно?"
+
+      - who: me
+        sr: "Mogli biste li da dođete u utorak?"
+        ru: "Не могли бы вы прийти во вторник?"
+        exercise:
+          id: "66.6.2"
+          type: fill_blank
+          prompt: "«Не могли бы вы прийти во вторник?» → Mogli biste li da ___ u utorak?"
+          accept: ["dođete"]
+          hint: "Прийти — doći; форма «вы»."
+
+      - who: npc
+        sr: "U utorak mogu u deset sati."
+        ru: "Во вторник могу в десять часов."
+
+      - who: me
+        sr: "Odgovara mi."
+        ru: "Мне подходит."
+        exercise:
+          id: "66.6.3"
+          type: choice
+          prompt: "Скажи, что время подходит"
+          options: ["Odgovara mi.", "Odgovara me.", "Odgovaram mi."]
+          answer: "Odgovara mi."
+
+      - who: npc
+        sr: "Dobro. Vidimo se u utorak."
+        ru: "Хорошо. До встречи во вторник."
+
+      - who: me
+        sr: "Ima li garancije?"
+        ru: "Есть гарантия?"
+        exercise:
+          id: "66.6.4"
+          type: translate
+          prompt: "Спроси: «Есть гарантия?»"
+          accept: ["Ima li garancije?"]
+          hint: "После «ima li» — родительный: женское слово на -a меняет конец на -e."
+
+  - id: "66.7"
+    kind: practice
+    title: "Диктант"
+    mixed: true
+    also_ok: ["majstor", "dođete", "garancije"]
+    exercises:
+      - id: "66.7.1"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Treba mi majstor."
+        accept: ["Treba mi majstor."]
+        ru: ["Мне нужен мастер", "Мне нужен специалист", "Нужен мастер"]
+      - id: "66.7.2"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Mogli biste li da dođete u utorak?"
+        accept: ["Mogli biste li da dođete u utorak?"]
+        ru: ["Не могли бы вы прийти во вторник", "Не могли бы вы прийти во вторник?", "Не смогли бы вы прийти во вторник"]
+      - id: "66.7.3"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Ima li garancije?"
+        accept: ["Ima li garancije?"]
+        ru: ["Есть гарантия", "Есть ли гарантия", "Гарантия есть"]

@@ -1,0 +1,237 @@
+lesson: "72"
+title: "Адрес и документы (Adresa i dokumenti)"
+subtitle: "prijava adrese, документы"
+teaches:
+  [prijava, adresa, opstina, potvrda, kopija, original, overiti, pecat, prevod, tumac]
+
+steps:
+  - id: "72.1"
+    kind: teach
+    title: "Регистрация адреса"
+    md: "72/1-prijava.md"
+
+  - id: "72.2"
+    kind: practice
+    title: "Муниципалитет и справки"
+    also_ok: ["adrese", "opštinu", "opštini", "opštine", "prijava", "prijavu"]
+    exercises:
+      - id: "72.2.1"
+        type: choice
+        prompt: "«Мне нужна регистрация по адресу» —"
+        options: ["Treba mi prijava adrese.", "Treba mi prijava adresa.", "Treba mi prijavu adrese."]
+        answer: "Treba mi prijava adrese."
+      - id: "72.2.2"
+        type: choice
+        prompt: "«Иду в муниципалитет» —"
+        options: ["Idem u opštinu.", "Idem u opštini.", "Idem opštinu."]
+        answer: "Idem u opštinu."
+      - id: "72.2.3"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["prijava", "регистрация, заявление"]
+          - ["opština", "муниципалитет"]
+          - ["potvrda", "справка"]
+          - ["adresa", "адрес"]
+      - id: "72.2.4"
+        type: fill_blank
+        prompt: "«Иду в муниципалитет» → Idem u ___."
+        accept: ["opštinu"]
+        hint: "Куда? — винительный: у женских слов на -a конец меняется на -u."
+      - id: "72.2.5"
+        type: fill_blank
+        prompt: "«Нужна справка» → Treba ___."
+        accept: ["potvrda"]
+        hint: "Слово «справка» — в теории про регистрацию."
+      - id: "72.2.6"
+        type: word_bank
+        prompt: "Собери: «Где муниципалитет?»"
+        bank: ["Gde", "je", "opština", "opštinu", "gde"]
+        accept: ["Gde je opština?"]
+      - id: "72.2.7"
+        type: fix_error
+        prompt: "Idem u opštini."
+        accept: ["Idem u opštinu."]
+        explain: "Куда? — винительный, а не «где?»."
+      - id: "72.2.8"
+        type: translate
+        prompt: "Мне нужна справка из муниципалитета."
+        accept: ["Treba mi potvrda iz opštine."]
+        hint: "После «iz» — родительный: у женских слов на -a конец меняется на -e."
+      - id: "72.2.9"
+        type: translate
+        prompt: "Мне нужна регистрация адреса, иду в муниципалитет."
+        accept: ["Treba mi prijava adrese, idem u opštinu.", "Treba mi prijava adrese, idem u opštinu"]
+        hint: "Первое слово после «prijava» — «адреса» в родительном; муниципалитет — винительный."
+
+  - id: "72.3"
+    kind: teach
+    title: "Копии, печать, перевод"
+    md: "72/3-kopije.md"
+
+  - id: "72.4"
+    kind: practice
+    title: "Копия, перевод, переводчик"
+    also_ok: ["pasoša", "kopija", "kopiju", "overena", "tumača", "original", "prevod"]
+    exercises:
+      - id: "72.4.1"
+        type: choice
+        prompt: "«Мне нужна копия паспорта» —"
+        options: ["Treba mi kopija pasoša.", "Treba mi kopija pasoš.", "Treba mi kopiju pasoša."]
+        answer: "Treba mi kopija pasoša."
+      - id: "72.4.2"
+        type: choice
+        prompt: "«Мне нужен перевод на сербский» —"
+        options: ["Treba mi prevod na srpski.", "Treba mi prevod na srpskom.", "Treba mi prevod u srpski."]
+        answer: "Treba mi prevod na srpski."
+      - id: "72.4.3"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["kopija", "копия"]
+          - ["prevod", "перевод"]
+          - ["pečat", "печать"]
+          - ["tumač", "переводчик"]
+      - id: "72.4.4"
+        type: fill_blank
+        prompt: "«Заверенная копия» → Overena ___."
+        accept: ["kopija"]
+        hint: "Слово «копия» — женского рода, из теории."
+      - id: "72.4.5"
+        type: fill_blank
+        prompt: "«Ищу переводчика» → Tražim ___."
+        accept: ["tumača"]
+        hint: "Одушевлённое мужского рода: винительный совпадает с родительным (на -a)."
+      - id: "72.4.6"
+        type: word_bank
+        prompt: "Собери: «У меня оригинал и копия»"
+        bank: ["Imam", "original", "i", "kopiju", "kopija"]
+        accept: ["Imam original i kopiju."]
+      - id: "72.4.7"
+        type: fix_error
+        prompt: "Treba mi kopija pasoš."
+        accept: ["Treba mi kopija pasoša."]
+        explain: "«Копия чего?» — родительный."
+      - id: "72.4.8"
+        type: translate
+        prompt: "Мне нужен перевод и печать."
+        accept: ["Treba mi prevod i pečat."]
+        hint: "Оба слова мужского рода, без изменений: «мне нужен» — treba mi."
+      - id: "72.4.9"
+        type: translate
+        prompt: "Мне нужна заверенная копия паспорта."
+        accept: ["Treba mi overena kopija pasoša."]
+        hint: "«Заверенная» — женский род, как «копия»; паспорт — в родительном."
+
+  - id: "72.5"
+    kind: reading
+    title: "Марко в муниципалитете"
+    md: "72/5-citanje.md"
+    also_ok: ["nov", "mu", "opštinu", "pasošem", "kopijom", "kažu", "overen", "prevod", "tumača", "prijava", "adrese"]
+    exercises:
+      - id: "72.5.1"
+        type: choice
+        prompt: "Что нужно Марко?"
+        options: ["Prijava adrese.", "Novi stan.", "Pasoš."]
+        answer: "Prijava adrese."
+      - id: "72.5.2"
+        type: choice
+        prompt: "Куда он идёт?"
+        options: ["U opštinu.", "U banku.", "Na šalter."]
+        answer: "U opštinu."
+      - id: "72.5.3"
+        type: choice
+        prompt: "Кого он ищет?"
+        options: ["Tumača.", "Majstora.", "Šefa."]
+        answer: "Tumača."
+
+  - id: "72.6"
+    kind: dialogue
+    title: "U opštini"
+    scene: "Ты в муниципалитете и оформляешь регистрацию адреса."
+    voice: f
+    also_ok: ["prijava", "adrese", "original", "kopiju", "tumača", "dođite", "doći", "imate", "pasoš", "tumač"]
+    turns:
+      - who: npc
+        sr: "Dobar dan. Izvolite?"
+        ru: "Добрый день. Слушаю вас?"
+
+      - who: me
+        sr: "Dobar dan. Treba mi prijava adrese."
+        ru: "Добрый день. Мне нужна регистрация по адресу."
+        exercise:
+          id: "72.6.1"
+          type: choice
+          prompt: "Поздоровайся и скажи, что нужна регистрация по адресу"
+          options:
+            - "Dobar dan. Treba mi prijava adrese."
+            - "Dobar dan. Treba mi prijava adresa."
+            - "Dobar dan. Treba mi prijavu adrese."
+          answer: "Dobar dan. Treba mi prijava adrese."
+
+      - who: npc
+        sr: "Imate li pasoš i kopiju?"
+        ru: "У вас есть паспорт и копия?"
+
+      - who: me
+        sr: "Da, imam original i kopiju."
+        ru: "Да, у меня оригинал и копия."
+        exercise:
+          id: "72.6.2"
+          type: translate
+          prompt: "Скажи: «Да, у меня оригинал и копия»"
+          accept: ["Da, imam original i kopiju."]
+          hint: "«Копия» после «imam» — в винительном: -a меняется на -u."
+
+      - who: npc
+        sr: "Treba i prevod."
+        ru: "Нужен ещё и перевод."
+
+      - who: me
+        sr: "Tražim tumača."
+        ru: "Я ищу переводчика."
+        exercise:
+          id: "72.6.3"
+          type: choice
+          prompt: "Скажи, что ищешь переводчика"
+          options: ["Tražim tumača.", "Tražim tumač.", "Tražim tumaču."]
+          answer: "Tražim tumača."
+
+      - who: npc
+        sr: "U redu. Dođite sutra."
+        ru: "Хорошо. Приходите завтра."
+
+      - who: me
+        sr: "Dobro, doći ću sutra."
+        ru: "Хорошо, приду завтра."
+        exercise:
+          id: "72.6.4"
+          type: choice
+          prompt: "Скажи: «Хорошо, приду завтра»"
+          options: ["Dobro, doći ću sutra.", "Dobro, doći sutra.", "Dobro, dođem sutra ću."]
+          answer: "Dobro, doći ću sutra."
+
+  - id: "72.7"
+    kind: practice
+    title: "Диктант"
+    mixed: true
+    also_ok: ["adrese", "opštinu", "prevod"]
+    exercises:
+      - id: "72.7.1"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Treba mi prijava adrese."
+        accept: ["Treba mi prijava adrese."]
+        ru: ["Мне нужна регистрация по адресу", "Мне нужна регистрация адреса", "Нужна регистрация адреса"]
+      - id: "72.7.2"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Idem u opštinu."
+        accept: ["Idem u opštinu."]
+        ru: ["Я иду в муниципалитет", "Иду в муниципалитет", "Я иду в администрацию"]
+      - id: "72.7.3"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Treba mi prevod na srpski."
+        accept: ["Treba mi prevod na srpski."]
+        ru: ["Мне нужен перевод на сербский", "Нужен перевод на сербский", "Мне нужно перевести на сербский"]

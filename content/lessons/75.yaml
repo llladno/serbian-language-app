@@ -1,0 +1,242 @@
+lesson: "75"
+title: "Длинный разговор (Dug razgovor)"
+subtitle: "рассказать историю целиком, беглость"
+teaches:
+  [prvo, zatim, najzad, na-kraju, dok, slucajno, usput, odjednom, srecom]
+
+steps:
+  - id: "75.1"
+    kind: teach
+    title: "Рассказ по порядку"
+    md: "75/1-redosled.md"
+
+  - id: "75.2"
+    kind: practice
+    title: "Порядок событий"
+    also_ok: ["otišao", "otišla", "banku", "kupio", "došao", "kući", "nazvao", "stigao", "čekao", "čitao", "Anu", "Ani"]
+    exercises:
+      - id: "75.2.1"
+        type: choice
+        prompt: "«Сначала я пошёл в банк» —"
+        options: ["Prvo sam otišao u banku.", "Prvo sam otišao u banka.", "Prvo sam otišla u banku."]
+        answer: "Prvo sam otišao u banku."
+      - id: "75.2.2"
+        type: choice
+        prompt: "«Когда я пришёл домой, я позвонил Ане» —"
+        options: ["Kad sam stigao kući, nazvao sam Anu.", "Kad sam stigao kući, nazvao sam Ani.", "Kad sam stigao kući, nazvao sam Ana."]
+        answer: "Kad sam stigao kući, nazvao sam Anu."
+      - id: "75.2.3"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["prvo", "сначала"]
+          - ["zatim", "затем"]
+          - ["najzad", "наконец"]
+          - ["na kraju", "в конце"]
+      - id: "75.2.4"
+        type: fill_blank
+        prompt: "«Затем я купил хлеб» → ___ sam kupio hleb."
+        accept: ["Zatim"]
+        hint: "Слово «затем» — второй пункт цепочки в теории."
+      - id: "75.2.5"
+        type: fill_blank
+        prompt: "«Пока я ждал автобус, я читал» → ___ sam čekao autobus, čitao sam."
+        accept: ["Dok"]
+        hint: "Короткий союз «пока» — из теории; после него процесс."
+      - id: "75.2.6"
+        type: word_bank
+        prompt: "Собери: «Наконец я пришёл домой»"
+        bank: ["Najzad", "sam", "došao", "kući", "kuća", "prvo"]
+        accept: ["Najzad sam došao kući."]
+      - id: "75.2.7"
+        type: fix_error
+        prompt: "Prvo sam otišao u banka."
+        accept: ["Prvo sam otišao u banku."]
+        explain: "Куда? — винительный: -a меняется на -u."
+      - id: "75.2.8"
+        type: translate
+        prompt: "Сначала я купил хлеб, затем пришёл домой."
+        accept:
+          - "Prvo sam kupio hleb, zatim sam došao kući."
+          - "Prvo sam kupio hleb, a zatim sam došao kući."
+        hint: "Две связки из теории: «сначала» и «затем»."
+      - id: "75.2.9"
+        type: translate
+        prompt: "Когда я пришёл домой, я позвонил Ане."
+        accept:
+          - "Kad sam stigao kući, nazvao sam Anu."
+          - "Kad sam došao kući, nazvao sam Anu."
+        hint: "«Позвонить» — nazvati; Ана в винительном: Anu."
+
+  - id: "75.3"
+    kind: teach
+    title: "Неожиданное в рассказе"
+    md: "75/3-neocekivano.md"
+
+  - id: "75.4"
+    kind: practice
+    title: "Вдруг, случайно, к счастью"
+    also_ok: ["počela", "počeo", "počelo", "video", "Marka", "kasnio", "kasnila", "kuće", "kod", "bio", "kupio", "kafu"]
+    exercises:
+      - id: "75.4.1"
+        type: choice
+        prompt: "«Вдруг пошёл дождь» —"
+        options: ["Odjednom je počela kiša.", "Odjednom je počeo kiša.", "Odjednom je počelo kiša."]
+        answer: "Odjednom je počela kiša."
+      - id: "75.4.2"
+        type: choice
+        prompt: "«К счастью, автобус приехал» —"
+        options: ["Srećom, autobus je stigao.", "Srećan, autobus je stigao.", "Srećno, autobus je stigao."]
+        answer: "Srećom, autobus je stigao."
+      - id: "75.4.3"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["slučajno", "случайно"]
+          - ["usput", "по пути"]
+          - ["odjednom", "вдруг"]
+          - ["srećom", "к счастью"]
+      - id: "75.4.4"
+        type: fill_blank
+        prompt: "«Случайно я увидел Марко» → ___ sam video Marka."
+        accept: ["Slučajno"]
+        hint: "Слово «случайно» — первый пункт второй теории."
+      - id: "75.4.5"
+        type: fill_blank
+        prompt: "«По пути я купил кофе» → ___ sam kupio kafu."
+        accept: ["Usput"]
+        hint: "«По пути» — одно слово из теории."
+      - id: "75.4.6"
+        type: word_bank
+        prompt: "Собери: «К сожалению, я опоздал»"
+        bank: ["Nažalost", "kasnio", "sam", "srećom", "kasnila"]
+        accept: ["Nažalost, kasnio sam."]
+      - id: "75.4.7"
+        type: fix_error
+        prompt: "Odjednom je počeo kiša."
+        accept: ["Odjednom je počela kiša."]
+        explain: "Причастие согласуется со словом kiša."
+      - id: "75.4.8"
+        type: translate
+        prompt: "По пути я случайно увидел Марко."
+        accept: ["Usput sam slučajno video Marka.", "Slučajno sam usput video Marka."]
+        hint: "Оба слова — из теории про неожиданное."
+      - id: "75.4.9"
+        type: translate
+        prompt: "Вдруг пошёл дождь, но, к счастью, я был дома."
+        accept: ["Odjednom je počela kiša, ali srećom sam bio kod kuće.", "Odjednom je počela kiša, ali srećom bio sam kod kuće."]
+        hint: "Дом — «kod kuće» (у дома, дома); причастие «пошёл» согласуй с «дождь»."
+
+  - id: "75.5"
+    kind: reading
+    title: "Вчерашний день"
+    md: "75/5-citanje.md"
+    also_ok: ["otišao", "video", "Marka", "sedeli", "kafiću", "počela", "blizu", "stigao", "nazvao", "Anu", "zajedno", "banku", "kuća"]
+    exercises:
+      - id: "75.5.1"
+        type: choice
+        prompt: "Что сделал рассказчик сначала?"
+        options: ["Otišao je u banku.", "Nazvao je Anu.", "Sedeo je u kafiću."]
+        answer: "Otišao je u banku."
+      - id: "75.5.2"
+        type: choice
+        prompt: "Что случилось вдруг?"
+        options: ["Počela je kiša.", "Stigao je autobus.", "Pokvario se ruter."]
+        answer: "Počela je kiša."
+      - id: "75.5.3"
+        type: choice
+        prompt: "Что он сделал в конце?"
+        options: ["Nazvao je Anu.", "Otišao je u banku.", "Video je Marka."]
+        answer: "Nazvao je Anu."
+
+  - id: "75.6"
+    kind: dialogue
+    title: "Šta si radio juče?"
+    scene: "Подруга спрашивает, как прошёл твой вчерашний день, и ты рассказываешь по порядку."
+    voice: f
+    also_ok: ["radio", "bilo", "posle", "završio", "dan", "otišao", "banku", "kupio", "stigao", "došao", "nazvao", "Anu", "kuća", "kući", "blizu"]
+    turns:
+      - who: npc
+        sr: "Zdravo! Šta si radio juče?"
+        ru: "Привет! Что ты делал вчера?"
+
+      - who: me
+        sr: "Prvo sam otišao u banku, zatim sam kupio hleb."
+        ru: "Сначала я пошёл в банк, затем купил хлеб."
+        exercise:
+          id: "75.6.1"
+          type: translate
+          prompt: "Скажи: «Сначала я пошёл в банк, затем купил хлеб»"
+          accept:
+            - "Prvo sam otišao u banku, zatim sam kupio hleb."
+            - "Prvo sam otišao u banku, a zatim sam kupio hleb."
+          hint: "Две связки: «сначала» и «затем»; в банк — винительный."
+
+      - who: npc
+        sr: "I šta je bilo posle?"
+        ru: "И что было потом?"
+
+      - who: me
+        sr: "Odjednom je počela kiša."
+        ru: "Вдруг пошёл дождь."
+        exercise:
+          id: "75.6.2"
+          type: fill_blank
+          prompt: "«Вдруг пошёл дождь» → ___ je počela kiša."
+          accept: ["Odjednom"]
+          hint: "Слово «вдруг» — из теории про неожиданное."
+
+      - who: npc
+        sr: "Zaista? Šteta!"
+        ru: "Правда? Жаль!"
+
+      - who: me
+        sr: "Srećom, kuća je blizu."
+        ru: "К счастью, дом рядом."
+        exercise:
+          id: "75.6.3"
+          type: choice
+          prompt: "Скажи: «К счастью, дом рядом»"
+          options: ["Srećom, kuća je blizu.", "Srećan, kuća je blizu.", "Srećno, kuća je blizu."]
+          answer: "Srećom, kuća je blizu."
+
+      - who: npc
+        sr: "Lepo. Kako si završio dan?"
+        ru: "Хорошо. Как ты закончил день?"
+
+      - who: me
+        sr: "Na kraju sam stigao kući i nazvao Anu."
+        ru: "В конце я пришёл домой и позвонил Ане."
+        exercise:
+          id: "75.6.4"
+          type: translate
+          prompt: "Скажи: «В конце я пришёл домой и позвонил Ане»"
+          accept:
+            - "Na kraju sam stigao kući i nazvao Anu."
+            - "Na kraju sam došao kući i nazvao Anu."
+          hint: "«В конце» — выражение из теории; Ана — в винительном."
+
+  - id: "75.7"
+    kind: practice
+    title: "Диктант"
+    mixed: true
+    also_ok: ["otišao", "banku", "nazvao", "Anu", "počela"]
+    exercises:
+      - id: "75.7.1"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Prvo sam otišao u banku."
+        accept: ["Prvo sam otišao u banku."]
+        ru: ["Сначала я пошёл в банк", "Сначала я зашёл в банк", "Сначала я сходил в банк"]
+      - id: "75.7.2"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Odjednom je počela kiša."
+        accept: ["Odjednom je počela kiša."]
+        ru: ["Вдруг пошёл дождь", "Вдруг начался дождь", "Внезапно пошёл дождь"]
+      - id: "75.7.3"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Na kraju sam nazvao Anu."
+        accept: ["Na kraju sam nazvao Anu."]
+        ru: ["В конце я позвонил Ане", "В итоге я позвонил Ане", "Под конец я позвонил Ане"]

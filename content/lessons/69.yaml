@@ -1,0 +1,234 @@
+lesson: "69"
+title: "Работа I (Posao I)"
+subtitle: "рабочее место, задачи, коллеги, rok"
+teaches:
+  [kancelarija, kolega, sef, firma, odmor, zadatak, pauza, zaposlen]
+
+steps:
+  - id: "69.1"
+    kind: teach
+    title: "На работе"
+    md: "69/1-firma.md"
+
+  - id: "69.2"
+    kind: practice
+    title: "Фирма, офис, коллеги"
+    also_ok: ["firmi", "kolegama", "dobrim", "pauzu", "kancelarija", "spratu", "trećem"]
+    exercises:
+      - id: "69.2.1"
+        type: choice
+        prompt: "«Я работаю в фирме» —"
+        options: ["Radim u firmi.", "Radim u firma.", "Radim u firmu."]
+        answer: "Radim u firmi."
+      - id: "69.2.2"
+        type: choice
+        prompt: "«Я работаю с коллегами» —"
+        options: ["Radim sa kolegama.", "Radim sa kolege.", "Radim kolegama."]
+        answer: "Radim sa kolegama."
+      - id: "69.2.3"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["kancelarija", "офис"]
+          - ["šef", "начальник"]
+          - ["kolega", "коллега"]
+          - ["pauza", "перерыв"]
+      - id: "69.2.4"
+        type: fill_blank
+        prompt: "«Мой офис на третьем этаже» → Moja ___ je na trećem spratu."
+        accept: ["kancelarija"]
+        hint: "Слово «офис» — в первой теории про работу, женский род."
+      - id: "69.2.5"
+        type: fill_blank
+        prompt: "«Я работаю с коллегами» → Radim sa ___."
+        accept: ["kolegama"]
+        hint: "После «sa» — творительный множественного: окончание -ama."
+      - id: "69.2.6"
+        type: word_bank
+        prompt: "Собери: «Мой начальник хороший»"
+        bank: ["Moj", "šef", "je", "dobar", "moja", "dobra"]
+        accept: ["Moj šef je dobar."]
+      - id: "69.2.7"
+        type: fix_error
+        prompt: "Radim u firmu."
+        accept: ["Radim u firmi."]
+        explain: "Где? — локатив, а не «куда?»."
+      - id: "69.2.8"
+        type: translate
+        prompt: "Я работаю в фирме с хорошими коллегами."
+        accept: ["Radim u firmi sa dobrim kolegama."]
+        hint: "После «sa» всё в творительном множественного: прилагательное на -im, существительное на -ama."
+      - id: "69.2.9"
+        type: translate
+        prompt: "У меня перерыв в два часа."
+        accept: ["Imam pauzu u dva sata.", "Pauza mi je u dva sata.", "Imam pauzu u dva."]
+        hint: "Перерыв — pauza; после «imam» она в винительном: -a меняется на -u."
+
+  - id: "69.3"
+    kind: teach
+    title: "Задачи, сроки, зарплата"
+    md: "69/3-zadatak.md"
+
+  - id: "69.4"
+    kind: practice
+    title: "Срок, задание, отпуск"
+    also_ok: ["petka", "kuće", "petog", "zadatak", "odmor", "odmoru", "završim", "stiže", "dolazi"]
+    exercises:
+      - id: "69.4.1"
+        type: choice
+        prompt: "«Срок — до пятницы» —"
+        options: ["Rok je do petka.", "Rok je do petak.", "Rok je do petku."]
+        answer: "Rok je do petka."
+      - id: "69.4.2"
+        type: choice
+        prompt: "«Я иду в отпуск» —"
+        options: ["Idem na odmor.", "Idem na odmoru.", "Idem u odmor."]
+        answer: "Idem na odmor."
+      - id: "69.4.3"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["zadatak", "задание"]
+          - ["plata", "зарплата"]
+          - ["odmor", "отпуск"]
+          - ["od kuće", "из дома"]
+      - id: "69.4.4"
+        type: fill_blank
+        prompt: "«Мне нужно закончить задание» → Moram da završim ___."
+        accept: ["zadatak"]
+        hint: "Слово «задание» — в начале второй теории."
+      - id: "69.4.5"
+        type: fill_blank
+        prompt: "«Срок — до пятницы» → Rok je do ___."
+        accept: ["petka"]
+        hint: "После «do» — родительный: petak теряет гласную."
+      - id: "69.4.6"
+        type: word_bank
+        prompt: "Собери: «Я работаю из дома»"
+        bank: ["Radim", "od", "kuće", "kuća", "kući"]
+        accept: ["Radim od kuće."]
+      - id: "69.4.7"
+        type: fix_error
+        prompt: "Rok je do petak."
+        accept: ["Rok je do petka."]
+        explain: "После «do» нужен родительный падеж."
+      - id: "69.4.8"
+        type: translate
+        prompt: "Мне нужно закончить задание до пятницы."
+        accept: ["Moram da završim zadatak do petka.", "Do petka moram da završim zadatak."]
+        hint: "«Мне нужно» — moram da; «до пятницы» — do и родительный."
+      - id: "69.4.9"
+        type: translate
+        prompt: "Зарплата приходит пятого."
+        accept: ["Plata stiže petog.", "Plata dolazi petog."]
+        hint: "Дата — порядковое число в родительном: petog (урок 57)."
+
+  - id: "69.5"
+    kind: reading
+    title: "Работа Марко"
+    md: "69/5-citanje.md"
+    also_ok: ["firmi", "kuće", "kancelarija", "kolege", "zanimljive", "sastanak", "petka", "petog", "stiže", "svakog", "odmor", "zadatak", "šef"]
+    exercises:
+      - id: "69.5.1"
+        type: choice
+        prompt: "Где работает Марко?"
+        options: ["U firmi.", "U školi.", "Kod kuće."]
+        answer: "U firmi."
+      - id: "69.5.2"
+        type: choice
+        prompt: "Когда срок?"
+        options: ["Do petka.", "Do utorka.", "Do subote."]
+        answer: "Do petka."
+      - id: "69.5.3"
+        type: choice
+        prompt: "Что Марко планирует на следующей неделе?"
+        options: ["Odmor.", "Sastanak.", "Zadatak."]
+        answer: "Odmor."
+
+  - id: "69.6"
+    kind: dialogue
+    title: "Gde radiš?"
+    scene: "Новая коллега спрашивает, где ты работаешь и какой у тебя день."
+    voice: f
+    also_ok: ["firmi", "pauzu", "sastanak", "deset", "petka"]
+    turns:
+      - who: npc
+        sr: "Zdravo! Gde radiš?"
+        ru: "Привет! Где ты работаешь?"
+
+      - who: me
+        sr: "Radim u firmi u Novom Sadu."
+        ru: "Я работаю в фирме в Нови-Саде."
+        exercise:
+          id: "69.6.1"
+          type: choice
+          prompt: "Скажи, что работаешь в фирме в Нови-Саде"
+          options: ["Radim u firmi u Novom Sadu.", "Radim u firmu u Novom Sadu.", "Radim u firmi u Novi Sad."]
+          answer: "Radim u firmi u Novom Sadu."
+
+      - who: npc
+        sr: "Imaš li sastanak danas?"
+        ru: "У тебя сегодня совещание?"
+
+      - who: me
+        sr: "Da, u deset sati, a posle imam pauzu."
+        ru: "Да, в десять часов, а потом у меня перерыв."
+        exercise:
+          id: "69.6.2"
+          type: translate
+          prompt: "Скажи: «Да, в десять часов, а потом у меня перерыв»"
+          accept: ["Da, u deset sati, a posle imam pauzu.", "Da, u deset sati. Posle imam pauzu."]
+          hint: "«Потом» — posle; «перерыв» после «imam» — в винительном."
+
+      - who: npc
+        sr: "Imaš li rok?"
+        ru: "У тебя есть срок?"
+
+      - who: me
+        sr: "Da, rok je do petka."
+        ru: "Да, срок до пятницы."
+        exercise:
+          id: "69.6.3"
+          type: choice
+          prompt: "Скажи: «Да, срок — до пятницы»"
+          options: ["Da, rok je do petka.", "Da, rok je do petak.", "Da, rok je u petka."]
+          answer: "Da, rok je do petka."
+
+      - who: npc
+        sr: "Srećno!"
+        ru: "Удачи!"
+
+      - who: me
+        sr: "Hvala!"
+        ru: "Спасибо!"
+        exercise:
+          id: "69.6.4"
+          type: choice
+          prompt: "Поблагодари"
+          options: ["Hvala!", "Izvinite!", "Dobro jutro!"]
+          answer: "Hvala!"
+
+  - id: "69.7"
+    kind: practice
+    title: "Диктант"
+    mixed: true
+    also_ok: ["firmi", "petka", "šef"]
+    exercises:
+      - id: "69.7.1"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Radim u firmi."
+        accept: ["Radim u firmi."]
+        ru: ["Я работаю в фирме", "Работаю в фирме", "Я работаю в компании"]
+      - id: "69.7.2"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Moj šef je dobar."
+        accept: ["Moj šef je dobar."]
+        ru: ["Мой начальник хороший", "Мой шеф хороший", "Мой начальник добрый"]
+      - id: "69.7.3"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Rok je do petka."
+        accept: ["Rok je do petka."]
+        ru: ["Срок до пятницы", "Срок — до пятницы", "Срок истекает в пятницу"]

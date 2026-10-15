@@ -1,0 +1,239 @@
+lesson: "71"
+title: "Бумаги (Papirologija)"
+subtitle: "банк, карта, boravak"
+teaches:
+  [podici, potpis, potpisati, pasos, boravak, salter, obrazac, popuniti, dokument]
+
+steps:
+  - id: "71.1"
+    kind: teach
+    title: "В банке"
+    md: "71/1-banka.md"
+
+  - id: "71.2"
+    kind: practice
+    title: "Банк и бланки"
+    also_ok: ["banci", "podignem", "popunite", "potpišite", "obrazac", "šalter", "kartica", "novac"]
+    exercises:
+      - id: "71.2.1"
+        type: choice
+        prompt: "«Хочу снять деньги» —"
+        options: ["Hoću da podignem novac.", "Hoću podignem novac.", "Hoću da podigneš novac."]
+        answer: "Hoću da podignem novac."
+      - id: "71.2.2"
+        type: choice
+        prompt: "«Мне нужен счёт в банке» —"
+        options: ["Treba mi račun u banci.", "Treba mi račun u banka.", "Treba me račun u banci."]
+        answer: "Treba mi račun u banci."
+      - id: "71.2.3"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["banka", "банк"]
+          - ["šalter", "окошко, касса"]
+          - ["obrazac", "бланк"]
+          - ["potpis", "подпись"]
+      - id: "71.2.4"
+        type: fill_blank
+        prompt: "«Заполните бланк» → ___ obrazac."
+        accept: ["Popunite"]
+        hint: "Просьба к «вам» — повелительное на -ite; глагол popuniti."
+      - id: "71.2.5"
+        type: fill_blank
+        prompt: "«Подпишите здесь» → ___ ovde."
+        accept: ["Potpišite"]
+        hint: "Глагол potpisati; повелительное «вы» на -ite."
+      - id: "71.2.6"
+        type: word_bank
+        prompt: "Собери: «Моя карта не работает»"
+        bank: ["Moja", "kartica", "ne", "radi", "moj", "radim"]
+        accept: ["Moja kartica ne radi."]
+      - id: "71.2.7"
+        type: fix_error
+        prompt: "Popunite obrazca."
+        accept: ["Popunite obrazac."]
+        explain: "Заполнить что? — винительный; у неодушевлённых на согласную он как именительный."
+      - id: "71.2.8"
+        type: translate
+        prompt: "Я хочу снять деньги."
+        accept: ["Hoću da podignem novac.", "Želim da podignem novac."]
+        hint: "«Снять» — podići; после da — настоящее время в форме «я»."
+      - id: "71.2.9"
+        type: translate
+        prompt: "Подпишите здесь и заполните бланк."
+        accept: ["Potpišite ovde i popunite obrazac.", "Popunite obrazac i potpišite ovde."]
+        hint: "Оба глагола — в форме «вы» на -ite."
+
+  - id: "71.3"
+    kind: teach
+    title: "Документы и пребывание"
+    md: "71/3-dokumenti.md"
+
+  - id: "71.4"
+    kind: practice
+    title: "Документы"
+    also_ok: ["decembra", "redu", "sačekajte", "pasoš", "dokument", "boravak", "novi"]
+    exercises:
+      - id: "71.4.1"
+        type: choice
+        prompt: "«Мне нужен паспорт» —"
+        options: ["Treba mi pasoš.", "Treba me pasoš.", "Trebam mi pasoš."]
+        answer: "Treba mi pasoš."
+      - id: "71.4.2"
+        type: choice
+        prompt: "«Какой документ нужен?» —"
+        options: ["Koji dokument treba?", "Koja dokument treba?", "Šta dokument treba?"]
+        answer: "Koji dokument treba?"
+      - id: "71.4.3"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["pasoš", "паспорт"]
+          - ["dokument", "документ"]
+          - ["boravak", "вид на жительство"]
+          - ["u redu", "в очереди"]
+      - id: "71.4.4"
+        type: fill_blank
+        prompt: "«Мне нужен паспорт» → Treba mi ___."
+        accept: ["pasoš"]
+        hint: "Слово «паспорт» — в начале второй теории."
+      - id: "71.4.5"
+        type: fill_blank
+        prompt: "«Вид на жительство — до декабря» → Imam boravak do ___."
+        accept: ["decembra"]
+        hint: "После «do» — родительный: слово на согласную получает -a."
+      - id: "71.4.6"
+        type: word_bank
+        prompt: "Собери: «Подождите в очереди»"
+        bank: ["Sačekajte", "u", "redu", "red", "sačekate"]
+        accept: ["Sačekajte u redu."]
+      - id: "71.4.7"
+        type: fix_error
+        prompt: "Imam boravak do decembar."
+        accept: ["Imam boravak do decembra."]
+        explain: "После «do» нужен родительный падеж."
+      - id: "71.4.8"
+        type: translate
+        prompt: "Какой документ мне нужен?"
+        accept: ["Koji dokument mi treba?", "Koji dokument treba da imam?"]
+        hint: "«Мне нужен» — treba mi; вопросительное слово «какой» — koji."
+      - id: "71.4.9"
+        type: translate
+        prompt: "У меня вид на жительство до декабря, мне нужен новый паспорт."
+        accept:
+          - "Imam boravak do decembra, treba mi novi pasoš."
+          - "Imam boravak do decembra, a treba mi novi pasoš."
+        hint: "«Новый паспорт» — мужской род: novi pasoš."
+
+  - id: "71.5"
+    kind: reading
+    title: "Ана в банке"
+    md: "71/5-citanje.md"
+    also_ok: ["podigne", "njena", "šalter", "kažu", "popunjava", "potpisuje", "popunite", "potpišite", "otvori"]
+    exercises:
+      - id: "71.5.1"
+        type: choice
+        prompt: "Что хочет сделать Ана?"
+        options: ["Da podigne novac.", "Da otvori račun.", "Da kupi pasoš."]
+        answer: "Da podigne novac."
+      - id: "71.5.2"
+        type: choice
+        prompt: "Что с её картой?"
+        options: ["Ne radi.", "Nova je.", "Skupa je."]
+        answer: "Ne radi."
+      - id: "71.5.3"
+        type: choice
+        prompt: "Что просят сделать на окошке?"
+        options: ["Da popuni obrazac.", "Da plati račun.", "Da ostavi poruku."]
+        answer: "Da popuni obrazac."
+
+  - id: "71.6"
+    kind: dialogue
+    title: "Na šalteru"
+    scene: "Ты в банке и хочешь снять деньги, но карта не работает."
+    voice: f
+    also_ok: ["podignem", "popunite", "potpišite", "popuniću", "sačekaću", "sačekajte", "obrazac", "karticu"]
+    turns:
+      - who: npc
+        sr: "Dobar dan. Izvolite?"
+        ru: "Добрый день. Слушаю вас?"
+
+      - who: me
+        sr: "Dobar dan. Hoću da podignem novac."
+        ru: "Добрый день. Хочу снять деньги."
+        exercise:
+          id: "71.6.1"
+          type: choice
+          prompt: "Поздоровайся и скажи, что хочешь снять деньги"
+          options:
+            - "Dobar dan. Hoću da podignem novac."
+            - "Dobar dan. Hoću podignem novac."
+            - "Dobar dan. Hoću da podigneš novac."
+          answer: "Dobar dan. Hoću da podignem novac."
+
+      - who: npc
+        sr: "Imate li karticu?"
+        ru: "У вас есть карта?"
+
+      - who: me
+        sr: "Da, ali moja kartica ne radi."
+        ru: "Да, но моя карта не работает."
+        exercise:
+          id: "71.6.2"
+          type: translate
+          prompt: "Скажи: «Да, но моя карта не работает»"
+          accept: ["Da, ali moja kartica ne radi."]
+          hint: "«Но» — ali; «карта» женского рода: moja."
+
+      - who: npc
+        sr: "U redu. Popunite obrazac i potpišite ovde."
+        ru: "Хорошо. Заполните бланк и подпишите здесь."
+
+      - who: me
+        sr: "Popuniću obrazac."
+        ru: "Заполню бланк."
+        exercise:
+          id: "71.6.3"
+          type: fill_blank
+          prompt: "«Я заполню бланк» → ___ obrazac."
+          accept: ["Popuniću"]
+          hint: "Будущее: глагол popuniti и «ću» слитно, как «javiću»."
+
+      - who: npc
+        sr: "Hvala. Sačekajte u redu, molim vas."
+        ru: "Спасибо. Подождите в очереди, пожалуйста."
+
+      - who: me
+        sr: "Dobro, sačekaću."
+        ru: "Хорошо, подожду."
+        exercise:
+          id: "71.6.4"
+          type: choice
+          prompt: "Скажи: «Хорошо, подожду»"
+          options: ["Dobro, sačekaću.", "Dobro, sačekate.", "Dobro, sačekam te."]
+          answer: "Dobro, sačekaću."
+
+  - id: "71.7"
+    kind: practice
+    title: "Диктант"
+    mixed: true
+    also_ok: ["banci", "popunite", "boravak", "decembra"]
+    exercises:
+      - id: "71.7.1"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Treba mi račun u banci."
+        accept: ["Treba mi račun u banci."]
+        ru: ["Мне нужен счёт в банке", "Нужен счёт в банке", "Мне нужен банковский счёт"]
+      - id: "71.7.2"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Popunite obrazac."
+        accept: ["Popunite obrazac."]
+        ru: ["Заполните бланк", "Заполните форму", "Заполните анкету"]
+      - id: "71.7.3"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Imam boravak do decembra."
+        accept: ["Imam boravak do decembra."]
+        ru: ["У меня вид на жительство до декабря", "Мой вид на жительство до декабря", "Мой боравак до декабря"]

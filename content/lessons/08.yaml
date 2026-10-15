@@ -68,6 +68,7 @@ steps:
           - ["pedeset", "пятьдесят"]
           - ["sto", "сто"]
       - id: "08.4.4"
+        hint: "Начинается на čet-; пишется одним словом, вторая часть -deset, как в других десятках."
         type: fill_blank
         prompt: "«40» словом — ___"
         accept: ["četrdeset"]
@@ -106,6 +107,7 @@ steps:
           - ["dva dinara", "2 динара"]
           - ["pet dinara", "5 динаров"]
       - id: "08.6.4"
+        hint: "После 2, 3, 4 слово женского рода на -a меняет окончание: -a → -e."
         type: fill_blank
         prompt: "Дополни: «tri ___» (kafa, женский род)"
         accept: ["kafe"]
@@ -114,6 +116,7 @@ steps:
         prompt: "Pet dinar."
         accept: ["Pet dinara."]
       - id: "08.6.6"
+        hint: "После 2, 3, 4 слово женского рода на -a меняет окончание: -a → -e."
         type: fix_error
         prompt: "Dve kafa."
         accept: ["Dve kafe."]

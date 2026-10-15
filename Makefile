@@ -1,7 +1,7 @@
 GO ?= /opt/homebrew/bin/go
 export PATH := /opt/homebrew/bin:$(PATH)
 
-.PHONY: dev build test test-pg tidy
+.PHONY: dev build test test-pg tidy lint-sr
 
 TEST_DATABASE_URL ?= postgres://localhost/srpski_test?sslmode=disable
 
@@ -28,3 +28,12 @@ test-pg:
 
 tidy:
 	$(GO) mod tidy
+
+# Проверка сербского текста курса: орфография/экавица/алфавиты (lint_serbian.py)
+# и сверка ударений со словарём (check_stress.py, только отчёт). Нужно:
+# pip3 install spylls pyyaml; при первом запуске качает словари в scripts/.cache/.
+lint-sr:
+	python3 scripts/lint_serbian.py --self-test
+	python3 scripts/lint_serbian.py
+	python3 scripts/check_stress.py
+	python3 scripts/check_stress_tokens.py

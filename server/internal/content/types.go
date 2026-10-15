@@ -93,10 +93,14 @@ type Exercise struct {
 	Type    string // translate | fill_blank | fix_error | conjugate | listen | choice | word_bank | match
 	Prompt  string
 	Explain string
-	Meta    string   // conjugate: подпись (напр. "тип I")
-	Say     string   // listen: текст для синтеза речи (клиенту не отдаётся)
-	RU      []string // listen: допустимые русские переводы say — для тех, кто не может слушать
-	Audio   string   // listen: имя файла под content/audio/ (когда файл есть)
+	// Hint is a nudge shown BEFORE the answer (a 💡 button). Unlike Explain it
+	// is never repeated after checking, so it is validated not to contain the
+	// answer (see validateHint).
+	Hint  string
+	Meta  string   // conjugate: подпись (напр. "тип I")
+	Say   string   // listen: текст для синтеза речи (клиенту не отдаётся)
+	RU    []string // listen: допустимые русские переводы say — для тех, кто не может слушать
+	Audio string   // listen: имя файла под content/audio/ (когда файл есть)
 
 	Accept      []string   // auto types except conjugate: принимаемые ответы
 	Forms       []string   // conjugate: подписи форм (ja/ti/on…)

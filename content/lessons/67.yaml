@@ -1,0 +1,396 @@
+lesson: "67"
+title: "Проверка 5а (Provera 5a)"
+subtitle: "чувства, мнения, рассказ о себе, телефон, проблемы"
+teaches: []
+
+steps:
+  - id: "67.1"
+    kind: reading
+    title: "Проблема у Марко"
+    md: "67/1-citanje.md"
+    also_ok: ["rođen", "preselio", "radi", "pokvario", "interneta", "zove", "majstora", "popraviti", "nada", "dođe", "majstor", "kaže", "će", "ruter"]
+    exercises:
+      - id: "67.1.1"
+        type: choice
+        prompt: "Где родился Марко?"
+        options: ["U Moskvi.", "U Novom Sadu.", "U Beogradu."]
+        answer: "U Moskvi."
+      - id: "67.1.2"
+        type: choice
+        prompt: "Что сломалось?"
+        options: ["Ruter.", "Lampa.", "Slavina."]
+        answer: "Ruter."
+      - id: "67.1.3"
+        type: choice
+        prompt: "Когда придёт мастер?"
+        options: ["U utorak.", "U petak.", "Sutra."]
+        answer: "U utorak."
+
+  - id: "67.2"
+    kind: practice
+    title: "Чувства и мнения"
+    mixed: true
+    also_ok: ["tužna", "tužan", "tobom", "pravu", "nervozan", "posla", "kasniš", "veoma"]
+    exercises:
+      - id: "67.2.1"
+        type: choice
+        prompt: "Женщина говорит: «Я немного грустная» —"
+        options: ["Malo sam tužna.", "Malo sam tužan.", "Malo mi je tužna."]
+        answer: "Malo sam tužna."
+      - id: "67.2.2"
+        type: choice
+        prompt: "«Мне скучно» —"
+        options: ["Dosadno mi je.", "Dosadan sam.", "Dosadno me je."]
+        answer: "Dosadno mi je."
+      - id: "67.2.3"
+        type: choice
+        prompt: "«Меня злит, когда ты опаздываешь» —"
+        options: ["Ljuti me kad kasniš.", "Ljuti mi kad kasniš.", "Ljuta me kad kasniš."]
+        answer: "Ljuti me kad kasniš."
+      - id: "67.2.4"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["tužan", "грустный"]
+          - ["slažem se", "я согласен"]
+          - ["sviđa mi se", "мне нравится"]
+          - ["brine me", "меня беспокоит"]
+      - id: "67.2.5"
+        type: fill_blank
+        prompt: "«Я согласен с тобой» → Slažem se sa ___."
+        accept: ["tobom"]
+        hint: "После «sa» — творительный; «ты» в творительном — в таблице местоимений урока 54."
+      - id: "67.2.6"
+        type: word_bank
+        prompt: "Собери: «Мне кажется, он прав»"
+        bank: ["Čini", "mi", "se", "da", "je", "u", "pravu", "pravo"]
+        accept: ["Čini mi se da je u pravu."]
+      - id: "67.2.7"
+        type: fix_error
+        prompt: "Raduje mi tvoja poruka."
+        accept: ["Raduje me tvoja poruka."]
+        explain: "Радует «меня» — винительный, а не «мне»."
+      - id: "67.2.8"
+        type: translate
+        prompt: "Я (мужчина) очень нервничаю из-за работы."
+        accept:
+          - "Jako sam nervozan zbog posla."
+          - "Mnogo sam nervozan zbog posla."
+          - "Veoma sam nervozan zbog posla."
+        hint: "Порядок: «очень», sam, прилагательное мужского рода, потом zbog и родительный."
+
+  - id: "67.3"
+    kind: practice
+    title: "Рассказ о себе"
+    mixed: true
+    also_ok: ["Moskvi", "Srbiji", "Srbiju", "ženu", "sina", "preselio", "završio", "ostanem", "detinjstvu", "selu", "godine"]
+    exercises:
+      - id: "67.3.1"
+        type: choice
+        prompt: "Женщина говорит: «Я родилась в Москве» —"
+        options: ["Rođena sam u Moskvi.", "Rođen sam u Moskvi.", "Rođena sam u Moskva."]
+        answer: "Rođena sam u Moskvi."
+      - id: "67.3.2"
+        type: choice
+        prompt: "«Два года назад» —"
+        options: ["Pre dve godine.", "Pre dve godina.", "Pre dva godine."]
+        answer: "Pre dve godine."
+      - id: "67.3.3"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["odrastao sam", "я вырос"]
+          - ["završiti", "закончить"]
+          - ["nadati se", "надеяться"]
+          - ["jednog dana", "когда-нибудь"]
+      - id: "67.3.4"
+        type: fill_blank
+        prompt: "«Я закончил университет» → ___ sam fakultet."
+        accept: ["Završio"]
+        hint: "Прошедшее время: мужчина — причастие на -o."
+      - id: "67.3.5"
+        type: fill_blank
+        prompt: "«У меня есть жена и сын» → Imam ___ i sina."
+        accept: ["ženu"]
+        hint: "Винительный женского рода: конец -a меняется на -u."
+      - id: "67.3.6"
+        type: word_bank
+        prompt: "Собери: «Я планирую остаться в Сербии»"
+        bank: ["Planiram", "da", "ostanem", "u", "Srbiji", "Srbiju"]
+        accept: ["Planiram da ostanem u Srbiji."]
+      - id: "67.3.7"
+        type: fix_error
+        prompt: "Preselio sam u Srbiju."
+        accept: ["Preselio sam se u Srbiju."]
+        explain: "Глагол «переехать» по-сербски возвратный."
+      - id: "67.3.8"
+        type: translate
+        prompt: "В детстве я жил в деревне, а теперь живу в Нови-Саде."
+        accept:
+          - "U detinjstvu sam živeo u selu, a sada živim u Novom Sadu."
+          - "Živeo sam u selu u detinjstvu, a sada živim u Novom Sadu."
+        hint: "«В детстве» — u и локатив слова из урока 62; «теперь» — sada."
+
+  - id: "67.4"
+    kind: practice
+    title: "Телефон и поломки"
+    mixed: true
+    also_ok: ["nazvaću", "sačekate", "pokvario", "pokvarila", "vode", "struje", "bih", "biste", "slavina", "curi", "lampa", "majstor", "juče"]
+    exercises:
+      - id: "67.4.1"
+        type: choice
+        prompt: "«Я позвоню тебе позже» —"
+        options: ["Nazvaću te kasnije.", "Nazvaću ti kasnije.", "Nazvati ću te kasnije."]
+        answer: "Nazvaću te kasnije."
+      - id: "67.4.2"
+        type: choice
+        prompt: "«Не могли бы вы подождать?» —"
+        options: ["Mogli biste li da sačekate?", "Mogli bih li da sačekate?", "Možete biste li da sačekate?"]
+        answer: "Mogli biste li da sačekate?"
+      - id: "67.4.3"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["linija je zauzeta", "линия занята"]
+          - ["pokvario se", "сломался"]
+          - ["nema struje", "нет электричества"]
+          - ["ima li garancije?", "есть гарантия?"]
+      - id: "67.4.4"
+        type: fill_blank
+        prompt: "«Нет воды» → Nema ___."
+        accept: ["vode"]
+        hint: "После «nema» — родительный: у женских слов на -a конец меняется на -e."
+      - id: "67.4.5"
+        type: fill_blank
+        prompt: "«Я бы хотел поговорить с Марко» → Voleo ___ da razgovaram sa Markom."
+        accept: ["bih"]
+        hint: "Это «бы» для «я» — слово из таблицы урока 64."
+      - id: "67.4.6"
+        type: word_bank
+        prompt: "Собери: «Сломалась лампа»"
+        bank: ["Pokvarila", "se", "lampa", "Pokvario"]
+        accept: ["Pokvarila se lampa."]
+      - id: "67.4.7"
+        type: fix_error
+        prompt: "Nema struja od juče."
+        accept: ["Nema struje od juče."]
+        explain: "После «nema» нужен родительный падеж."
+      - id: "67.4.8"
+        type: translate
+        prompt: "Мне нужен мастер: течёт кран."
+        accept:
+          - "Treba mi majstor, curi slavina."
+          - "Treba mi majstor, slavina mi curi."
+          - "Treba mi majstor jer curi slavina."
+        hint: "«Мне нужен» — как в уроке 66; «течёт кран» — из урока 65."
+
+  - id: "67.5"
+    kind: dialogue
+    title: "Poziv majstoru"
+    scene: "Ты звонишь мастеру: течёт кран, нужно прийти."
+    voice: m
+    also_ok: ["majstor", "slavina", "curi", "dođete", "ranije", "odgovara", "doći", "dođem", "sutra", "deset", "osam"]
+    turns:
+      - who: npc
+        sr: "Halo? Izvolite."
+        ru: "Алло? Слушаю."
+
+      - who: me
+        sr: "Dobar dan. Treba mi majstor."
+        ru: "Добрый день. Мне нужен мастер."
+        exercise:
+          id: "67.5.1"
+          type: choice
+          prompt: "Поздоровайся и скажи, что нужен мастер"
+          options: ["Dobar dan. Treba mi majstor.", "Dobar dan. Treba me majstor.", "Dobar dan. Trebam mi majstor."]
+          answer: "Dobar dan. Treba mi majstor."
+
+      - who: npc
+        sr: "Šta se desilo?"
+        ru: "Что случилось?"
+
+      - who: me
+        sr: "Curi slavina."
+        ru: "Течёт кран."
+        exercise:
+          id: "67.5.2"
+          type: fill_blank
+          prompt: "«Течёт кран» → ___ slavina."
+          accept: ["Curi"]
+          hint: "Глагол «течь» — из урока 65."
+
+      - who: npc
+        sr: "Mogu da dođem sutra u deset. Odgovara li vam?"
+        ru: "Могу прийти завтра в десять. Вам подходит?"
+
+      - who: me
+        sr: "Odgovara mi. Mogli biste li da dođete ranije?"
+        ru: "Мне подходит. Не могли бы вы прийти раньше?"
+        exercise:
+          id: "67.5.3"
+          type: translate
+          prompt: "Скажи: «Мне подходит. Не могли бы вы прийти раньше?»"
+          accept: ["Odgovara mi. Mogli biste li da dođete ranije?"]
+          hint: "Вторая фраза — вежливое «бы» из урока 64; «раньше» — ranije."
+
+      - who: npc
+        sr: "Mogu u osam."
+        ru: "Могу в восемь."
+
+      - who: me
+        sr: "Odgovara mi."
+        ru: "Мне подходит."
+        exercise:
+          id: "67.5.4"
+          type: choice
+          prompt: "Согласись"
+          options: ["Odgovara mi.", "Žao mi je.", "Ne razumem."]
+          answer: "Odgovara mi."
+
+  - id: "67.6"
+    kind: dialogue
+    title: "Priča o sebi"
+    scene: "Новая знакомая расспрашивает тебя о тебе."
+    voice: f
+    also_ok: ["Moskvi", "preselio", "ostanem", "zauvek", "ovde"]
+    turns:
+      - who: npc
+        sr: "Odakle si?"
+        ru: "Откуда ты?"
+
+      - who: me
+        sr: "Rođen sam u Moskvi, a pre dve godine sam se preselio u Srbiju."
+        ru: "Я родился в Москве, а два года назад переехал в Сербию."
+        exercise:
+          id: "67.6.1"
+          type: choice
+          prompt: "Скажи, где родился и когда переехал"
+          options:
+            - "Rođen sam u Moskvi, a pre dve godine sam se preselio u Srbiju."
+            - "Rođen sam u Moskvi, a pre dve godina sam se preselio u Srbiju."
+            - "Rođen sam u Moskva, a pre dve godine sam se preselio u Srbiju."
+          answer: "Rođen sam u Moskvi, a pre dve godine sam se preselio u Srbiju."
+
+      - who: npc
+        sr: "Šta planiraš?"
+        ru: "Что планируешь?"
+
+      - who: me
+        sr: "Planiram da ostanem zauvek."
+        ru: "Планирую остаться навсегда."
+        exercise:
+          id: "67.6.2"
+          type: fill_blank
+          prompt: "«Планирую остаться навсегда» → Planiram da ostanem ___."
+          accept: ["zauvek"]
+          hint: "Слово «навсегда» — из урока 63."
+
+      - who: npc
+        sr: "Šta misliš o Srbiji?"
+        ru: "Что думаешь о Сербии?"
+
+      - who: me
+        sr: "Mislim da je ovde dobro."
+        ru: "Думаю, здесь хорошо."
+        exercise:
+          id: "67.6.3"
+          type: translate
+          prompt: "Скажи: «Думаю, здесь хорошо»"
+          accept: ["Mislim da je ovde dobro.", "Mislim da je dobro ovde."]
+          hint: "Мысль вводит «mislim da» (урок 61)."
+
+      - who: npc
+        sr: "Drago mi je."
+        ru: "Очень приятно."
+
+      - who: me
+        sr: "Takođe."
+        ru: "Взаимно."
+        exercise:
+          id: "67.6.4"
+          type: choice
+          prompt: "Ответь: «Мне тоже приятно»"
+          options: ["Takođe.", "Izvinite.", "Laku noć."]
+          answer: "Takođe."
+
+  - id: "67.7"
+    kind: practice
+    title: "Диктант"
+    mixed: true
+    also_ok: ["tužna", "rođen", "interneta", "sačekate"]
+    exercises:
+      - id: "67.7.1"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Čini mi se da je dobro."
+        accept: ["Čini mi se da je dobro."]
+        ru: ["Мне кажется, хорошо", "Мне кажется, что это хорошо", "Кажется, это хорошо"]
+      - id: "67.7.2"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Rođen sam u Moskvi."
+        accept: ["Rođen sam u Moskvi."]
+        ru: ["Я родился в Москве", "Я родом из Москвы"]
+      - id: "67.7.3"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Nema interneta od juče."
+        accept: ["Nema interneta od juče."]
+        ru: ["Нет интернета со вчерашнего дня", "Со вчерашнего дня нет интернета", "Интернета нет со вчерашнего дня"]
+      - id: "67.7.4"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Mogli biste li da sačekate?"
+        accept: ["Mogli biste li da sačekate?"]
+        ru: ["Не могли бы вы подождать", "Не могли бы вы подождать?", "Вы не могли бы подождать"]
+
+  - id: "67.8"
+    kind: checkpoint
+    title: "Итоговая проверка 5а"
+    also_ok: ["bih", "bi", "bismo", "biste", "majstorom", "razgovaram", "pokvarila", "lampa", "idem", "bioskop"]
+    exercises:
+      - id: "67.8.1"
+        type: conjugate
+        prompt: "biti — «бы» (условное наклонение)"
+        forms: ["ja", "ti", "on/ona/ono", "mi", "vi", "oni/one/ona"]
+        accept:
+          - ["bih"]
+          - ["bi"]
+          - ["bi"]
+          - ["bismo"]
+          - ["biste"]
+          - ["bi"]
+        meta: "bih… — «бы» после причастия: voleo bih"
+      - id: "67.8.2"
+        type: choice
+        prompt: "Женщина говорит: «Я бы хотела пойти в кино» —"
+        options: ["Volela bih da idem u bioskop.", "Volela da idem u bioskop.", "Volim bih da idem u bioskop."]
+        answer: "Volela bih da idem u bioskop."
+      - id: "67.8.3"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["Šta ti je?", "Что с тобой?"]
+          - ["Nazvaću te.", "Я тебе позвоню"]
+          - ["Pokvario se ruter.", "Сломался роутер"]
+          - ["Nadam se.", "Надеюсь"]
+      - id: "67.8.4"
+        type: fill_blank
+        prompt: "«Мне жаль» → Žao ___ je."
+        accept: ["mi"]
+        hint: "Короткое «мне» — то же, что в «Drago … je» из урока 3."
+      - id: "67.8.5"
+        type: word_bank
+        prompt: "Собери: «Не могли бы вы повторить?»"
+        bank: ["Mogli", "biste", "li", "da", "ponovite", "bih"]
+        accept: ["Mogli biste li da ponovite?"]
+      - id: "67.8.6"
+        type: fix_error
+        prompt: "Pokvario se lampa."
+        accept: ["Pokvarila se lampa."]
+        explain: "Род причастия зависит от сломавшейся вещи."
+      - id: "67.8.7"
+        type: translate
+        prompt: "Я бы хотел поговорить с мастером."
+        accept: ["Voleo bih da razgovaram sa majstorom."]
+        hint: "После «sa» — творительный: majstor → majstor + -om."

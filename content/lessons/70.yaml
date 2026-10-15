@@ -1,0 +1,239 @@
+lesson: "70"
+title: "Работа II (Posao II)"
+subtitle: "собеседование, резюме, sastanak"
+teaches:
+  [razgovor, oglas, ugovor, ponuda, znanje, iskustvo, biografija, prijaviti-se]
+
+steps:
+  - id: "70.1"
+    kind: teach
+    title: "Объявление и резюме"
+    md: "70/1-oglas.md"
+
+  - id: "70.2"
+    kind: practice
+    title: "Объявление, опыт, знания"
+    also_ok: ["prijavim", "iskustva", "engleskog", "jezika", "oglas", "posao", "biografija", "znanje"]
+    exercises:
+      - id: "70.2.1"
+        type: choice
+        prompt: "«Вижу объявление о работе» —"
+        options: ["Vidim oglas za posao.", "Vidim oglas na posao.", "Vidim oglas za posla."]
+        answer: "Vidim oglas za posao."
+      - id: "70.2.2"
+        type: choice
+        prompt: "«У меня есть опыт» —"
+        options: ["Imam iskustvo.", "Imam iskustvom.", "Imam iskustvu."]
+        answer: "Imam iskustvo."
+      - id: "70.2.3"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["oglas", "объявление"]
+          - ["biografija", "резюме"]
+          - ["iskustvo", "опыт"]
+          - ["znanje", "знание"]
+      - id: "70.2.4"
+        type: fill_blank
+        prompt: "«Хочу подать заявку на работу» → Želim da se ___ za posao."
+        accept: ["prijavim"]
+        hint: "Глагол из теории: prijaviti se; в форме «я» окончание -im."
+      - id: "70.2.5"
+        type: fill_blank
+        prompt: "«Пять лет опыта» → Pet godina ___."
+        accept: ["iskustva"]
+        hint: "После «pet godina» — родительный: у слов на -o конец меняется на -a."
+      - id: "70.2.6"
+        type: word_bank
+        prompt: "Собери: «Это моё резюме»"
+        bank: ["Ovo", "je", "moja", "biografija", "moj", "biografiju"]
+        accept: ["Ovo je moja biografija."]
+      - id: "70.2.7"
+        type: fix_error
+        prompt: "Imam pet godina iskustvo."
+        accept: ["Imam pet godina iskustva."]
+        explain: "После «pet godina» нужен родительный падеж."
+      - id: "70.2.8"
+        type: translate
+        prompt: "Я вижу объявление и хочу подать заявку."
+        accept: ["Vidim oglas i želim da se prijavim.", "Vidim oglas i hoću da se prijavim."]
+        hint: "«Хочу подать заявку» — как в теории: da se и глагол в форме «я»."
+      - id: "70.2.9"
+        type: translate
+        prompt: "У меня хорошее знание английского."
+        accept: ["Imam dobro znanje engleskog.", "Imam dobro znanje engleskog jezika."]
+        hint: "«Английского» — родительный от engleski."
+
+  - id: "70.3"
+    kind: teach
+    title: "Собеседование"
+    md: "70/3-razgovor.md"
+
+  - id: "70.4"
+    kind: practice
+    title: "Собеседование"
+    also_ok: ["vašoj", "firmi", "počnem", "ugovor", "ponudu", "godinu", "dana", "mogao", "kolika", "bih"]
+    exercises:
+      - id: "70.4.1"
+        type: choice
+        prompt: "«У меня собеседование во вторник» —"
+        options: ["Imam razgovor za posao u utorak.", "Imam razgovor za posla u utorak.", "Imam razgovor na posao u utorak."]
+        answer: "Imam razgovor za posao u utorak."
+      - id: "70.4.2"
+        type: choice
+        prompt: "«Я бы хотел работать в вашей фирме» —"
+        options: ["Voleo bih da radim u vašoj firmi.", "Volim bih da radim u vašoj firmi.", "Voleo da radim u vašoj firmi."]
+        answer: "Voleo bih da radim u vašoj firmi."
+      - id: "70.4.3"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["razgovor", "разговор, собеседование"]
+          - ["ponuda", "предложение"]
+          - ["ugovor", "договор"]
+          - ["odmah", "сразу"]
+      - id: "70.4.4"
+        type: fill_blank
+        prompt: "«Я мог бы начать сразу» → Mogao ___ da počnem odmah."
+        accept: ["bih"]
+        hint: "Это «бы» для «я» — из урока 64."
+      - id: "70.4.5"
+        type: fill_blank
+        prompt: "«Какая зарплата?» → Kolika je ___?"
+        accept: ["plata"]
+        hint: "Слово «зарплата» — из урока про работу."
+      - id: "70.4.6"
+        type: word_bank
+        prompt: "Собери: «Мне нужен договор на год»"
+        bank: ["Treba", "mi", "ugovor", "na", "godinu", "dana", "godina"]
+        accept: ["Treba mi ugovor na godinu dana."]
+      - id: "70.4.7"
+        type: fix_error
+        prompt: "Voleo bih da radim u vašu firmu."
+        accept: ["Voleo bih da radim u vašoj firmi."]
+        explain: "Где? — локатив, женский род: прилагательное на -oj."
+      - id: "70.4.8"
+        type: translate
+        prompt: "Я бы хотел работать в вашей фирме, я могу начать сразу."
+        accept:
+          - "Voleo bih da radim u vašoj firmi, mogu da počnem odmah."
+          - "Voleo bih da radim u vašoj firmi, mogao bih da počnem odmah."
+        hint: "Первая часть — вежливое «бы»; вторая — «могу начать» или «мог бы начать»."
+      - id: "70.4.9"
+        type: translate
+        prompt: "У меня есть предложение: договор на год."
+        accept: ["Imam ponudu: ugovor na godinu dana.", "Imam ponudu, ugovor na godinu dana."]
+        hint: "«Предложение» после «imam» — в винительном: -a меняется на -u."
+
+  - id: "70.5"
+    kind: reading
+    title: "Письмо в фирму"
+    md: "70/5-citanje.md"
+    also_ok: ["oglas", "prijavim", "iskustva", "engleski", "vašoj", "firmi", "mogao", "počnem", "vaš", "znam", "video", "razgovor", "zvao"]
+    exercises:
+      - id: "70.5.1"
+        type: choice
+        prompt: "Как Марко узнал о работе?"
+        options: ["Video je oglas.", "Zvao ga je prijatelj.", "Imao je razgovor."]
+        answer: "Video je oglas."
+      - id: "70.5.2"
+        type: choice
+        prompt: "Сколько у него опыта?"
+        options: ["Pet godina.", "Deset godina.", "Dve godine."]
+        answer: "Pet godina."
+      - id: "70.5.3"
+        type: choice
+        prompt: "Когда он может начать?"
+        options: ["Odmah.", "Sutra.", "Sledeće nedelje."]
+        answer: "Odmah."
+
+  - id: "70.6"
+    kind: dialogue
+    title: "Razgovor za posao"
+    scene: "Ты пришёл на собеседование."
+    voice: f
+    also_ok: ["sedite", "iskustva", "počnete", "ponudu", "firmi", "vašoj", "vašu", "firmu", "imate"]
+    turns:
+      - who: npc
+        sr: "Dobar dan! Izvolite, sedite."
+        ru: "Добрый день! Прошу, садитесь."
+
+      - who: me
+        sr: "Dobar dan. Voleo bih da radim u vašoj firmi."
+        ru: "Добрый день. Я бы хотел работать в вашей фирме."
+        exercise:
+          id: "70.6.1"
+          type: choice
+          prompt: "Поздоровайся и скажи, что хотел бы работать в их фирме"
+          options:
+            - "Dobar dan. Voleo bih da radim u vašoj firmi."
+            - "Dobar dan. Volim bih da radim u vašoj firmi."
+            - "Dobar dan. Voleo bih da radim u vašu firmu."
+          answer: "Dobar dan. Voleo bih da radim u vašoj firmi."
+
+      - who: npc
+        sr: "Imate li iskustva?"
+        ru: "У вас есть опыт?"
+
+      - who: me
+        sr: "Da, imam pet godina iskustva."
+        ru: "Да, у меня пять лет опыта."
+        exercise:
+          id: "70.6.2"
+          type: translate
+          prompt: "Скажи: «Да, у меня пять лет опыта»"
+          accept: ["Da, imam pet godina iskustva."]
+          hint: "После «pet godina» — родительный: «опыт» получает -a."
+
+      - who: npc
+        sr: "Kada možete da počnete?"
+        ru: "Когда вы можете начать?"
+
+      - who: me
+        sr: "Mogao bih da počnem odmah."
+        ru: "Я мог бы начать сразу."
+        exercise:
+          id: "70.6.3"
+          type: fill_blank
+          prompt: "«Я мог бы начать сразу» → Mogao bih da počnem ___."
+          accept: ["odmah"]
+          hint: "Слово «сразу» — из первых уроков про магазин и сроки."
+
+      - who: npc
+        sr: "Dobro. Imamo ponudu za vas."
+        ru: "Хорошо. У нас есть для вас предложение."
+
+      - who: me
+        sr: "Hvala! Drago mi je."
+        ru: "Спасибо! Очень приятно."
+        exercise:
+          id: "70.6.4"
+          type: choice
+          prompt: "Поблагодари и скажи, что рад"
+          options: ["Hvala! Drago mi je.", "Izvinite!", "Laku noć!"]
+          answer: "Hvala! Drago mi je."
+
+  - id: "70.7"
+    kind: practice
+    title: "Диктант"
+    mixed: true
+    also_ok: ["oglas", "iskustva", "vašoj", "firmi"]
+    exercises:
+      - id: "70.7.1"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Vidim oglas za posao."
+        accept: ["Vidim oglas za posao."]
+        ru: ["Вижу объявление о работе", "Я вижу объявление о работе", "Вижу объявление о вакансии"]
+      - id: "70.7.2"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Imam pet godina iskustva."
+        accept: ["Imam pet godina iskustva."]
+        ru: ["У меня пять лет опыта", "У меня есть пять лет опыта", "Мой опыт — пять лет"]
+      - id: "70.7.3"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Voleo bih da radim u vašoj firmi."
+        accept: ["Voleo bih da radim u vašoj firmi."]
+        ru: ["Я бы хотел работать в вашей фирме", "Я хотел бы работать в вашей фирме", "Хотел бы работать в вашей компании"]

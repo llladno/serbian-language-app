@@ -1,0 +1,242 @@
+lesson: "68"
+title: "Свободное время (Slobodno vreme)"
+subtitle: "хобби, спорт, приглашения, hajde da"
+teaches:
+  [hobi, trcati, plivati, igrati, fudbal, kosarka, crtati, pevati]
+
+steps:
+  - id: "68.1"
+    kind: teach
+    title: "Чем ты занимаешься"
+    md: "68/1-hobi.md"
+
+  - id: "68.2"
+    kind: practice
+    title: "Хобби и спорт"
+    also_ok: ["igram", "trčim", "plivam", "crtam", "pevam", "košarku", "planinu", "planini", "jezeru", "idem"]
+    exercises:
+      - id: "68.2.1"
+        type: choice
+        prompt: "«Я играю в футбол» —"
+        options: ["Igram fudbal.", "Igram u fudbal.", "Igram fudbalu."]
+        answer: "Igram fudbal."
+      - id: "68.2.2"
+        type: choice
+        prompt: "«Я иду в горы» —"
+        options: ["Idem na planinu.", "Idem na planina.", "Idem na planini."]
+        answer: "Idem na planinu."
+      - id: "68.2.3"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["trčati", "бегать"]
+          - ["plivati", "плавать"]
+          - ["crtati", "рисовать"]
+          - ["pevati", "петь"]
+      - id: "68.2.4"
+        type: fill_blank
+        prompt: "«Я играю в баскетбол» → Igram ___."
+        accept: ["košarku"]
+        hint: "Винительный: у женских слов на -a конец меняется на -u."
+      - id: "68.2.5"
+        type: fill_blank
+        prompt: "«Я бегаю по утрам» → ___ ujutru."
+        accept: ["Trčim"]
+        hint: "Глагол «бегать» — из теории; в форме «я» окончание -im."
+      - id: "68.2.6"
+        type: word_bank
+        prompt: "Собери: «Моё хобби — футбол»"
+        bank: ["Moj", "hobi", "je", "fudbal", "moja"]
+        accept: ["Moj hobi je fudbal.", "Fudbal je moj hobi."]
+      - id: "68.2.7"
+        type: fix_error
+        prompt: "Idem na planina."
+        accept: ["Idem na planinu."]
+        explain: "Куда? — винительный: -a меняется на -u."
+      - id: "68.2.8"
+        type: translate
+        prompt: "Я плаваю в озере."
+        accept: ["Plivam u jezeru."]
+        hint: "Где? — локатив: jezero → слово на -u."
+      - id: "68.2.9"
+        type: translate
+        prompt: "Я люблю бегать и плавать."
+        accept:
+          - "Volim da trčim i da plivam."
+          - "Volim da trčim i plivam."
+          - "Volim trčati i plivati."
+        hint: "«Люблю» — volim; дальше либо da и настоящее время, либо инфинитивы."
+
+  - id: "68.3"
+    kind: teach
+    title: "Позвать и согласиться"
+    md: "68/3-poziv.md"
+
+  - id: "68.4"
+    kind: practice
+    title: "Приглашения"
+    also_ok: ["igramo", "plivamo", "trčimo", "vikendom", "subotom", "ujutru", "zajedno", "planinu", "nedelje"]
+    exercises:
+      - id: "68.4.1"
+        type: choice
+        prompt: "«Давай поиграем в футбол в субботу!» —"
+        options: ["Hajde da igramo fudbal u subotu!", "Hajde da igram fudbal u subotu!", "Hajde igramo fudbal u subotu!"]
+        answer: "Hajde da igramo fudbal u subotu!"
+      - id: "68.4.2"
+        type: choice
+        prompt: "«Хочешь поплавать вместе?» —"
+        options: ["Hoćeš li da plivamo?", "Hoćeš li plivamo?", "Hoćeš da li plivamo?"]
+        answer: "Hoćeš li da plivamo?"
+      - id: "68.4.3"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["vikendom", "по выходным"]
+          - ["ujutru", "по утрам"]
+          - ["subotom", "по субботам"]
+          - ["kad imam vremena", "когда есть время"]
+      - id: "68.4.4"
+        type: fill_blank
+        prompt: "«По выходным я бегаю» → ___ trčim."
+        accept: ["Vikendom"]
+        hint: "Слово образуется от «vikend» окончанием -om, как «subotom»."
+      - id: "68.4.5"
+        type: fill_blank
+        prompt: "«Давай поиграем в футбол» → Hajde da ___ fudbal."
+        accept: ["igramo"]
+        hint: "Зовём и себя — форма «мы»: окончание -mo."
+      - id: "68.4.6"
+        type: word_bank
+        prompt: "Собери: «Я бы хотел пойти в горы»"
+        bank: ["Voleo", "bih", "da", "idem", "na", "planinu", "planina"]
+        accept: ["Voleo bih da idem na planinu."]
+      - id: "68.4.7"
+        type: fix_error
+        prompt: "Hajde da igram fudbal."
+        accept: ["Hajde da igramo fudbal."]
+        explain: "Зовём вместе — «мы», а не «я»."
+      - id: "68.4.8"
+        type: translate
+        prompt: "Давай бегать вместе по выходным."
+        accept:
+          - "Hajde da trčimo zajedno vikendom."
+          - "Hajde da vikendom trčimo zajedno."
+          - "Hajde da trčimo vikendom zajedno."
+        hint: "«Давай» — hajde da; «вместе» — zajedno (урок 55)."
+      - id: "68.4.9"
+        type: translate
+        prompt: "К сожалению, я не могу, я плаваю в субботу."
+        accept:
+          - "Nažalost, ne mogu, plivam u subotu."
+          - "Nažalost, ne mogu, u subotu plivam."
+        hint: "«К сожалению» — nažalost (урок 55)."
+
+  - id: "68.5"
+    kind: reading
+    title: "Что делать на выходных"
+    md: "68/5-citanje.md"
+    also_ok: ["trčim", "igram", "plivam", "crtam", "planinu", "vikendom", "prijateljima"]
+    exercises:
+      - id: "68.5.1"
+        type: choice
+        prompt: "Что Марко делает утром?"
+        options: ["Trči.", "Pliva.", "Crta."]
+        answer: "Trči."
+      - id: "68.5.2"
+        type: choice
+        prompt: "Что любит Ана?"
+        options: ["Da pliva i da crta.", "Da igra fudbal.", "Da peva."]
+        answer: "Da pliva i da crta."
+      - id: "68.5.3"
+        type: choice
+        prompt: "Куда они пойдут в субботу?"
+        options: ["Na planinu.", "U bioskop.", "Na jezero."]
+        answer: "Na planinu."
+
+  - id: "68.6"
+    kind: dialogue
+    title: "Šta radiš vikendom?"
+    scene: "Знакомая спрашивает, что ты делаешь по выходным, и зовёт в горы."
+    voice: f
+    also_ok: ["vikendom", "trčim", "plivam", "planinu", "ujutru", "dogovorili"]
+    turns:
+      - who: npc
+        sr: "Šta radiš vikendom?"
+        ru: "Что ты делаешь по выходным?"
+
+      - who: me
+        sr: "Vikendom trčim i plivam."
+        ru: "По выходным я бегаю и плаваю."
+        exercise:
+          id: "68.6.1"
+          type: translate
+          prompt: "Скажи: «По выходным я бегаю и плаваю»"
+          accept: ["Vikendom trčim i plivam."]
+          hint: "«По выходным» — одно слово на -om; потом два глагола в форме «я»."
+
+      - who: npc
+        sr: "Zanimljivo! Hajde da idemo na planinu u subotu!"
+        ru: "Интересно! Давай поедем в горы в субботу!"
+
+      - who: me
+        sr: "Može! U koliko sati?"
+        ru: "Можно! Во сколько?"
+        exercise:
+          id: "68.6.2"
+          type: choice
+          prompt: "Согласись и спроси, во сколько"
+          options: ["Može! U koliko sati?", "Može! Koliko je sati?", "Može! U kada sati?"]
+          answer: "Može! U koliko sati?"
+
+      - who: npc
+        sr: "U osam ujutru."
+        ru: "В восемь утра."
+
+      - who: me
+        sr: "Odgovara mi, u osam ujutru."
+        ru: "Мне подходит, в восемь утра."
+        exercise:
+          id: "68.6.3"
+          type: fill_blank
+          prompt: "«Мне подходит, в восемь утра» → Odgovara mi, u osam ___."
+          accept: ["ujutru"]
+          hint: "«Утром» — одно слово из теории про выходные."
+
+      - who: npc
+        sr: "Dogovorili smo se!"
+        ru: "Договорились!"
+
+      - who: me
+        sr: "Vidimo se u subotu!"
+        ru: "До встречи в субботу!"
+        exercise:
+          id: "68.6.4"
+          type: choice
+          prompt: "Попрощайся до субботы"
+          options: ["Vidimo se u subotu!", "Laku noć!", "Dobro jutro!"]
+          answer: "Vidimo se u subotu!"
+
+  - id: "68.7"
+    kind: practice
+    title: "Диктант"
+    mixed: true
+    also_ok: ["igram", "košarku", "planinu", "vikendom", "plivamo"]
+    exercises:
+      - id: "68.7.1"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Igram fudbal i košarku."
+        accept: ["Igram fudbal i košarku."]
+        ru: ["Я играю в футбол и баскетбол", "Играю в футбол и баскетбол"]
+      - id: "68.7.2"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Vikendom idem na planinu."
+        accept: ["Vikendom idem na planinu."]
+        ru: ["По выходным я иду в горы", "По выходным хожу в горы", "По выходным езжу в горы"]
+      - id: "68.7.3"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Hajde da plivamo!"
+        accept: ["Hajde da plivamo!"]
+        ru: ["Давай поплаваем", "Давай поплаваем!", "Давайте поплаваем"]

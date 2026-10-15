@@ -32,6 +32,7 @@ steps:
         bank: ["Koliko", "dugujem"]
         accept: ["Koliko dugujem?"]
       - id: "15.1.5"
+        hint: "«Картой» — karticom (творительный); «можно» — глагол на m-."
         type: translate
         prompt: "Картой можно?"
         accept: ["Može karticom?", "Karticom, može?"]
@@ -79,6 +80,7 @@ steps:
         bank: ["Koliko", "košta", "kafa"]
         accept: ["Koliko košta kafa?"]
       - id: "15.2.7"
+        hint: "«До свидания» — одно слово, в нём буква đ."
         type: translate
         prompt: "Спасибо, до свидания!"
         accept: ["Hvala, doviđenja!"]

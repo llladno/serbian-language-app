@@ -1,0 +1,236 @@
+lesson: "73"
+title: "Стандартный и новосадский (Standard i novosadski)"
+subtitle: "войводинские словечки, кофейная культура"
+teaches:
+  [kafana, castiti, domaci, ajde, paprikas]
+
+steps:
+  - id: "73.1"
+    kind: teach
+    title: "Кофе по-сербски"
+    md: "73/1-kafa.md"
+
+  - id: "73.2"
+    kind: practice
+    title: "Кофе и кафана"
+    also_ok: ["kafe", "kafa", "kafu", "šećera", "mlekom", "častim", "domaća"]
+    exercises:
+      - id: "73.2.1"
+        type: choice
+        prompt: "«Пойдём на кофе!» —"
+        options: ["Hajde na kafu!", "Hajde na kafa!", "Hajde u kafu!"]
+        answer: "Hajde na kafu!"
+      - id: "73.2.2"
+        type: choice
+        prompt: "«Два кофе, пожалуйста» —"
+        options: ["Dve kafe, molim.", "Dve kafa, molim.", "Dva kafe, molim."]
+        answer: "Dve kafe, molim."
+      - id: "73.2.3"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["domaća kafa", "домашний кофе (в джезве)"]
+          - ["bez šećera", "без сахара"]
+          - ["ja častim", "я угощаю"]
+          - ["kafana", "кафана (трактир)"]
+      - id: "73.2.4"
+        type: fill_blank
+        prompt: "«Я угощаю!» → Ja ___!"
+        accept: ["častim"]
+        hint: "Глагол častiti; в форме «я» окончание -im."
+      - id: "73.2.5"
+        type: fill_blank
+        prompt: "«Кофе без сахара» → Kafa bez ___."
+        accept: ["šećera"]
+        hint: "После «bez» — родительный: слово на согласную получает -a."
+      - id: "73.2.6"
+        type: word_bank
+        prompt: "Собери: «Кофе с молоком и без сахара, пожалуйста»"
+        bank: ["Kafu", "sa", "mlekom", "i", "bez", "šećera", "šećer", "molim"]
+        accept: ["Kafu sa mlekom i bez šećera, molim."]
+      - id: "73.2.7"
+        type: fix_error
+        prompt: "Dve kafa, molim."
+        accept: ["Dve kafe, molim."]
+        explain: "После «два, две» слово стоит в родительном единственного."
+      - id: "73.2.8"
+        type: translate
+        prompt: "Пойдём на кофе, я угощаю!"
+        accept: ["Hajde na kafu, ja častim!", "Hajde na kafu, ja častim"]
+        hint: "«Пойдём» — hajde; куда? — na и винительный; «угощаю» — častiti."
+      - id: "73.2.9"
+        type: translate
+        prompt: "Мне два кофе без сахара, пожалуйста."
+        accept: ["Dve kafe bez šećera, molim.", "Dve kafe bez šećera, molim vas."]
+        hint: "После «bez» — родительный: слово на согласную получает -a."
+
+  - id: "73.3"
+    kind: teach
+    title: "Нови-Сад и живая речь"
+    md: "73/3-novosadski.md"
+
+  - id: "73.4"
+    kind: practice
+    title: "Разговорное и местное"
+    also_ok: ["paprikaš", "paprikaša", "salaš", "salašu", "salaša", "Dunav", "Dunavu", "Dunava", "jedemo", "pijemo", "kafu"]
+    exercises:
+      - id: "73.4.1"
+        type: choice
+        prompt: "«Я ем паприкаш» —"
+        options: ["Jedem paprikaš.", "Jedem paprikaša.", "Jedem u paprikaš."]
+        answer: "Jedem paprikaš."
+      - id: "73.4.2"
+        type: choice
+        prompt: "«Едем на салаш» —"
+        options: ["Idemo na salaš.", "Idemo na salašu.", "Idemo salaš."]
+        answer: "Idemo na salaš."
+      - id: "73.4.3"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["hajde", "давай (по книжной норме)"]
+          - ["ajde", "давай (в живой речи)"]
+          - ["sada", "сейчас"]
+          - ["sad", "сейчас (короче, в речи)"]
+      - id: "73.4.4"
+        type: fill_blank
+        prompt: "«Ну пошли!» (разговорно) → ___, idemo!"
+        accept: ["Ajde", "Hajde"]
+        hint: "Слово «давай» — в таблице теории, правая колонка короче левой."
+      - id: "73.4.5"
+        type: fill_blank
+        prompt: "«Я ем паприкаш» → Jedem ___."
+        accept: ["paprikaš"]
+        hint: "Блюдо из теории про Нови-Сад."
+      - id: "73.4.6"
+        type: word_bank
+        prompt: "Собери: «Идём к Дунаю»"
+        bank: ["Idemo", "na", "Dunav", "Dunavu", "u"]
+        accept: ["Idemo na Dunav."]
+      - id: "73.4.7"
+        type: fix_error
+        prompt: "Idemo na salaša."
+        accept: ["Idemo na salaš."]
+        explain: "Хутор — неодушевлённое слово, винительный совпадает с именительным."
+      - id: "73.4.8"
+        type: translate
+        prompt: "Едем на салаш есть паприкаш."
+        accept: ["Idemo na salaš da jedemo paprikaš."]
+        hint: "«Чтобы есть» — da и форма «мы» от jesti (jedem → jedemo)."
+      - id: "73.4.9"
+        type: translate
+        prompt: "В Нови-Саде мы пьём кофе у Дуная."
+        accept:
+          - "U Novom Sadu pijemo kafu kod Dunava."
+          - "U Novom Sadu pijemo kafu na Dunavu."
+        hint: "«У Дуная» — kod и родительный, или na и локатив."
+
+  - id: "73.5"
+    kind: reading
+    title: "Кофе в Нови-Саде"
+    md: "73/5-citanje.md"
+    also_ok: ["subotom", "uzima", "domaću", "šećera", "mlekom", "kaže", "častim", "Dunav", "sedi", "priča", "pije", "vremena", "toga", "kući"]
+    exercises:
+      - id: "73.5.1"
+        type: choice
+        prompt: "Что берёт Ана?"
+        options: ["Domaću kafu bez šećera.", "Kafu sa mlekom.", "Čaj."]
+        answer: "Domaću kafu bez šećera."
+      - id: "73.5.2"
+        type: choice
+        prompt: "Кто угощает?"
+        options: ["Marko.", "Ana.", "Jovana."]
+        answer: "Marko."
+      - id: "73.5.3"
+        type: choice
+        prompt: "Куда они идут потом?"
+        options: ["Na Dunav.", "U bioskop.", "Kući."]
+        answer: "Na Dunav."
+
+  - id: "73.6"
+    kind: dialogue
+    title: "U kafani"
+    scene: "Ты в кафане заказываешь кофе."
+    voice: m
+    also_ok: ["pijete", "kafe", "šećerom", "šećera", "računa", "častim"]
+    turns:
+      - who: npc
+        sr: "Dobar dan. Šta ćete da pijete?"
+        ru: "Добрый день. Что будете пить?"
+
+      - who: me
+        sr: "Dve kafe, molim."
+        ru: "Два кофе, пожалуйста."
+        exercise:
+          id: "73.6.1"
+          type: choice
+          prompt: "Закажи два кофе"
+          options: ["Dve kafe, molim.", "Dve kafa, molim.", "Dva kafe, molim."]
+          answer: "Dve kafe, molim."
+
+      - who: npc
+        sr: "Sa šećerom ili bez šećera?"
+        ru: "С сахаром или без?"
+
+      - who: me
+        sr: "Bez šećera."
+        ru: "Без сахара."
+        exercise:
+          id: "73.6.2"
+          type: fill_blank
+          prompt: "«Без сахара» → ___ šećera."
+          accept: ["Bez"]
+          hint: "Предлог, после которого родительный (урок 46)."
+
+      - who: npc
+        sr: "Izvolite. Još nešto?"
+        ru: "Пожалуйста. Что-нибудь ещё?"
+
+      - who: me
+        sr: "Ne, hvala. Račun, molim."
+        ru: "Нет, спасибо. Счёт, пожалуйста."
+        exercise:
+          id: "73.6.3"
+          type: translate
+          prompt: "Скажи: «Нет, спасибо. Счёт, пожалуйста»"
+          accept: ["Ne, hvala. Račun, molim."]
+          hint: "Слова из урока про кафе: hvala, račun, molim."
+
+      - who: npc
+        sr: "Evo računa."
+        ru: "Вот счёт."
+
+      - who: me
+        sr: "Ja častim!"
+        ru: "Я угощаю!"
+        exercise:
+          id: "73.6.4"
+          type: choice
+          prompt: "Скажи: «Я угощаю!»"
+          options: ["Ja častim!", "Ja častiš!", "Mi častim!"]
+          answer: "Ja častim!"
+
+  - id: "73.7"
+    kind: practice
+    title: "Диктант"
+    mixed: true
+    also_ok: ["kafu", "šećera", "salaš"]
+    exercises:
+      - id: "73.7.1"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Hajde na kafu!"
+        accept: ["Hajde na kafu!"]
+        ru: ["Пойдём на кофе", "Пойдём на кофе!", "Давай сходим на кофе"]
+      - id: "73.7.2"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Kafa bez šećera, molim."
+        accept: ["Kafa bez šećera, molim."]
+        ru: ["Кофе без сахара, пожалуйста", "Кофе без сахара, прошу", "Пожалуйста, кофе без сахара"]
+      - id: "73.7.3"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Idemo na salaš."
+        accept: ["Idemo na salaš."]
+        ru: ["Едем на салаш", "Идём на салаш", "Мы едем на салаш"]

@@ -32,6 +32,7 @@ steps:
           - ["apoteka", "аптека"]
           - ["mesara", "мясная лавка"]
       - id: "11.2.4"
+        hint: "Две части, как в русском «само-обслуживание»: samo + posluga. Пишется слитно, оканчивается на -a."
         type: fill_blank
         prompt: "Магазин самообслуживания — ___"
         accept: ["samoposluga"]
@@ -56,6 +57,7 @@ steps:
         options: ["Treba mi hleb.", "Hvala, doviđenja.", "Laku noć."]
         answer: "Treba mi hleb."
       - id: "11.4.3"
+        hint: "Вопрос к «вы»: глагол «иметь», основа «има-», для «вы» окончание -te."
         type: fill_blank
         prompt: "«У вас есть молоко?» → Da li ___ mleko?"
         accept: ["imate"]

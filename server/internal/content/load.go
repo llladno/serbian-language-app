@@ -17,6 +17,14 @@ func pick(a, b string) string {
 	return b
 }
 
+// clipPresent reports whether an audio clip exists and has content. An empty
+// file (a synthesis request that failed half-way) must not count: the player
+// would show a speaker button that plays silence.
+func clipPresent(path string) bool {
+	st, err := os.Stat(path)
+	return err == nil && st.Size() > 0
+}
+
 // ---- YAML file shapes -------------------------------------------------------
 
 type courseFile struct {
@@ -50,6 +58,7 @@ type exerciseYAML struct {
 	Type    string     `yaml:"type"`
 	Prompt  string     `yaml:"prompt"`
 	Explain string     `yaml:"explain"`
+	Hint    string     `yaml:"hint"`
 	Meta    string     `yaml:"meta"`
 	Say     string     `yaml:"say"`
 	RU      []string   `yaml:"ru"`
@@ -165,7 +174,7 @@ func slicesContains(s []string, v string) bool {
 // root (for resolving listen audio); rel is the source path (for errors).
 func decodeExercise(dir, rel string, e exerciseYAML) (Exercise, error) {
 	ex := Exercise{
-		ID: e.ID, Type: e.Type, Prompt: e.Prompt, Explain: e.Explain,
+		ID: e.ID, Type: e.Type, Prompt: e.Prompt, Explain: e.Explain, Hint: e.Hint,
 		Meta: e.Meta, Forms: e.Forms, Say: e.Say, RU: e.RU,
 		Options: e.Options, Answer: e.Answer, Bank: e.Bank,
 	}
@@ -231,12 +240,15 @@ func decodeExercise(dir, rel string, e exerciseYAML) (Exercise, error) {
 			if len(e.RU) == 0 {
 				return Exercise{}, fmt.Errorf("%s: exercise %s: listen needs ru (accepted Russian translations of say, for learners who cannot listen)", rel, e.ID)
 			}
-			if _, err := os.Stat(filepath.Join(dir, "audio", e.ID+".mp3")); err == nil {
+			if clipPresent(filepath.Join(dir, "audio", e.ID+".mp3")) {
 				ex.Audio = e.ID + ".mp3"
 			}
 		}
 	default:
 		return Exercise{}, fmt.Errorf("%s: exercise %s: unknown type %q", rel, e.ID, e.Type)
+	}
+	if err := validateHint(ex); err != nil {
+		return Exercise{}, fmt.Errorf("%s: exercise %s: %w", rel, e.ID, err)
 	}
 	return ex, nil
 }
@@ -324,7 +336,7 @@ func Load(dir string) (*Course, error) {
 		}
 		seenV[v.ID] = true
 		audio := ""
-		if _, err := os.Stat(filepath.Join(dir, "audio", v.ID+".mp3")); err == nil {
+		if clipPresent(filepath.Join(dir, "audio", v.ID+".mp3")) {
 			audio = v.ID + ".mp3"
 		}
 		c.Vocab = append(c.Vocab, Vocab{

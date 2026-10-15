@@ -12,3 +12,6 @@ node_modules/
 
 # subagent-driven-development scratch (ledger, briefs, review packages)
 .superpowers/
+
+# scripts/lint_serbian.py, check_stress.py: скачанные словари и кэш Wiktionary
+scripts/.cache/

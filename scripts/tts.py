@@ -300,7 +300,8 @@ def prune_phrase_clips() -> int:
 def write_phrase_index() -> int:
     """List every phrase clip on disk, for the web app."""
     os.makedirs(PHRASE_DIR, exist_ok=True)
-    keys = sorted(f[:-4] for f in os.listdir(PHRASE_DIR) if f.endswith(".mp3"))
+    keys = sorted(f[:-4] for f in os.listdir(PHRASE_DIR)
+                  if f.endswith(".mp3") and have_clip(os.path.join(PHRASE_DIR, f)))
     with open(os.path.join(PHRASE_DIR, "index.json"), "w") as f:
         json.dump(keys, f)
     return len(keys)
@@ -323,13 +324,34 @@ def speech_text(entry: dict) -> str:
     return raw.strip(" -–—")
 
 
+SYNTH_ATTEMPTS = 4
+
+
+def have_clip(path: str) -> bool:
+    """A clip counts as present only when it has content: a failed request must
+    never leave an empty file that later runs mistake for finished audio."""
+    return os.path.isfile(path) and os.path.getsize(path) > 0
+
+
 async def synth(sem, voice, text, dest):
+    """Synthesize into a temp file and move it into place only on success. The
+    service answers 403 now and then when hit hard, so retry with a pause."""
+    part = dest + ".part"
     async with sem:
-        try:
-            await edge_tts.Communicate(text, voice).save(dest)
-            return dest, None
-        except Exception as e:  # noqa: BLE001
-            return dest, e
+        err = None
+        for attempt in range(SYNTH_ATTEMPTS):
+            try:
+                await edge_tts.Communicate(text, voice).save(part)
+                if os.path.getsize(part) == 0:
+                    raise RuntimeError("service returned empty audio")
+                os.replace(part, dest)
+                return dest, None
+            except Exception as e:  # noqa: BLE001
+                err = e
+                if os.path.exists(part):
+                    os.remove(part)
+                await asyncio.sleep(2 * (attempt + 1))
+        return dest, err
 
 
 async def run(entries, voice, force):
@@ -339,7 +361,7 @@ async def run(entries, voice, force):
     for e in entries:
         eid = e["id"]
         dest = os.path.join(AUDIO_DIR, eid + ".mp3")
-        if os.path.exists(dest) and not force:
+        if have_clip(dest) and not force:
             continue
         text = e["cyrillic"] if e.get("exact") else speech_text(e)
         if not text:

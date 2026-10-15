@@ -61,6 +61,7 @@ steps:
     mixed: true
     exercises:
       - id: "05.4.1"
+        hint: "Фраза из урока 04: «я» + короткая форма «быть» + откуда."
         type: listen
         prompt: "Запиши, что слышишь."
         say: "Ja sam iz Rusije."
@@ -98,6 +99,7 @@ steps:
           - ["Govoriš srpski?", "Говоришь по-сербски?"]
           - ["Radim kao lekar.", "Работаю врачом."]
       - id: "05.5.3"
+        hint: "Одно слово: ni- + та же форма, что в «Ana je…»."
         type: fill_blank
         prompt: "«Ана не из Сербии, она из России» → Ana ___ iz Srbije."
         accept: ["nije"]
@@ -163,6 +165,7 @@ steps:
         ru: "Немного. Учу сербский."
         exercise:
           id: "05.6.3"
+          hint: "Глагол «учить» для «я»: основа uč-, окончание как у govorim."
           type: fill_blank
           prompt: "«Немного. Учу сербский» → Malo. ___ srpski."
           accept: ["Učim"]
@@ -198,6 +201,7 @@ steps:
           type: translate
           prompt: "Скажи: «теперь понимаю, спасибо»"
           accept: ["Sada razumem. Hvala!", "Sad razumem. Hvala!", "Sada razumem, hvala!", "Sad razumem, hvala"]
+          hint: "Слово для «теперь» — в теории этого урока, сразу после «Polako, molim»."
 
       - who: npc
         sr: "Nema na čemu. Vidimo se!"

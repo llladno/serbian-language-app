@@ -24,6 +24,7 @@ steps:
         options: ["Koliko sve zajedno?", "Koliko košta?", "Koliko imaš godina?"]
         answer: "Koliko sve zajedno?"
       - id: "09.2.3"
+        hint: "«Сколько с меня?» = «сколько я должен?». Нужен глагол «должен» для «я» (корень dug-)."
         type: fill_blank
         prompt: "«Сколько с меня?» → Koliko ___?"
         accept: ["dugujem"]
@@ -54,6 +55,7 @@ steps:
         options: ["Koliko imaš godina?", "Koliko imaš godine?", "Koliko si godina?"]
         answer: "Koliko imaš godina?"
       - id: "09.4.3"
+        hint: "После 2, 3, 4 слово на -a меняется на -e, как в «dve kafe»."
         type: fill_blank
         prompt: "«Мне 22 года» → Imam dvadeset dve ___."
         accept: ["godine"]
@@ -63,6 +65,7 @@ steps:
         bank: ["Imam", "četrdeset", "godina"]
         accept: ["Imam četrdeset godina."]
       - id: "09.4.5"
+        hint: "30 — больше четырёх, поэтому нужна форма с окончанием -a, а не -u."
         type: fix_error
         prompt: "Imam trideset godinu."
         accept: ["Imam trideset godina."]

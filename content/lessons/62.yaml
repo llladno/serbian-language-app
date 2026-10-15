@@ -1,0 +1,238 @@
+lesson: "62"
+title: "Рассказ о себе I (Priča o sebi I)"
+subtitle: "биография, детство, школа"
+teaches:
+  [rodjen, odrasti, detinjstvo, studirati, zavrsiti, krenuti, poceti, nekad]
+
+steps:
+  - id: "62.1"
+    kind: teach
+    title: "Где ты родился и вырос"
+    md: "62/1-detinjstvo.md"
+
+  - id: "62.2"
+    kind: practice
+    title: "Детство"
+    also_ok: ["Moskvi", "selu", "detinjstvu", "odrastao", "odrasla", "živeo", "čitao", "rodio"]
+    exercises:
+      - id: "62.2.1"
+        type: choice
+        prompt: "Женщина говорит: «Я родилась в Москве» —"
+        options: ["Rođena sam u Moskvi.", "Rođen sam u Moskvi.", "Rođena sam u Moskva."]
+        answer: "Rođena sam u Moskvi."
+      - id: "62.2.2"
+        type: choice
+        prompt: "Мужчина говорит: «Я вырос в деревне» —"
+        options: ["Odrastao sam u selu.", "Odrastao sam u selo.", "Odrasla sam u selu."]
+        answer: "Odrastao sam u selu."
+      - id: "62.2.3"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["rođen sam", "я родился"]
+          - ["odrastao sam", "я вырос"]
+          - ["u detinjstvu", "в детстве"]
+          - ["nekad", "когда-то, раньше"]
+      - id: "62.2.4"
+        type: fill_blank
+        prompt: "«В детстве я много читал» → U ___ sam mnogo čitao."
+        accept: ["detinjstvu"]
+        hint: "После «u» (где?) — локатив: у слов на -stvo конец -o меняется на -u."
+      - id: "62.2.5"
+        type: fill_blank
+        prompt: "«Я вырос в деревне» → Odrastao sam u ___."
+        accept: ["selu"]
+        hint: "Локатив среднего рода: конец -o меняется на -u."
+      - id: "62.2.6"
+        type: word_bank
+        prompt: "Собери: «Раньше я жил в Москве»"
+        bank: ["Nekad", "sam", "živeo", "u", "Moskvi", "Moskva"]
+        accept: ["Nekad sam živeo u Moskvi."]
+      - id: "62.2.7"
+        type: fix_error
+        prompt: "Rođen sam u Moskva."
+        accept: ["Rođen sam u Moskvi."]
+        explain: "Где? — после «u» нужен локатив."
+      - id: "62.2.8"
+        type: translate
+        prompt: "Я родился в Москве, а вырос в деревне."
+        accept:
+          - "Rođen sam u Moskvi, a odrastao sam u selu."
+          - "Rođen sam u Moskvi, a odrastao u selu."
+          - "Rodio sam se u Moskvi, a odrastao sam u selu."
+        hint: "«Родился» — через rođen (мужчина), «вырос» — слово из теории."
+
+  - id: "62.3"
+    kind: teach
+    title: "Школа и университет"
+    md: "62/3-skola.md"
+
+  - id: "62.4"
+    kind: practice
+    title: "Школа, университет, работа"
+    also_ok: ["fakultetu", "školu", "godina", "godine", "završio", "završila", "studirao", "krenuo", "počeo"]
+    exercises:
+      - id: "62.4.1"
+        type: choice
+        prompt: "«Я учился в университете» —"
+        options: ["Studirao sam na fakultetu.", "Studirao sam u fakultetu.", "Studirao sam na fakultet."]
+        answer: "Studirao sam na fakultetu."
+      - id: "62.4.2"
+        type: choice
+        prompt: "«Десять лет назад» —"
+        options: ["Pre deset godina.", "Pre deset godine.", "Pre deset godinu."]
+        answer: "Pre deset godina."
+      - id: "62.4.3"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["završiti fakultet", "закончить университет"]
+          - ["studirati", "учиться в вузе"]
+          - ["krenuti u školu", "пойти в школу"]
+          - ["onda", "потом"]
+      - id: "62.4.4"
+        type: fill_blank
+        prompt: "«Я закончил университет» → ___ sam fakultet."
+        accept: ["Završio"]
+        hint: "Прошедшее время, как в уроке 30: мужчина — причастие на -o."
+      - id: "62.4.5"
+        type: fill_blank
+        prompt: "«Десять лет назад» → Pre deset ___."
+        accept: ["godina"]
+        hint: "После числа от пяти — родительный множественного."
+      - id: "62.4.6"
+        type: word_bank
+        prompt: "Собери: «В школу я пошёл в семь лет»"
+        bank: ["Krenuo", "sam", "u", "školu", "sa", "sedam", "godina", "godine"]
+        accept: ["Krenuo sam u školu sa sedam godina.", "U školu sam krenuo sa sedam godina.", "Sa sedam godina sam krenuo u školu."]
+      - id: "62.4.7"
+        type: fix_error
+        prompt: "Studirao sam u fakultetu."
+        accept: ["Studirao sam na fakultetu."]
+        explain: "С университетом предлог места другой — не «u»."
+      - id: "62.4.8"
+        type: translate
+        prompt: "Я закончила университет десять лет назад."
+        accept:
+          - "Završila sam fakultet pre deset godina."
+          - "Pre deset godina sam završila fakultet."
+          - "Fakultet sam završila pre deset godina."
+        hint: "«Назад» — слово pre перед числом; «закончила» — женская форма на -la."
+      - id: "62.4.9"
+        type: translate
+        prompt: "Потом я начал работать."
+        accept: ["Onda sam počeo da radim."]
+        hint: "«Начал работать» — počeo da и глагол «работаю» (я)."
+
+  - id: "62.5"
+    kind: reading
+    title: "О себе"
+    md: "62/5-citanje.md"
+    also_ok: ["Beogradu", "selu", "odrastao", "čitao", "studirao", "završio", "krenuo", "ga"]
+    exercises:
+      - id: "62.5.1"
+        type: choice
+        prompt: "Где Марко вырос?"
+        options: ["U selu.", "U Beogradu.", "U Moskvi."]
+        answer: "U selu."
+      - id: "62.5.2"
+        type: choice
+        prompt: "Что Марко делал в детстве?"
+        options: ["Mnogo je čitao.", "Mnogo je radio.", "Mnogo je putovao."]
+        answer: "Mnogo je čitao."
+      - id: "62.5.3"
+        type: choice
+        prompt: "Когда Марко закончил университет?"
+        options: ["Pre pet godina.", "Pre deset godina.", "Pre sedam godina."]
+        answer: "Pre pet godina."
+
+  - id: "62.6"
+    kind: dialogue
+    title: "Odakle si?"
+    scene: "Ты знакомишься с новым коллегой и рассказываешь о себе."
+    voice: m
+    also_ok: ["Moskvi", "studirao", "završio", "zanimljivo"]
+    turns:
+      - who: npc
+        sr: "Odakle si?"
+        ru: "Откуда ты?"
+
+      - who: me
+        sr: "Rođen sam u Moskvi, a sada živim u Novom Sadu."
+        ru: "Я родился в Москве, а сейчас живу в Нови-Саде."
+        exercise:
+          id: "62.6.1"
+          type: choice
+          prompt: "Скажи, что родился в Москве, а теперь живёшь в Нови-Саде"
+          options:
+            - "Rođen sam u Moskvi, a sada živim u Novom Sadu."
+            - "Rođen sam u Moskva, a sada živim u Novom Sadu."
+            - "Rođen sam u Moskvi, a sada živim u Novi Sad."
+          answer: "Rođen sam u Moskvi, a sada živim u Novom Sadu."
+
+      - who: npc
+        sr: "Zanimljivo! Gde si studirao?"
+        ru: "Интересно! Где ты учился?"
+
+      - who: me
+        sr: "Studirao sam na fakultetu u Moskvi."
+        ru: "Я учился в университете в Москве."
+        exercise:
+          id: "62.6.2"
+          type: translate
+          prompt: "Скажи: «Я учился в университете в Москве»"
+          accept: ["Studirao sam na fakultetu u Moskvi."]
+          hint: "Университет — fakultet; предлог места при нём — как в теории."
+
+      - who: npc
+        sr: "Kad si završio fakultet?"
+        ru: "Когда ты закончил университет?"
+
+      - who: me
+        sr: "Pre deset godina."
+        ru: "Десять лет назад."
+        exercise:
+          id: "62.6.3"
+          type: fill_blank
+          prompt: "«Десять лет назад» → ___ deset godina."
+          accept: ["Pre"]
+          hint: "«Назад» по-сербски стоит перед числом."
+
+      - who: npc
+        sr: "Drago mi je."
+        ru: "Очень приятно."
+
+      - who: me
+        sr: "Takođe."
+        ru: "Взаимно."
+        exercise:
+          id: "62.6.4"
+          type: choice
+          prompt: "Ответь: «Мне тоже приятно»"
+          options: ["Takođe.", "Izvinite.", "Laku noć."]
+          answer: "Takođe."
+
+  - id: "62.7"
+    kind: practice
+    title: "Диктант"
+    mixed: true
+    also_ok: ["Moskvi", "čitao", "završio"]
+    exercises:
+      - id: "62.7.1"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Rođena sam u Moskvi."
+        accept: ["Rođena sam u Moskvi."]
+        ru: ["Я родилась в Москве", "Я родилась в Москве", "Я родом из Москвы"]
+      - id: "62.7.2"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "U detinjstvu sam mnogo čitao."
+        accept: ["U detinjstvu sam mnogo čitao."]
+        ru: ["В детстве я много читал", "Я много читал в детстве", "Маленьким я много читал"]
+      - id: "62.7.3"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Završio sam fakultet pre deset godina."
+        accept: ["Završio sam fakultet pre deset godina."]
+        ru: ["Я закончил университет десять лет назад", "Десять лет назад я закончил университет", "Я закончил вуз десять лет назад"]

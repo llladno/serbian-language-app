@@ -281,54 +281,72 @@ lessons:
   "60":
     title: "Чувства (Osećanja)"
     subtitle: "как ты себя чувствуешь, базовые эмоции"
+    file: "lessons/60.yaml"
   "61":
     title: "Мнения (Mišljenja)"
     subtitle: "mislim da, slažem se, нравится / раздражает"
+    file: "lessons/61.yaml"
   "62":
     title: "Рассказ о себе I (Priča o sebi I)"
     subtitle: "биография, детство, школа"
+    file: "lessons/62.yaml"
   "63":
     title: "Рассказ о себе II (Priča o sebi II)"
     subtitle: "взрослая жизнь, планы"
+    file: "lessons/63.yaml"
   "64":
     title: "Телефон (Telefon)"
     subtitle: "звонки, javiću se, договориться о звонке"
+    file: "lessons/64.yaml"
   "65":
     title: "Проблемы (Problemi)"
     subtitle: "жалоба, что сломалось, kvar"
+    file: "lessons/65.yaml"
   "66":
     title: "Решения (Rešenja)"
     subtitle: "вызвать мастера, договориться о ремонте, сроки"
+    file: "lessons/66.yaml"
   "67":
     title: "Проверка 5а (Provera 5a)"
     subtitle: "чувства, мнения, рассказ о себе, телефон, проблемы"
+    file: "lessons/67.yaml"
   "68":
     title: "Свободное время (Slobodno vreme)"
     subtitle: "хобби, спорт, приглашения, hajde da"
+    file: "lessons/68.yaml"
   "69":
     title: "Работа I (Posao I)"
     subtitle: "рабочее место, задачи, коллеги, rok"
+    file: "lessons/69.yaml"
   "70":
     title: "Работа II (Posao II)"
     subtitle: "собеседование, резюме, sastanak"
+    file: "lessons/70.yaml"
   "71":
     title: "Бумаги (Papirologija)"
     subtitle: "банк, карта, boravak"
+    file: "lessons/71.yaml"
   "72":
     title: "Адрес и документы (Adresa i dokumenti)"
     subtitle: "prijava adrese, документы"
+    file: "lessons/72.yaml"
   "73":
     title: "Стандартный и новосадский (Standard i novosadski)"
     subtitle: "войводинские словечки, кофейная культура"
+    file: "lessons/73.yaml"
   "74":
     title: "Small talk (Small talk)"
     subtitle: "поддержать беседу, реагировать, вставные фразы"
+    file: "lessons/74.yaml"
   "75":
     title: "Длинный разговор (Dug razgovor)"
     subtitle: "рассказать историю целиком, беглость"
+    file: "lessons/75.yaml"
   "76":
     title: "Читаю и слушаю (Čitanje i slušanje)"
     subtitle: "новости, вывески, сериалы без субтитров"
+    file: "lessons/76.yaml"
   "77":
     title: "Большая проверка (Velika provera)"
     subtitle: "итоговые ролёвки, план дальше"
+    file: "lessons/77.yaml"

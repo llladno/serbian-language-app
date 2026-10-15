@@ -156,9 +156,12 @@ def main():
                     u = unseen(sr, also)
                     if u:
                         rows.append((step["id"], cat, sr, u))
-                    see(norm_tokens(sr), f"{lid}/{step['id']}")
+                    # The learner's own line is HIDDEN until they answer its exercise
+                    # (see Turn.SR), so it must not count as "seen" for that very
+                    # exercise: «Sada razumem» in 05.6.5 was never taught anywhere else.
                     if turn.get("exercise"):
                         collect(turn["exercise"], unseen, also, rows)
+                    see(norm_tokens(sr), f"{lid}/{step['id']}")
             for e in step.get("exercises") or []:
                 collect(e, unseen, also, rows)
         rows = [r for r in rows if r[1] in want]

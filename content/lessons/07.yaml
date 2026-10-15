@@ -34,6 +34,7 @@ steps:
         bank: ["Ovo", "je", "moj", "tata"]
         accept: ["Ovo je moj tata."]
       - id: "07.2.5"
+        hint: "«Мама» — женского рода: «мой» меняется на женскую форму (добавь -a)."
         type: fix_error
         prompt: "Moj mama."
         accept: ["Moja mama."]
@@ -104,6 +105,7 @@ steps:
           - ["roditelji", "родители"]
           - ["deda", "дедушка"]
       - id: "07.5.3"
+        hint: "После «imam» — винительный падеж: у слов на -a окончание -a меняется на -u."
         type: fill_blank
         prompt: "У меня есть сестра: «Imam ___.»"
         accept: ["sestru"]

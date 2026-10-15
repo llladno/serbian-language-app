@@ -1,0 +1,230 @@
+lesson: "61"
+title: "Мнения (Mišljenja)"
+subtitle: "mislim da, slažem se, нравится / раздражает"
+teaches:
+  [slagati-se, misljenje, siguran, zanimljiv, dosadan, ideja, ipak, u-pravu-si, cini-mi-se, ljutiti]
+
+steps:
+  - id: "61.1"
+    kind: teach
+    title: "Что ты думаешь"
+    md: "61/1-mislim.md"
+
+  - id: "61.2"
+    kind: practice
+    title: "Мнение и согласие"
+    also_ok: ["zanimljiva", "dosadna", "filmu", "tobom", "pravu", "imaš"]
+    exercises:
+      - id: "61.2.1"
+        type: choice
+        prompt: "«Я думаю, что фильм интересный» —"
+        options: ["Mislim da je film zanimljiv.", "Mislim da film zanimljiv.", "Mislim je film zanimljiv."]
+        answer: "Mislim da je film zanimljiv."
+      - id: "61.2.2"
+        type: choice
+        prompt: "«Я согласен» —"
+        options: ["Slažem se.", "Slažem.", "Slažem mi se."]
+        answer: "Slažem se."
+      - id: "61.2.3"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["slažem se", "я согласен"]
+          - ["ne slažem se", "я не согласен"]
+          - ["u pravu si", "ты прав"]
+          - ["nisam siguran", "я не уверен"]
+      - id: "61.2.4"
+        type: fill_blank
+        prompt: "«Я согласен с тобой» → Slažem se sa ___."
+        accept: ["tobom"]
+        hint: "После «sa» — творительный; «ты» в творительном — в таблице местоимений урока 54."
+      - id: "61.2.5"
+        type: fill_blank
+        prompt: "«Что ты думаешь о фильме?» → Šta misliš o ___?"
+        accept: ["filmu"]
+        hint: "После «o» — локатив: у мужских слов окончание -u."
+      - id: "61.2.6"
+        type: word_bank
+        prompt: "Собери: «Мне кажется, что книга скучная»"
+        bank: ["Čini", "mi", "se", "da", "je", "knjiga", "dosadna", "dosadan"]
+        accept: ["Čini mi se da je knjiga dosadna.", "Čini mi se da je dosadna knjiga."]
+      - id: "61.2.7"
+        type: fix_error
+        prompt: "Mislim je film zanimljiv."
+        accept: ["Mislim da je film zanimljiv."]
+        explain: "Между «думаю» и самой мыслью нужно связующее слово."
+      - id: "61.2.8"
+        type: translate
+        prompt: "Мне кажется, ты прав."
+        accept:
+          - "Čini mi se da si u pravu."
+          - "Mislim da si u pravu."
+          - "Čini mi se da imaš pravo."
+          - "Mislim da imaš pravo."
+        hint: "«Ты прав» — выражение из теории, в нём слово pravu."
+
+  - id: "61.3"
+    kind: teach
+    title: "Нравится и злит"
+    md: "61/3-raduje-ljuti.md"
+
+  - id: "61.4"
+    kind: practice
+    title: "Радует, злит, нравится"
+    also_ok: ["kasniš", "ideja", "tvoja", "ideju"]
+    exercises:
+      - id: "61.4.1"
+        type: choice
+        prompt: "«Меня радует твоя идея» —"
+        options: ["Raduje me tvoja ideja.", "Raduje mi tvoja ideja.", "Radujem se tvoja ideja."]
+        answer: "Raduje me tvoja ideja."
+      - id: "61.4.2"
+        type: choice
+        prompt: "«Меня злит, когда ты опаздываешь» —"
+        options: ["Ljuti me kad kasniš.", "Ljuti mi kad kasniš.", "Ljut me kad kasniš."]
+        answer: "Ljuti me kad kasniš."
+      - id: "61.4.3"
+        type: match
+        prompt: "Соедини"
+        pairs:
+          - ["raduje me", "меня радует"]
+          - ["brine me", "меня беспокоит"]
+          - ["ljuti me", "меня злит"]
+          - ["sviđa mi se", "мне нравится"]
+      - id: "61.4.4"
+        type: fill_blank
+        prompt: "«Мне нравится этот фильм» → Sviđa ___ se ovaj film."
+        accept: ["mi"]
+        hint: "«Нравится» — это «мне»: короткая форма дательного."
+      - id: "61.4.5"
+        type: fill_blank
+        prompt: "«Меня радует твоя идея» → Raduje ___ tvoja ideja."
+        accept: ["me"]
+        hint: "Радует «меня» — винительный, как в «Boli … glava» из урока 39."
+      - id: "61.4.6"
+        type: word_bank
+        prompt: "Собери: «Почему ты так думаешь?»"
+        bank: ["Zašto", "tako", "misliš", "mislim", "ti"]
+        accept: ["Zašto tako misliš?", "Zašto ti tako misliš?"]
+      - id: "61.4.7"
+        type: fix_error
+        prompt: "Ljuti mi kad kasniš."
+        accept: ["Ljuti me kad kasniš."]
+        explain: "Здесь человек — «меня» (винительный), а не «мне»."
+      - id: "61.4.8"
+        type: translate
+        prompt: "Меня радует твоя идея, но я не уверен."
+        accept:
+          - "Raduje me tvoja ideja, ali nisam siguran."
+          - "Tvoja ideja me raduje, ali nisam siguran."
+        hint: "«Меня радует» — как в уроке 60; «но» — ali."
+
+  - id: "61.5"
+    kind: reading
+    title: "Спор о фильме"
+    md: "61/5-citanje.md"
+    also_ok: ["dobra"]
+    exercises:
+      - id: "61.5.1"
+        type: choice
+        prompt: "Что Марко думает о фильме?"
+        options: ["Zanimljiv je, ali malo dosadan.", "Jako je dosadan.", "Ne sviđa mu se."]
+        answer: "Zanimljiv je, ali malo dosadan."
+      - id: "61.5.2"
+        type: choice
+        prompt: "Что Ана думает об идее фильма?"
+        options: ["Dobra je.", "Dosadna je.", "Nije sigurna."]
+        answer: "Dobra je."
+      - id: "61.5.3"
+        type: choice
+        prompt: "Кто говорит «Tačno. Slažem se»?"
+        options: ["Marko.", "Ana.", "Jovana."]
+        answer: "Marko."
+
+  - id: "61.6"
+    kind: dialogue
+    title: "Šta misliš o filmu?"
+    scene: "Подруга спрашивает, что ты думаешь о фильме, который вы смотрели."
+    voice: f
+    also_ok: ["razumem", "jednom"]
+    turns:
+      - who: npc
+        sr: "Zdravo! Šta misliš o filmu?"
+        ru: "Привет! Что ты думаешь о фильме?"
+
+      - who: me
+        sr: "Mislim da je zanimljiv."
+        ru: "Думаю, он интересный."
+        exercise:
+          id: "61.6.1"
+          type: choice
+          prompt: "Скажи, что фильм, по-твоему, интересный"
+          options: ["Mislim da je zanimljiv.", "Mislim je zanimljiv.", "Mislim da zanimljiv."]
+          answer: "Mislim da je zanimljiv."
+
+      - who: npc
+        sr: "Ne slažem se. Čini mi se da je dosadan."
+        ru: "Не согласна. Мне кажется, он скучный."
+
+      - who: me
+        sr: "Zašto tako misliš?"
+        ru: "Почему ты так думаешь?"
+        exercise:
+          id: "61.6.2"
+          type: translate
+          prompt: "Спроси: «Почему ты так думаешь?»"
+          accept: ["Zašto tako misliš?", "Zašto ti tako misliš?"]
+          hint: "Вопросительное слово «почему» — из урока 24."
+
+      - who: npc
+        sr: "Jer ne razumem ideju."
+        ru: "Потому что я не понимаю идею."
+
+      - who: me
+        sr: "Razumem te. Ali ipak mislim da je dobar."
+        ru: "Понимаю тебя. Но всё же я думаю, он хороший."
+        exercise:
+          id: "61.6.3"
+          type: fill_blank
+          prompt: "«Но всё же я думаю, он хороший» → Ali ___ mislim da je dobar."
+          accept: ["ipak"]
+          hint: "Слово «всё же» — в первой теории урока."
+
+      - who: npc
+        sr: "Možda. Hajde da gledamo još jednom!"
+        ru: "Может быть. Давай посмотрим ещё раз!"
+
+      - who: me
+        sr: "Dobra ideja!"
+        ru: "Хорошая идея!"
+        exercise:
+          id: "61.6.4"
+          type: choice
+          prompt: "Согласись: «Хорошая идея!»"
+          options: ["Dobra ideja!", "Dobar ideja!", "Dobro ideja!"]
+          answer: "Dobra ideja!"
+
+  - id: "61.7"
+    kind: practice
+    title: "Диктант"
+    mixed: true
+    also_ok: ["tobom"]
+    exercises:
+      - id: "61.7.1"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Ne slažem se sa tobom."
+        accept: ["Ne slažem se sa tobom."]
+        ru: ["Я не согласен с тобой", "Я с тобой не согласен", "Я не согласна с тобой", "Я с тобой не согласна"]
+      - id: "61.7.2"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Čini mi se da je film dosadan."
+        accept: ["Čini mi se da je film dosadan."]
+        ru: ["Мне кажется, фильм скучный", "Мне кажется, что фильм скучный", "Кажется, фильм скучный"]
+      - id: "61.7.3"
+        type: listen
+        prompt: "Запиши, что слышишь."
+        say: "Ljuti me kad kasniš."
+        accept: ["Ljuti me kad kasniš."]
+        ru: ["Меня злит, когда ты опаздываешь", "Меня бесит, когда ты опаздываешь", "Меня раздражает, когда ты опаздываешь"]

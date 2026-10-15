@@ -1,0 +1,143 @@
+# Настройки scripts/lint_serbian.py (орфография, экавица, смешение алфавитов).
+# У КАЖДОЙ записи allow / allow_in / yat_ok причина обязательна — линтер
+# отказывается стартовать с пустой причиной. Исключение без причины = дыра.
+# Список croatisms — наоборот чёрный: слово → сербский вариант.
+
+# Токены, которых нет в Hunspell-словаре, но они верны. Действуют ВЕЗДЕ —
+# заводи сюда только то, что никогда не бывает опечаткой.
+allow:
+  jel: "разговорное «da li je» (jel' imate…); тема урока 23, в словаре Hunspell его нет"
+  literary: "английская помета в русском промпте (23.2.1), не сербский текст"
+
+# Исключения по месту (префикс «файл» или «файл:шаг упражнение»): всё, что
+# линтер нашёл ниже по SPELL/YAT, считается намеренным. Так обычная ошибка
+# «забыл диакритику» продолжает ловиться во всём остальном курсе.
+allow_in:
+  lessons/56.yaml: "урок 56 учит читать сообщения БЕЗ диакритики — неправильное написание здесь намеренное"
+  lessons/56/5-ocistena.md: "теория урока 56: примеры сообщений без диакритики (racun, Sta radis…)"
+  "lessons/58.yaml:58.4 58.4.4": "повтор задания урока 56: сообщение «Sta radis?» без диакритики"
+
+# Слова с ije/je, верные и в экавице (эвристика иекавизма на них срабатывает).
+yat_ok:
+  piješ: "глагол piti: pijem, piješ… — ije в основе и в экавице"
+  pijete: "глагол piti, 2 л. мн. ч."
+  popijete: "глагол popiti (pijete), 2 л. мн. ч."
+
+# Слова БЕЗ диакритики, у которых «двойник» с ć/č/š/ž/đ тоже существует
+# (skoli ↔ školi). Сюда попадает только осознанно проверенное: в курсе имеется
+# в виду именно слово без диакритики. Новое слово такого рода линтер остановит
+# (DIAC) — решай, исправить или добавить сюда с причиной.
+diac_ok:
+  banci: "banka, локатив (u banci)"
+  bez: "предлог «без»"
+  blizu: "«близко»"
+  desi: "desiti se, 3 л. ед. ч. (desi se); deši — другое слово"
+  glumac: "glumac «актёр» (glumač — не употребляется)"
+  vesti: "vesti «новости» (vešti — «умелые», другое слово)"
+  cena: "cena «цена» (čena — другое слово)"
+  cene: "cena «цена», родительный (procena cene)"
+  curi: "curiti «течь», 3 л. ед. ч. (curi slavina)"
+  veza: "veza «связь» (veža — «прихожая», другое слово)"
+  biste: "условное наклонение, 2 л. мн. ч. (mogli biste li…)"
+  porodicu: "porodica «семья», винительный (imam porodicu)"
+  bobica: "«ягода» (ложный друг)"
+  brza: "brz «быстрый», ж. р."
+  dolaze: "dolaziti, 3 л. мн. ч."
+  dolazi: "dolaziti, 3 л. ед. ч."
+  iskusan: "«опытный» (ложный друг)"
+  jesi: "jesam, 2 л. ед. ч. (Jesi li…?)"
+  kasni: "kasniti «опаздывать»"
+  kesa: "«пакет, мешочек»"
+  kesu: "kesa, вин. п."
+  knjizi: "knjiga, дат./лок. (г→з)"
+  kosa: "«волосы», «коса»"
+  most: "«мост»"
+  muzika: "«музыка»"
+  nas: "«нас» (вин./род. от mi), не naš «наш»"
+  nisi: "ne + si"
+  niste: "ne + ste"
+  nisu: "ne + su"
+  pijaca: "«рынок»"
+  pijace: "pijaca, род. ед. / им. мн."
+  pijaci: "pijaca, дат./лок."
+  pisala: "pisati «писать», пр. вр. ж. р."
+  pisali: "pisati, пр. вр. м. р. мн."
+  pisao: "pisati, пр. вр. м. р."
+  pisati: "«писать» (не pišati)"
+  polica: "«полка»"
+  posao: "«работа» (не pošao «пошёл»)"
+  posla: "posao, род. п."
+  posle: "«после»"
+  reci: "reka, лок. (na reci) и reći, повелит. «скажи»; не reči «слова»"
+  recite: "reći, повелит. мн. «скажите»"
+  serija: "«сериал»"
+  serije: "serija, род./мн."
+  seriju: "serija, вин. п."
+  sestara: "sestra, род. мн."
+  sina: "sin, род. п."
+  sira: "sir «сыр», род. п."
+  sirom: "sir, твор. п."
+  sok: "«сок»"
+  soka: "sok, род. п."
+  stanica: "«станция, остановка»"
+  stanice: "stanica, род. ед. / им. мн."
+  stanici: "stanica, дат./лок."
+  sto: "«сто» и «стол»; не što"
+  stolica: "«стул» (ложный друг)"
+  stolice: "stolica, род./мн."
+  supa: "«суп»"
+  supu: "supa, вин. п."
+  ulice: "ulica, род. ед. / им. мн."
+  ulici: "ulica, дат./лок."
+  ulicu: "ulica, вин. п."
+  uzima: "uzimati «брать», 3 л. ед. ч."
+  vas: "«вас» (вин./род. от vi), не vaš «ваш»"
+  vuci: "vući, повелит. «тяни» (знак Vuci)"
+
+# Хорватизмы и иекавизмы, которые эвристика (ije/je → e) не поймает. Ключ —
+# точная словоформа в нижнем регистре; для склоняемых слов добавляй формы.
+croatisms:
+  # иекавские слова на -ije/-je (эвристика конечное -ije намеренно не трогает)
+  prije: pre
+  dvije: dve
+  ovdje: ovde
+  gdje: gde
+  negdje: negde
+  nigdje: nigde
+  svugdje: svuda
+  # местоимения
+  tko: ko
+  nitko: niko
+  netko: neko
+  svatko: svako
+  # лексика (хорватская норма → сербская)
+  tisuća: hiljada
+  tisuće: hiljade
+  kruh: hleb
+  tjedan: nedelja
+  točno: tačno
+  vlak: voz
+  kolodvor: stanica
+  zrakoplov: avion
+  krumpir: krompir
+  rajčica: paradajz
+  kava: kafa
+  sustav: sistem
+  glazba: muzika
+  povijest: istorija
+  tvornica: fabrika
+  općina: opština
+  kazalište: pozorište
+  # месяцы
+  siječanj: januar
+  veljača: februar
+  ožujak: mart
+  travanj: april
+  svibanj: maj
+  lipanj: jun
+  srpanj: jul
+  kolovoz: avgust
+  rujan: septembar
+  listopad: oktobar
+  studeni: novembar
+  prosinac: decembar
