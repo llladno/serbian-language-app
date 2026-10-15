@@ -12,6 +12,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/grisha/serbian-app/server/internal/config"
 	"github.com/grisha/serbian-app/server/internal/store"
 	"github.com/grisha/serbian-app/server/internal/telegram"
 )
@@ -30,7 +31,8 @@ type fakeTG struct {
 	mu        sync.Mutex
 	members   map[int64]bool
 	calls     []tgCall
-	rateLimit int // the next N sendDocument calls answer 429
+	rateLimit int  // the next N sendDocument calls answer 429
+	failURL   bool // sendDocument given a URL answers 400, as Telegram does when it cannot download it
 }
 
 func newFakeTG(t *testing.T) *fakeTG {
@@ -74,6 +76,12 @@ func (f *fakeTG) serve(w http.ResponseWriter, r *http.Request) {
 			f.rateLimit--
 			_ = json.NewEncoder(w).Encode(map[string]any{"ok": false, "error_code": 429, "description": "Too Many Requests",
 				"parameters": map[string]any{"retry_after": 1}})
+			return
+		}
+		if f.failURL && strings.HasPrefix(call.Form.Get("document"), "http") {
+			w.WriteHeader(http.StatusBadRequest)
+			_ = json.NewEncoder(w).Encode(map[string]any{"ok": false, "error_code": 400,
+				"description": "Bad Request: failed to get HTTP URL content"})
 			return
 		}
 		reply(map[string]any{"document": map[string]any{"file_id": "FILE-ID-1"}})
@@ -159,11 +167,11 @@ func TestLeadMagnetSubscriberGetsFileAtOnce(t *testing.T) {
 	postWebhook(h, tgWebhookSecret, webhookUpdate(501, 501, "anya", "Аня", "/start lm_top100_tgpost"))
 
 	docs := tg.named("sendDocument")
-	if len(docs) != 1 || !docs[0].Upload {
-		t.Fatalf("want one uploaded document, got %+v", docs)
+	if len(docs) != 1 || docs[0].Upload {
+		t.Fatalf("want one document sent by link (not uploaded through the relay), got %+v", docs)
 	}
-	if !strings.HasSuffix(docs[0].Filename, ".pdf") {
-		t.Errorf("filename = %q", docs[0].Filename)
+	if got := docs[0].Form.Get("document"); !strings.HasPrefix(got, testBaseURL+"/api/lead-magnet/top100/") {
+		t.Errorf("document = %q, want a signed link on the app's own address", got)
 	}
 	if got := docs[0].Form.Get("caption"); !strings.Contains(got, "Аня") {
 		t.Errorf("caption %q lacks the name", got)
@@ -192,8 +200,8 @@ func TestLeadMagnetSecondSendUsesCachedFileID(t *testing.T) {
 	if len(docs) != 2 {
 		t.Fatalf("documents sent = %d, want 2", len(docs))
 	}
-	if !docs[0].Upload || docs[1].Upload {
-		t.Errorf("first send must upload, second must reuse the file_id: %+v", docs)
+	if !strings.HasPrefix(docs[0].Form.Get("document"), "http") || docs[1].Upload {
+		t.Errorf("first send goes by link, second must reuse the file_id: %+v", docs)
 	}
 	if docs[1].Form.Get("document") != "FILE-ID-1" {
 		t.Errorf("second send document = %q, want the cached file_id", docs[1].Form.Get("document"))
@@ -321,3 +329,76 @@ func TestBotCommandsIDAndStats(t *testing.T) {
 		}
 	}
 }
+
+func TestLeadMagnetFallsBackToUploadWhenTelegramCannotFetchTheLink(t *testing.T) {
+	h, st, tg, _ := leadAPI(t, "@ucimosrb")
+	tg.mu.Lock()
+	tg.failURL = true
+	tg.mu.Unlock()
+	tg.setMember(1201, true)
+	tg.setMember(1202, true)
+
+	postWebhook(h, tgWebhookSecret, webhookUpdate(1201, 1201, "a", "А", "/start lm_top100"))
+	docs := tg.named("sendDocument")
+	if len(docs) != 2 || strings.HasPrefix(docs[0].Form.Get("document"), "http") == false || !docs[1].Upload {
+		t.Fatalf("want a failed link attempt then an upload, got %+v", docs)
+	}
+	if s, _ := st.LeadMagnetStats("top100"); s.Received != 1 {
+		t.Errorf("stats = %+v, want the file counted as received", s)
+	}
+
+	// The uploaded id is not cached (the upload path is the unreliable one), so the next person tries the link again.
+	tg.mu.Lock()
+	tg.failURL = false
+	tg.mu.Unlock()
+	postWebhook(h, tgWebhookSecret, webhookUpdate(1202, 1202, "b", "Б", "/start lm_top100"))
+	docs = tg.named("sendDocument")
+	last := docs[len(docs)-1]
+	if last.Upload || !strings.HasPrefix(last.Form.Get("document"), "http") {
+		t.Errorf("second person must get the link attempt, not a cached upload: %+v", last)
+	}
+}
+
+func TestLeadMagnetFileLinks(t *testing.T) {
+	h, _, tg, _ := leadAPI(t, "@ucimosrb")
+	tg.setMember(1301, true)
+	postWebhook(h, tgWebhookSecret, webhookUpdate(1301, 1301, "a", "А", "/start lm_top100"))
+	link := tg.named("sendDocument")[0].Form.Get("document")
+	path := strings.TrimPrefix(link, testBaseURL)
+
+	get := func(p string) *httptest.ResponseRecorder {
+		rr := httptest.NewRecorder()
+		h.ServeHTTP(rr, httptest.NewRequest("GET", p, nil))
+		return rr
+	}
+	ok := get(path)
+	if ok.Code != http.StatusOK || ok.Header().Get("Content-Type") != "application/pdf" ||
+		!strings.HasPrefix(ok.Body.String(), "%PDF") || !strings.Contains(ok.Header().Get("Content-Disposition"), "attachment") {
+		t.Fatalf("valid link = %d %q, body starts %q", ok.Code, ok.Header().Get("Content-Type"), ok.Body.String()[:8])
+	}
+
+	if !strings.HasSuffix(path, "/ucimo-top100-slov.pdf") {
+		t.Errorf("link %q must end in a .pdf file name, Telegram names the file after it", path)
+	}
+	parts := strings.Split(path, "/") // "", api, lead-magnet, slug, exp, sig, name
+	tampered := strings.Join([]string{"", "api", "lead-magnet", "top100", parts[4], strings.Repeat("0", len(parts[5])), parts[6]}, "/")
+	if rr := get(tampered); rr.Code != http.StatusForbidden {
+		t.Errorf("forged signature = %d, want 403", rr.Code)
+	}
+	if rr := get("/api/lead-magnet/top100/9999999999/" + parts[5] + "/x.pdf"); rr.Code != http.StatusForbidden {
+		t.Errorf("signature for another expiry = %d, want 403", rr.Code)
+	}
+	if rr := get("/api/lead-magnet/nosuch/" + parts[4] + "/" + parts[5] + "/x.pdf"); rr.Code != http.StatusNotFound {
+		t.Errorf("unknown magnet = %d, want 404", rr.Code)
+	}
+
+	// an expired link, even one with a correct signature
+	hh := handlers{Deps: Deps{Config: configWithSecret(), TelegramWebhookSecret: tgWebhookSecret}}
+	past := fixedNow.Add(-time.Minute).Unix()
+	expired := fmt.Sprintf("/api/lead-magnet/top100/%d/%s/x.pdf", past, hh.leadSign("top100", past))
+	if rr := get(expired); rr.Code != http.StatusForbidden {
+		t.Errorf("expired link = %d, want 403", rr.Code)
+	}
+}
+
+func configWithSecret() config.Config { return config.Config{TelegramBotToken: tgTestToken} }

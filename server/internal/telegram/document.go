@@ -16,10 +16,12 @@ import (
 // text-only calls, so it gets its own, longer timeout.
 var uploadClient = &http.Client{Timeout: 90 * time.Second}
 
-// Document is a file to send. Set FileID to resend something Telegram already has (instant,
-// no upload); otherwise Filename and Data are uploaded.
+// Document is a file to send. Set FileID to resend something Telegram already has (instant, no
+// upload), or URL to have Telegram download it itself (no file bytes pass through this host's
+// connection to Telegram); otherwise Filename and Data are uploaded.
 type Document struct {
 	FileID   string
+	URL      string
 	Filename string
 	Data     []byte
 }
@@ -51,8 +53,8 @@ func SendDocument(botToken string, chatID int64, doc Document, caption string, b
 			FileID string `json:"file_id"`
 		} `json:"document"`
 	}
-	if doc.FileID != "" {
-		params := url.Values{"document": {doc.FileID}}
+	if ref := doc.FileID + doc.URL; ref != "" {
+		params := url.Values{"document": {ref}}
 		for k, v := range fields {
 			params.Set(k, v)
 		}

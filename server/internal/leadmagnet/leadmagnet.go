@@ -15,7 +15,8 @@ var top100 []byte
 // Magnet is one downloadable file.
 type Magnet struct {
 	Slug     string // the id used in the deep link: t.me/<bot>?start=lm_<slug>[_<source>]
-	Filename string // the name the person sees in Telegram
+	Filename string // the name the person sees in Telegram when the file is uploaded
+	URLName  string // the last part of the download link: Telegram names a fetched file after it
 	Data     []byte
 	SHA      string // sha256 of Data, to know when a cached Telegram file_id is stale
 }
@@ -23,7 +24,7 @@ type Magnet struct {
 var registry = map[string]Magnet{}
 
 func init() {
-	add(Magnet{Slug: "top100", Filename: "Топ-100 сербских слов — ucimo.pdf", Data: top100})
+	add(Magnet{Slug: "top100", Filename: "Топ-100 сербских слов — ucimo.pdf", URLName: "ucimo-top100-slov.pdf", Data: top100})
 }
 
 func add(m Magnet) {

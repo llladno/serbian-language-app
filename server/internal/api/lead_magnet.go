@@ -1,8 +1,15 @@
 package api
 
 import (
+	"bytes"
+	"crypto/hmac"
+	"crypto/sha256"
+	"encoding/hex"
 	"fmt"
 	"log"
+	"net/http"
+	"net/url"
+	"strconv"
 	"strings"
 	"time"
 
@@ -38,6 +45,16 @@ const (
 		"Сохрани файл, чтобы не потерять. А учить эти слова удобнее в приложении: уроки, озвучка и повторение. Три первых уровня бесплатно."
 	leadCantCheckText = "Не получилось проверить подписку 😔\n\nПопробуй ещё раз через минуту: нажми «Проверить подписку»."
 	leadFailedText    = "Упс, не получилось отправить файл 😔\n\nНапиши нам, пришлём вручную: @ucimosupport"
+)
+
+const (
+	// leadURLTTL is how long a download link handed to Telegram stays valid. Telegram fetches the
+	// file within seconds of the sendDocument call; the link is useless after that.
+	leadURLTTL = 15 * time.Minute
+	// leadCacheSuffix keys cached file_ids to how they were made. Ids from the first version, which
+	// uploaded the bytes through the Cloudflare relay (it corrupted them), carry no suffix and so
+	// are never matched again.
+	leadCacheSuffix = "|url"
 )
 
 // leadSleep is how a 429 from Telegram is waited out; a var so tests do not.
@@ -196,38 +213,49 @@ func (h handlers) leadMagnetCheckPressed(queryID, data string, tgID int64, name 
 	h.deliverLeadMagnet(chatID, tgID, name, magnet)
 }
 
-// deliverLeadMagnet sends the file, by cached file_id when there is one (and by upload when not,
-// remembering the id Telegram returns), and counts the delivery.
+// deliverLeadMagnet sends the file and counts the delivery. Telegram downloads it from a short-lived
+// signed link on this site (leadFileURL) rather than receiving the bytes through our connection:
+// the relay every Bot API call goes through mangled uploaded files. The file_id Telegram returns is
+// cached, so later sends are instant. If Telegram cannot fetch the link, the file is uploaded as a
+// last resort (that id is not cached, so the next person tries the link again).
 func (h handlers) deliverLeadMagnet(chatID, tgID int64, name string, m leadmagnet.Magnet) {
 	token := h.Config.TelegramBotToken
 	caption := telegram.Substitute(leadCaptionText, name)
-
-	cached, _, err := h.Store.LeadMagnetFileID(m.Slug, m.SHA)
-	if err != nil {
-		log.Printf("lead magnet: file id lookup: %v", err)
-	}
 	send := func(doc telegram.Document) (string, error) {
 		return withRetry(func() (string, error) {
 			return telegram.SendDocument(token, chatID, doc, caption, h.miniAppButton())
 		})
 	}
-	var id string
-	if cached != "" {
-		id, err = send(telegram.Document{FileID: cached})
-		if err != nil {
-			log.Printf("lead magnet: resend by file_id failed, uploading again: %v", err)
-			cached = ""
-		}
-	}
-	if cached == "" {
-		id, err = send(telegram.Document{Filename: m.Filename, Data: m.Data})
-		if err == nil && id != "" {
-			if saveErr := h.Store.SaveLeadMagnetFileID(m.Slug, m.SHA, id, h.Now()); saveErr != nil {
-				log.Printf("lead magnet: save file id: %v", saveErr)
-			}
-		}
-	}
+
+	cacheKey := m.SHA + leadCacheSuffix
+	cached, _, err := h.Store.LeadMagnetFileID(m.Slug, cacheKey)
 	if err != nil {
+		log.Printf("lead magnet: file id lookup: %v", err)
+	}
+	var sent bool
+	if cached != "" {
+		if _, err = send(telegram.Document{FileID: cached}); err == nil {
+			sent = true
+		} else {
+			log.Printf("lead magnet: resend by file_id failed, sending again: %v", err)
+		}
+	}
+	if !sent {
+		id, urlErr := send(telegram.Document{URL: h.leadFileURL(m)})
+		if urlErr == nil {
+			sent = true
+			if id != "" {
+				if saveErr := h.Store.SaveLeadMagnetFileID(m.Slug, cacheKey, id, h.Now()); saveErr != nil {
+					log.Printf("lead magnet: save file id: %v", saveErr)
+				}
+			}
+		} else {
+			log.Printf("lead magnet: Telegram could not fetch %s, uploading instead: %v", m.Slug, urlErr)
+			_, err = send(telegram.Document{Filename: m.Filename, Data: m.Data})
+			sent = err == nil
+		}
+	}
+	if !sent {
 		log.Printf("lead magnet: send %s to %d: %v", m.Slug, tgID, err)
 		h.leadSay(chatID, leadFailedText, name, h.supportButton())
 		return
@@ -235,6 +263,50 @@ func (h handlers) deliverLeadMagnet(chatID, tgID int64, name string, m leadmagne
 	if err := h.Store.LeadMagnetDelivered(m.Slug, tgID, h.Now()); err != nil {
 		log.Printf("lead magnet: record delivery: %v", err)
 	}
+}
+
+// leadSign signs a download link. The key is the webhook secret (known to this server and Telegram
+// only); with no secret configured the bot token is used instead.
+func (h handlers) leadSign(slug string, exp int64) string {
+	key := h.TelegramWebhookSecret
+	if key == "" {
+		key = h.Config.TelegramBotToken
+	}
+	mac := hmac.New(sha256.New, []byte(key))
+	fmt.Fprintf(mac, "lm|%s|%d", slug, exp)
+	return hex.EncodeToString(mac.Sum(nil))
+}
+
+// leadFileURL is a short-lived link Telegram can download the magnet from.
+func (h handlers) leadFileURL(m leadmagnet.Magnet) string {
+	exp := h.Now().Add(leadURLTTL).Unix()
+	return fmt.Sprintf("%s/api/lead-magnet/%s/%d/%s/%s", h.Config.AppBaseURL, m.Slug, exp, h.leadSign(m.Slug, exp), m.URLName)
+}
+
+// leadMagnetFile serves GET /api/lead-magnet/{slug}/{exp}/{sig}/{name} ({name} is only there so the link
+// ends in a file name): the file, to whoever holds a link
+// this server signed and that has not expired. Nothing lists these links; they exist only inside the
+// sendDocument call that asks Telegram to fetch them.
+func (h handlers) leadMagnetFile(w http.ResponseWriter, r *http.Request) {
+	slug := r.PathValue("slug")
+	magnet, ok := leadmagnet.Get(slug)
+	if !ok {
+		http.NotFound(w, r)
+		return
+	}
+	exp, err := strconv.ParseInt(r.PathValue("exp"), 10, 64)
+	if err != nil || h.Now().Unix() > exp {
+		http.Error(w, "link expired", http.StatusForbidden)
+		return
+	}
+	if !hmac.Equal([]byte(r.PathValue("sig")), []byte(h.leadSign(slug, exp))) {
+		http.Error(w, "bad link", http.StatusForbidden)
+		return
+	}
+	w.Header().Set("Content-Type", "application/pdf")
+	w.Header().Set("Content-Disposition", "attachment; filename*=UTF-8''"+url.PathEscape(magnet.Filename))
+	w.Header().Set("Cache-Control", "no-store")
+	http.ServeContent(w, r, "", time.Time{}, bytes.NewReader(magnet.Data))
 }
 
 // botCommand handles the bot's own commands that are not part of the login flow: /id (anyone:
