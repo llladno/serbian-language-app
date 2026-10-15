@@ -144,7 +144,6 @@ func Handler(deps Deps) http.Handler {
 	// of any kind, authenticated instead by the shared secret header (see
 	// telegramWebhook's own doc comment).
 	root.HandleFunc("POST /api/telegram/webhook", h.telegramWebhook)
-	root.HandleFunc("GET /api/lead-magnet/{slug}/{exp}/{sig}/{name}", h.leadMagnetFile)
 	root.HandleFunc("POST /api/tribute/webhook", h.tributeWebhook)
 	root.HandleFunc("POST /api/track-visit", h.trackVisit)
 
