@@ -754,3 +754,26 @@ func TestUpgradeFromProductionAtMigration012(t *testing.T) {
 		t.Errorf("currency name was not seeded as зёрнышки")
 	}
 }
+
+// Production applied 024 (the lead magnet) from another branch before 023 (bot
+// preferences) existed. A migration below the newest recorded version must still
+// run: the runner goes by "not recorded yet", not by "newer than the last".
+func TestAMigrationBelowTheNewestRecordedVersionStillRuns(t *testing.T) {
+	s := newStore(t)
+	if _, err := s.db.Exec(`DROP TABLE bot_prefs`); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := s.db.Exec(`DELETE FROM schema_migrations WHERE version = 23`); err != nil {
+		t.Fatal(err)
+	}
+	if err := s.runMigrations(); err != nil {
+		t.Fatalf("runMigrations: %v", err)
+	}
+	var n int
+	if err := s.db.QueryRow(`SELECT COUNT(*) FROM bot_prefs`).Scan(&n); err != nil {
+		t.Fatalf("bot_prefs was not recreated: %v", err)
+	}
+	if err := s.db.QueryRow(`SELECT COUNT(*) FROM schema_migrations WHERE version = 23`).Scan(&n); err != nil || n != 1 {
+		t.Fatalf("version 23 recorded %d times (%v), want once", n, err)
+	}
+}
