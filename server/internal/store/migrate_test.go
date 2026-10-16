@@ -707,8 +707,8 @@ func TestUpgradeFromProductionAtMigration012(t *testing.T) {
 	if got, want := count(`SELECT COUNT(*) FROM schema_migrations`), count(`SELECT COUNT(DISTINCT version) FROM schema_migrations`); got != want {
 		t.Errorf("schema_migrations has repeated versions: %d rows, %d distinct", got, want)
 	}
-	if got := count(`SELECT MAX(version) FROM schema_migrations`); got != 25 {
-		t.Errorf("latest version = %d, want 25", got)
+	if got := count(`SELECT MAX(version) FROM schema_migrations`); got != 26 {
+		t.Errorf("latest version = %d, want 26", got)
 	}
 	// the two tariffs are seeded, nobody has paid, and an old entitlement row has no end date
 	if got := count(`SELECT COUNT(*) FROM tariffs`); got != 2 {

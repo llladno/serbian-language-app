@@ -9,6 +9,7 @@ import { computed, ref } from 'vue'
 import { api, ApiError } from '../api'
 import { initData, isTelegram, openExternalLink } from '../telegram'
 import { useSessionStore } from './session'
+import { discountPercent, monthlyYearCost, yearSaving } from '../lib/tariffs'
 import type { Order, TariffCode, TariffsInfo } from '../types'
 
 export const useTariffsStore = defineStore('tariffs', () => {
@@ -25,6 +26,24 @@ export const useTariffsStore = defineStore('tariffs', () => {
   const levelRegular = computed(() => info.value?.level.regular_price ?? 0)
   const yearPrice = computed(() => info.value?.year.price ?? 0)
   const yearOld = computed(() => info.value?.year.old_price ?? 0)
+  // "Скидка 17%": the first-purchase price against the regular one. 0 once the
+  // learner has paid for a level (the price is then the regular one).
+  const levelDiscount = computed(() => discountPercent(levelNow.value, levelRegular.value))
+  // When the one-level-a-month limit lets the learner buy a level again, or null
+  // when nothing holds them back.
+  const levelFrom = computed(() => {
+    const at = info.value?.level.available_from
+    return at && new Date(at) > new Date() ? at : null
+  })
+  // What the year saves against buying a level every month for twelve months.
+  const monthlyCost = computed(() => monthlyYearCost(levelNow.value, levelRegular.value))
+  const yearSaves = computed(() => yearSaving(yearPrice.value, monthlyCost.value))
+  // The зёрнышки that come with each tariff, once, when it is paid for.
+  const levelBonus = computed(() => info.value?.level.bonus ?? 0)
+  const yearBonus = computed(() => info.value?.year.bonus ?? 0)
+  // How many more the year brings than twelve months of levels would (0 when it
+  // brings no more): the extra the year's зёрнышки are worth on top of the saving.
+  const yearBonusExtra = computed(() => Math.max(0, yearBonus.value - levelBonus.value * 12))
   const hasPaidLevel = computed(() => info.value?.has_paid_level ?? false)
   const yearUntil = computed(() => info.value?.year.until ?? null)
   const yearActive = computed(() => yearUntil.value !== null && new Date(yearUntil.value) > new Date())
@@ -74,7 +93,7 @@ export const useTariffsStore = defineStore('tariffs', () => {
 
   return {
     info, loading, paying, enabled, ready, levelNow, levelRegular, yearPrice, yearOld,
-    hasPaidLevel, yearUntil, yearActive, paymentsReady, load, pay, checkOrder,
+    levelDiscount, levelFrom, monthlyCost, yearSaves, levelBonus, yearBonus, yearBonusExtra, hasPaidLevel, yearUntil, yearActive, paymentsReady, load, pay, checkOrder,
   }
 })
 
@@ -82,6 +101,7 @@ export function payErrorMessage(e: unknown): string {
   if (e instanceof ApiError) {
     if (e.message === 'payments_unavailable') return 'Оплата ещё не подключена'
     if (e.message === 'nothing_to_buy') return 'Все платные уровни уже открыты'
+    if (e.message === 'level_cooldown') return 'Уровень за рубли можно открывать раз в месяц. Дата — на странице тарифов'
     if (e.message === 'payment_failed') return 'Платёжная система не ответила. Попробуй ещё раз'
   }
   return 'Не получилось начать оплату. Попробуй ещё раз'

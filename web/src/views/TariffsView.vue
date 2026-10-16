@@ -4,18 +4,22 @@
 //
 // Design note: the currency screens use gold for money (зёрнышки). Rubles must
 // not borrow it, or the two would read as the same thing - so prices here are
-// plain ink, and the one thing allowed to be loud is the accent border on the
-// year, the plan the spec wants people to look at first.
+// plain ink. The one loud thing is on the year: the bar that sets its price
+// against twelve months of levels, which is the whole argument for the year.
+// Everything else stays quiet, and each plan's advantages are set in bold with
+// a small icon so they can be read in a glance.
 import { computed, onMounted, ref } from 'vue'
-import { Check, ExternalLink } from 'lucide-vue-next'
+import { Check, ExternalLink, Infinity as InfinityIcon, CreditCard, CalendarClock, LockOpen, Sparkles } from 'lucide-vue-next'
+import { ApiError } from '../api'
 import { useCourseStore } from '../stores/course'
 import { useTariffsStore, payErrorMessage } from '../stores/tariffs'
 import { useWalletStore } from '../stores/wallet'
 import { useToasts } from '../lib/toasts'
 import { isTelegram, initData } from '../telegram'
-import { daysLeft, longDate, nextLockedLevel, perMonth, rub } from '../lib/tariffs'
+import { daysLeft, grouped, longDate, nextLockedLevel, perMonth, rub, shortDate } from '../lib/tariffs'
 import { pluralRu } from '../lib/plural'
 import BotPrefsSection from '../components/BotPrefsSection.vue'
+import SeedIcon from '../components/SeedIcon.vue'
 import type { TariffCode } from '../types'
 
 const courseStore = useCourseStore()
@@ -25,6 +29,30 @@ const toasts = useToasts()
 
 const next = computed(() => nextLockedLevel(courseStore.course))
 const levelStruck = computed(() => (tariffs.levelNow < tariffs.levelRegular ? tariffs.levelRegular : 0))
+
+// What the next level is about, from its shop entry ("Открывает уровень 4:
+// падежи, прилагательные, местоимения"), and how many lessons are written.
+const inside = computed(() => {
+  const text = next.value ? wallet.productForPhase(next.value.id)?.description ?? '' : ''
+  const topics = text.replace(/^Открывает уровень \d+:\s*/i, '').trim()
+  const lessons = next.value && courseStore.course
+    ? next.value.lessons.filter((id) => !courseStore.course!.lessons.find((l) => l.id === id)?.planned).length
+    : 0
+  const parts = []
+  if (topics) parts.push(topics.charAt(0).toUpperCase() + topics.slice(1))
+  // a no-break space, so the number never ends a line without its word
+  if (lessons) parts.push(`${lessons}\u00a0${pluralRu(lessons, 'урок', 'урока', 'уроков')}`)
+  return parts.join(' · ')
+})
+
+// The year against twelve months of levels, as two bars: the level yardstick is
+// the full width, the year is its share of it (never so thin that it vanishes).
+const yearBar = computed(() => Math.max(6, Math.round((tariffs.yearPrice / (tariffs.monthlyCost || 1)) * 100)))
+// "1 000 зёрнышек": the bonus with the currency's own name and plural.
+function seeds(n: number): string {
+  return `${grouped(n)} ${wallet.currencyWord(n)}`.trim()
+}
+const levelWaitDays = computed(() => (tariffs.levelFrom ? daysLeft(tariffs.levelFrom) : 0))
 
 // How long a running year has left, for the "my tariff" card.
 const yearDays = computed(() => (tariffs.yearUntil ? daysLeft(tariffs.yearUntil) : 0))
@@ -45,6 +73,9 @@ async function pay(tariff: TariffCode) {
   try {
     await tariffs.pay(tariff)
   } catch (e) {
+    // The limit may have started since the screen loaded (a payment from another
+    // device): show the date instead of letting the button promise what it cannot do.
+    if (e instanceof ApiError && e.message === 'level_cooldown') await tariffs.load(true)
     toasts.push({ title: 'Оплата не началась', text: payErrorMessage(e) })
   }
 }
@@ -58,7 +89,7 @@ async function settleReturn(id: number, attempt = 0) {
   try {
     const order = await tariffs.checkOrder(id)
     if (order.status === 'succeeded') {
-      await Promise.allSettled([courseStore.load(true), wallet.loadShop()])
+      await Promise.allSettled([courseStore.load(true), wallet.loadShop(), wallet.refresh()])
       toasts.push({
         title: 'Оплата прошла',
         text: order.tariff === 'year' ? 'Все уровни открыты на год.' : 'Уровень открыт.',
@@ -80,6 +111,8 @@ async function settleReturn(id: number, attempt = 0) {
 
 onMounted(async () => {
   courseStore.load()
+  wallet.loadShop()
+  wallet.refresh() // the currency's name for the bonus, and the balance it adds to
   const url = new URL(window.location.href)
   const orderId = Number(url.searchParams.get('order'))
   if (orderId > 0) {
@@ -110,8 +143,8 @@ onMounted(async () => {
          bot's reminder that the year is ending. -->
     <section v-if="tariffs.yearActive && tariffs.yearUntil" class="card p-5" data-test="my-tariff">
       <div class="head">
-        <p class="eyebrow">Мой тариф</p>
-        <span class="chip">Активен</span>
+        <p class="plan">Мой тариф</p>
+        <span class="badge">Активен</span>
       </div>
       <p class="mt-1 text-lg font-extrabold">Год — все уровни</p>
       <p class="mt-0.5 text-sm text-[var(--muted)]" data-test="my-tariff-until">
@@ -136,26 +169,59 @@ onMounted(async () => {
       </div>
     </div>
 
-    <div v-else class="grid gap-4 sm:grid-cols-2">
+    <!-- The year is the taller card on purpose: it carries the saving. The level card
+         stays as short as its content instead of stretching to match it. -->
+    <div v-else class="grid gap-4 sm:grid-cols-2 sm:items-start">
       <!-- Уровень -->
       <section class="card flex flex-col p-5" data-test="tariff-level">
-        <div class="head"><p class="eyebrow">Уровень</p></div>
-        <p class="mt-1 font-extrabold" data-test="level-title">{{ next ? next.title : 'Следующий уровень' }}</p>
+        <p class="plan">Уровень</p>
+        <p class="mt-0.5 text-lg font-extrabold leading-snug" data-test="level-title">
+          {{ next ? next.title : 'Следующий уровень' }}
+        </p>
+        <p v-if="inside" class="mt-1 text-sm text-[var(--muted)]" data-test="level-inside">{{ inside }}</p>
+
         <p class="price-row" data-test="level-price">
           <span class="price">{{ rub(tariffs.levelNow) }}</span>
           <span v-if="levelStruck" class="was">{{ rub(levelStruck) }}</span>
+          <span v-if="tariffs.levelDiscount" class="badge" data-test="level-discount">−{{ tariffs.levelDiscount }}%</span>
         </p>
-        <p v-if="levelStruck" class="mt-0.5 text-xs font-semibold text-[var(--accent)]">Первая покупка</p>
+        <p v-if="tariffs.levelDiscount" class="mt-1 text-sm font-semibold text-[var(--accent)]" data-test="level-discount-note">
+          Скидка {{ tariffs.levelDiscount }}% на первую покупку: {{ rub(tariffs.levelNow) }} вместо
+          {{ rub(tariffs.levelRegular) }}
+        </p>
+
         <ul class="perks">
-          <li><Check :size="16" :stroke-width="2.5" /> Открывается навсегда</li>
-          <li><Check :size="16" :stroke-width="2.5" /> Один платёж, без подписки</li>
-          <li><Check :size="16" :stroke-width="2.5" /> Следующий уровень — когда захочешь</li>
+          <li>
+            <span class="ico"><InfinityIcon :size="15" :stroke-width="2.5" /></span>
+            <span><b>Навсегда.</b> Уровень остаётся у тебя, срока нет.</span>
+          </li>
+          <li v-if="tariffs.levelBonus" data-test="level-bonus">
+            <span class="ico ico-seed"><SeedIcon :size="14" /></span>
+            <span><b>+{{ seeds(tariffs.levelBonus) }}.</b> В подарок к уровню, тратятся в магазине.</span>
+          </li>
+          <li>
+            <span class="ico"><CreditCard :size="15" :stroke-width="2.5" /></span>
+            <span><b>Один платёж.</b> Подписки и автосписаний нет.</span>
+          </li>
+          <li>
+            <span class="ico"><CalendarClock :size="15" :stroke-width="2.5" /></span>
+            <span><b>Раз в месяц.</b> Новый уровень за рубли открывается не чаще.</span>
+          </li>
         </ul>
+
+        <!-- The monthly limit: say when the next level opens and what to do
+             meanwhile, instead of leaving a dead button. -->
+        <p v-if="tariffs.levelFrom && next" class="note" data-test="level-cooldown">
+          Следующий уровень можно взять {{ shortDate(tariffs.levelFrom) }} (через {{ levelWaitDays }}
+          {{ pluralRu(levelWaitDays, 'день', 'дня', 'дней') }}). Нужно раньше —
+          <a href="#tariff-year" class="font-semibold underline underline-offset-2">открой все уровни на год</a>.
+        </p>
+
         <!-- The tariff is always on show, but there is nothing to sell once every
              paid level is open: the button stays, switched off, rather than
              taking money for a level that does not exist. -->
         <button
-          v-if="next"
+          v-if="next && !tariffs.levelFrom"
           class="btn btn-ghost mt-auto w-full"
           :disabled="!canPay"
           data-test="buy-level"
@@ -165,27 +231,69 @@ onMounted(async () => {
           <template v-else-if="inMiniApp">Оплатить на сайте <ExternalLink :size="16" :stroke-width="2.25" /></template>
           <template v-else>Открыть за {{ rub(tariffs.levelNow) }}</template>
         </button>
+        <button v-else-if="next && tariffs.levelFrom" class="btn btn-ghost mt-auto w-full" disabled data-test="level-wait">
+          Следующий уровень — с {{ shortDate(tariffs.levelFrom) }}
+        </button>
         <button v-else class="btn btn-ghost mt-auto w-full" disabled data-test="level-none">
           Все платные уровни открыты
         </button>
       </section>
 
       <!-- Год -->
-      <section class="card year flex flex-col p-5" data-test="tariff-year">
+      <section id="tariff-year" class="card year order-first flex flex-col p-5 sm:order-none" data-test="tariff-year">
         <div class="head">
-          <p class="eyebrow">Год</p>
-          <span class="chip">Ранняя цена</span>
+          <p class="plan">Год</p>
+          <span v-if="tariffs.yearSaves" class="badge badge-solid" data-test="year-badge">
+            Выгода {{ tariffs.yearSaves.percent }}%
+          </span>
         </div>
-        <p class="mt-1 font-extrabold">Все уровни и всё новое</p>
+        <p class="mt-0.5 text-lg font-extrabold leading-snug">Все уровни и всё новое</p>
+
         <p class="price-row" data-test="year-price">
           <span class="price">{{ rub(tariffs.yearPrice) }}</span>
           <span class="was">{{ rub(tariffs.yearOld) }}</span>
         </p>
-        <p class="mt-0.5 text-xs text-[var(--muted)]">≈ {{ rub(perMonth(tariffs.yearPrice)) }} в месяц</p>
+        <p class="mt-1 text-sm text-[var(--muted)]">≈ {{ rub(perMonth(tariffs.yearPrice)) }} в месяц · ранняя цена</p>
+
+        <!-- The argument for the year, as one picture: what twelve months of
+             levels cost at the fastest pace the tariff allows, against the year. -->
+        <div v-if="tariffs.yearSaves" class="saving" data-test="year-saving">
+          <p class="font-extrabold">Выгоднее на {{ tariffs.yearSaves.percent }}%, чем брать уровень каждый месяц</p>
+          <div class="bars">
+            <span class="bar-label">Уровень в месяц, 12 месяцев</span>
+            <span class="bar-amount" data-test="saving-monthly">{{ rub(tariffs.monthlyCost) }}</span>
+            <span class="bar" aria-hidden="true"><i class="bar-fill bar-muted" style="width: 100%"></i></span>
+            <span class="bar-label">Год</span>
+            <span class="bar-amount" data-test="saving-year">{{ rub(tariffs.yearPrice) }}</span>
+            <span class="bar" aria-hidden="true"><i class="bar-fill" :style="{ width: yearBar + '%' }"></i></span>
+          </div>
+          <p class="mt-2 text-sm" data-test="saving-rub">
+            Экономия <b>{{ rub(tariffs.yearSaves.rub) }}</b>
+          </p>
+        </div>
+
         <ul class="perks">
-          <li><Check :size="16" :stroke-width="2.5" /> Все платные уровни сразу</li>
-          <li><Check :size="16" :stroke-width="2.5" /> Новые уровни, которые выйдут за год</li>
-          <li><Check :size="16" :stroke-width="2.5" /> Один платёж, без автопродления</li>
+          <li>
+            <span class="ico"><LockOpen :size="15" :stroke-width="2.5" /></span>
+            <span><b>Все платные уровни сразу.</b> Без очереди и ожидания.</span>
+          </li>
+          <li v-if="tariffs.yearBonus" data-test="year-bonus">
+            <span class="ico ico-seed"><SeedIcon :size="14" /></span>
+            <span>
+              <b>+{{ seeds(tariffs.yearBonus) }}.</b> В подарок<template v-if="tariffs.yearBonusExtra"
+                >, на {{ grouped(tariffs.yearBonusExtra) }} больше, чем за двенадцать месяцев по
+                {{ grouped(tariffs.levelBonus) }}</template
+              >.
+            </span>
+          </li>
+          <li>
+            <span class="ico"><Sparkles :size="15" :stroke-width="2.5" /></span>
+            <span><b>Новые уровни включены,</b> пока идёт год.</span>
+          </li>
+          <li>
+            <span class="ico"><Check :size="15" :stroke-width="2.5" /></span>
+            <span><b>Один платёж.</b> Автопродления нет, само ничего не спишется.</span>
+          </li>
         </ul>
         <button class="btn btn-primary mt-auto w-full" :disabled="!canPay" data-test="buy-year" @click="pay('year')">
           <template v-if="tariffs.paying === 'year'">Переходим к оплате…</template>
@@ -196,7 +304,8 @@ onMounted(async () => {
     </div>
 
     <p class="px-1 text-center text-xs text-[var(--muted)]" data-test="offer-note">
-      Оплачивая, ты принимаешь условия
+      Оплата проходит на странице банка, данные карты мы не получаем. Чек придёт на почту. Оплачивая, ты принимаешь
+      условия
       <a href="/oferta" target="_blank" rel="noopener" class="font-semibold underline underline-offset-2" data-test="offer-link"
         >публичной оферты</a
       >.
@@ -212,8 +321,8 @@ onMounted(async () => {
 </template>
 
 <style scoped>
-/* One height for both cards' top row, so the plan names and prices line up
-   even though only the year carries a chip. */
+/* One height for both cards' top row, so the plan names line up even though
+   only the year carries a badge. */
 .head {
   display: flex;
   align-items: center;
@@ -225,17 +334,16 @@ button:disabled {
   opacity: 0.6;
   cursor: not-allowed;
 }
-.eyebrow {
-  font-size: 0.75rem;
+.plan {
+  font-size: 0.875rem;
   font-weight: 800;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
   color: var(--muted);
 }
 .price-row {
   display: flex;
+  flex-wrap: wrap;
   align-items: baseline;
-  gap: 0.6rem;
+  gap: 0.35rem 0.6rem;
   margin-top: 0.75rem;
 }
 .price {
@@ -251,32 +359,107 @@ button:disabled {
   text-decoration: line-through;
   font-variant-numeric: tabular-nums;
 }
-.perks {
-  margin: 1rem 0 1.25rem;
-  display: grid;
-  gap: 0.5rem;
-  font-size: 0.875rem;
-}
-.perks li {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.5rem;
-}
-.perks svg {
-  flex: none;
-  margin-top: 0.15rem;
-  color: var(--accent);
-}
-.year {
-  outline: 2px solid var(--accent);
-  outline-offset: -2px;
-}
-.chip {
+.badge {
   border-radius: 999px;
   background: var(--accent-soft);
   color: var(--accent);
   padding: 0.1rem 0.6rem;
-  font-size: 0.75rem;
+  font-size: 0.8rem;
   font-weight: 800;
+  white-space: nowrap;
+}
+.badge-solid {
+  background: var(--accent);
+  color: var(--bg);
+}
+
+/* The advantages: a bold lead, then the rest. The icon sits in a soft disc so
+   the list reads as a row of small facts, not a column of ticks. */
+.perks {
+  margin: 1.1rem 0 1.25rem;
+  display: grid;
+  gap: 0.7rem;
+  font-size: 0.875rem;
+  line-height: 1.35;
+}
+.perks li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+}
+.perks b {
+  font-weight: 800;
+}
+.ico {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 1.65rem;
+  height: 1.65rem;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+/* Gold is the currency's colour everywhere in the app, so the bonus wears it. */
+.ico-seed {
+  background: color-mix(in srgb, var(--gold) 22%, var(--card));
+}
+.note {
+  margin: -0.25rem 0 1rem;
+  border-radius: 0.75rem;
+  background: var(--bg-soft);
+  padding: 0.65rem 0.8rem;
+  font-size: 0.8125rem;
+  line-height: 1.4;
+}
+
+.year {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+  background: linear-gradient(165deg, var(--accent-soft), var(--card) 42%);
+}
+.saving {
+  margin-top: 1rem;
+  border-radius: 0.9rem;
+  background: var(--card);
+  padding: 0.85rem 0.95rem;
+  font-size: 0.875rem;
+  box-shadow: inset 0 0 0 1px var(--accent-soft);
+}
+.bars {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.15rem 0.75rem;
+  margin-top: 0.7rem;
+}
+.bars > .bar {
+  grid-column: 1 / -1;
+  margin-bottom: 0.5rem;
+}
+.bar-label {
+  font-size: 0.8125rem;
+  color: var(--muted);
+}
+.bar-amount {
+  font-size: 0.875rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+.bar {
+  display: block;
+  height: 0.55rem;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--bg-soft);
+}
+.bar-fill {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--accent);
+}
+.bar-muted {
+  background: var(--muted);
+  opacity: 0.4;
 }
 </style>

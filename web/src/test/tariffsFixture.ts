@@ -20,8 +20,8 @@ export function tariffsInfo(over: Partial<TariffsInfo> = {}): TariffsInfo {
   return {
     payments_ready: true,
     has_paid_level: false,
-    level: { price: 249, regular_price: 299, next: { id: '4', title: 'Уровень 4 — Падежи в жизни' } },
-    year: { price: 1000, old_price: 2000 },
+    level: { price: 249, regular_price: 299, bonus: 1000, next: { id: '4', title: 'Уровень 4 — Падежи в жизни' } },
+    year: { price: 1000, old_price: 2000, bonus: 15000 },
     ...over,
   }
 }

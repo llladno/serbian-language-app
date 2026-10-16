@@ -4,6 +4,7 @@ import { setActivePinia, createPinia } from 'pinia'
 import TariffsView from './TariffsView.vue'
 import { api, ApiError } from '../api'
 import { useCourseStore } from '../stores/course'
+import { useWalletStore } from '../stores/wallet'
 import { useToasts } from '../lib/toasts'
 import { isTelegram, initData, openExternalLink } from '../telegram'
 import { enableTariffs, tariffsInfo } from '../test/tariffsFixture'
@@ -92,6 +93,156 @@ describe('TariffsView: the two plans', () => {
     expect(year.get('[data-test="year-price"] .price').text()).toBe('1 000 ₽')
     expect(year.get('[data-test="year-price"] .was').text()).toBe('2 000 ₽')
     expect(year.text()).toContain('83')
+  })
+})
+
+describe('TariffsView: what makes buying worthwhile', () => {
+  // The first purchase is cheaper than the regular price; say by how much.
+  it('says the first purchase is a discount from 299, in percent', async () => {
+    const w = await mountView()
+    expect(w.get('[data-test="level-discount"]').text()).toBe('−17%')
+    const note = w.get('[data-test="level-discount-note"]').text().replace(/\s+/g, ' ')
+    expect(note).toContain('Скидка 17% на первую покупку')
+    expect(note).toContain('249 ₽ вместо 299 ₽')
+  })
+
+  it('shows no discount once the regular price applies', async () => {
+    const w = await mountView({ has_paid_level: true, level: { price: 299, regular_price: 299, next: null } })
+    expect(w.find('[data-test="level-discount"]').exists()).toBe(false)
+    expect(w.find('[data-test="level-discount-note"]').exists()).toBe(false)
+    expect(w.find('[data-test="level-price"] .was').exists()).toBe(false)
+  })
+
+  // The year is sold against the monthly tariff: twelve levels, one a month.
+  it('shows how much cheaper the year is than a level every month', async () => {
+    const w = await mountView()
+    expect(w.get('[data-test="year-badge"]').text()).toBe('Выгода 72%')
+    const saving = w.get('[data-test="year-saving"]')
+    const text = saving.text().replace(/\s+/g, ' ')
+    expect(text).toContain('Выгоднее на 72%')
+    expect(w.get('[data-test="saving-monthly"]').text()).toBe('3\u00a0538\u00a0₽') // 249 + 11 × 299
+    expect(w.get('[data-test="saving-year"]').text()).toBe('1\u00a0000\u00a0₽')
+    expect(w.get('[data-test="saving-rub"]').text().replace(/\s+/g, ' ')).toContain('2 538 ₽')
+  })
+
+  it('counts every month at 299 once the first purchase is behind the learner', async () => {
+    const w = await mountView({ has_paid_level: true, level: { price: 299, regular_price: 299, next: null } })
+    expect(w.get('[data-test="saving-monthly"]').text()).toBe('3\u00a0588\u00a0₽')
+    expect(w.get('[data-test="saving-rub"]').text().replace(/\s+/g, ' ')).toContain('2 588 ₽')
+  })
+
+  it('claims no saving when the year would not be cheaper', async () => {
+    const w = await mountView({ year: { price: 4000, old_price: 0 } })
+    expect(w.find('[data-test="year-saving"]').exists()).toBe(false)
+    expect(w.find('[data-test="year-badge"]').exists()).toBe(false)
+  })
+
+  it('sets out what each plan gives, in bold, and what the next level is about', async () => {
+    const w = await mountView()
+    const level = w.get('[data-test="tariff-level"]')
+    expect(level.findAll('.perks li')).toHaveLength(4) // forever, the зёрнышки, one payment, once a month
+    expect(level.text()).toContain('Навсегда')
+    expect(level.text()).toContain('Один платёж')
+    expect(level.text()).toContain('Раз в месяц')
+    const year = w.get('[data-test="tariff-year"]')
+    expect(year.findAll('.perks li')).toHaveLength(4) // every level, the зёрнышки, new levels, one payment
+    expect(year.text()).toContain('Все платные уровни сразу')
+    expect(year.text()).toContain('Новые уровни включены')
+  })
+
+  it('names the lessons in the next level', async () => {
+    const w = await mountView()
+    expect(w.get('[data-test="level-inside"]').text()).toContain('1\u00a0урок') // no-break: the number keeps its word
+  })
+})
+
+describe('TariffsView: the зёрнышки that come with a tariff', () => {
+  // The currency is named in the admin panel and only known once the wallet has
+  // answered, so the tests give it a name.
+  async function mountWithCurrency(over: Partial<TariffsInfo> = {}) {
+    const w = await mountView(over)
+    const wallet = useWalletStore()
+    wallet.nameOne = 'зёрнышко'
+    wallet.nameFew = 'зёрнышка'
+    wallet.nameMany = 'зёрнышек'
+    await flushPromises()
+    return w
+  }
+
+  it('says a level brings 1 000 зёрнышек and the year 15 000', async () => {
+    const w = await mountWithCurrency()
+    expect(w.get('[data-test="level-bonus"]').text()).toContain('+1\u00a0000 зёрнышек')
+    expect(w.get('[data-test="year-bonus"]').text()).toContain('+15\u00a0000 зёрнышек')
+  })
+
+  it('says how much more the year brings than twelve months of levels', async () => {
+    const w = await mountWithCurrency()
+    const text = w.get('[data-test="year-bonus"]').text().replace(/\s+/g, ' ')
+    expect(text).toContain('на 3 000 больше, чем за двенадцать месяцев по 1 000') // spaces normalised above
+  })
+
+  it('leaves out the comparison when the year brings no more than twelve levels would', async () => {
+    const w = await mountWithCurrency({ year: { price: 1000, old_price: 2000, bonus: 12000 } })
+    expect(w.get('[data-test="year-bonus"]').text()).toContain('+12\u00a0000 зёрнышек')
+    expect(w.get('[data-test="year-bonus"]').text()).not.toContain('больше')
+  })
+
+  it('shows no bonus line for a tariff that has none', async () => {
+    const w = await mountWithCurrency({
+      level: { price: 249, regular_price: 299, next: { id: '4', title: 'Уровень 4 — Падежи в жизни' } },
+      year: { price: 1000, old_price: 2000 },
+    })
+    expect(w.find('[data-test="level-bonus"]').exists()).toBe(false)
+    expect(w.find('[data-test="year-bonus"]').exists()).toBe(false)
+  })
+})
+
+describe('TariffsView: one level a month', () => {
+  // A level was paid for recently: the button says when the next opens, and the
+  // year, which is not held back, stays on offer.
+  const held = (from: string) => ({ level: { price: 299, regular_price: 299, available_from: from, next: null } })
+  const future = () => new Date(Date.now() + 12 * 86_400_000).toISOString()
+
+  it('replaces the buy button with the date the next level opens', async () => {
+    const w = await mountView({ has_paid_level: true, ...held(future()) })
+    expect(w.find('[data-test="buy-level"]').exists()).toBe(false)
+    const wait = w.get('[data-test="level-wait"]')
+    expect(wait.attributes('disabled')).toBeDefined()
+    expect(wait.text()).toContain('Следующий уровень — с ')
+    const note = w.get('[data-test="level-cooldown"]').text().replace(/\s+/g, ' ')
+    expect(note).toContain('через 12 дней')
+    expect(note).toContain('открой все уровни на год')
+    expect(w.get('[data-test="level-cooldown"] a').attributes('href')).toBe('#tariff-year')
+  })
+
+  it('leaves the year on sale during the wait', async () => {
+    const create = vi.spyOn(api, 'createOrder').mockResolvedValue({
+      id: 8, tariff: 'year', status: 'pending', confirmation_url: 'https://pay.test/confirm/8',
+    })
+    const w = await mountView({ has_paid_level: true, ...held(future()) })
+    expect(w.get('[data-test="buy-year"]').attributes('disabled')).toBeUndefined()
+    await w.get('[data-test="buy-year"]').trigger('click')
+    await flushPromises()
+    expect(create).toHaveBeenCalledWith('year')
+  })
+
+  it('is not shown once the date has passed', async () => {
+    const w = await mountView({ has_paid_level: true, ...held(new Date(Date.now() - 86_400_000).toISOString()) })
+    expect(w.find('[data-test="level-cooldown"]').exists()).toBe(false)
+    expect(w.find('[data-test="buy-level"]').exists()).toBe(true)
+  })
+
+  it('shows the date when the server says the limit applies although the screen did not know', async () => {
+    vi.spyOn(api, 'createOrder').mockRejectedValue(new ApiError(409, 'level_cooldown'))
+    const w = await mountView()
+    const reload = vi.spyOn(api, 'tariffs').mockResolvedValue(
+      tariffsInfo({ has_paid_level: true, ...held(future()) }),
+    )
+    await w.get('[data-test="buy-level"]').trigger('click')
+    await flushPromises()
+    expect(useToasts().items.value[0].text).toContain('раз в месяц')
+    expect(reload).toHaveBeenCalled()
+    expect(w.find('[data-test="level-wait"]').exists()).toBe(true)
   })
 })
 

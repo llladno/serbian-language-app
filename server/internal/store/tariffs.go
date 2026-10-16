@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"strconv"
 	"time"
 )
 
@@ -15,7 +16,10 @@ type Tariff struct {
 	FirstPriceKopecks int64 // 0: no first-purchase price
 	OldPriceKopecks   int64 // 0: no struck-through price
 	PeriodDays        int   // 0: the purchase never expires
-	Active            bool
+	// BonusCurrency is credited in the in-app currency, once, when the tariff is
+	// paid for. 0: no bonus.
+	BonusCurrency int64
+	Active        bool
 }
 
 const (
@@ -25,6 +29,10 @@ const (
 	// AllAccess is the entitlement a year grants: every level until it ends.
 	AllAccessKind = "all_access"
 	AllAccessRef  = "year"
+
+	// LedgerTopup is the ledger kind for currency that arrives with money (the
+	// admin's transactions screen already labels it «Пополнение»).
+	LedgerTopup = "topup"
 
 	PaymentPending   = "pending"
 	PaymentSucceeded = "succeeded"
@@ -38,8 +46,9 @@ func (s *Store) Tariff(code string) (Tariff, error) {
 	var t Tariff
 	var active int
 	err := s.db.QueryRow(`SELECT code, title, price_kopecks, first_price_kopecks, old_price_kopecks,
-		period_days, active FROM tariffs WHERE code = ?`, code).
-		Scan(&t.Code, &t.Title, &t.PriceKopecks, &t.FirstPriceKopecks, &t.OldPriceKopecks, &t.PeriodDays, &active)
+		period_days, bonus_currency, active FROM tariffs WHERE code = ?`, code).
+		Scan(&t.Code, &t.Title, &t.PriceKopecks, &t.FirstPriceKopecks, &t.OldPriceKopecks, &t.PeriodDays,
+			&t.BonusCurrency, &active)
 	if errors.Is(err, sql.ErrNoRows) {
 		return Tariff{}, ErrTariffUnavailable
 	}
@@ -159,6 +168,26 @@ func (s *Store) HasPaidLevel(userID string) (bool, error) {
 	return n > 0, nil
 }
 
+// LastLevelPaymentAt is when userID last paid for a level, ok=false when they
+// never have. A payment made through a test shop counts like any other: it is the
+// same flow, and a tester should meet the limit a customer would.
+func (s *Store) LastLevelPaymentAt(userID string) (t time.Time, ok bool, err error) {
+	var paid sql.NullString
+	if err := s.db.QueryRow(`SELECT MAX(paid_at) FROM payments
+		WHERE user_id = ? AND tariff_code = ? AND status = ? AND paid_at <> ''`,
+		userID, TariffLevel, PaymentSucceeded).Scan(&paid); err != nil {
+		return time.Time{}, false, fmt.Errorf("last level payment: %w", err)
+	}
+	if !paid.Valid || paid.String == "" {
+		return time.Time{}, false, nil
+	}
+	t, perr := time.Parse(time.RFC3339, paid.String)
+	if perr != nil {
+		return time.Time{}, false, nil
+	}
+	return t, true, nil
+}
+
 // CancelPayment marks a pending payment as canceled. It never touches one that
 // has already succeeded.
 func (s *Store) CancelPayment(id int64) error {
@@ -233,6 +262,27 @@ func (s *Store) CompletePayment(id int64, now time.Time) (granted bool, err erro
 	default:
 		return false, fmt.Errorf("complete payment: unknown tariff %q", code)
 	}
+
+	// The tariff's bonus currency, in the same transaction as the grant: the
+	// learner never has the level without the зёрнышки or the other way round. The
+	// key makes a second run of this payment credit nothing (CompletePayment is
+	// already idempotent through the status flip; this is the second lock).
+	var bonus int64
+	var title string
+	if err := tx.QueryRow(`SELECT bonus_currency, title FROM tariffs WHERE code = ?`, code).Scan(&bonus, &title); err != nil {
+		return false, fmt.Errorf("complete payment: bonus: %w", err)
+	}
+	if bonus > 0 {
+		_, err := addLedgerEntryTx(tx, LedgerEntry{
+			UserID: userID, Amount: bonus, Kind: LedgerTopup, Ref: strconv.FormatInt(id, 10),
+			IdempotencyKey: "payment:" + strconv.FormatInt(id, 10),
+			Comment:        "Бонус за оплату: " + title,
+		}, now)
+		if err != nil && !errors.Is(err, ErrDuplicateEntry) {
+			return false, fmt.Errorf("complete payment: credit bonus: %w", err)
+		}
+	}
+
 	if err := tx.Commit(); err != nil {
 		return false, fmt.Errorf("complete payment: commit: %w", err)
 	}

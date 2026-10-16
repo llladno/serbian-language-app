@@ -7,7 +7,7 @@ import { ApiError } from '../api'
 import { useWalletStore } from '../stores/wallet'
 import { useCourseStore } from '../stores/course'
 import { useTariffsStore } from '../stores/tariffs'
-import { offerForPhase, rub } from '../lib/tariffs'
+import { grouped, offerForPhase, rub, shortDate } from '../lib/tariffs'
 import { useToasts } from '../lib/toasts'
 import { useUnlockModal } from '../lib/unlockModal'
 
@@ -27,9 +27,17 @@ const canAfford = computed(() => missing.value === 0)
 // one, otherwise the year (a later level cannot be opened out of order).
 const offer = computed(() =>
   phaseId.value && tariffs.ready
-    ? offerForPhase(courseStore.course, phaseId.value, { levelPrice: tariffs.levelNow, yearPrice: tariffs.yearPrice })
+    ? offerForPhase(courseStore.course, phaseId.value, {
+        levelPrice: tariffs.levelNow,
+        yearPrice: tariffs.yearPrice,
+        levelFrom: tariffs.levelFrom,
+      })
     : null,
 )
+// "1 000 зёрнышек", in the currency's own name and plural.
+function seeds(n: number): string {
+  return `${grouped(n)} ${wallet.currencyWord(n)}`.trim()
+}
 // The prices are fetched once a level is tapped, not on every screen.
 watch(phaseId, (id) => {
   if (id) tariffs.load()
@@ -104,14 +112,27 @@ async function buy() {
           дают за уроки, повторения, серию занятий и задания.
         </p>
         <template v-if="offer">
-          <p v-if="offer.kind === 'year'" class="text-sm text-[var(--muted)]" data-test="unlock-order">
+          <p v-if="offer.kind === 'year' && offer.why === 'order'" class="text-sm text-[var(--muted)]" data-test="unlock-order">
             По {{ rub(tariffs.levelNow) }} уровни открываются по порядку: сначала «{{ offer.first.title }}». Хочешь
             сразу этот — открой все уровни.
+          </p>
+          <p v-else-if="offer.kind === 'year'" class="text-sm text-[var(--muted)]" data-test="unlock-cooldown">
+            Уровень за рубли открывается раз в месяц, следующий можно взять {{ shortDate(offer.from) }}. Не ждать
+            можно, если открыть все уровни сразу.
           </p>
           <RouterLink to="/tariffs" class="btn btn-primary w-full" data-test="unlock-pay" @click="closeModal">
             <template v-if="offer.kind === 'level'">Открыть сразу за {{ rub(offer.price) }}</template>
             <template v-else>Все уровни — {{ rub(offer.price) }} в год</template>
           </RouterLink>
+          <p v-if="offer.kind === 'level' ? tariffs.levelBonus : tariffs.yearBonus" class="text-sm font-semibold" data-test="unlock-bonus">
+            И ещё {{ seeds(offer.kind === 'level' ? tariffs.levelBonus : tariffs.yearBonus) }} в подарок
+          </p>
+          <p v-if="offer.kind === 'level' && tariffs.levelDiscount" class="text-xs font-semibold text-[var(--accent)]" data-test="unlock-discount">
+            Скидка {{ tariffs.levelDiscount }}% на первую покупку: {{ rub(tariffs.levelNow) }} вместо {{ rub(tariffs.levelRegular) }}
+          </p>
+          <p v-else-if="offer.kind === 'year' && tariffs.yearSaves" class="text-xs font-semibold text-[var(--accent)]" data-test="unlock-saving">
+            Выгода {{ tariffs.yearSaves.percent }}% по сравнению с уровнем каждый месяц
+          </p>
         </template>
         <div class="flex flex-col gap-2 sm:flex-row">
           <RouterLink

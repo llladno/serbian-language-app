@@ -428,9 +428,14 @@ export interface TariffsInfo {
     // What the next level costs this learner now (249 the first time, 299 after).
     price: number
     regular_price: number
+    // Set while the one-level-a-month limit holds the learner back: when the
+    // next level can be bought for rubles again (an ISO moment).
+    available_from?: string
+    // In-app currency (зёрнышки) credited once when a level is paid for.
+    bonus?: number
     next: { id: string; title: string } | null
   }
-  year: { price: number; old_price: number; until?: string }
+  year: { price: number; old_price: number; bonus?: number; until?: string }
 }
 
 export type TariffCode = 'level' | 'year'

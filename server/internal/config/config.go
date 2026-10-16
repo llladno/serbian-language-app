@@ -104,6 +104,11 @@ type Config struct {
 	TBankTaxation string
 	// TBankAPIBase overrides the Т-Касса API address (tests). TBANK_API_BASE.
 	TBankAPIBase string
+	// TariffLevelCooldownDays is how long after paying for a level the next one
+	// cannot be bought for rubles: one level a month. Levels bought for зёрнышки
+	// and the year are not held back. 0 turns the limit off. From
+	// TARIFF_LEVEL_COOLDOWN_DAYS, default 30.
+	TariffLevelCooldownDays int
 }
 
 // Load reads the configuration from the environment. Missing variables take
@@ -143,7 +148,19 @@ func Load() Config {
 		TBankPassword:         strings.TrimSpace(os.Getenv("TBANK_PASSWORD")),
 		TBankTaxation:         taxationOr(os.Getenv("TBANK_TAXATION"), "usn_income"),
 		TBankAPIBase:          strings.TrimSpace(os.Getenv("TBANK_API_BASE")),
+
+		TariffLevelCooldownDays: daysOr(os.Getenv("TARIFF_LEVEL_COOLDOWN_DAYS"), 30),
 	}
+}
+
+// daysOr reads a number of days from 0 to 365, falling back to def for anything
+// else (empty, not a number, negative, absurdly long).
+func daysOr(raw string, def int) int {
+	n, err := strconv.Atoi(strings.TrimSpace(raw))
+	if err != nil || n < 0 || n > 365 {
+		return def
+	}
+	return n
 }
 
 // taxationOr reads a receipt tax system, falling back to def for anything the

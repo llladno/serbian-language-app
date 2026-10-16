@@ -127,7 +127,7 @@ func tariffsAPI(t *testing.T, yk *fakeYooKassa) (http.Handler, *store.Store) {
 // tariffsAPIWith is tariffsAPI with Т-Касса as well: tbankEmail pays through the
 // fake bank, listedEmail through the fake ЮKassa. Either fake may be nil, which
 // leaves that service without credentials.
-func tariffsAPIWith(t *testing.T, yk *fakeYooKassa, tb *fakeTBank) (http.Handler, *store.Store) {
+func tariffsAPIWith(t *testing.T, yk *fakeYooKassa, tb *fakeTBank, opts ...func(*Deps)) (http.Handler, *store.Store) {
 	t.Helper()
 	h, st := newTestAPIWith(t, func(d *Deps) {
 		d.Async = func(f func()) { f() }
@@ -152,6 +152,9 @@ func tariffsAPIWith(t *testing.T, yk *fakeYooKassa, tb *fakeTBank) (http.Handler
 			d.Config.TBankAPIBase = tb.srv.URL
 			d.Config.TBankTaxation = "usn_income"
 		}
+		for _, o := range opts {
+			o(d)
+		}
 	})
 	seedPhaseProduct(t, st, "B", 230)
 	seedPhaseProduct(t, st, "C", 375)
@@ -170,7 +173,10 @@ type tariffsResp struct {
 	Level         struct {
 		Price        int64 `json:"price"`
 		RegularPrice int64 `json:"regular_price"`
-		Next         *struct {
+		// AvailableFrom: set while the monthly limit holds the next level back.
+		AvailableFrom string `json:"available_from"`
+		Bonus         int64  `json:"bonus"`
+		Next          *struct {
 			ID    string `json:"id"`
 			Title string `json:"title"`
 		} `json:"next"`
@@ -178,6 +184,7 @@ type tariffsResp struct {
 	Year struct {
 		Price    int64  `json:"price"`
 		OldPrice int64  `json:"old_price"`
+		Bonus    int64  `json:"bonus"`
 		Until    string `json:"until"`
 	} `json:"year"`
 }

@@ -66,6 +66,26 @@ func (h handlers) nextLockedPhase(us *store.UserStore) (id, title string, ok boo
 	return "", "", false, nil
 }
 
+// levelCooldownEnd is when this learner may buy another level for rubles: a
+// month (TARIFF_LEVEL_COOLDOWN_DAYS) after the last one they paid for. held is
+// false when nothing holds them back. It limits "Уровень" only; the year and
+// levels bought for зёрнышки are not affected.
+func (h handlers) levelCooldownEnd(userID string) (end time.Time, held bool, err error) {
+	days := h.Config.TariffLevelCooldownDays
+	if days <= 0 {
+		return time.Time{}, false, nil
+	}
+	last, ok, err := h.Store.LastLevelPaymentAt(userID)
+	if err != nil || !ok {
+		return time.Time{}, false, err
+	}
+	end = last.AddDate(0, 0, days)
+	if !end.After(h.Now()) {
+		return time.Time{}, false, nil
+	}
+	return end, true, nil
+}
+
 // levelPriceKopecks is what the next level costs this learner: the first
 // purchase price once, the regular price after.
 func levelPriceKopecks(t store.Tariff, hasPaid bool) int64 {
@@ -87,15 +107,22 @@ type tariffsDTO struct {
 	Level         struct {
 		Price        int64 `json:"price"`
 		RegularPrice int64 `json:"regular_price"`
-		Next         *struct {
+		// AvailableFrom is set while the monthly limit holds the learner back: the
+		// moment they may buy the next level for rubles.
+		AvailableFrom string `json:"available_from,omitempty"`
+		// Bonus is the in-app currency (зёрнышки) paying for a level credits, once.
+		Bonus int64 `json:"bonus"`
+		Next  *struct {
 			ID    string `json:"id"`
 			Title string `json:"title"`
 		} `json:"next"`
 	} `json:"level"`
 	Year struct {
-		Price    int64  `json:"price"`
-		OldPrice int64  `json:"old_price"`
-		Until    string `json:"until,omitempty"`
+		Price    int64 `json:"price"`
+		OldPrice int64 `json:"old_price"`
+		// Bonus is the in-app currency paying for the year credits, once.
+		Bonus int64  `json:"bonus"`
+		Until string `json:"until,omitempty"`
 	} `json:"year"`
 }
 
@@ -141,12 +168,24 @@ func (h handlers) getTariffs(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	cooldownEnd, held, err := h.levelCooldownEnd(ac.UserID)
+	if err != nil {
+		log.Printf("tariffs: level cooldown: %v", err)
+		fail(w, http.StatusInternalServerError, "internal error")
+		return
+	}
+
 	var out tariffsDTO
 	prov := h.providerFor(ac.Summary.Email)
 	out.PaymentsReady = prov != nil && prov.Configured()
 	out.HasPaidLevel = hasPaid
 	out.Level.Price = rubles(levelPriceKopecks(level, hasPaid))
 	out.Level.RegularPrice = rubles(level.PriceKopecks)
+	out.Level.Bonus = level.BonusCurrency
+	out.Year.Bonus = year.BonusCurrency
+	if held {
+		out.Level.AvailableFrom = cooldownEnd.UTC().Format(time.RFC3339)
+	}
 	if found {
 		out.Level.Next = &struct {
 			ID    string `json:"id"`
@@ -215,6 +254,16 @@ func (h handlers) createOrder(w http.ResponseWriter, r *http.Request) {
 			// Every level on sale is open already: charging for one would be
 			// taking money for nothing.
 			fail(w, http.StatusConflict, "nothing_to_buy")
+			return
+		}
+		// One level a month: a level paid for recently holds the next one back.
+		// The year is never held back, and neither are levels bought for зёрнышки.
+		if _, held, err := h.levelCooldownEnd(ac.UserID); err != nil {
+			log.Printf("orders: level cooldown: %v", err)
+			fail(w, http.StatusInternalServerError, "internal error")
+			return
+		} else if held {
+			fail(w, http.StatusConflict, "level_cooldown")
 			return
 		}
 		hasPaid, err := h.Store.HasPaidLevel(ac.UserID)

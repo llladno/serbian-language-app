@@ -183,3 +183,22 @@ func TestTBankSettings(t *testing.T) {
 		t.Error("configured without a password")
 	}
 }
+
+func TestLevelCooldownDefaultsToAMonthAndZeroTurnsItOff(t *testing.T) {
+	clearEnv(t)
+	for raw, want := range map[string]int{
+		"":     30, // unset: one level a month
+		"0":    0,  // off
+		"7":    7,
+		" 14 ": 14,
+		"365":  365,
+		"-1":   30, // anything not a sensible number of days falls back
+		"abc":  30,
+		"400":  30,
+	} {
+		t.Setenv("TARIFF_LEVEL_COOLDOWN_DAYS", raw)
+		if got := Load().TariffLevelCooldownDays; got != want {
+			t.Errorf("TARIFF_LEVEL_COOLDOWN_DAYS=%q -> %d, want %d", raw, got, want)
+		}
+	}
+}

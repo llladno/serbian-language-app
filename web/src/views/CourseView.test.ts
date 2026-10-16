@@ -90,6 +90,43 @@ describe('CourseView: levels for sale', () => {
     expect(w.find('[data-test="unlock-quests"]').attributes('href')).toBe('/quests')
   })
 
+  it('says what comes with paying: зёрнышки for a level, more of them for the year', async () => {
+    vi.spyOn(api, 'tariffs').mockResolvedValue(tariffsInfo())
+    const w = mountView()
+    enableTariffs()
+    await flushPromises()
+    await w.find('[data-test="locked-16"]').trigger('click')
+    await flushPromises()
+    expect(w.find('[data-test="unlock-bonus"]').text().replace(/\s+/g, ' ')).toContain('И ещё 1 000')
+  })
+
+  it('names the discount where the first purchase is offered', async () => {
+    vi.spyOn(api, 'tariffs').mockResolvedValue(tariffsInfo())
+    const w = mountView()
+    enableTariffs()
+    await flushPromises()
+    await w.find('[data-test="locked-16"]').trigger('click')
+    await flushPromises()
+    const text = w.find('[data-test="unlock-discount"]').text().replace(/\s+/g, ' ')
+    expect(text).toContain('Скидка 17% на первую покупку')
+    expect(text).toContain('249 ₽ вместо 299 ₽')
+  })
+
+  it('answers the next level with the year, and the date, while the monthly limit holds a level back', async () => {
+    const from = new Date(Date.now() + 9 * 86_400_000).toISOString()
+    const info = tariffsInfo({ has_paid_level: true, level: { price: 299, regular_price: 299, available_from: from, next: null } })
+    vi.spyOn(api, 'tariffs').mockResolvedValue(info)
+    const w = mountView()
+    enableTariffs(info)
+    await flushPromises()
+    await w.find('[data-test="locked-16"]').trigger('click')
+    await flushPromises()
+    expect(w.find('[data-test="unlock-cooldown"]').text()).toContain('раз в месяц')
+    expect(w.find('[data-test="unlock-pay"]').text()).toContain('Все уровни')
+    expect(w.find('[data-test="unlock-saving"]').text()).toContain('Выгода 72%')
+    expect(w.find('[data-test="unlock-order"]').exists()).toBe(false)
+  })
+
   // The gate: the same screen, the same shortfall, and no way to pay for an
   // account the server has not opened tariffs for. Earning stays the main way.
   it('offers no payment to an account that does not have tariffs', async () => {

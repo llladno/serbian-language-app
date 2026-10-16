@@ -9,13 +9,18 @@
 import { computed, onMounted } from 'vue'
 import { useWalletStore } from '../stores/wallet'
 import { useTariffsStore } from '../stores/tariffs'
-import { rub } from '../lib/tariffs'
+import { grouped, rub, shortDate } from '../lib/tariffs'
 import scene from '../assets/invite-scene.webp'
 
 const wallet = useWalletStore()
 const tariffs = useTariffsStore()
 
 onMounted(() => tariffs.load())
+
+// "1 000 зёрнышек", in the currency's own name and plural.
+function seeds(n: number): string {
+  return `${grouped(n)} ${wallet.currencyWord(n)}`.trim()
+}
 
 const show = computed(() => tariffs.ready && !!wallet.goal && !tariffs.yearActive)
 </script>
@@ -25,16 +30,45 @@ const show = computed(() => tariffs.ready && !!wallet.goal && !tariffs.yearActiv
     <div class="art" aria-hidden="true"><img :src="scene" alt="" /></div>
     <div class="body">
       <p class="eyebrow">Не хочется копить?</p>
-      <p class="title">Открой «{{ wallet.goal.title }}» сразу</p>
-      <p class="sub">Один платёж — и уровень твой навсегда. Подписки нет.</p>
-      <div class="actions">
-        <RouterLink to="/tariffs" class="btn btn-primary" data-test="banner-level">
-          Открыть за {{ rub(tariffs.levelNow) }}
-        </RouterLink>
-        <RouterLink to="/tariffs" class="all" data-test="banner-year">
-          Все уровни на год — {{ rub(tariffs.yearPrice) }}
-        </RouterLink>
-      </div>
+
+      <!-- The usual offer: the level the learner is saving for, now. -->
+      <template v-if="!tariffs.levelFrom">
+        <p class="title">Открой «{{ wallet.goal.title }}» сразу</p>
+        <p class="sub" data-test="banner-sub">
+          Один платёж — и уровень твой навсегда<template v-if="tariffs.levelBonus">
+            и <b data-test="banner-bonus">{{ seeds(tariffs.levelBonus) }}</b> в подарок</template
+          >. Подписки нет.
+          <b v-if="tariffs.levelDiscount" class="disc" data-test="banner-discount">
+            Скидка {{ tariffs.levelDiscount }}% на первую покупку.
+          </b>
+        </p>
+        <div class="actions">
+          <RouterLink to="/tariffs" class="btn btn-primary" data-test="banner-level">
+            Открыть за {{ rub(tariffs.levelNow) }}
+          </RouterLink>
+          <RouterLink to="/tariffs" class="all" data-test="banner-year">
+            Все уровни на год — {{ rub(tariffs.yearPrice) }}<template v-if="tariffs.yearSaves">
+              , выгода {{ tariffs.yearSaves.percent }}%</template
+            >
+          </RouterLink>
+        </div>
+      </template>
+
+      <!-- A level was bought less than a month ago: say when the next one opens
+           and offer the year, which is not held back. -->
+      <template v-else>
+        <p class="title" data-test="banner-wait">Следующий уровень за рубли — с {{ shortDate(tariffs.levelFrom) }}</p>
+        <p class="sub">
+          Уровень открывается раз в месяц. Раньше можно открыть сразу все уровни на год<template v-if="tariffs.yearSaves"
+            >: выгода {{ tariffs.yearSaves.percent }}%</template
+          ><template v-if="tariffs.yearBonus"> и {{ seeds(tariffs.yearBonus) }} в подарок</template>.
+        </p>
+        <div class="actions">
+          <RouterLink to="/tariffs" class="btn btn-primary" data-test="banner-year">
+            Все уровни — {{ rub(tariffs.yearPrice) }} в год
+          </RouterLink>
+        </div>
+      </template>
     </div>
   </section>
 </template>
@@ -88,6 +122,10 @@ const show = computed(() => tariffs.ready && !!wallet.goal && !tariffs.yearActiv
   flex-wrap: wrap;
   align-items: center;
   gap: 0.75rem 1rem;
+}
+.disc {
+  font-weight: 800;
+  color: var(--accent);
 }
 .all {
   font-size: 0.875rem;

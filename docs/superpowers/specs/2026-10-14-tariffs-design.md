@@ -44,6 +44,37 @@ stand before this goes to everybody.
   ends in the Минцифры root CA, which the runtime image does not trust: the root and
   intermediate are embedded (`internal/tbank/russian_trusted_ca.pem`) and trusted by
   this client only.
+- **One level a month (2026-10-16).** "Уровень" cannot be bought for rubles more than
+  once in `TARIFF_LEVEL_COOLDOWN_DAYS` days (default 30; 0 turns it off): after a paid
+  level, `POST /api/me/orders` for `level` answers 409 `level_cooldown` before anything
+  is created or charged, and `GET /api/me/tariffs` carries `level.available_from` (the
+  day the next level can be bought) while the limit holds. Counted from the last
+  succeeded `level` payment (`Store.LastLevelPaymentAt`), test payments included, so a
+  tester meets what a customer would; the year and levels bought for зёрнышки are never
+  held back. The screens show the date instead of a dead button and offer the year. The
+  public offer (п. 2.2) states the 30 days: change both together.
+- **What the screens say (2026-10-16).** First purchase: "Скидка 17% на первую покупку:
+  249 ₽ вместо 299 ₽" (`discountPercent`, from the two prices the server quotes). Year:
+  a bar chart against twelve months of levels at the fastest pace the tariff allows, one
+  a month: the learner's own price for the first and 299 ₽ for the other eleven
+  (3 538 ₽ for a new buyer, 3 588 ₽ after the first purchase), so "Выгода 72%" and the
+  rubles saved come from the same prices as the buttons and are never claimed when the
+  year would not be cheaper (`monthlyYearCost`, `yearSaving` in `lib/tariffs.ts`). The
+  struck-through 2 000 ₽ stays with "ранняя цена". Each plan's advantages are set in
+  bold with a small icon; on a phone the year card comes first.
+- **Bonus currency (2026-10-16).** `tariffs.bonus_currency` (migration 026: level 1000,
+  year 15000; one UPDATE changes or switches it off). `CompletePayment` credits it in the
+  same transaction as the grant, as one `topup` ledger entry (ref = the payment id,
+  idempotency key `payment:<id>`, comment "Бонус за оплату: …"), so the learner never has
+  the level without the зёрнышки; a second run of the same payment credits nothing, a
+  canceled one nothing. `GET /api/me/tariffs` quotes `level.bonus` and `year.bonus`; the
+  screens say "+1 000 зёрнышек в подарок" (gold seed icon) and that the year's 15 000 is 3 000
+  more than twelve levels' worth. The offer (п. 2.2, 2.3, 7.6) says the same. Not handled:
+  refunds do not take the bonus back (the offer says it is annulled up to the unspent
+  balance, done by hand with an `admin_adjustment` for now). Consequence to know: 1 000
+  is more than levels 4 and 5 cost together (605), so one paid level can also open the
+  other with зёрнышки, and 15 000 lets a year's learner buy every level for good, which stay
+  open after the year ends (offer п. 5.3 already says levels opened for зёрнышки stay open).
 - **What it grants.** `CompletePayment` flips the payment and grants in one
   transaction: a level is a `phase_unlock` entitlement (forever); a year is
   `all_access/year` with `expires_at`, extended from the current end when paid early.
@@ -95,9 +126,10 @@ Decisions behind the table:
   cancel screen. A reminder before the year ends goes through the bot outbox.
 - **«Месяц» is gone.** A level has ~17 lessons; locking it after 30 days would cut
   learners off mid-level. «Уровень» is a permanent unlock.
-- **No currency in the tariffs.** A bonus of 1000 зёрнышек would open levels 4 and 5
-  on its own and leave nothing for «Уровень» to sell. Tariffs and the currency
-  ladder do not touch each other.
+- **Currency in the tariffs (reversed 2026-10-16).** Originally none: a bonus of 1000
+  зёрнышек would open levels 4 and 5 on its own (they cost 230 + 375) and leave nothing
+  for «Уровень» to sell. Grisha decided to add it anyway: paying for a level credits
+  **1 000** зёрнышек, the year **15 000** (see "Bonus currency" below).
 - **The user does not choose the level.** Levels are not independent: level 5 leans on
   the cases taught in level 4 (hint 76.2.8 even points at lesson 47). The app does
   not enforce the order today (each level is its own `phase_unlock` product), so
@@ -187,9 +219,9 @@ not switchable. Details and the rest of what the bot could write:
 scheduler, see "Decisions"), this is where «Отключить автопродление» goes, in the same
 card.
 
-**Not a top-up.** The banner and the modal open levels; they do not sell зёрнышки, as
-decided above. A «купить N зёрнышек» pack would be a different product (`topup` in the
-ledger) and is not built.
+**Not a top-up.** The banner and the modal open levels; they do not sell зёрнышки on
+their own. (A tariff does credit some, as a bonus; a «купить N зёрнышек» pack would be a
+different product and is not built.)
 
 ## Payment flow (ЮKassa, web only)
 

@@ -38,6 +38,53 @@ describe('TariffsBanner', () => {
     expect(w.find('[data-test="banner-year"]').text()).toContain('1 000')
   })
 
+  it('says the first purchase is discounted, and how much cheaper the year is', async () => {
+    enableTariffs()
+    useWalletStore().products = [level()]
+    const w = mountBanner()
+    await flushPromises()
+    expect(w.find('[data-test="banner-discount"]').text()).toContain('Скидка 17% на первую покупку')
+    expect(w.find('[data-test="banner-year"]').text()).toContain('выгода 72%')
+  })
+
+  it('promises the зёрнышки that come with the level, in the currency\'s own name', async () => {
+    enableTariffs()
+    const wallet = useWalletStore()
+    wallet.products = [level()]
+    wallet.nameOne = 'зёрнышко'
+    wallet.nameFew = 'зёрнышка'
+    wallet.nameMany = 'зёрнышек'
+    const w = mountBanner()
+    await flushPromises()
+    expect(w.find('[data-test="banner-bonus"]').text()).toBe('1\u00a0000 зёрнышек')
+  })
+
+  it('names no discount once the regular price applies', async () => {
+    const info = tariffsInfo({ has_paid_level: true, level: { price: 299, regular_price: 299, next: null } })
+    vi.spyOn(api, 'tariffs').mockResolvedValue(info)
+    enableTariffs(info)
+    useWalletStore().products = [level()]
+    const w = mountBanner()
+    await flushPromises()
+    expect(w.find('[data-test="banner-discount"]').exists()).toBe(false)
+  })
+
+  // A level was paid for less than a month ago: the banner stops offering one
+  // and offers the year, which is not held back.
+  it('offers the year, with the date, while the monthly limit holds a level back', async () => {
+    const from = new Date(Date.now() + 10 * 86_400_000).toISOString()
+    const info = tariffsInfo({ has_paid_level: true, level: { price: 299, regular_price: 299, available_from: from, next: null } })
+    vi.spyOn(api, 'tariffs').mockResolvedValue(info)
+    enableTariffs(info)
+    useWalletStore().products = [level()]
+    const w = mountBanner()
+    await flushPromises()
+    expect(w.find('[data-test="banner-level"]').exists()).toBe(false)
+    expect(w.find('[data-test="banner-wait"]').text()).toContain('Следующий уровень за рубли — с ')
+    expect(w.find('[data-test="banner-year"]').text()).toContain('1\u00a0000')
+    expect(w.find('[data-test="banner-year"]').classes()).toContain('btn-primary')
+  })
+
   it('quotes what the server quotes: the regular price after a first purchase', async () => {
     const info = tariffsInfo({ has_paid_level: true, level: { price: 299, regular_price: 299, next: null } })
     vi.spyOn(api, 'tariffs').mockResolvedValue(info)

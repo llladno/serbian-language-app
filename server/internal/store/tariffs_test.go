@@ -26,12 +26,14 @@ func TestSeededTariffs(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	// 299 ₽, 249 ₽ for the first purchase, never expires.
-	if level.PriceKopecks != 29900 || level.FirstPriceKopecks != 24900 || level.PeriodDays != 0 || !level.Active {
+	// 299 ₽, 249 ₽ for the first purchase, never expires, 1000 зёрнышек with it.
+	if level.PriceKopecks != 29900 || level.FirstPriceKopecks != 24900 || level.PeriodDays != 0 || !level.Active ||
+		level.BonusCurrency != 1000 {
 		t.Fatalf("level = %+v", level)
 	}
 	year, _ := s.Tariff(TariffYear)
-	if year.PriceKopecks != 100000 || year.OldPriceKopecks != 200000 || year.PeriodDays != 365 {
+	if year.PriceKopecks != 100000 || year.OldPriceKopecks != 200000 || year.PeriodDays != 365 ||
+		year.BonusCurrency != 15000 {
 		t.Fatalf("year = %+v", year)
 	}
 	if _, err := s.Tariff("nope"); err != ErrTariffUnavailable {
@@ -204,5 +206,109 @@ func TestPendingPaymentsAreOnlyTheCallersAndOnlyRecent(t *testing.T) {
 	}
 	if old, _ := s.PendingPayments(a, day0.Add(time.Hour)); len(old) != 0 {
 		t.Fatalf("pending since the future = %+v, want none", old)
+	}
+}
+
+func TestLastLevelPaymentAtIsTheLatestPaidLevelOnly(t *testing.T) {
+	s := newStore(t)
+	uid, _ := s.CreateUser("Гриша")
+	if _, ok, err := s.LastLevelPaymentAt(uid); err != nil || ok {
+		t.Fatalf("new learner: ok=%t err=%v, want none", ok, err)
+	}
+
+	// neither an unpaid order, a canceled one nor a paid year is a paid level
+	pending := newPayment(t, s, uid, TariffLevel, "4", 24900)
+	canceled := newPayment(t, s, uid, TariffLevel, "4", 24900)
+	s.CancelPayment(canceled)
+	s.CompletePayment(newPayment(t, s, uid, TariffYear, "", 100000), day0)
+	if _, ok, _ := s.LastLevelPaymentAt(uid); ok {
+		t.Fatal("something that is not a paid level counted")
+	}
+
+	first, second := day0.Add(time.Hour), day0.Add(48*time.Hour)
+	s.CompletePayment(pending, first)
+	if got, ok, _ := s.LastLevelPaymentAt(uid); !ok || !got.Equal(first) {
+		t.Fatalf("after one level: %v ok=%t, want %v", got, ok, first)
+	}
+	s.CompletePayment(newPayment(t, s, uid, TariffLevel, "5", 29900), second)
+	if got, _, _ := s.LastLevelPaymentAt(uid); !got.Equal(second) {
+		t.Fatalf("after two levels: %v, want the later one %v", got, second)
+	}
+
+	// someone else's payment is not mine
+	other, _ := s.CreateUser("Оля")
+	if _, ok, _ := s.LastLevelPaymentAt(other); ok {
+		t.Fatal("another learner's level counted")
+	}
+}
+
+func TestPayingForATariffCreditsItsBonusCurrencyOnce(t *testing.T) {
+	s := newStore(t)
+	uid, _ := s.CreateUser("Гриша")
+
+	level := newPayment(t, s, uid, TariffLevel, "4", 24900)
+	if bal, _ := s.Balance(uid); bal != 0 {
+		t.Fatalf("balance before paying = %d", bal)
+	}
+	if granted, err := s.CompletePayment(level, day0); err != nil || !granted {
+		t.Fatalf("CompletePayment: %t %v", granted, err)
+	}
+	if bal, _ := s.Balance(uid); bal != 1000 {
+		t.Fatalf("balance after a level = %d, want its 1000 bonus", bal)
+	}
+
+	// a second run of the same payment (a notification and the return page
+	// arriving together) credits nothing more
+	if granted, _ := s.CompletePayment(level, day0); granted {
+		t.Fatal("the same payment granted twice")
+	}
+	if bal, _ := s.Balance(uid); bal != 1000 {
+		t.Fatalf("balance after the second run = %d, want still 1000", bal)
+	}
+
+	s.CompletePayment(newPayment(t, s, uid, TariffYear, "", 100000), day0)
+	if bal, _ := s.Balance(uid); bal != 16000 {
+		t.Fatalf("balance after the year = %d, want 1000 + 15000", bal)
+	}
+
+	// each credit is one `topup` entry that says which payment it came from
+	entries, err := s.ListLedger(uid, 10, 0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(entries) != 2 {
+		t.Fatalf("%d ledger entries, want 2: %+v", len(entries), entries)
+	}
+	for _, e := range entries {
+		if e.Kind != LedgerTopup || e.Ref == "" || e.IdempotencyKey != "payment:"+e.Ref || e.CreatedBy != "" {
+			t.Errorf("entry = %+v", e)
+		}
+	}
+}
+
+func TestAPaymentThatDoesNotSucceedCreditsNothing(t *testing.T) {
+	s := newStore(t)
+	uid, _ := s.CreateUser("Гриша")
+	pending := newPayment(t, s, uid, TariffLevel, "4", 24900)
+	canceled := newPayment(t, s, uid, TariffLevel, "4", 24900)
+	s.CancelPayment(canceled)
+	s.CompletePayment(canceled, day0) // a canceled payment cannot be completed
+	if bal, _ := s.Balance(uid); bal != 0 {
+		t.Fatalf("balance = %d, want 0 while nothing is paid (pending %d)", bal, pending)
+	}
+}
+
+func TestATariffWithoutABonusCreditsNothing(t *testing.T) {
+	s := newStore(t)
+	if _, err := s.db.Exec(`UPDATE tariffs SET bonus_currency = 0 WHERE code = ?`, TariffLevel); err != nil {
+		t.Fatal(err)
+	}
+	uid, _ := s.CreateUser("Гриша")
+	s.CompletePayment(newPayment(t, s, uid, TariffLevel, "4", 24900), day0)
+	if bal, _ := s.Balance(uid); bal != 0 {
+		t.Fatalf("balance = %d, want 0 for a tariff with no bonus", bal)
+	}
+	if ok, _ := s.HasPaidLevel(uid); !ok {
+		t.Fatal("the level was not granted either")
 	}
 }

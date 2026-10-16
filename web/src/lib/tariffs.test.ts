@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { daysLeft, nextLockedLevel, offerForPhase, perMonth, rub } from './tariffs'
+import { daysLeft, discountPercent, grouped, monthlyYearCost, nextLockedLevel, offerForPhase, perMonth, rub, shortDate, yearSaving } from './tariffs'
 import type { Course } from '../types'
 
 function course(over: Partial<Course> = {}): Course {
@@ -93,5 +93,68 @@ describe('daysLeft', () => {
   })
   it('never goes below zero', () => {
     expect(daysLeft('2026-10-01T00:00:00Z', now)).toBe(0)
+  })
+})
+
+describe('discountPercent', () => {
+  it('is the share taken off, in whole percent', () => {
+    expect(discountPercent(249, 299)).toBe(17) // 16.7
+    expect(discountPercent(230, 375)).toBe(39)
+    expect(discountPercent(150, 300)).toBe(50)
+  })
+  it('is 0 when there is no discount, so it doubles as the "show a badge" test', () => {
+    expect(discountPercent(299, 299)).toBe(0)
+    expect(discountPercent(300, 299)).toBe(0)
+    expect(discountPercent(100, 0)).toBe(0)
+  })
+})
+
+describe('the year against twelve months of levels', () => {
+  it('costs the first level at this learner\'s price and eleven at the regular one', () => {
+    expect(monthlyYearCost(249, 299)).toBe(3538)
+    expect(monthlyYearCost(299, 299)).toBe(3588) // after the first purchase every month is 299
+  })
+
+  it('saves the difference, as rubles and as a rounded percent', () => {
+    expect(yearSaving(1000, 3538)).toEqual({ rub: 2538, percent: 72 })
+    expect(yearSaving(1000, 3588)).toEqual({ rub: 2588, percent: 72 })
+    expect(yearSaving(1000, 1500)).toEqual({ rub: 500, percent: 33 })
+  })
+
+  it('says nothing when the year is not cheaper, instead of claiming a saving', () => {
+    expect(yearSaving(1000, 1000)).toBeNull()
+    expect(yearSaving(1200, 1000)).toBeNull()
+    expect(yearSaving(1000, 0)).toBeNull()
+  })
+})
+
+describe('offerForPhase while the monthly limit holds the next level back', () => {
+  const FROM = '2026-11-12T10:00:00Z'
+
+  it('answers the next level with the year, and says it is because of the limit', () => {
+    const o = offerForPhase(course(), '4', { ...QUOTE, levelFrom: FROM })
+    expect(o).toMatchObject({ kind: 'year', why: 'cooldown', from: FROM, price: 1000 })
+  })
+
+  it('still answers a later level with the year, for the usual reason', () => {
+    expect(offerForPhase(course(), '5', { ...QUOTE, levelFrom: FROM })).toMatchObject({ kind: 'year', why: 'order' })
+  })
+
+  it('offers the level as before when nothing holds the learner back', () => {
+    expect(offerForPhase(course(), '4', { ...QUOTE, levelFrom: null })).toMatchObject({ kind: 'level', price: 249 })
+  })
+})
+
+describe('shortDate', () => {
+  it('writes the day and the month in words', () => {
+    expect(shortDate('2026-11-12T10:00:00Z')).toBe('12 ноября')
+  })
+})
+
+describe('grouped', () => {
+  it('groups thousands with no-break spaces, so an amount never wraps in the middle', () => {
+    expect(grouped(15000)).toBe('15\u00a0000')
+    expect(grouped(1000)).toBe('1\u00a0000')
+    expect(grouped(375)).toBe('375')
   })
 })
