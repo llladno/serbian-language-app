@@ -33,8 +33,9 @@ type payCreate struct {
 	OrderID       int64
 	AmountKopecks int64
 	Description   string
-	Email         string // the receipt goes here
-	Tariff        string
+	// The receipt goes to Email or, when the buyer gave a phone instead, to Phone.
+	Email, Phone string
+	Tariff       string
 	// ReturnURL is where the buyer lands afterwards, NotifyURL where the service
 	// posts about the payment (a service that is told this per payment).
 	ReturnURL string
@@ -139,6 +140,7 @@ func (p tbankProvider) Create(ctx context.Context, in payCreate) (payCreated, er
 		AmountKopecks:   in.AmountKopecks,
 		Description:     in.Description,
 		Email:           in.Email,
+		Phone:           in.Phone,
 		SuccessURL:      in.ReturnURL,
 		FailURL:         in.ReturnURL,
 		NotificationURL: in.NotifyURL,

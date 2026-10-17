@@ -39,21 +39,6 @@ func (h handlers) tariffsEnabled(s userSummary) bool {
 	return s.EmailVerified && h.Config.TariffsAllowed(s.Email)
 }
 
-// receiptEmail is the address the receipt for this order goes to: the account's
-// own verified one, or, for an account that has none, the one the buyer typed.
-// ok is false when that is not an address a receipt can go to.
-func receiptEmail(s userSummary, typed string) (email string, ok bool) {
-	if s.Email != "" {
-		return s.Email, true
-	}
-	typed = strings.TrimSpace(typed)
-	addr, err := netmail.ParseAddress(typed)
-	if err != nil || addr.Address != typed || len(typed) > 254 || !strings.Contains(typed[strings.LastIndex(typed, "@"):], ".") {
-		return "", false
-	}
-	return strings.ToLower(typed), true
-}
-
 func (h handlers) requireTariffs(next http.HandlerFunc) http.HandlerFunc {
 	return h.requireSession(func(w http.ResponseWriter, r *http.Request) {
 		ac, ok := authFrom(r)
@@ -63,6 +48,54 @@ func (h handlers) requireTariffs(next http.HandlerFunc) http.HandlerFunc {
 		}
 		next(w, r)
 	})
+}
+
+// receiptContact is where the receipt for this order goes: the account's own
+// verified email or, for an account that has none (Telegram only), the email or
+// phone the buyer typed. The bank takes either; ok is false when what was typed
+// is neither.
+func receiptContact(s userSummary, typed string) (email, phone string, ok bool) {
+	if s.Email != "" {
+		return s.Email, "", true
+	}
+	typed = strings.TrimSpace(typed)
+	if addr, err := netmail.ParseAddress(typed); err == nil && addr.Address == typed &&
+		len(typed) <= 64 && strings.Contains(typed[strings.LastIndex(typed, "@"):], ".") {
+		return strings.ToLower(typed), "", true
+	}
+	if p, ok := normalizePhone(typed); ok {
+		return "", p, true
+	}
+	return "", "", false
+}
+
+// normalizePhone turns what a buyer typed into the "+79031234567" form the bank
+// wants. Without a plus only a Russian number is understood (8 903…, 7 903…, or
+// the ten digits 903…); with one, any international number of 8 to 15 digits.
+func normalizePhone(raw string) (string, bool) {
+	raw = strings.TrimSpace(raw)
+	plus := strings.HasPrefix(raw, "+")
+	raw = strings.TrimPrefix(raw, "+")
+	var d strings.Builder
+	for _, r := range raw {
+		switch {
+		case r >= '0' && r <= '9':
+			d.WriteRune(r)
+		case strings.ContainsRune(" -().\u00a0", r):
+		default:
+			return "", false
+		}
+	}
+	n := d.String()
+	switch {
+	case plus && len(n) >= 8 && len(n) <= 15 && n[0] != '0':
+		return "+" + n, true
+	case !plus && len(n) == 11 && (n[0] == '8' || n[0] == '7'):
+		return "+7" + n[1:], true
+	case !plus && len(n) == 10 && n[0] == '9':
+		return "+7" + n, true
+	}
+	return "", false
 }
 
 // nextLockedPhase is the level "Уровень" would open: the first level in course
@@ -270,9 +303,9 @@ func (h handlers) createOrder(w http.ResponseWriter, r *http.Request) {
 	}
 	var req struct {
 		Tariff string `json:"tariff"`
-		// Email is the address for the receipt, asked of an account that has no
-		// email of its own; an account that has one is never sent anywhere else.
-		Email string `json:"email"`
+		// Contact is the email or phone for the receipt, asked of an account that
+		// has no email of its own; an account that has one is never sent anywhere else.
+		Contact string `json:"contact"`
 	}
 	if err := decode(r, &req); err != nil {
 		fail(w, http.StatusBadRequest, "bad request body")
@@ -330,12 +363,16 @@ func (h handlers) createOrder(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// The receipt is mailed to the account's own verified address, or to the one a
-	// Telegram-only buyer typed in.
-	receipt, ok := receiptEmail(ac.Summary, req.Email)
+	// The receipt goes to the account's own verified email, or to the email or
+	// phone a Telegram-only buyer typed in.
+	receiptMail, receiptPhone, ok := receiptContact(ac.Summary, req.Contact)
 	if !ok {
-		fail(w, http.StatusBadRequest, "receipt_email_invalid")
+		fail(w, http.StatusBadRequest, "receipt_contact_invalid")
 		return
+	}
+	receipt := receiptMail
+	if receipt == "" {
+		receipt = receiptPhone
 	}
 	pid, err := h.Store.CreatePayment(store.Payment{
 		UserID: ac.UserID, TariffCode: tariff.Code, GrantedPhase: phase, AmountKopecks: amount,
@@ -350,7 +387,8 @@ func (h handlers) createOrder(w http.ResponseWriter, r *http.Request) {
 		OrderID:       pid,
 		AmountKopecks: amount,
 		Description:   description,
-		Email:         receipt,
+		Email:         receiptMail,
+		Phone:         receiptPhone,
 		Tariff:        tariff.Code,
 		ReturnURL:     h.Config.AppBaseURL + "/tariffs?order=" + strconv.FormatInt(pid, 10),
 		NotifyURL:     h.Config.AppBaseURL + "/api/" + prov.Name() + "/webhook",

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { daysLeft, discountPercent, grouped, monthlyYearCost, nextLockedLevel, offerForPhase, perMonth, rub, shortDate, yearSaving } from './tariffs'
+import { daysLeft, discountPercent, grouped, looksLikeContact, monthlyYearCost, nextLockedLevel, offerForPhase, perMonth, rub, shortDate, yearSaving } from './tariffs'
 import type { Course } from '../types'
 
 function course(over: Partial<Course> = {}): Course {
@@ -156,5 +156,19 @@ describe('grouped', () => {
     expect(grouped(15000)).toBe('15\u00a0000')
     expect(grouped(1000)).toBe('1\u00a0000')
     expect(grouped(375)).toBe('375')
+  })
+})
+
+describe('looksLikeContact', () => {
+  it('accepts an email, or a phone in the usual writings', () => {
+    for (const v of ['a@b.ru', ' buyer@example.com ', '8 (903) 123-45-67', '+7 903 123 45 67', '9031234567', '+381 64 123 4567']) {
+      expect(looksLikeContact(v), v).toBe(true)
+    }
+  })
+
+  it('refuses what is neither', () => {
+    for (const v of ['', ' ', 'abc', 'a@b', 'Anna <a@b.ru>', '12345', '1234567890', '+0123456789', '903-123-45-6x', '8903123456789']) {
+      expect(looksLikeContact(v), v).toBe(false)
+    }
   })
 })

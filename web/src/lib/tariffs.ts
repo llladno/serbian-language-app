@@ -107,8 +107,17 @@ export function longDate(iso: string): string {
   return new Date(iso).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' })
 }
 
-// Whether what was typed can be an address a receipt goes to: the server has the
-// last word, this only keeps an obvious slip from costing a round trip.
-export function looksLikeEmail(raw: string): boolean {
-  return /^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/.test(raw.trim())
+// Whether what was typed can be where a receipt goes: an email, or a phone (a
+// Russian number in any of its usual writings, or an international one with a
+// plus). The server has the last word; this only keeps an obvious slip from
+// costing a round trip, and follows its rules.
+export function looksLikeContact(raw: string): boolean {
+  const v = raw.trim()
+  if (/^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/.test(v)) return true
+  const plus = v.startsWith('+')
+  const body = plus ? v.slice(1) : v
+  if (!/^[\d\s\-().\u00a0]+$/.test(body)) return false
+  const digits = body.replace(/\D/g, '')
+  if (plus) return digits.length >= 8 && digits.length <= 15 && digits[0] !== '0'
+  return (digits.length === 11 && (digits[0] === '8' || digits[0] === '7')) || (digits.length === 10 && digits[0] === '9')
 }

@@ -144,9 +144,9 @@ export const api = {
     request<{ status: string }>('/me/support', { method: 'POST', body: JSON.stringify({ message }) }),
   wallet: () => request<Wallet>('/me/wallet'),
   tariffs: () => request<TariffsInfo>('/me/tariffs'),
-  // email: where the receipt goes, only for an account that has no email of its own.
-  createOrder: (tariff: TariffCode, email?: string) =>
-    request<Order>('/me/orders', { method: 'POST', body: JSON.stringify(email ? { tariff, email } : { tariff }) }),
+  // contact: the email or phone the receipt goes to, only for an account that has no email of its own.
+  createOrder: (tariff: TariffCode, contact?: string) =>
+    request<Order>('/me/orders', { method: 'POST', body: JSON.stringify(contact ? { tariff, contact } : { tariff }) }),
   order: (id: number) => request<Order>(`/me/orders/${id}`),
   botPrefs: () => request<BotPrefs>('/me/bot-prefs'),
   setBotPrefs: (patch: Partial<BotPrefs>) =>

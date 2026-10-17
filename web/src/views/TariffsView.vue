@@ -66,8 +66,9 @@ const inMiniApp = isTelegram() && !!initData()
 
 const canPay = computed(() => tariffs.paymentsReady && !tariffs.paying)
 
-// The receipt address of an account that has no email (it came in through
-// Telegram): asked once, above the plans, and checked before any payment starts.
+// The receipt contact (email or phone) of an account that has no email (it came
+// in through Telegram): asked once, above the plans, and checked before any
+// payment starts.
 const receiptField = ref<HTMLInputElement | null>(null)
 
 async function pay(tariff: TariffCode) {
@@ -75,8 +76,8 @@ async function pay(tariff: TariffCode) {
     toasts.push({ title: 'Оплата ещё не подключена', text: 'Пока уровни можно открыть за зёрнышки.' })
     return
   }
-  if (!tariffs.receiptEmailValid) {
-    toasts.push({ title: 'Нужна почта для чека', text: 'Впиши её в поле над тарифами.' })
+  if (!tariffs.receiptContactValid) {
+    toasts.push({ title: 'Нужна почта или телефон для чека', text: 'Впиши их в поле над тарифами.' })
     receiptField.value?.focus()
     return
   }
@@ -148,20 +149,21 @@ onMounted(async () => {
     </section>
 
     <!-- An account that came in through Telegram has no email: the receipt (54-ФЗ)
-         has to go somewhere, so it is asked for here, once. -->
-    <section v-if="tariffs.ready && tariffs.needsReceiptEmail" class="card p-4" data-test="receipt-email">
-      <label for="receipt-email" class="block text-sm font-bold">Почта для чека</label>
+         has to go somewhere, an email or a phone, so it is asked for here, once. -->
+    <section v-if="tariffs.ready && tariffs.needsReceiptContact" class="card p-4" data-test="receipt-contact">
+      <label for="receipt-contact" class="block text-sm font-bold">Почта или телефон для чека</label>
       <input
-        id="receipt-email"
+        id="receipt-contact"
         ref="receiptField"
-        :value="tariffs.receiptEmail"
-        type="email"
+        :value="tariffs.receiptContact"
+        type="text"
         inputmode="email"
         autocomplete="email"
-        placeholder="name@example.com"
+        autocapitalize="off"
+        placeholder="почта или телефон"
         class="field mt-2 w-full"
-        data-test="receipt-email-input"
-        @input="tariffs.setReceiptEmail(($event.target as HTMLInputElement).value)"
+        data-test="receipt-contact-input"
+        @input="tariffs.setReceiptContact(($event.target as HTMLInputElement).value)"
       />
       <p class="mt-1.5 text-xs text-[var(--muted)]">Туда придёт чек об оплате. Доступ откроется на этом аккаунте.</p>
     </section>

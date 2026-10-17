@@ -9,7 +9,7 @@ import { computed, ref } from 'vue'
 import { api, ApiError } from '../api'
 import { initData, isTelegram, openExternalLink } from '../telegram'
 import { useSessionStore } from './session'
-import { discountPercent, looksLikeEmail, monthlyYearCost, yearSaving } from '../lib/tariffs'
+import { discountPercent, looksLikeContact, monthlyYearCost, yearSaving } from '../lib/tariffs'
 import type { Order, TariffCode, TariffsInfo } from '../types'
 
 export const useTariffsStore = defineStore('tariffs', () => {
@@ -22,13 +22,13 @@ export const useTariffsStore = defineStore('tariffs', () => {
   const ready = computed(() => enabled.value && info.value !== null)
 
   // An account that came in through Telegram has no email, so the receipt needs
-  // an address typed in. It is kept on the device so the next purchase is one tap.
-  const RECEIPT_KEY = 'tariffs.receiptEmail'
-  const needsReceiptEmail = computed(() => enabled.value && !session.user?.email)
-  const receiptEmail = ref(readSaved(RECEIPT_KEY))
-  const receiptEmailValid = computed(() => !needsReceiptEmail.value || looksLikeEmail(receiptEmail.value))
-  function setReceiptEmail(value: string) {
-    receiptEmail.value = value
+  // an email or phone typed in. It is kept on the device so the next purchase is one tap.
+  const RECEIPT_KEY = 'tariffs.receiptContact'
+  const needsReceiptContact = computed(() => enabled.value && !session.user?.email)
+  const receiptContact = ref(readSaved(RECEIPT_KEY))
+  const receiptContactValid = computed(() => !needsReceiptContact.value || looksLikeContact(receiptContact.value))
+  function setReceiptContact(value: string) {
+    receiptContact.value = value
     try {
       localStorage.setItem(RECEIPT_KEY, value.trim())
     } catch {
@@ -85,8 +85,8 @@ export const useTariffsStore = defineStore('tariffs', () => {
     if (paying.value) return
     paying.value = tariff
     try {
-      const order = needsReceiptEmail.value
-        ? await api.createOrder(tariff, receiptEmail.value.trim())
+      const order = needsReceiptContact.value
+        ? await api.createOrder(tariff, receiptContact.value.trim())
         : await api.createOrder(tariff)
       if (!order.confirmation_url) throw new Error('no confirmation url')
       if (isTelegram() && initData()) {
@@ -109,7 +109,7 @@ export const useTariffsStore = defineStore('tariffs', () => {
   }
 
   return {
-    info, loading, paying, enabled, ready, needsReceiptEmail, receiptEmail, receiptEmailValid, setReceiptEmail, levelNow, levelRegular, yearPrice, yearOld,
+    info, loading, paying, enabled, ready, needsReceiptContact, receiptContact, receiptContactValid, setReceiptContact, levelNow, levelRegular, yearPrice, yearOld,
     levelDiscount, levelFrom, monthlyCost, yearSaves, levelBonus, yearBonus, yearBonusExtra, hasPaidLevel, yearUntil, yearActive, paymentsReady, load, pay, checkOrder,
   }
 })
@@ -127,7 +127,7 @@ export function payErrorMessage(e: unknown): string {
     if (e.message === 'payments_unavailable') return 'Оплата ещё не подключена'
     if (e.message === 'nothing_to_buy') return 'Все платные уровни уже открыты'
     if (e.message === 'level_cooldown') return 'Уровень за рубли можно открывать раз в месяц. Дата — на странице тарифов'
-    if (e.message === 'receipt_email_invalid') return 'Проверь почту для чека: в ней, похоже, опечатка'
+    if (e.message === 'receipt_contact_invalid') return 'Проверь почту или телефон для чека: в них, похоже, опечатка'
     if (e.message === 'payment_failed') return 'Платёжная система не ответила. Попробуй ещё раз'
   }
   return 'Не получилось начать оплату. Попробуй ещё раз'

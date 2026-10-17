@@ -112,7 +112,8 @@ type InitInput struct {
 	OrderID       string
 	AmountKopecks int64
 	Description   string // shown on the payment page and on the receipt
-	Email         string // the receipt goes here
+	// The receipt goes to Email or to Phone ("+79031234567"): the bank wants one of them.
+	Email, Phone string
 	// SuccessURL and FailURL are where the buyer lands afterwards.
 	SuccessURL, FailURL string
 	// NotificationURL gets the bank's POST about the payment.
@@ -173,8 +174,7 @@ func (c *Client) Init(ctx context.Context, in InitInput) (Payment, error) {
 	// Objects below are not part of the Token, so they are added to the body
 	// either way; Sign skips anything that is not a plain value.
 	body["DATA"] = map[string]string{"OperationInitiatorType": "0"}
-	body["Receipt"] = map[string]any{
-		"Email":    in.Email,
+	receipt := map[string]any{
 		"Taxation": c.Taxation,
 		"Items": []map[string]any{{
 			"Name":          truncate(in.Description, 128),
@@ -186,6 +186,13 @@ func (c *Client) Init(ctx context.Context, in InitInput) (Payment, error) {
 			"PaymentObject": "service",
 		}},
 	}
+	if in.Email != "" {
+		receipt["Email"] = in.Email
+	}
+	if in.Phone != "" {
+		receipt["Phone"] = in.Phone
+	}
+	body["Receipt"] = receipt
 	return c.call(ctx, "Init", body)
 }
 

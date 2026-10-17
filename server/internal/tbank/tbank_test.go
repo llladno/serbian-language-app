@@ -271,3 +271,22 @@ func TestEmbeddedRussianCAsAreTheRootAndItsIntermediate(t *testing.T) {
 		t.Error("no trust pool")
 	}
 }
+
+// The receipt names the buyer by email or by phone, never by an empty email.
+func TestInitSendsThePhoneWhenTheReceiptGoesToAPhone(t *testing.T) {
+	f := &fakeBank{reply: `{"Success":true,"ErrorCode":"0","TerminalKey":"TERM1DEMO","Status":"NEW","PaymentId":"1","OrderId":"1","Amount":100,"PaymentURL":"https://pay.example/abc"}`}
+	c := newClient(t, f)
+	if _, err := c.Init(context.Background(), InitInput{OrderID: "1", AmountKopecks: 100, Description: "x", Phone: "+79031234567"}); err != nil {
+		t.Fatal(err)
+	}
+	var receipt map[string]any
+	if err := json.Unmarshal(f.got["Receipt"], &receipt); err != nil {
+		t.Fatalf("Receipt: %v", err)
+	}
+	if receipt["Phone"] != "+79031234567" {
+		t.Errorf("Receipt = %v, want the phone", receipt)
+	}
+	if _, has := receipt["Email"]; has {
+		t.Errorf("Receipt = %v, want no Email key at all", receipt)
+	}
+}

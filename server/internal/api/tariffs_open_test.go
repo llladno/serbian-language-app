@@ -1,7 +1,6 @@
 package api
 
 import (
-	"fmt"
 	"net/http"
 	"strings"
 	"testing"
@@ -70,8 +69,8 @@ func TestWhenOpenToAllAnAccountWithAnUnverifiedEmailStillSeesNothing(t *testing.
 
 // A Telegram-only account (the Mini App's usual visitor) has no email at all.
 // Once the tariffs are open to all it sees them and pays through Т-Касса, naming
-// the address its receipt goes to.
-func TestWhenOpenToAllATelegramOnlyAccountPaysAndNamesItsReceiptEmail(t *testing.T) {
+// the email or phone its receipt goes to.
+func TestWhenOpenToAllATelegramOnlyAccountPaysAndNamesItsReceiptContact(t *testing.T) {
 	yk, tb := newFakeYooKassa(t), newFakeTBank(t)
 	h, st := openAPI(t, yk, tb)
 	tgOnly, err := st.CreateUser("Tg")
@@ -87,18 +86,24 @@ func TestWhenOpenToAllATelegramOnlyAccountPaysAndNamesItsReceiptEmail(t *testing
 		t.Fatalf("tariffs = %+v, want payments ready", got)
 	}
 
-	// No address, or one that is not an address: nothing is created, nothing charged.
-	for _, body := range []string{`{"tariff":"year"}`, `{"tariff":"year","email":"  "}`, `{"tariff":"year","email":"not an email"}`, `{"tariff":"year","email":"Anna <a@example.com>"}`} {
+	// Nothing, or something that is neither an email nor a phone: nothing is
+	// created, nothing charged.
+	for _, body := range []string{
+		`{"tariff":"year"}`, `{"tariff":"year","contact":"  "}`, `{"tariff":"year","contact":"not a contact"}`,
+		`{"tariff":"year","contact":"Anna <a@example.com>"}`, `{"tariff":"year","contact":"12345"}`,
+		`{"tariff":"year","contact":"+0123456789"}`, `{"tariff":"year","contact":"903 123-45-6x"}`,
+	} {
 		rr := doCookie(h, c, "POST", "/api/me/orders", body)
-		if rr.Code != http.StatusBadRequest || !strings.Contains(rr.Body.String(), "receipt_email") {
-			t.Errorf("order %s = %d %s, want 400 receipt_email", body, rr.Code, rr.Body)
+		if rr.Code != http.StatusBadRequest || !strings.Contains(rr.Body.String(), "receipt_contact") {
+			t.Errorf("order %s = %d %s, want 400 receipt_contact_invalid", body, rr.Code, rr.Body)
 		}
 	}
 	if tb.count() != 0 {
-		t.Fatalf("%d payments were started without a receipt address", tb.count())
+		t.Fatalf("%d payments were started without a receipt contact", tb.count())
 	}
 
-	rr := doCookie(h, c, "POST", "/api/me/orders", `{"tariff":"year","email":"  Buyer@Example.com "}`)
+	// An email goes to the bank as the receipt's Email, lower-cased.
+	rr := doCookie(h, c, "POST", "/api/me/orders", `{"tariff":"year","contact":"  Buyer@Example.com "}`)
 	if rr.Code != 200 {
 		t.Fatalf("order = %d %s", rr.Code, rr.Body)
 	}
@@ -107,10 +112,45 @@ func TestWhenOpenToAllATelegramOnlyAccountPaysAndNamesItsReceiptEmail(t *testing
 		t.Fatalf("order = %+v (Т-Касса %d, ЮKassa %d payments), want it paid through Т-Касса", o, tb.count(), yk.count())
 	}
 	if p, _ := st.PaymentByID(o.ID); p.Provider != "tbank" || p.ReceiptContact != "buyer@example.com" {
-		t.Errorf("payment row = %+v, want the receipt address kept, lower-cased", p)
+		t.Errorf("payment row = %+v, want the receipt email kept, lower-cased", p)
 	}
-	if sent := fmt.Sprint(tb.get("9001").Request["Receipt"]); !strings.Contains(sent, "buyer@example.com") {
-		t.Errorf("the receipt sent to the bank = %v, want the typed address", sent)
+	if r, _ := tb.get("9001").Request["Receipt"].(map[string]any); r["Email"] != "buyer@example.com" || r["Phone"] != nil {
+		t.Errorf("the receipt sent to the bank = %v, want the email and no phone", r)
+	}
+
+	// A phone goes as the receipt's Phone in the bank's "+7…" form, with no Email.
+	rr = doCookie(h, c, "POST", "/api/me/orders", `{"tariff":"year","contact":"8 (903) 123-45-67"}`)
+	if rr.Code != 200 {
+		t.Fatalf("order with a phone = %d %s", rr.Code, rr.Body)
+	}
+	o = decodeBody[orderDTO](t, rr)
+	if p, _ := st.PaymentByID(o.ID); p.ReceiptContact != "+79031234567" {
+		t.Errorf("payment row = %+v, want the normalized phone kept as the receipt contact", p)
+	}
+	if r, _ := tb.get("9002").Request["Receipt"].(map[string]any); r["Phone"] != "+79031234567" || r["Email"] != nil {
+		t.Errorf("the receipt sent to the bank = %v, want the phone and no email", r)
+	}
+}
+
+func TestNormalizePhone(t *testing.T) {
+	for in, want := range map[string]string{
+		"8 (903) 123-45-67":  "+79031234567",
+		"89031234567":        "+79031234567",
+		"+7 903 123 45 67":   "+79031234567",
+		"79031234567":        "+79031234567",
+		"9031234567":         "+79031234567",
+		"903.123.45.67":      "+79031234567",
+		"+381 64 123 4567":   "+381641234567", // abroad: any international number
+		" +995 555 12 34 56": "+995555123456",
+	} {
+		if got, ok := normalizePhone(in); !ok || got != want {
+			t.Errorf("normalizePhone(%q) = %q, %v, want %q", in, got, ok, want)
+		}
+	}
+	for _, in := range []string{"", "+", "12345", "1234567890", "+0123456789", "+1234567", "+1234567890123456", "abc", "903-123-45-6x", "7(903)123", "8903123456789"} {
+		if got, ok := normalizePhone(in); ok {
+			t.Errorf("normalizePhone(%q) = %q, want it refused", in, got)
+		}
 	}
 }
 
@@ -125,7 +165,7 @@ func TestATelegramOnlyAccountSeesNothingWhileTheTariffsAreNotOpenToAll(t *testin
 	if rr := doCookie(h, c, "GET", "/api/me/tariffs", ""); rr.Code != http.StatusNotFound {
 		t.Errorf("GET tariffs = %d, want 404", rr.Code)
 	}
-	if rr := doCookie(h, c, "POST", "/api/me/orders", `{"tariff":"year","email":"a@example.com"}`); rr.Code != http.StatusNotFound {
+	if rr := doCookie(h, c, "POST", "/api/me/orders", `{"tariff":"year","contact":"a@example.com"}`); rr.Code != http.StatusNotFound {
 		t.Errorf("POST order = %d, want 404", rr.Code)
 	}
 }

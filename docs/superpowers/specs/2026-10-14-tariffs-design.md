@@ -94,9 +94,11 @@ stand before this goes to everybody.
   `TARIFFS_EMAILS` / `TBANK_EMAILS` keeps the service it is listed for (so the ЮKassa test
   shop stays on one account). An account with no email (Telegram only, which is nearly every
   Mini App visitor) sees them too: it has nothing to verify, so the tariffs screen asks it
-  for the receipt address once (`POST /api/me/orders {tariff, email}`, 400
-  `receipt_email_invalid` for anything that is not a bare address; the address is kept
-  lower-cased in `payments.receipt_contact` and on the device in localStorage). An account
+  for the receipt contact once, an email or a phone, because the bank takes either on the
+  receipt (`POST /api/me/orders {tariff, contact}`, 400 `receipt_contact_invalid` for
+  anything else; a phone is normalised to `+79031234567` and sent as `Receipt.Phone`, an
+  email lower-cased as `Receipt.Email`; the contact is kept in `payments.receipt_contact`
+  and on the device in localStorage). An account
   that typed an email at sign-up and never verified it still sees nothing. Unset or
   anything but 1/true/yes closes it again to the two lists, Telegram-only accounts
   included. `config.PaymentProviderFor` and `tariffsEnabled` decide.

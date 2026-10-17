@@ -323,50 +323,64 @@ describe('TariffsView: paying', () => {
   })
 })
 
-// An account that came in through Telegram has no email: the receipt needs one.
+// An account that came in through Telegram has no email: the receipt needs an
+// email or a phone.
 describe('TariffsView: paying without an account email', () => {
   const tgOnly = { email: '', email_verified: false }
 
   beforeEach(() => localStorage.clear())
 
-  it('asks for the receipt address, and an account with an email is not asked', async () => {
-    expect((await mountView({}, course(), '', tgOnly)).find('[data-test="receipt-email"]').exists()).toBe(true)
-    expect((await mountView()).find('[data-test="receipt-email"]').exists()).toBe(false)
+  it('asks for the receipt contact, and an account with an email is not asked', async () => {
+    expect((await mountView({}, course(), '', tgOnly)).find('[data-test="receipt-contact"]').exists()).toBe(true)
+    expect((await mountView()).find('[data-test="receipt-contact"]').exists()).toBe(false)
   })
 
-  it('sends nothing, and says why, until the address looks like one', async () => {
+  it('sends nothing, and says why, until the contact looks like an email or a phone', async () => {
     const create = vi.spyOn(api, 'createOrder')
     const w = await mountView({}, course(), '', tgOnly)
     await w.get('[data-test="buy-year"]').trigger('click')
-    await w.get('[data-test="receipt-email-input"]').setValue('not an email')
+    await w.get('[data-test="receipt-contact-input"]').setValue('not a contact')
+    await w.get('[data-test="buy-level"]').trigger('click')
+    await w.get('[data-test="receipt-contact-input"]').setValue('12345')
     await w.get('[data-test="buy-level"]').trigger('click')
     await flushPromises()
     expect(create).not.toHaveBeenCalled()
-    expect(useToasts().items.value.map((t) => t.title)).toEqual(['Нужна почта для чека', 'Нужна почта для чека'])
+    expect(useToasts().items.value.map((t) => t.title)).toEqual(Array(3).fill('Нужна почта или телефон для чека'))
   })
 
-  it('orders with the typed address, and keeps it for next time', async () => {
+  it('orders with the typed email, and keeps it for next time', async () => {
     const create = vi.spyOn(api, 'createOrder').mockResolvedValue({
       id: 11, tariff: 'year', status: 'pending', confirmation_url: 'https://pay.test/tb/11',
     })
     const w = await mountView({}, course(), '', tgOnly)
-    await w.get('[data-test="receipt-email-input"]').setValue('  buyer@example.com ')
+    await w.get('[data-test="receipt-contact-input"]').setValue('  buyer@example.com ')
     await w.get('[data-test="buy-year"]').trigger('click')
     await flushPromises()
     expect(create).toHaveBeenCalledWith('year', 'buyer@example.com')
-    expect(localStorage.getItem('tariffs.receiptEmail')).toBe('buyer@example.com')
+    expect(localStorage.getItem('tariffs.receiptContact')).toBe('buyer@example.com')
     // a fresh visit starts with it filled in
     const again = await mountView({}, course(), '', tgOnly)
-    expect((again.get('[data-test="receipt-email-input"]').element as HTMLInputElement).value).toBe('buyer@example.com')
+    expect((again.get('[data-test="receipt-contact-input"]').element as HTMLInputElement).value).toBe('buyer@example.com')
   })
 
-  it('tells the buyer when the bank service turned the address down', async () => {
-    vi.spyOn(api, 'createOrder').mockRejectedValue(new ApiError(400, 'receipt_email_invalid'))
+  it('orders with a typed phone as it was written', async () => {
+    const create = vi.spyOn(api, 'createOrder').mockResolvedValue({
+      id: 12, tariff: 'level', status: 'pending', confirmation_url: 'https://pay.test/tb/12',
+    })
     const w = await mountView({}, course(), '', tgOnly)
-    await w.get('[data-test="receipt-email-input"]').setValue('buyer@example.com')
+    await w.get('[data-test="receipt-contact-input"]').setValue('8 (903) 123-45-67')
     await w.get('[data-test="buy-level"]').trigger('click')
     await flushPromises()
-    expect(useToasts().items.value[0].text).toContain('почт')
+    expect(create).toHaveBeenCalledWith('level', '8 (903) 123-45-67')
+  })
+
+  it('tells the buyer when the server turned the contact down', async () => {
+    vi.spyOn(api, 'createOrder').mockRejectedValue(new ApiError(400, 'receipt_contact_invalid'))
+    const w = await mountView({}, course(), '', tgOnly)
+    await w.get('[data-test="receipt-contact-input"]').setValue('buyer@example.com')
+    await w.get('[data-test="buy-level"]').trigger('click')
+    await flushPromises()
+    expect(useToasts().items.value[0].text).toContain('почту или телефон')
   })
 })
 
