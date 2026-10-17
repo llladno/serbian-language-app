@@ -319,8 +319,8 @@ func TestTariffsShowTheAgreedPricesAndTheNextLevel(t *testing.T) {
 	if !got.PaymentsReady || got.HasPaidLevel {
 		t.Errorf("flags = %+v", got)
 	}
-	if got.Level.Price != 249 || got.Level.RegularPrice != 299 {
-		t.Errorf("level price = %d (regular %d), want 249 for the first purchase and 299 after", got.Level.Price, got.Level.RegularPrice)
+	if got.Level.Price != 199 || got.Level.RegularPrice != 299 {
+		t.Errorf("level price = %d (regular %d), want 199 for the first purchase and 299 after", got.Level.Price, got.Level.RegularPrice)
 	}
 	if got.Level.Next == nil || got.Level.Next.ID != "B" || !strings.Contains(got.Level.Next.Title, "Падежи") {
 		t.Errorf("next level = %+v, want B", got.Level.Next)
@@ -357,8 +357,8 @@ func TestOrderingALevelAsksYooKassaForExactlyThatPayment(t *testing.T) {
 		t.Fatalf("order = %+v, want pending with ЮKassa's page", o)
 	}
 	p := yk.get("yk-1")
-	if p.Amount != "249.00" {
-		t.Errorf("amount = %s, want 249.00 (first purchase)", p.Amount)
+	if p.Amount != "199.00" {
+		t.Errorf("amount = %s, want 199.00 (first purchase)", p.Amount)
 	}
 	if p.User != "shop-1" || p.Pass != "secret-1" {
 		t.Errorf("auth = %s:%s", p.User, p.Pass)
@@ -382,7 +382,7 @@ func TestOrderingALevelAsksYooKassaForExactlyThatPayment(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if pay.UserID != uid || pay.GrantedPhase != "B" || pay.AmountKopecks != 24900 || pay.Status != "pending" || !pay.Test {
+	if pay.UserID != uid || pay.GrantedPhase != "B" || pay.AmountKopecks != 19900 || pay.Status != "pending" || !pay.Test {
 		t.Errorf("payment row = %+v, want pending, level B fixed at order time, test", pay)
 	}
 	if !phaseLocked(t, h, c, "B") {
@@ -549,7 +549,7 @@ func TestAPaymentWhoseAmountDiffersFromTheOrderIsNeverGranted(t *testing.T) {
 
 	doCookie(h, c, "GET", fmt.Sprintf("/api/me/orders/%d", o.ID), "")
 	if !phaseLocked(t, h, c, "B") {
-		t.Fatal("a payment of 1 ₽ opened a level that costs 249 ₽")
+		t.Fatal("a payment of 1 ₽ opened a level that costs 199 ₽")
 	}
 }
 

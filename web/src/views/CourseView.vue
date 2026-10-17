@@ -1,13 +1,15 @@
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
+import { computed, onMounted, reactive } from 'vue'
 import { storeToRefs } from 'pinia'
 import { RouterLink } from 'vue-router'
+import { Check, ChevronDown } from 'lucide-vue-next'
 import { useCourseStore } from '../stores/course'
 import StatusBadge from '../components/StatusBadge.vue'
 import SeedIcon from '../components/SeedIcon.vue'
 import UnlockLevelModal from '../components/UnlockLevelModal.vue'
 import { useWalletStore } from '../stores/wallet'
 import { useUnlockModal } from '../lib/unlockModal'
+import { levelPassed, levelProgress, readCollapsed, writeCollapsed } from '../lib/courseCollapse'
 import type { LessonRef, Phase } from '../types'
 
 const store = useCourseStore()
@@ -29,6 +31,34 @@ const byId = computed(() => {
   course.value?.lessons.forEach((l) => m.set(l.id, l))
   return m
 })
+
+// Folded levels. The learner's own choice (remembered in this browser) wins; with
+// none, a level folds once it is passed. `choices` is read from storage the first
+// time a level is looked at, then kept here so a click re-renders at once.
+const choices = reactive<Record<string, boolean | null>>({})
+function choice(phase: Phase): boolean | null {
+  if (!(phase.id in choices)) choices[phase.id] = readCollapsed(phase.id)
+  return choices[phase.id]
+}
+function passed(phase: Phase): boolean {
+  return levelPassed(phase, byId.value)
+}
+function collapsed(phase: Phase): boolean {
+  return choice(phase) ?? passed(phase)
+}
+function setCollapsed(phase: Phase, value: boolean) {
+  choices[phase.id] = value
+  writeCollapsed(phase.id, value)
+}
+function toggle(phase: Phase) {
+  setCollapsed(phase, !collapsed(phase))
+}
+// One control for the whole course: fold everything, or unfold it again.
+const allCollapsed = computed(() => !!course.value?.phases.every(collapsed))
+function toggleAll() {
+  const fold = !allCollapsed.value
+  course.value?.phases.forEach((p) => setCollapsed(p, fold))
+}
 
 // A level the learner has not bought. It looks like any other level; tapping a
 // lesson in it asks about the price instead of opening the lesson. A locked
@@ -58,7 +88,18 @@ function badgeClass(lesson?: LessonRef) {
 </script>
 
 <template>
-  <h1 class="mb-4 text-2xl font-extrabold">Курс</h1>
+  <div class="mb-4 flex items-center justify-between gap-3">
+    <h1 class="text-2xl font-extrabold">Курс</h1>
+    <button
+      v-if="course && course.phases.length > 1"
+      type="button"
+      class="rounded-full bg-[var(--bg-soft)] px-3 py-1 text-sm font-semibold text-[var(--muted)] transition hover:text-[var(--accent)]"
+      data-test="toggle-all"
+      @click="toggleAll"
+    >
+      {{ allCollapsed ? 'Развернуть всё' : 'Свернуть всё' }}
+    </button>
+  </div>
 
   <Transition name="fade" mode="out-in">
     <div v-if="loading" key="skel" class="space-y-8">
@@ -82,20 +123,53 @@ function badgeClass(lesson?: LessonRef) {
 
     <div v-else-if="course" key="course" class="space-y-8">
       <section v-for="phase in course.phases" :key="phase.id">
-        <div class="mb-3 flex items-center justify-between gap-3">
-          <h2 class="text-sm font-bold uppercase tracking-wide text-[var(--muted)]">{{ phase.title }}</h2>
-          <button
-            v-if="forSale(phase) && phase.price_effective"
-            type="button"
-            class="flex shrink-0 items-center gap-1.5 rounded-full bg-[var(--bg-soft)] px-3 py-1 text-sm font-bold tabular-nums"
-            :data-test="`price-${phase.id}`"
-            @click="unlock.openFor(phase.id)"
-          >
-            <SeedIcon :size="16" />
-            {{ phase.price_effective }}
-          </button>
+        <div class="flex items-center justify-between gap-3" :class="collapsed(phase) ? '' : 'mb-3'">
+          <h2 class="min-w-0 text-sm font-bold uppercase tracking-wide text-[var(--muted)]">
+            <button
+              type="button"
+              class="flex max-w-full items-center gap-1.5 text-left uppercase"
+              :aria-expanded="!collapsed(phase)"
+              :aria-controls="`phase-${phase.id}`"
+              :data-test="`toggle-${phase.id}`"
+              @click="toggle(phase)"
+            >
+              <ChevronDown
+                :size="18"
+                :stroke-width="2.5"
+                class="shrink-0 transition-transform"
+                :class="collapsed(phase) ? '-rotate-90' : ''"
+              />
+              <span class="min-w-0">{{ phase.title }}</span>
+            </button>
+          </h2>
+          <div class="flex shrink-0 items-center gap-3">
+            <span
+              v-if="passed(phase)"
+              class="flex shrink-0 items-center gap-1 text-xs font-bold text-[var(--good)]"
+              :data-test="`passed-${phase.id}`"
+            >
+              <Check :size="15" :stroke-width="3" /> пройден
+            </span>
+            <span
+              v-else-if="collapsed(phase) && levelProgress(phase, byId).total"
+              class="shrink-0 text-xs font-semibold tabular-nums text-[var(--muted)]"
+              :data-test="`progress-${phase.id}`"
+            >
+              {{ levelProgress(phase, byId).done }} из {{ levelProgress(phase, byId).total }}
+            </span>
+            <button
+              v-if="forSale(phase) && phase.price_effective"
+              type="button"
+              class="flex shrink-0 items-center gap-1.5 rounded-full bg-[var(--bg-soft)] px-3 py-1 text-sm font-bold tabular-nums"
+              :data-test="`price-${phase.id}`"
+              @click="unlock.openFor(phase.id)"
+            >
+              <SeedIcon :size="16" />
+              {{ phase.price_effective }}
+            </button>
+          </div>
         </div>
-        <div class="space-y-3">
+        <div v-if="!collapsed(phase)" :id="`phase-${phase.id}`" class="space-y-3">
           <component
             :is="forSale(phase) || comingSoon(phase) ? 'div' : RouterLink"
             v-for="lid in phase.lessons"

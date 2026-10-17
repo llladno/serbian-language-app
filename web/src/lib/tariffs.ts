@@ -42,7 +42,7 @@ export function perMonth(yearPrice: number): number {
 }
 
 // How much cheaper `now` is than `regular`, in whole percent: 249 against 299 is
-// 17. 0 when there is no discount, so a caller can use it as the "show a badge" test.
+// 17 (the live prices are the server's: 199 against 299 is 33). 0 when there is no discount, so a caller can use it as the "show a badge" test.
 export function discountPercent(now: number, regular: number): number {
   if (regular <= 0 || now >= regular) return 0
   return Math.round((1 - now / regular) * 100)

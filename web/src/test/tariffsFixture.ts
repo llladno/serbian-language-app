@@ -16,6 +16,8 @@ export function sessionUser(tariffs: boolean, over: Partial<SessionUser> = {}): 
   }
 }
 
+// The prices here are an illustrative quote, not the live ones (the server decides
+// those, see migration 027): the tests only need numbers that differ and add up.
 export function tariffsInfo(over: Partial<TariffsInfo> = {}): TariffsInfo {
   return {
     payments_ready: true,

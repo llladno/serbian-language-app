@@ -43,7 +43,7 @@ async function mountView(over: Partial<TariffsInfo> = {}, c: Course = course(), 
     configurable: true,
     value: { href: 'http://localhost/tariffs' + search, assign },
   })
-  const w = mount(TariffsView)
+  const w = mount(TariffsView, { global: { stubs: { RouterLink: { props: ['to'], template: '<a :href="to"><slot /></a>' } } } })
   await flushPromises()
   return w
 }
@@ -324,25 +324,58 @@ describe('TariffsView: paying', () => {
 })
 
 describe('TariffsView: coming back from ЮKassa', () => {
-  it('a paid order opens the level, says so and refreshes the course', async () => {
-    const order = vi.spyOn(api, 'order').mockResolvedValue({ id: 7, tariff: 'level', status: 'succeeded' })
+  // The modal is teleported to <body>, outside the mounted view.
+  const thanks = () => document.body.querySelector('[data-test="thanks-modal"]')
+  const text = (el: Element | null) => (el?.textContent ?? '').replace(/\s+/g, ' ').trim()
+
+  it('a paid order opens the level, thanks the buyer and refreshes the course', async () => {
+    const order = vi.spyOn(api, 'order').mockResolvedValue({
+      id: 7, tariff: 'level', status: 'succeeded', phase_title: 'Уровень 4 — Падежи в жизни', bonus: 1000,
+    })
     const reload = vi.spyOn(api, 'course').mockResolvedValue(course({ '4': false, '5': true }))
     await mountView({}, course(), '?order=7')
     expect(order).toHaveBeenCalledWith(7)
     expect(reload).toHaveBeenCalled() // the course is fetched again: level 4 is open now
-    const toast = useToasts().items.value.map((t) => `${t.title}: ${t.text}`)
-    expect(toast).toEqual(['Оплата прошла: Уровень открыт.'])
+    expect(text(thanks())).toContain('Спасибо, что ты с нами и поддерживаешь проект')
+    expect(thanks()?.querySelector('[data-test="thanks-heart"]')).not.toBeNull() // the yellow heart after the thanks
+    expect(text(thanks()?.querySelector('[data-test="thanks-opened"]') ?? null)).toBe('Открыт «Уровень 4 — Падежи в жизни»')
+    expect(text(thanks()?.querySelector('[data-test="thanks-bonus"]') ?? null)).toContain('+1 000')
+    expect(useToasts().items.value).toEqual([]) // the modal says it, not a toast too
   })
 
-  it('a paid year says that every level is open', async () => {
-    vi.spyOn(api, 'order').mockResolvedValue({ id: 8, tariff: 'year', status: 'succeeded' })
-    await mountView({}, course(), '?order=8')
-    expect(useToasts().items.value[0].text).toContain('Все уровни открыты на год')
+  it('the thank-you has one way forward: the course', async () => {
+    vi.spyOn(api, 'order').mockResolvedValue({ id: 7, tariff: 'level', status: 'succeeded' })
+    await mountView({}, course(), '?order=7')
+    const link = thanks()?.querySelector('[data-test="thanks-course"]')
+    expect(link?.getAttribute('href')).toBe('/course')
   })
 
-  it('a canceled order says nothing was charged', async () => {
+  it('goes away when closed, and does not come back on its own', async () => {
+    vi.spyOn(api, 'order').mockResolvedValue({ id: 7, tariff: 'level', status: 'succeeded' })
+    await mountView({}, course(), '?order=7')
+    ;(thanks()?.querySelector('[data-test="thanks-close"]') as HTMLElement).click()
+    await flushPromises()
+    expect(thanks()).toBeNull()
+  })
+
+  it('a paid year says that every level is open, until when, and its bonus', async () => {
+    vi.spyOn(api, 'order').mockResolvedValue({ id: 8, tariff: 'year', status: 'succeeded', bonus: 15000 })
+    const until = new Date('2027-10-14T12:00:00Z').toISOString()
+    await mountView({ year: { price: 1000, old_price: 2000, bonus: 15000, until } }, course(), '?order=8')
+    expect(text(thanks()?.querySelector('[data-test="thanks-opened"]') ?? null)).toBe('Открыты все уровни до 14 октября 2027 г.')
+    expect(text(thanks()?.querySelector('[data-test="thanks-bonus"]') ?? null)).toContain('+15 000')
+  })
+
+  it('leaves the bonus line out when the order brought none', async () => {
+    vi.spyOn(api, 'order').mockResolvedValue({ id: 7, tariff: 'level', status: 'succeeded', phase_title: 'Уровень 4' })
+    await mountView({}, course(), '?order=7')
+    expect(thanks()?.querySelector('[data-test="thanks-bonus"]')).toBeNull()
+  })
+
+  it('a canceled order says nothing was charged, with no thank-you', async () => {
     vi.spyOn(api, 'order').mockResolvedValue({ id: 7, tariff: 'level', status: 'canceled' })
     await mountView({}, course(), '?order=7')
+    expect(thanks()).toBeNull()
     const t = useToasts().items.value[0]
     expect(t.title).toBe('Оплата не прошла')
     expect(t.text).toContain('Деньги не списались')
@@ -364,7 +397,7 @@ describe('TariffsView: coming back from ЮKassa', () => {
     expect(order).toHaveBeenCalledTimes(1)
     await vi.advanceTimersByTimeAsync(3100)
     expect(order).toHaveBeenCalledTimes(2)
-    expect(useToasts().items.value.map((t) => t.title)).toContain('Оплата прошла')
+    expect(thanks()).not.toBeNull()
   })
 
   it('without an order in the address nothing is announced', async () => {

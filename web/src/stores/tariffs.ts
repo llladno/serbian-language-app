@@ -21,7 +21,7 @@ export const useTariffsStore = defineStore('tariffs', () => {
   const enabled = computed(() => session.user?.features?.tariffs === true)
   const ready = computed(() => enabled.value && info.value !== null)
 
-  // 249 for the first level, 299 after; the server decides which.
+  // The first level at the first-purchase price, the rest at the regular one; the server decides which.
   const levelNow = computed(() => info.value?.level.price ?? 0)
   const levelRegular = computed(() => info.value?.level.regular_price ?? 0)
   const yearPrice = computed(() => info.value?.year.price ?? 0)

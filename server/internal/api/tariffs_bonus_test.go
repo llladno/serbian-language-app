@@ -68,3 +68,30 @@ func TestACanceledPaymentCreditsNothing(t *testing.T) {
 		t.Fatalf("balance after a canceled payment = %d", bal)
 	}
 }
+
+// The thank-you screen asks the order what it brought.
+func TestAPaidOrderSaysWhichLevelItOpenedAndWhatBonusCameWithIt(t *testing.T) {
+	yk := newFakeYooKassa(t)
+	h, st := tariffsAPI(t, yk)
+	_, c := listedUser(t, h, st)
+	path := func(id int64) string { return fmt.Sprintf("/api/me/orders/%d", id) }
+
+	level := order(t, h, c, "level")
+	pending := decodeBody[orderDTO](t, doCookie(h, c, "GET", path(level.ID), ""))
+	if pending.PhaseTitle != "" || pending.Bonus != 0 {
+		t.Fatalf("an unpaid order already claims %+v", pending)
+	}
+
+	yk.set("yk-1", "succeeded")
+	paid := decodeBody[orderDTO](t, doCookie(h, c, "GET", path(level.ID), ""))
+	if paid.Status != "succeeded" || paid.PhaseTitle != "Уровень 4 — Падежи" || paid.Bonus != 1000 {
+		t.Fatalf("paid level order = %+v, want the level's title and 1000", paid)
+	}
+
+	year := order(t, h, c, "year")
+	yk.set("yk-2", "succeeded")
+	paidYear := decodeBody[orderDTO](t, doCookie(h, c, "GET", path(year.ID), ""))
+	if paidYear.PhaseTitle != "" || paidYear.Bonus != 15000 {
+		t.Fatalf("paid year order = %+v, want no level title and 15000", paidYear)
+	}
+}

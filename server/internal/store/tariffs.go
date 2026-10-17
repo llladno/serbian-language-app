@@ -188,6 +188,21 @@ func (s *Store) LastLevelPaymentAt(userID string) (t time.Time, ok bool, err err
 	return t, true, nil
 }
 
+// PaymentBonus is the in-app currency a paid payment credited (the topup entry
+// keyed by it), 0 when it credited none.
+func (s *Store) PaymentBonus(paymentID int64) (int64, error) {
+	var amount int64
+	err := s.db.QueryRow(`SELECT amount FROM currency_ledger WHERE idempotency_key = ?`,
+		"payment:"+strconv.FormatInt(paymentID, 10)).Scan(&amount)
+	if errors.Is(err, sql.ErrNoRows) {
+		return 0, nil
+	}
+	if err != nil {
+		return 0, fmt.Errorf("payment bonus: %w", err)
+	}
+	return amount, nil
+}
+
 // CancelPayment marks a pending payment as canceled. It never touches one that
 // has already succeeded.
 func (s *Store) CancelPayment(id int64) error {

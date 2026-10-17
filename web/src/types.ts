@@ -124,6 +124,7 @@ export interface CheckResult {
   forms?: FormResult[]
   match?: Record<string, boolean>
   near_miss?: boolean
+  partial?: boolean // ok, but one slot (conjugate / match) was wrong — shown yellow
   typo?: boolean // accepted despite a spelling slip; `expected` is the right spelling
   line?: string
   line_ru?: string
@@ -425,7 +426,7 @@ export interface TariffsInfo {
   payments_ready: boolean
   has_paid_level: boolean
   level: {
-    // What the next level costs this learner now (249 the first time, 299 after).
+    // What the next level costs this learner now (200 the first time, 300 after).
     price: number
     regular_price: number
     // Set while the one-level-a-month limit holds the learner back: when the
@@ -445,4 +446,8 @@ export interface Order {
   tariff: TariffCode
   status: 'pending' | 'succeeded' | 'canceled'
   confirmation_url?: string
+  // Once paid: the level a "level" order opened, and the in-app currency that
+  // came with it.
+  phase_title?: string
+  bonus?: number
 }

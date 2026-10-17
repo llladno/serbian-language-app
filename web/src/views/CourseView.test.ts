@@ -42,6 +42,7 @@ function mountView() {
 }
 
 beforeEach(() => {
+  localStorage.clear() // the folded levels are remembered there
   setActivePinia(createPinia())
   useUnlockModal().closeModal()
   vi.spyOn(api, 'course').mockResolvedValue(course())
@@ -218,5 +219,107 @@ describe('CourseView: levels for sale', () => {
     expect(w.find('[data-test="price-2"]').exists()).toBe(false)
     expect(w.find('[data-test="locked-16"]').exists()).toBe(false)
     expect(w.findAll('a').some((a) => a.attributes('href') === '/lesson/16')).toBe(false)
+  })
+})
+
+// Folding: a passed level folds by itself, any level can be folded by hand, and
+// the learner's choice is remembered in this browser.
+describe('CourseView: folding levels', () => {
+  const lessonsOf = (done: boolean): Course['lessons'] => [
+    { id: '00', title: 'Первый', subtitle: '', planned: false, status: done ? 'done' : 'in_progress' },
+    { id: '01', title: 'Второй', subtitle: '', planned: false, status: done ? 'done' : 'not_started' },
+    { id: '16', title: 'Третий', subtitle: '', planned: false, status: 'not_started' },
+  ]
+  const twoLevels = (level1Done: boolean): Course => ({
+    title: 'Курс',
+    phases: [
+      { id: '1', title: 'Уровень 1', lessons: ['00', '01'], locked: false },
+      { id: '2', title: 'Уровень 2', lessons: ['16'], locked: false },
+    ],
+    lessons: lessonsOf(level1Done),
+  })
+  const lessonLinks = (w: ReturnType<typeof mountView>) => w.findAll('a').map((a) => a.attributes('href'))
+
+  it('folds a level the learner has passed, and shows it as passed', async () => {
+    vi.spyOn(api, 'course').mockResolvedValue(twoLevels(true))
+    const w = mountView()
+    await flushPromises()
+    expect(w.find('[data-test="passed-1"]').exists()).toBe(true)
+    expect(w.get('[data-test="toggle-1"]').attributes('aria-expanded')).toBe('false')
+    expect(lessonLinks(w)).not.toContain('/lesson/00')
+    // the level in progress stays open
+    expect(w.get('[data-test="toggle-2"]').attributes('aria-expanded')).toBe('true')
+    expect(lessonLinks(w)).toContain('/lesson/16')
+  })
+
+  it('leaves a level open until all of it is done, and says how far the learner is when folded', async () => {
+    vi.spyOn(api, 'course').mockResolvedValue(twoLevels(false))
+    const w = mountView()
+    await flushPromises()
+    expect(w.get('[data-test="toggle-1"]').attributes('aria-expanded')).toBe('true')
+    expect(w.find('[data-test="passed-1"]').exists()).toBe(false)
+    await w.get('[data-test="toggle-1"]').trigger('click')
+    expect(lessonLinks(w)).not.toContain('/lesson/00')
+    expect(w.get('[data-test="progress-1"]').text()).toBe('0 из 2')
+  })
+
+  it('folds and unfolds a level by hand', async () => {
+    vi.spyOn(api, 'course').mockResolvedValue(twoLevels(false))
+    const w = mountView()
+    await flushPromises()
+    await w.get('[data-test="toggle-2"]').trigger('click')
+    expect(w.get('[data-test="toggle-2"]').attributes('aria-expanded')).toBe('false')
+    expect(lessonLinks(w)).not.toContain('/lesson/16')
+    await w.get('[data-test="toggle-2"]').trigger('click')
+    expect(lessonLinks(w)).toContain('/lesson/16')
+  })
+
+  it('remembers the choice in localStorage and keeps it on the next visit', async () => {
+    vi.spyOn(api, 'course').mockResolvedValue(twoLevels(false))
+    const first = mountView()
+    await flushPromises()
+    await first.get('[data-test="toggle-2"]').trigger('click')
+    expect(localStorage.getItem('course.collapsed.2')).toBe('1')
+    first.unmount()
+
+    setActivePinia(createPinia())
+    const second = mountView()
+    await flushPromises()
+    expect(second.get('[data-test="toggle-2"]').attributes('aria-expanded')).toBe('false')
+  })
+
+  it('a passed level the learner unfolded stays unfolded', async () => {
+    vi.spyOn(api, 'course').mockResolvedValue(twoLevels(true))
+    const first = mountView()
+    await flushPromises()
+    await first.get('[data-test="toggle-1"]').trigger('click')
+    expect(localStorage.getItem('course.collapsed.1')).toBe('0')
+    first.unmount()
+
+    setActivePinia(createPinia())
+    const second = mountView()
+    await flushPromises()
+    expect(second.get('[data-test="toggle-1"]').attributes('aria-expanded')).toBe('true')
+    expect(lessonLinks(second)).toContain('/lesson/00')
+  })
+
+  it('folds and unfolds the whole course at once', async () => {
+    vi.spyOn(api, 'course').mockResolvedValue(twoLevels(false))
+    const w = mountView()
+    await flushPromises()
+    expect(w.get('[data-test="toggle-all"]').text()).toBe('Свернуть всё')
+    await w.get('[data-test="toggle-all"]').trigger('click')
+    expect(lessonLinks(w).some((h) => h?.startsWith('/lesson/'))).toBe(false)
+    expect(w.get('[data-test="toggle-all"]').text()).toBe('Развернуть всё')
+    expect(localStorage.getItem('course.collapsed.1')).toBe('1')
+    await w.get('[data-test="toggle-all"]').trigger('click')
+    expect(lessonLinks(w)).toContain('/lesson/16')
+  })
+
+  it('keeps the price of a level for sale in view while it is folded', async () => {
+    const w = mountView()
+    await flushPromises()
+    await w.get('[data-test="toggle-2"]').trigger('click')
+    expect(w.get('[data-test="price-2"]').text()).toContain('230')
   })
 })

@@ -26,8 +26,8 @@ func TestSeededTariffs(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	// 299 ₽, 249 ₽ for the first purchase, never expires, 1000 зёрнышек with it.
-	if level.PriceKopecks != 29900 || level.FirstPriceKopecks != 24900 || level.PeriodDays != 0 || !level.Active ||
+	// 299 ₽, 199 ₽ for the first purchase, never expires, 1000 зёрнышек with it.
+	if level.PriceKopecks != 29900 || level.FirstPriceKopecks != 19900 || level.PeriodDays != 0 || !level.Active ||
 		level.BonusCurrency != 1000 {
 		t.Fatalf("level = %+v", level)
 	}

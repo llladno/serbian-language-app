@@ -226,8 +226,8 @@ func TestOrderingALevelAsksTheBankForExactlyThatPayment(t *testing.T) {
 	}
 	req := tb.get("9001").Request
 	num := func(k string) string { return req[k].(json.Number).String() }
-	if num("Amount") != "24900" {
-		t.Errorf("Amount = %s, want 24900 kopecks (first purchase)", num("Amount"))
+	if num("Amount") != "19900" {
+		t.Errorf("Amount = %s, want 19900 kopecks (first purchase)", num("Amount"))
 	}
 	if oid := req["OrderId"].(string); !strings.HasPrefix(oid, fmt.Sprintf("%d-", o.ID)) || len(oid) > 50 {
 		t.Errorf("OrderId = %q, want our order id then a time, within the bank's 50 characters", oid)
@@ -245,7 +245,7 @@ func TestOrderingALevelAsksTheBankForExactlyThatPayment(t *testing.T) {
 	rec := req["Receipt"].(map[string]any)
 	item := rec["Items"].([]any)[0].(map[string]any)
 	if rec["Email"] != tbankEmail || rec["Taxation"] != "usn_income" ||
-		item["Amount"].(json.Number).String() != "24900" || item["Tax"] != "none" {
+		item["Amount"].(json.Number).String() != "19900" || item["Tax"] != "none" {
 		t.Errorf("receipt = %v", rec)
 	}
 
@@ -253,7 +253,7 @@ func TestOrderingALevelAsksTheBankForExactlyThatPayment(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if p.UserID != uid || p.GrantedPhase != "B" || p.AmountKopecks != 24900 || p.Status != "pending" {
+	if p.UserID != uid || p.GrantedPhase != "B" || p.AmountKopecks != 19900 || p.Status != "pending" {
 		t.Errorf("payment row = %+v", p)
 	}
 	if !phaseLocked(t, h, c, "B") {

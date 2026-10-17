@@ -205,10 +205,35 @@ type orderDTO struct {
 	Tariff          string `json:"tariff"`
 	Status          string `json:"status"`
 	ConfirmationURL string `json:"confirmation_url,omitempty"`
+	// Once the order is paid, what it brought: the level it opened (a "level"
+	// order) and the in-app currency credited with it. The thank-you screen
+	// reads these; a year's end date comes from GET /api/me/tariffs.
+	PhaseTitle string `json:"phase_title,omitempty"`
+	Bonus      int64  `json:"bonus,omitempty"`
 }
 
-func orderToDTO(p store.Payment) orderDTO {
-	return orderDTO{ID: p.ID, Tariff: p.TariffCode, Status: p.Status}
+// orderDTO describes one of the buyer's orders. A succeeded one carries what it
+// brought; failing to look that up must not hide the order, so those fields are
+// simply left out.
+func (h handlers) orderDTO(p store.Payment) orderDTO {
+	out := orderDTO{ID: p.ID, Tariff: p.TariffCode, Status: p.Status}
+	if p.Status != store.PaymentSucceeded {
+		return out
+	}
+	if p.TariffCode == store.TariffLevel && p.GrantedPhase != "" {
+		for _, ph := range h.Course().Phases {
+			if ph.ID == p.GrantedPhase {
+				out.PhaseTitle = ph.Title
+				break
+			}
+		}
+	}
+	if bonus, err := h.Store.PaymentBonus(p.ID); err != nil {
+		log.Printf("orders: bonus of %d: %v", p.ID, err)
+	} else {
+		out.Bonus = bonus
+	}
+	return out
 }
 
 // createOrder starts a payment: it records it, asks the account's payment
@@ -338,7 +363,7 @@ func (h handlers) getOrder(w http.ResponseWriter, r *http.Request) {
 	} else {
 		p = settled
 	}
-	writeJSON(w, http.StatusOK, orderToDTO(p))
+	writeJSON(w, http.StatusOK, h.orderDTO(p))
 }
 
 // settlePending settles every unfinished payment of one learner.

@@ -19,8 +19,9 @@ import { isTelegram, initData } from '../telegram'
 import { daysLeft, grouped, longDate, nextLockedLevel, perMonth, rub, shortDate } from '../lib/tariffs'
 import { pluralRu } from '../lib/plural'
 import BotPrefsSection from '../components/BotPrefsSection.vue'
+import PaymentThanksModal from '../components/PaymentThanksModal.vue'
 import SeedIcon from '../components/SeedIcon.vue'
-import type { TariffCode } from '../types'
+import type { Order, TariffCode } from '../types'
 
 const courseStore = useCourseStore()
 const tariffs = useTariffsStore()
@@ -83,6 +84,8 @@ async function pay(tariff: TariffCode) {
 // Coming back from the payment service (?order=ID): ask where the payment
 // stands, say so, and refresh what the payment may have opened.
 const returning = ref(false)
+// A payment that went through is answered with a thank-you modal, not a toast.
+const thanks = ref<Order | null>(null)
 
 async function settleReturn(id: number, attempt = 0) {
   returning.value = true
@@ -90,10 +93,7 @@ async function settleReturn(id: number, attempt = 0) {
     const order = await tariffs.checkOrder(id)
     if (order.status === 'succeeded') {
       await Promise.allSettled([courseStore.load(true), wallet.loadShop(), wallet.refresh()])
-      toasts.push({
-        title: 'Оплата прошла',
-        text: order.tariff === 'year' ? 'Все уровни открыты на год.' : 'Уровень открыт.',
-      })
+      thanks.value = order
     } else if (order.status === 'canceled') {
       toasts.push({ title: 'Оплата не прошла', text: 'Деньги не списались. Можно попробовать ещё раз.' })
     } else if (attempt < 4) {
@@ -317,6 +317,8 @@ onMounted(async () => {
         >как заработать</RouterLink
       >.
     </p>
+
+    <PaymentThanksModal :order="thanks" :year-until="tariffs.yearUntil" @close="thanks = null" />
   </div>
 </template>
 

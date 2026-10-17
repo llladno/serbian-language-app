@@ -54,9 +54,9 @@ stand before this goes to everybody.
   held back. The screens show the date instead of a dead button and offer the year. The
   public offer (п. 2.2) states the 30 days: change both together.
 - **What the screens say (2026-10-16).** First purchase: "Скидка 17% на первую покупку:
-  249 ₽ вместо 299 ₽" (`discountPercent`, from the two prices the server quotes). Year:
+  199 ₽ вместо 299 ₽" (`discountPercent`, from the two prices the server quotes). Year:
   a bar chart against twelve months of levels at the fastest pace the tariff allows, one
-  a month: the learner's own price for the first and 299 ₽ for the other eleven
+  a month: the learner's own price for the first and the regular price for the other eleven
   (3 538 ₽ for a new buyer, 3 588 ₽ after the first purchase), so "Выгода 72%" and the
   rubles saved come from the same prices as the buttons and are never claimed when the
   year would not be cheaper (`monthlyYearCost`, `yearSaving` in `lib/tariffs.ts`). The
@@ -75,11 +75,25 @@ stand before this goes to everybody.
   is more than levels 4 and 5 cost together (605), so one paid level can also open the
   other with зёрнышки, and 15 000 lets a year's learner buy every level for good, which stay
   open after the year ends (offer п. 5.3 already says levels opened for зёрнышки stay open).
+- **Thank-you screen (2026-10-17).** Coming back from the bank with a paid order
+  (`/tariffs?order=ID`) opens `PaymentThanksModal` instead of a toast: "Спасибо, что ты с
+  нами и поддерживаешь проект", what the payment opened (the level's title, or "все
+  уровни до <date>" for the year) and the bonus зёрнышки, and one button, «Перейти к
+  курсу» (`/course`). The paid order carries `phase_title` and `bonus` (`orderDTO`;
+  the bonus is read from the ledger entry keyed `payment:<id>`). A year's end date comes
+  from the tariffs quote. Canceled or still-pending orders keep their toasts.
+- **Folding levels on the course screen (2026-10-17).** A level folds by default once
+  every written lesson in it is done (`levelPassed`), shows "пройден", and folded shows
+  "n из m". Any level can be folded or unfolded by hand, and «Свернуть всё / Развернуть
+  всё» does it for the whole course. The choice is remembered per level in
+  `localStorage` (`course.collapsed.<phaseId>` = `1` folded / `0` unfolded) and beats the
+  default, so a passed level the learner unfolded stays unfolded. A level for sale keeps
+  its price button in view while folded.
 - **What it grants.** `CompletePayment` flips the payment and grants in one
   transaction: a level is a `phase_unlock` entitlement (forever); a year is
   `all_access/year` with `expires_at`, extended from the current end when paid early.
   `phaseAccess` opens every level while a year runs.
-- **Data.** Migration 025: `tariffs` (seeded: level 299/249, year 1000/2000, 365 days),
+- **Data.** Migration 025: `tariffs` (seeded: level 299/249, year 1000/2000, 365 days; the first-purchase price became 199 with migration 027 on 2026-10-17),
   `payments`, `user_entitlements.expires_at`.
 - **Configuration (Dokploy env).** `TARIFFS_EMAILS`; `YOOKASSA_SHOP_ID` and
   `YOOKASSA_SECRET_KEY` (the shop's credentials, test shop first; payments stay
@@ -117,7 +131,7 @@ levels 4 and 5 cost together), which makes "one level" meaningless.
 
 | code | name | price | what the user gets |
 |---|---|---|---|
-| `level` | «Уровень» | **299 ₽**, first purchase **249 ₽** (299 shown struck through) | the next level the user has not opened, **forever** |
+| `level` | «Уровень» | **299 ₽**, first purchase **199 ₽** (299 shown struck through; was 249 for the first purchase until 2026-10-17) | the next level the user has not opened, **forever** |
 | `year` | «Год» | **1000 ₽** (2000 ₽ shown struck through) | every level for 365 days, including levels released during that time |
 
 Decisions behind the table:
@@ -146,7 +160,7 @@ sale (at least one lesson is not `planned`, the same rule as `forSale()` in
 
 ### First-purchase price
 
-249 ₽ applies when the user has no succeeded `level` payment. Everyone else pays
+199 ₽ applies when the user has no succeeded `level` payment. Everyone else pays
 299 ₽. `year` has one price. All three numbers live in the `tariffs` table and are
 editable from the admin, like every other number in the economy.
 
@@ -204,8 +218,8 @@ Where the paths into a payment are, and what each one does:
 
 | Where | What the learner sees | What the button does |
 |---|---|---|
-| Not enough зёрнышки for a level (modal on the course screen) | the shortfall, then a primary button next to «Как заработать» | the next level: «Открыть сразу за 249 ₽» → `/tariffs`. A level that is not the next one: «Все уровни — 1 000 ₽ в год», with the reason (levels open in order) |
-| Quests screen | a banner under the balance: «Не хочется копить? Открой «Уровень 4» сразу», 249 ₽, link to the year | → `/tariffs`. Hidden when no level is left or a year is running |
+| Not enough зёрнышки for a level (modal on the course screen) | the shortfall, then a primary button next to «Как заработать» | the next level: «Открыть сразу за 199 ₽» → `/tariffs`. A level that is not the next one: «Все уровни — 1 000 ₽ в год», with the reason (levels open in order) |
+| Quests screen | a banner under the balance: «Не хочется копить? Открой «Уровень 4» сразу», 199 ₽, link to the year | → `/tariffs`. Hidden when no level is left or a year is running |
 | `/tariffs` | two plans; with a running year, only «Мой тариф» | pay (not wired yet: a toast says so) |
 | «Мой тариф» (a running year) | until when, days left, «Автопродления нет», the reminder switch, «Продлить на год» | extend from the current end date |
 
@@ -268,13 +282,13 @@ Net of ЮKassa (cards 2.8% + 1% receipt) and 6% УСН, assumed: ≈ 902 per 100
 
 | sale | gross | net |
 |---|---|---|
-| `level`, first | 249 | ≈ 225 |
+| `level`, first | 199 | ≈ 180 |
 | `level` | 299 | ≈ 270 |
 | `year` | 1000 | ≈ 902 |
 
 For 100 000 ₽ net a month (ignoring hosting and other costs): ≈ 370 `level` sales a
 month, or ≈ 1 330 `year` sales a year. Until levels 6+ exist, one user brings at most
-249 + 299 = 548 ₽ through `level` (two paid levels), while `year` brings 1000 ₽ for the
+199 + 299 = 498 ₽ through `level` (two paid levels), while `year` brings 1000 ₽ for the
 same content. That is deliberate: the year is priced on the promise of new levels, so
 it needs levels to keep shipping (`ROADMAP_LEVELS_6_20.md` is a hypothesis, not a plan).
 
