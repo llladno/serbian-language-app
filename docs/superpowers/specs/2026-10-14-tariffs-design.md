@@ -92,9 +92,14 @@ stand before this goes to everybody.
 - **Open to everyone (2026-10-17).** `TARIFFS_FOR_ALL=1` turns the gate into "every
   account with a verified email": they pay through Т-Касса, while an address in
   `TARIFFS_EMAILS` / `TBANK_EMAILS` keeps the service it is listed for (so the ЮKassa test
-  shop stays on one account). An account with no email (Telegram only) still sees nothing,
-  because the receipt has to go to an address. Unset or anything but 1/true/yes closes it
-  again to the two lists. `config.PaymentProviderFor` is the one place that decides.
+  shop stays on one account). An account with no email (Telegram only, which is nearly every
+  Mini App visitor) sees them too: it has nothing to verify, so the tariffs screen asks it
+  for the receipt address once (`POST /api/me/orders {tariff, email}`, 400
+  `receipt_email_invalid` for anything that is not a bare address; the address is kept
+  lower-cased in `payments.receipt_contact` and on the device in localStorage). An account
+  that typed an email at sign-up and never verified it still sees nothing. Unset or
+  anything but 1/true/yes closes it again to the two lists, Telegram-only accounts
+  included. `config.PaymentProviderFor` and `tariffsEnabled` decide.
 - **What it grants.** `CompletePayment` flips the payment and grants in one
   transaction: a level is a `phase_unlock` entitlement (forever); a year is
   `all_access/year` with `expires_at`, extended from the current end when paid early.

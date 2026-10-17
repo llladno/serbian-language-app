@@ -9,7 +9,7 @@ import { computed, ref } from 'vue'
 import { api, ApiError } from '../api'
 import { initData, isTelegram, openExternalLink } from '../telegram'
 import { useSessionStore } from './session'
-import { discountPercent, monthlyYearCost, yearSaving } from '../lib/tariffs'
+import { discountPercent, looksLikeEmail, monthlyYearCost, yearSaving } from '../lib/tariffs'
 import type { Order, TariffCode, TariffsInfo } from '../types'
 
 export const useTariffsStore = defineStore('tariffs', () => {
@@ -20,6 +20,21 @@ export const useTariffsStore = defineStore('tariffs', () => {
 
   const enabled = computed(() => session.user?.features?.tariffs === true)
   const ready = computed(() => enabled.value && info.value !== null)
+
+  // An account that came in through Telegram has no email, so the receipt needs
+  // an address typed in. It is kept on the device so the next purchase is one tap.
+  const RECEIPT_KEY = 'tariffs.receiptEmail'
+  const needsReceiptEmail = computed(() => enabled.value && !session.user?.email)
+  const receiptEmail = ref(readSaved(RECEIPT_KEY))
+  const receiptEmailValid = computed(() => !needsReceiptEmail.value || looksLikeEmail(receiptEmail.value))
+  function setReceiptEmail(value: string) {
+    receiptEmail.value = value
+    try {
+      localStorage.setItem(RECEIPT_KEY, value.trim())
+    } catch {
+      // private mode or blocked storage: the field simply starts empty next time
+    }
+  }
 
   // The first level at the first-purchase price, the rest at the regular one; the server decides which.
   const levelNow = computed(() => info.value?.level.price ?? 0)
@@ -70,7 +85,9 @@ export const useTariffsStore = defineStore('tariffs', () => {
     if (paying.value) return
     paying.value = tariff
     try {
-      const order = await api.createOrder(tariff)
+      const order = needsReceiptEmail.value
+        ? await api.createOrder(tariff, receiptEmail.value.trim())
+        : await api.createOrder(tariff)
       if (!order.confirmation_url) throw new Error('no confirmation url')
       if (isTelegram() && initData()) {
         openExternalLink(order.confirmation_url)
@@ -92,16 +109,25 @@ export const useTariffsStore = defineStore('tariffs', () => {
   }
 
   return {
-    info, loading, paying, enabled, ready, levelNow, levelRegular, yearPrice, yearOld,
+    info, loading, paying, enabled, ready, needsReceiptEmail, receiptEmail, receiptEmailValid, setReceiptEmail, levelNow, levelRegular, yearPrice, yearOld,
     levelDiscount, levelFrom, monthlyCost, yearSaves, levelBonus, yearBonus, yearBonusExtra, hasPaidLevel, yearUntil, yearActive, paymentsReady, load, pay, checkOrder,
   }
 })
+
+function readSaved(key: string): string {
+  try {
+    return localStorage.getItem(key) ?? ''
+  } catch {
+    return ''
+  }
+}
 
 export function payErrorMessage(e: unknown): string {
   if (e instanceof ApiError) {
     if (e.message === 'payments_unavailable') return 'Оплата ещё не подключена'
     if (e.message === 'nothing_to_buy') return 'Все платные уровни уже открыты'
     if (e.message === 'level_cooldown') return 'Уровень за рубли можно открывать раз в месяц. Дата — на странице тарифов'
+    if (e.message === 'receipt_email_invalid') return 'Проверь почту для чека: в ней, похоже, опечатка'
     if (e.message === 'payment_failed') return 'Платёжная система не ответила. Попробуй ещё раз'
   }
   return 'Не получилось начать оплату. Попробуй ещё раз'

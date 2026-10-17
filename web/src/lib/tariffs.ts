@@ -106,3 +106,9 @@ export function shortDate(iso: string): string {
 export function longDate(iso: string): string {
   return new Date(iso).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' })
 }
+
+// Whether what was typed can be an address a receipt goes to: the server has the
+// last word, this only keeps an obvious slip from costing a round trip.
+export function looksLikeEmail(raw: string): boolean {
+  return /^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/.test(raw.trim())
+}

@@ -214,15 +214,24 @@ func TestTariffsForAllOpensThemThroughTBankAndKeepsTheListedOverrides(t *testing
 		"SOMEONE@Example.com": ProviderTBank,
 		"greg@example.com":    ProviderYooKassa, // a listed address keeps its service
 		"man@example.com":     ProviderTBank,
-		"":                    "", // no email, no receipt, no payment
-		"   ":                 "",
+		"":                    ProviderTBank, // no email (Telegram only): pays through Т-Касса, naming a receipt address then
+		"   ":                 ProviderTBank,
 	} {
 		if got := c.PaymentProviderFor(email); got != want {
 			t.Errorf("PaymentProviderFor(%q) = %q, want %q", email, got, want)
 		}
 	}
-	if !c.TariffsAllowed("someone@example.com") || c.TariffsAllowed("") {
+	if !c.TariffsAllowed("someone@example.com") || !c.TariffsAllowed("") {
 		t.Error("TariffsAllowed does not follow the provider")
+	}
+}
+
+func TestAnAccountWithoutAnEmailGetsNothingWhileTheTariffsAreClosed(t *testing.T) {
+	clearEnv(t)
+	t.Setenv("TARIFFS_EMAILS", "greg@example.com")
+	c := Load()
+	if got := c.PaymentProviderFor(""); got != "" || c.TariffsAllowed("") {
+		t.Errorf("PaymentProviderFor(\"\") = %q with the tariffs closed, want none", got)
 	}
 }
 

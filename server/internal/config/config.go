@@ -230,12 +230,17 @@ const (
 // pays through: ProviderTBank for an address in TBANK_EMAILS, ProviderYooKassa
 // for one in TARIFFS_EMAILS, ProviderTBank for everyone else when the tariffs
 // are open to all (TARIFFS_FOR_ALL), and "" otherwise (those accounts see no
-// payments at all). An account with no email gets "" either way.
-// The caller must already have established that the email is verified: an
-// address someone merely typed at registration proves nothing.
+// payments at all). An account with no email (Telegram only) has no list entry
+// to match, so it pays through Т-Касса when the tariffs are open to all and sees
+// nothing otherwise; the address for its receipt is asked for when it pays.
+// For an account that has an email the caller must already have established that
+// it is verified: an address someone merely typed at registration proves nothing.
 func (c Config) PaymentProviderFor(email string) string {
 	email = strings.ToLower(strings.TrimSpace(email))
 	if email == "" {
+		if c.TariffsForAll {
+			return ProviderTBank
+		}
 		return ""
 	}
 	for _, e := range c.TBankEmails {

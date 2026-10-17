@@ -7,7 +7,9 @@ import (
 	"io"
 	"log"
 	"net/http"
+	netmail "net/mail"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/grisha/serbian-app/server/internal/config"
@@ -27,9 +29,29 @@ const pendingWindow = 48 * time.Hour
 
 // tariffsEnabled reports whether this account may use the tariffs: its email
 // must be on the list AND verified, so that typing someone else's address into
-// the sign-up form unlocks nothing.
+// the sign-up form unlocks nothing. An account with no email at all (Telegram
+// only) has nothing to verify: it gets the tariffs when they are open to all
+// and names the address for its receipt when it pays (createOrder).
 func (h handlers) tariffsEnabled(s userSummary) bool {
+	if s.Email == "" {
+		return h.Config.PaymentProviderFor("") != ""
+	}
 	return s.EmailVerified && h.Config.TariffsAllowed(s.Email)
+}
+
+// receiptEmail is the address the receipt for this order goes to: the account's
+// own verified one, or, for an account that has none, the one the buyer typed.
+// ok is false when that is not an address a receipt can go to.
+func receiptEmail(s userSummary, typed string) (email string, ok bool) {
+	if s.Email != "" {
+		return s.Email, true
+	}
+	typed = strings.TrimSpace(typed)
+	addr, err := netmail.ParseAddress(typed)
+	if err != nil || addr.Address != typed || len(typed) > 254 || !strings.Contains(typed[strings.LastIndex(typed, "@"):], ".") {
+		return "", false
+	}
+	return strings.ToLower(typed), true
 }
 
 func (h handlers) requireTariffs(next http.HandlerFunc) http.HandlerFunc {
@@ -248,6 +270,9 @@ func (h handlers) createOrder(w http.ResponseWriter, r *http.Request) {
 	}
 	var req struct {
 		Tariff string `json:"tariff"`
+		// Email is the address for the receipt, asked of an account that has no
+		// email of its own; an account that has one is never sent anywhere else.
+		Email string `json:"email"`
 	}
 	if err := decode(r, &req); err != nil {
 		fail(w, http.StatusBadRequest, "bad request body")
@@ -305,11 +330,16 @@ func (h handlers) createOrder(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// The receipt is mailed to the account's own address; the tariffs are only
-	// open to accounts that have a verified one.
+	// The receipt is mailed to the account's own verified address, or to the one a
+	// Telegram-only buyer typed in.
+	receipt, ok := receiptEmail(ac.Summary, req.Email)
+	if !ok {
+		fail(w, http.StatusBadRequest, "receipt_email_invalid")
+		return
+	}
 	pid, err := h.Store.CreatePayment(store.Payment{
 		UserID: ac.UserID, TariffCode: tariff.Code, GrantedPhase: phase, AmountKopecks: amount,
-		Provider: prov.Name(), ReceiptContact: ac.Summary.Email,
+		Provider: prov.Name(), ReceiptContact: receipt,
 	}, h.Now())
 	if err != nil {
 		log.Printf("orders: create: %v", err)
@@ -320,7 +350,7 @@ func (h handlers) createOrder(w http.ResponseWriter, r *http.Request) {
 		OrderID:       pid,
 		AmountKopecks: amount,
 		Description:   description,
-		Email:         ac.Summary.Email,
+		Email:         receipt,
 		Tariff:        tariff.Code,
 		ReturnURL:     h.Config.AppBaseURL + "/tariffs?order=" + strconv.FormatInt(pid, 10),
 		NotifyURL:     h.Config.AppBaseURL + "/api/" + prov.Name() + "/webhook",

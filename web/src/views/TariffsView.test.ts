@@ -8,7 +8,7 @@ import { useWalletStore } from '../stores/wallet'
 import { useToasts } from '../lib/toasts'
 import { isTelegram, initData, openExternalLink } from '../telegram'
 import { enableTariffs, tariffsInfo } from '../test/tariffsFixture'
-import type { Course, TariffsInfo } from '../types'
+import type { Course, SessionUser, TariffsInfo } from '../types'
 
 vi.mock('vue-router', () => ({
   RouterLink: { props: ['to'], template: '<a :href="to"><slot /></a>' },
@@ -33,12 +33,12 @@ function course(locked: { '4': boolean; '5': boolean } = { '4': true, '5': true 
 
 // What the learner sees once the prices have loaded. `search` is the address
 // bar's query, for the visit back from ЮKassa.
-async function mountView(over: Partial<TariffsInfo> = {}, c: Course = course(), search = '') {
+async function mountView(over: Partial<TariffsInfo> = {}, c: Course = course(), search = '', user: Partial<SessionUser> = {}) {
   const info = tariffsInfo(over)
   vi.spyOn(api, 'tariffs').mockResolvedValue(info)
   setActivePinia(createPinia())
   useCourseStore().course = c
-  enableTariffs(over)
+  enableTariffs(over, user)
   Object.defineProperty(window, 'location', {
     configurable: true,
     value: { href: 'http://localhost/tariffs' + search, assign },
@@ -320,6 +320,53 @@ describe('TariffsView: paying', () => {
     expect(useToasts().items.value.map((t) => t.title)).toEqual(['Оплата не началась'])
     expect(useToasts().items.value[0].text).toContain('Платёжная система не ответила')
     expect(assign).not.toHaveBeenCalled()
+  })
+})
+
+// An account that came in through Telegram has no email: the receipt needs one.
+describe('TariffsView: paying without an account email', () => {
+  const tgOnly = { email: '', email_verified: false }
+
+  beforeEach(() => localStorage.clear())
+
+  it('asks for the receipt address, and an account with an email is not asked', async () => {
+    expect((await mountView({}, course(), '', tgOnly)).find('[data-test="receipt-email"]').exists()).toBe(true)
+    expect((await mountView()).find('[data-test="receipt-email"]').exists()).toBe(false)
+  })
+
+  it('sends nothing, and says why, until the address looks like one', async () => {
+    const create = vi.spyOn(api, 'createOrder')
+    const w = await mountView({}, course(), '', tgOnly)
+    await w.get('[data-test="buy-year"]').trigger('click')
+    await w.get('[data-test="receipt-email-input"]').setValue('not an email')
+    await w.get('[data-test="buy-level"]').trigger('click')
+    await flushPromises()
+    expect(create).not.toHaveBeenCalled()
+    expect(useToasts().items.value.map((t) => t.title)).toEqual(['Нужна почта для чека', 'Нужна почта для чека'])
+  })
+
+  it('orders with the typed address, and keeps it for next time', async () => {
+    const create = vi.spyOn(api, 'createOrder').mockResolvedValue({
+      id: 11, tariff: 'year', status: 'pending', confirmation_url: 'https://pay.test/tb/11',
+    })
+    const w = await mountView({}, course(), '', tgOnly)
+    await w.get('[data-test="receipt-email-input"]').setValue('  buyer@example.com ')
+    await w.get('[data-test="buy-year"]').trigger('click')
+    await flushPromises()
+    expect(create).toHaveBeenCalledWith('year', 'buyer@example.com')
+    expect(localStorage.getItem('tariffs.receiptEmail')).toBe('buyer@example.com')
+    // a fresh visit starts with it filled in
+    const again = await mountView({}, course(), '', tgOnly)
+    expect((again.get('[data-test="receipt-email-input"]').element as HTMLInputElement).value).toBe('buyer@example.com')
+  })
+
+  it('tells the buyer when the bank service turned the address down', async () => {
+    vi.spyOn(api, 'createOrder').mockRejectedValue(new ApiError(400, 'receipt_email_invalid'))
+    const w = await mountView({}, course(), '', tgOnly)
+    await w.get('[data-test="receipt-email-input"]').setValue('buyer@example.com')
+    await w.get('[data-test="buy-level"]').trigger('click')
+    await flushPromises()
+    expect(useToasts().items.value[0].text).toContain('почт')
   })
 })
 
