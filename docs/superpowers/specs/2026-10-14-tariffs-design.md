@@ -89,6 +89,12 @@ stand before this goes to everybody.
   `localStorage` (`course.collapsed.<phaseId>` = `1` folded / `0` unfolded) and beats the
   default, so a passed level the learner unfolded stays unfolded. A level for sale keeps
   its price button in view while folded.
+- **Open to everyone (2026-10-17).** `TARIFFS_FOR_ALL=1` turns the gate into "every
+  account with a verified email": they pay through Т-Касса, while an address in
+  `TARIFFS_EMAILS` / `TBANK_EMAILS` keeps the service it is listed for (so the ЮKassa test
+  shop stays on one account). An account with no email (Telegram only) still sees nothing,
+  because the receipt has to go to an address. Unset or anything but 1/true/yes closes it
+  again to the two lists. `config.PaymentProviderFor` is the one place that decides.
 - **What it grants.** `CompletePayment` flips the payment and grants in one
   transaction: a level is a `phase_unlock` entitlement (forever); a year is
   `all_access/year` with `expires_at`, extended from the current end when paid early.

@@ -202,3 +202,43 @@ func TestLevelCooldownDefaultsToAMonthAndZeroTurnsItOff(t *testing.T) {
 		}
 	}
 }
+
+func TestTariffsForAllOpensThemThroughTBankAndKeepsTheListedOverrides(t *testing.T) {
+	clearEnv(t)
+	t.Setenv("TARIFFS_EMAILS", "greg@example.com")
+	t.Setenv("TBANK_EMAILS", "man@example.com")
+	t.Setenv("TARIFFS_FOR_ALL", "1")
+	c := Load()
+	for email, want := range map[string]string{
+		"someone@example.com": ProviderTBank, // everyone else pays through Т-Касса
+		"SOMEONE@Example.com": ProviderTBank,
+		"greg@example.com":    ProviderYooKassa, // a listed address keeps its service
+		"man@example.com":     ProviderTBank,
+		"":                    "", // no email, no receipt, no payment
+		"   ":                 "",
+	} {
+		if got := c.PaymentProviderFor(email); got != want {
+			t.Errorf("PaymentProviderFor(%q) = %q, want %q", email, got, want)
+		}
+	}
+	if !c.TariffsAllowed("someone@example.com") || c.TariffsAllowed("") {
+		t.Error("TariffsAllowed does not follow the provider")
+	}
+}
+
+func TestTariffsStayClosedUnlessTheSwitchIsOn(t *testing.T) {
+	clearEnv(t)
+	for raw, want := range map[string]bool{
+		"": false, "0": false, "no": false, "off": false, "maybe": false,
+		"1": true, "true": true, " TRUE ": true, "Yes": true,
+	} {
+		t.Setenv("TARIFFS_FOR_ALL", raw)
+		if got := Load().TariffsForAll; got != want {
+			t.Errorf("TARIFFS_FOR_ALL=%q -> %t, want %t", raw, got, want)
+		}
+	}
+	t.Setenv("TARIFFS_FOR_ALL", "")
+	if Load().TariffsAllowed("someone@example.com") {
+		t.Error("an unlisted address is allowed with the switch off")
+	}
+}

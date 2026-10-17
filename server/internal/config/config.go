@@ -82,6 +82,12 @@ type Config struct {
 	// (Т-Банк) instead. An address in both lists pays through Т-Касса. From
 	// TBANK_EMAILS.
 	TBankEmails []string
+	// TariffsForAll opens the tariffs to every account with a verified email
+	// address: each pays through Т-Касса, except the addresses listed above, which
+	// keep the service they are listed for. An account with no email (Telegram
+	// only) still sees nothing: the receipt has to go somewhere. From
+	// TARIFFS_FOR_ALL (1, true or yes).
+	TariffsForAll bool
 	// YooKassaShopID and YooKassaSecretKey are the credentials of the ЮKassa shop
 	// that takes the payments: the test shop's while testing, the real one's at
 	// launch. Both empty means payments are not connected and orders are refused.
@@ -140,6 +146,7 @@ func Load() Config {
 		TributeAPIKey:         os.Getenv("TRIBUTE_API_KEY"),
 		TariffsEmails:         parseEmailList(os.Getenv("TARIFFS_EMAILS")),
 		TBankEmails:           parseEmailList(os.Getenv("TBANK_EMAILS")),
+		TariffsForAll:         parseFlag(os.Getenv("TARIFFS_FOR_ALL")),
 		YooKassaShopID:        strings.TrimSpace(os.Getenv("YOOKASSA_SHOP_ID")),
 		YooKassaSecretKey:     strings.TrimSpace(os.Getenv("YOOKASSA_SECRET_KEY")),
 		YooKassaTaxSystem:     parseSmallInt(os.Getenv("YOOKASSA_TAX_SYSTEM")),
@@ -161,6 +168,16 @@ func daysOr(raw string, def int) int {
 		return def
 	}
 	return n
+}
+
+// parseFlag reads an on/off setting: 1, true or yes (any case) is on, anything
+// else, including empty, is off.
+func parseFlag(raw string) bool {
+	switch strings.ToLower(strings.TrimSpace(raw)) {
+	case "1", "true", "yes":
+		return true
+	}
+	return false
 }
 
 // taxationOr reads a receipt tax system, falling back to def for anything the
@@ -211,7 +228,9 @@ const (
 
 // PaymentProviderFor says which payment service the account with this email
 // pays through: ProviderTBank for an address in TBANK_EMAILS, ProviderYooKassa
-// for one in TARIFFS_EMAILS, "" for everyone else (who see no payments at all).
+// for one in TARIFFS_EMAILS, ProviderTBank for everyone else when the tariffs
+// are open to all (TARIFFS_FOR_ALL), and "" otherwise (those accounts see no
+// payments at all). An account with no email gets "" either way.
 // The caller must already have established that the email is verified: an
 // address someone merely typed at registration proves nothing.
 func (c Config) PaymentProviderFor(email string) string {
@@ -228,6 +247,9 @@ func (c Config) PaymentProviderFor(email string) string {
 		if e == email {
 			return ProviderYooKassa
 		}
+	}
+	if c.TariffsForAll {
+		return ProviderTBank
 	}
 	return ""
 }
