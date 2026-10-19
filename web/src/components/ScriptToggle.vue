@@ -1,8 +1,13 @@
 <script setup lang="ts">
 // Latin / Cyrillic, one control for the whole app. The choice is an account
 // setting (stores/session.setScript), so it is the same in the browser and in the
-// Telegram Mini App. `compact` is the short «Лат | Ћир» pill for screen headers;
+// Telegram Mini App. `compact` is the short «Лат | Кир» pill for screen headers;
 // the full-word form is for the settings.
+//
+// Two equal halves; one highlight (the thumb) slides between them and the buttons only
+// carry the labels, so switching script moves the highlight instead of re-colouring.
+// No comment above the root element in the template: it would make the component
+// render two roots, and the classes a parent passes (ml-auto ...) would be dropped.
 import { computed } from 'vue'
 import { useSessionStore } from '../stores/session'
 
@@ -14,7 +19,7 @@ const chosen = computed(() => session.user?.script ?? 'latin')
 
 const OPTIONS = [
   { value: 'latin' as const, short: 'Лат', full: 'Латиница' },
-  { value: 'cyrillic' as const, short: 'Ћир', full: 'Кириллица' },
+  { value: 'cyrillic' as const, short: 'Кир', full: 'Кириллица' },
 ]
 
 async function pick(value: 'latin' | 'cyrillic') {
@@ -29,18 +34,25 @@ async function pick(value: 'latin' | 'cyrillic') {
 
 <template>
   <div
-    class="inline-flex shrink-0 gap-0.5 rounded-full bg-[var(--bg-soft)] p-0.5"
+    class="relative shrink-0 grid-cols-2 rounded-full bg-[var(--bg-soft)] p-0.5"
+    :class="compact ? 'inline-grid' : 'grid'"
     role="group"
     aria-label="Письмо: латиница или кириллица"
   >
+    <span
+      class="pointer-events-none absolute inset-y-0.5 left-0.5 w-[calc(50%-0.125rem)] rounded-full bg-[var(--accent)] transition-transform duration-200 ease-out motion-reduce:transition-none"
+      :class="{ 'translate-x-full': chosen === 'cyrillic' }"
+      data-test="script-thumb"
+      aria-hidden="true"
+    />
     <button
       v-for="o in OPTIONS"
       :key="o.value"
       type="button"
-      class="rounded-full font-semibold transition"
+      class="relative rounded-full text-center font-semibold transition-colors duration-200"
       :class="[
-        compact ? 'px-2.5 py-1 text-xs' : 'flex-1 px-4 py-2 text-sm',
-        chosen === o.value ? 'bg-[var(--accent)] text-white' : 'text-[var(--muted)] hover:text-[var(--fg)]',
+        compact ? 'px-2.5 py-1 text-xs' : 'px-4 py-2 text-sm',
+        chosen === o.value ? 'text-white' : 'text-[var(--muted)] hover:text-[var(--fg)]',
       ]"
       :aria-pressed="chosen === o.value"
       :data-test="'script-' + o.value"

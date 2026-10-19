@@ -625,4 +625,37 @@ describe('LessonView and the learner’s script', () => {
     expect(w.text()).toContain('Привет (Zdravo)')
     expect(w.text()).toContain('čokolada')
   })
+
+  describe('when the learner switches script inside the lesson', () => {
+    let animate: ReturnType<typeof vi.fn>
+    beforeEach(() => {
+      animate = vi.fn()
+      Element.prototype.animate = animate as never
+    })
+    afterEach(() => {
+      delete (Element.prototype as { animate?: unknown }).animate
+    })
+
+    it('fades the lesson text in, once per switch and not on arrival', async () => {
+      readIn('latin')
+      const w = await open({})
+      expect(animate).not.toHaveBeenCalled()
+
+      readIn('cyrillic')
+      await flushPromises()
+      expect(animate).toHaveBeenCalled()
+      const times = animate.mock.calls.length
+
+      await w.vm.$nextTick()
+      expect(animate.mock.calls.length).toBe(times) // nothing more until the next switch
+    })
+
+    it('does not animate a lesson about the letters, whose text does not change', async () => {
+      readIn('latin')
+      await open({ keep_latin: true })
+      readIn('cyrillic')
+      await flushPromises()
+      expect(animate).not.toHaveBeenCalled()
+    })
+  })
 })

@@ -110,7 +110,7 @@ describe('ReviewView script pill', () => {
   it('is in the header, whatever card is on screen', async () => {
     readIn('latin')
     const w = await open(known)
-    expect(w.find('[data-test="script-cyrillic"]').text()).toBe('Ћир')
+    expect(w.find('[data-test="script-cyrillic"]').text()).toBe('Кир')
   })
 })
 

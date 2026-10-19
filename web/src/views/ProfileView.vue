@@ -290,7 +290,7 @@ async function logout() {
 
       <div class="border-t border-[var(--border)] pt-3">
         <p class="mb-2 text-sm text-[var(--muted)]">Письмо</p>
-        <ScriptToggle class="flex w-full" />
+        <ScriptToggle />
       </div>
 
       <div class="border-t border-[var(--border)] pt-3">

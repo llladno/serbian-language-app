@@ -68,7 +68,7 @@ describe('VocabView follows the learner’s script', () => {
   it('has the script pill in its header instead', async () => {
     readIn('latin')
     const w = await open()
-    expect(w.find('[data-test="script-cyrillic"]').text()).toBe('Ћир')
+    expect(w.find('[data-test="script-cyrillic"]').text()).toBe('Кир')
   })
 
   it('drills a word in the learner’s script', async () => {

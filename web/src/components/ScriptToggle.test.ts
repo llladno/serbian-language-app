@@ -63,9 +63,44 @@ describe('ScriptToggle', () => {
     readIn('latin')
     const compact = mount(ScriptToggle, { props: { compact: true } })
     expect(compact.find('[data-test="script-latin"]').text()).toBe('Лат')
-    expect(compact.find('[data-test="script-cyrillic"]').text()).toBe('Ћир')
+    expect(compact.find('[data-test="script-cyrillic"]').text()).toBe('Кир')
     const full = mount(ScriptToggle)
     expect(full.find('[data-test="script-latin"]').text()).toBe('Латиница')
     expect(full.find('[data-test="script-cyrillic"]').text()).toBe('Кириллица')
+  })
+
+  it('slides one highlight between the two scripts instead of re-colouring them', async () => {
+    readIn('latin')
+    const w = mount(ScriptToggle)
+    const thumb = w.find('[data-test="script-thumb"]')
+    expect(thumb.exists()).toBe(true)
+    expect(thumb.classes()).not.toContain('translate-x-full')
+    readIn('cyrillic')
+    await w.vm.$nextTick()
+    expect(thumb.classes()).toContain('translate-x-full')
+    readIn('latin')
+    await w.vm.$nextTick()
+    expect(thumb.classes()).not.toContain('translate-x-full')
+  })
+
+  it('animates the slide, and not for someone who asked for less motion', () => {
+    readIn('latin')
+    const thumb = mount(ScriptToggle).find('[data-test="script-thumb"]')
+    expect(thumb.classes()).toContain('transition-transform')
+    expect(thumb.classes()).toContain('motion-reduce:transition-none')
+  })
+
+  it('leaves the highlight to the thumb: the buttons have no background of their own', () => {
+    readIn('cyrillic')
+    const w = mount(ScriptToggle)
+    for (const b of w.findAll('button')) expect(b.classes().join(' ')).not.toContain('bg-[var(--accent)]')
+  })
+
+  it('does not slide the highlight out of the control in either form', () => {
+    readIn('cyrillic')
+    for (const compact of [true, false]) {
+      const w = mount(ScriptToggle, { props: { compact } })
+      expect(w.find('[data-test="script-thumb"]').element.parentElement).toBe(w.element)
+    }
   })
 })

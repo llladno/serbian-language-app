@@ -8,6 +8,7 @@ import { useRewardModal } from '../lib/rewardModal'
 import { useSurveyModal } from '../lib/surveyModal'
 import { provideWrongGoesToEnd } from '../lib/lessonRules'
 import { nextLesson } from '../lib/nextLesson'
+import { flipText } from '../lib/flipText'
 import { provideKeepLatin, useScript } from '../lib/useScript'
 import type { Lesson, ExerciseBlock, LessonAttempts, LessonStats, Step } from '../types'
 import MarkdownView from '../components/MarkdownView.vue'
@@ -34,6 +35,18 @@ const lesson = ref<Lesson | null>(null)
 const { script, show } = useScript()
 const keepLatin = computed(() => !!lesson.value?.keep_latin)
 provideKeepLatin(keepLatin)
+// Switching script inside a lesson: the text changes at once, and fades in. A lesson
+// about the letters does not change at all, so it does not fade either.
+const titleEl = ref<HTMLElement | null>(null)
+const stepTitleEl = ref<HTMLElement | null>(null)
+const contentEl = ref<HTMLElement | null>(null)
+watch(
+  script,
+  () => {
+    if (!keepLatin.value) flipText([titleEl.value, stepTitleEl.value, contentEl.value])
+  },
+  { flush: 'post' },
+)
 const lessonShow = (text: string | null | undefined) => (keepLatin.value ? (text ?? '') : show(text))
 const blocks = ref<ExerciseBlock[]>([])
 const priors = ref<LessonAttempts>({})
@@ -478,7 +491,7 @@ function closeLesson() {
           <button class="icon-btn shrink-0" title="Назад" aria-label="Назад" @click="goBack">
             <ArrowLeft :size="20" :stroke-width="2.5" />
           </button>
-          <div class="min-w-0 flex-1">
+          <div ref="titleEl" class="min-w-0 flex-1">
             <p class="truncate text-[12px] sm:text-[14px]">
               {{ lessonShow(lesson.title) }}
             </p>
@@ -502,13 +515,13 @@ function closeLesson() {
 
           <StepProgress class="flex-1" :steps="steps" :current="idx" :current-fraction="currentFraction" />
         </div>
-        <p class="mt-2 truncate pl-1 text-sm font-semibold text-[var(--muted)]">{{ lessonShow(cur.title) }}</p>
+        <p ref="stepTitleEl" class="mt-2 truncate pl-1 text-sm font-semibold text-[var(--muted)]">{{ lessonShow(cur.title) }}</p>
         <p v-if="keepLatin && script === 'cyrillic'" class="mt-1 pl-1 text-xs text-[var(--muted)]">
           Урок про буквы — он остаётся на латинице
         </p>
       </header>
 
-      <div class="flex flex-1 flex-col justify-center">
+      <div ref="contentEl" class="flex flex-1 flex-col justify-center">
         <Transition name="step" mode="out-in">
           <div :key="cur.id" class="space-y-6">
             <article v-if="cur.kind === 'teach'" class="card p-5 sm:p-6">

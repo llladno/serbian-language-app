@@ -125,7 +125,7 @@ The typed answer stays what the learner typed. `SerbianKeys` swaps its row to
   DTO gains a `script` field; `PATCH /api/me {script}` sets it, validated to the two
   values and independent of the `name` and `timezone` fields it already takes.
 - The session store caches it in `localStorage` for first paint, then trusts the server.
-- Controls: Profile → Settings ("Письмо: латиница / кириллица") and a small «Лат | Ћир»
+- Controls: Profile → Settings ("Письмо: латиница / кириллица") and a small «Лат | Кир»
   pill in the header of the lesson, the review, the vocabulary and the mistakes screens.
 
 ## Verification
