@@ -20,6 +20,7 @@ import {
 } from '../lib/mistakesQueue'
 import ExerciseItem from '../components/exercises/ExerciseItem.vue'
 import BottomBar from '../components/BottomBar.vue'
+import ScriptToggle from '../components/ScriptToggle.vue'
 
 const router = useRouter()
 // As in a lesson: after a mistake the way forward is the bottom button (the
@@ -123,7 +124,8 @@ const close = () => router.push('/profile')
           <p class="truncate text-[14px] font-semibold">Работа над ошибками</p>
           <p class="truncate text-[11px] text-[var(--muted)]">те же упражнения, без возврата в уроки</p>
         </div>
-        <button class="icon-btn ml-auto shrink-0" title="Закрыть" aria-label="Закрыть" @click="close">
+        <ScriptToggle compact class="ml-auto mr-1.5" />
+        <button class="icon-btn shrink-0" title="Закрыть" aria-label="Закрыть" @click="close">
           <X :size="20" :stroke-width="2.25" />
         </button>
       </div>

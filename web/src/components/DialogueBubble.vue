@@ -6,6 +6,9 @@ import { computed, ref } from 'vue'
 import { Languages } from 'lucide-vue-next'
 import GlossedText from './GlossedText.vue'
 import SpeakButton from './SpeakButton.vue'
+import { useScript } from '../lib/useScript'
+
+const { show } = useScript()
 
 const props = defineProps<{
   who: 'npc' | 'me'
@@ -57,9 +60,9 @@ const translated = computed(() => props.showTranslation || open.value || !!props
       <p v-if="translated && ru" class="mt-1.5 text-sm text-[var(--muted)]">{{ ru }}</p>
 
       <p v-if="wrong && given" class="mt-2 text-sm text-[var(--muted)]" data-test="given">
-        Твой ответ: <span class="serbian text-[var(--fg)]">«{{ given }}»</span>
+        Твой ответ: <span class="serbian text-[var(--fg)]">«{{ show(given) }}»</span>
       </p>
-      <p v-if="wrong && note" class="mt-1 text-sm text-[var(--muted)]">{{ note }}</p>
+      <p v-if="wrong && note" class="mt-1 text-sm text-[var(--muted)]">{{ show(note) }}</p>
     </div>
   </div>
 </template>

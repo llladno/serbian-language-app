@@ -3,6 +3,7 @@ import { computed, ref } from 'vue'
 import { RefreshCw } from 'lucide-vue-next'
 import { api } from '../../api'
 import { useWrongGoesToEnd } from '../../lib/lessonRules'
+import { useScript } from '../../lib/useScript'
 import type { CheckResult, LessonAttempt } from '../../types'
 import BottomBar from '../BottomBar.vue'
 import HintButton from '../HintButton.vue'
@@ -18,6 +19,8 @@ const props = defineProps<{
   prior?: LessonAttempt
 }>()
 const emit = defineEmits<{ graded: [ok: boolean]; ungraded: [] }>()
+// Display only: the sentence sent to the server stays the Latin original.
+const { show } = useScript()
 
 // chips carry a stable index so duplicates ("se", "se") stay distinct
 const chips = ref(
@@ -80,16 +83,16 @@ function retry() {
     </button>
 
     <p class="mb-5 flex flex-wrap items-center justify-center gap-1.5 whitespace-pre-wrap px-8 text-xl font-medium">
-      {{ prompt }}
+      {{ show(prompt) }}
       <PromptSpeak :prompt="prompt" />
-      <HintButton v-if="explain && !result && !fromPrior" :text="explain" />
+      <HintButton v-if="explain && !result && !fromPrior" :text="show(explain)" />
     </p>
 
     <div v-if="fromPrior" class="text-sm">
       <p class="mb-1 font-semibold" :class="prior!.correct ? 'text-[var(--good)]' : 'text-[var(--bad)]'">
         {{ prior!.correct ? '✓ Отвечено верно' : '✗ Был неверный ответ' }}
       </p>
-      <p class="text-[var(--muted)]">ты собрал: <span class="serbian text-[var(--fg)]">{{ prior!.answer }}</span></p>
+      <p class="text-[var(--muted)]">ты собрал: <span class="serbian text-[var(--fg)]">{{ show(prior!.answer) }}</span></p>
     </div>
 
     <template v-else>
@@ -101,7 +104,7 @@ function retry() {
           :disabled="!!result"
           @click="removeAt(i)"
         >
-          {{ chips.find((c) => c.id === id)!.text }}
+          {{ show(chips.find((c) => c.id === id)!.text) }}
         </button>
         <span v-if="!picked.length" class="text-sm text-[var(--muted)]">нажимай слова по порядку</span>
       </div>
@@ -114,7 +117,7 @@ function retry() {
           :disabled="!!result"
           @click="add(c.id)"
         >
-          {{ c.text }}
+          {{ show(c.text) }}
         </button>
       </div>
 
@@ -130,11 +133,11 @@ function retry() {
         </p>
         <p class="flex items-center justify-center gap-1">
           <template v-if="!result.ok && result.expected">
-            Правильно: <span class="serbian font-semibold">{{ result.expected }}</span>
+            Правильно: <span class="serbian font-semibold">{{ show(result.expected) }}</span>
           </template>
           <PhraseSpeak :text="result.ok ? sentence : result.expected" />
         </p>
-        <p v-if="result.explain" class="mt-1 text-[var(--muted)]">{{ result.explain }}</p>
+        <p v-if="result.explain" class="mt-1 text-[var(--muted)]">{{ show(result.explain) }}</p>
       </div>
     </template>
   </div>

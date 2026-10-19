@@ -3,7 +3,8 @@ import { mount, flushPromises } from '@vue/test-utils'
 import { setActivePinia, createPinia } from 'pinia'
 import ProgressDashboard from './ProgressDashboard.vue'
 import { api } from '../api'
-import type { Progress } from '../types'
+import { useSessionStore } from '../stores/session'
+import type { Progress, SessionUser, Vocab } from '../types'
 
 const RouterLink = { props: ['to'], template: '<a :href="to"><slot /></a>' }
 
@@ -56,5 +57,53 @@ describe('ProgressDashboard mistakes', () => {
     await flushPromises()
     expect(w.text()).not.toContain('Исправить ошибки')
     expect(w.text()).not.toContain('Стоит повторить')
+  })
+})
+
+describe('ProgressDashboard and the learner’s script', () => {
+  const readIn = (script: 'latin' | 'cyrillic') => {
+    useSessionStore().user = {
+      id: 'u', name: 'Гриша', email: '', email_verified: true,
+      telegram: { linked: false, username: '' }, script,
+    } as SessionUser
+  }
+  const wotd: Vocab = { id: 'krompir', latin: 'krompir', cyrillic: 'кромпир', ru: 'картофель' }
+  const weak = [{ exercise_id: '01.2.4', lesson: '01', prompt: '«Сёла старые» → Sela su ____.', wrong: 1, total: 1 }]
+
+  it('leads the word of the day with its Cyrillic spelling and shows the Latin one next to it', async () => {
+    readIn('cyrillic')
+    const w = mount(ProgressDashboard, { props: { progress: progress(), wotd }, global: { stubs: { RouterLink } } })
+    await flushPromises()
+    const card = w.findAll('.card').find((c) => c.text().includes('Слово дня'))!
+    expect(card.find('.serbian').text()).toBe('кромпир')
+    expect(card.text()).toContain('krompir')
+  })
+
+  it('shows the translation of the word of the day in Cyrillic when it names a Serbian word', async () => {
+    readIn('cyrillic')
+    const w = mount(ProgressDashboard, {
+      props: { progress: progress(), wotd: { ...wotd, ru: 'картофель (в Сербии: krompir)' } },
+      global: { stubs: { RouterLink } },
+    })
+    await flushPromises()
+    expect(w.text()).toContain('картофель (в Сербии: кромпир)')
+  })
+
+  it('shows the Serbian in a weak exercise prompt in Cyrillic', async () => {
+    readIn('cyrillic')
+    const w = mount(ProgressDashboard, {
+      props: { progress: progress({ weak_exercises: weak }), wotd: null },
+      global: { stubs: { RouterLink } },
+    })
+    await flushPromises()
+    expect(w.text()).toContain('«Сёла старые» → Села су ____.')
+  })
+
+  it('keeps the Latin first for a Latin reader', async () => {
+    readIn('latin')
+    const w = mount(ProgressDashboard, { props: { progress: progress(), wotd }, global: { stubs: { RouterLink } } })
+    await flushPromises()
+    const card = w.findAll('.card').find((c) => c.text().includes('Слово дня'))!
+    expect(card.find('.serbian').text()).toBe('krompir')
   })
 })

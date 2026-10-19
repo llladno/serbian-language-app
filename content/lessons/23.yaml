@@ -15,7 +15,7 @@ steps:
     exercises:
       - id: "23.2.1"
         type: choice
-        prompt: "«У вас есть вода?» (literary) —"
+        prompt: "«У вас есть вода?» (книжный вариант) —"
         options: ["Da li imate vodu?", "Li imate vodu?", "Imate vodu li?"]
         answer: "Da li imate vodu?"
       - id: "23.2.2"

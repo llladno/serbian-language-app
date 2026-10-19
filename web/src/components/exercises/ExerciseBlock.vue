@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { ExerciseBlock, LessonAttempts } from '../../types'
 import ExerciseItem from './ExerciseItem.vue'
+import { useScript } from '../../lib/useScript'
 
 // The lesson decides which exercise is on screen (`activeId`) and in what
 // order they come — a wrong answer sends one to the end — so this only draws.
@@ -17,11 +18,12 @@ const props = defineProps<{
 const emit = defineEmits<{ graded: [id: string, ok: boolean]; ungraded: [id: string]; cantListen: [] }>()
 
 const roundOf = (id: string) => props.rounds?.[id] ?? 0
+const { show } = useScript()
 </script>
 
 <template>
   <section class="space-y-3">
-    <p v-if="block.instruction" class="text-sm text-[var(--muted)]">{{ block.instruction }}</p>
+    <p v-if="block.instruction" class="text-sm text-[var(--muted)]">{{ show(block.instruction) }}</p>
     <!-- All exercises stay mounted (v-show, not v-for+v-if) so paging back
          and forth within the block keeps each exercise's own answered/result
          state instead of losing it to a remount. -->

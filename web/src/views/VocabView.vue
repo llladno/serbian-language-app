@@ -7,9 +7,14 @@ import WordMedia from '../components/WordMedia.vue'
 import SpeakButton from '../components/SpeakButton.vue'
 import SerbianKeys from '../components/SerbianKeys.vue'
 import FieldSelect from '../components/FieldSelect.vue'
+import ScriptToggle from '../components/ScriptToggle.vue'
+import { useScript } from '../lib/useScript'
 
 const route = useRoute()
 const router = useRouter()
+// The script is the learner's account setting, not a switch of this screen.
+const { script, show } = useScript()
+const headword = (v: Vocab) => (script.value === 'cyrillic' ? v.cyrillic : v.latin)
 
 const TABS = [
   { v: 'words' as const, label: 'Слова' },
@@ -27,7 +32,6 @@ const q = ref(typeof route.query.q === 'string' ? route.query.q : '')
 const lesson = ref('')
 const tagFilter = ref('')
 const group = ref('all')
-const scriptMode = ref<'latin' | 'cyrillic'>('latin')
 const error = ref<string | null>(null)
 
 const allVocab = ref<Vocab[]>([])
@@ -97,15 +101,7 @@ function nextCard() {
 <template>
   <div class="mb-4 flex items-baseline justify-between">
     <h1 class="text-2xl font-extrabold">Словарь</h1>
-    <Transition name="fade">
-      <button
-        v-if="tab === 'words'"
-        class="btn btn-ghost px-2.5 py-1 text-sm"
-        @click="scriptMode = scriptMode === 'latin' ? 'cyrillic' : 'latin'"
-      >
-        {{ scriptMode === 'latin' ? 'латиница' : 'кириллица' }}
-      </button>
-    </Transition>
+    <ScriptToggle compact />
   </div>
 
   <div class="mb-3 flex gap-1 rounded-2xl bg-[var(--bg-soft)] p-1">
@@ -161,17 +157,15 @@ function nextCard() {
         <div v-if="drilling && vocabRows[drillIdx]" class="card mb-4 p-6 text-center" @click="drillShown = true">
           <p class="text-xs text-[var(--muted)]">{{ drillIdx + 1 }} / {{ vocabRows.length }}</p>
           <div class="mt-2 flex items-center justify-center gap-2">
-            <p class="serbian text-3xl font-semibold">
-              {{ scriptMode === 'latin' ? vocabRows[drillIdx].latin : vocabRows[drillIdx].cyrillic }}
-            </p>
+            <p class="serbian text-3xl font-semibold">{{ headword(vocabRows[drillIdx]) }}</p>
             <SpeakButton :src="vocabRows[drillIdx].audio" :size="34" @click.stop />
           </div>
           <template v-if="drillShown">
             <div class="mt-3 flex justify-center">
               <WordMedia :image="vocabRows[drillIdx].image" :emoji="vocabRows[drillIdx].emoji" :size="112" />
             </div>
-            <p class="mt-2 text-lg">{{ vocabRows[drillIdx].ru }}</p>
-            <p v-if="vocabRows[drillIdx].note" class="text-sm text-[var(--muted)]">{{ vocabRows[drillIdx].note }}</p>
+            <p class="mt-2 text-lg">{{ show(vocabRows[drillIdx].ru) }}</p>
+            <p v-if="vocabRows[drillIdx].note" class="text-sm text-[var(--muted)]">{{ show(vocabRows[drillIdx].note) }}</p>
             <button class="btn btn-primary mt-3" @click.stop="nextCard">Дальше</button>
           </template>
           <p v-else class="mt-3 text-xs text-[var(--muted)]">нажми, чтобы показать перевод</p>
@@ -183,9 +177,7 @@ function nextCard() {
             <div class="min-w-0 flex-1">
               <div class="flex items-baseline justify-between gap-2">
                 <span class="flex items-center gap-1.5">
-                  <span class="serbian text-sm font-semibold sm:text-lg">{{
-                    scriptMode === 'latin' ? v.latin : v.cyrillic
-                  }}</span>
+                  <span class="serbian text-sm font-semibold sm:text-lg">{{ headword(v) }}</span>
                   <span v-if="v.transcription" class="hidden text-sm text-[var(--muted)] sm:inline"
                     >[{{ v.transcription }}]</span
                   >
@@ -193,9 +185,9 @@ function nextCard() {
                 </span>
                 <span v-if="v.lesson" class="shrink-0 text-sm text-[var(--muted)]">урок {{ v.lesson }}</span>
               </div>
-              <p class="text-sm">{{ v.ru }}</p>
+              <p class="text-sm">{{ show(v.ru) }}</p>
               <p v-if="v.transcription" class="text-xs text-[var(--muted)] sm:hidden">[{{ v.transcription }}]</p>
-              <p v-if="v.note" class="mt-0.5 text-sm text-[var(--muted)]">{{ v.note }}</p>
+              <p v-if="v.note" class="mt-0.5 text-sm text-[var(--muted)]">{{ show(v.note) }}</p>
             </div>
           </div>
         </div>
@@ -211,17 +203,17 @@ function nextCard() {
             <div class="min-w-0 flex-1">
               <div class="flex flex-wrap items-baseline justify-between gap-x-2 gap-y-0.5">
                 <span class="flex items-center gap-1.5">
-                  <span class="serbian text-sm font-semibold sm:text-lg">{{ f.sr }}</span>
+                  <span class="serbian text-sm font-semibold sm:text-lg">{{ show(f.sr) }}</span>
                   <span v-if="f.transcription" class="hidden text-sm text-[var(--muted)] sm:inline"
                     >[{{ f.transcription }}]</span
                   >
                 </span>
-                <span v-if="f.not" class="text-sm text-[var(--bad)]">≠ {{ f.not }}</span>
+                <span v-if="f.not" class="text-sm text-[var(--bad)]">≠ {{ show(f.not) }}</span>
               </div>
-              <p class="text-sm">{{ f.means }}</p>
+              <p class="text-sm">{{ show(f.means) }}</p>
               <p v-if="f.transcription" class="text-xs text-[var(--muted)] sm:hidden">[{{ f.transcription }}]</p>
               <p v-if="f.correct" class="mt-0.5 text-sm text-[var(--muted)]">
-                «то самое» → <span class="serbian">{{ f.correct }}</span>
+                «то самое» → <span class="serbian">{{ show(f.correct) }}</span>
               </p>
             </div>
           </div>

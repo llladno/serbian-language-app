@@ -1,0 +1,16 @@
+# Exceptions for scripts/check_cyrillic.py, the check that the Latin -> Cyrillic
+# display conversion (web/src/lib/script.ts) is safe for the course. Every entry
+# needs a reason: say what was looked at, not just "ok".
+
+# A word the check flagged as possibly holding lj/nj/dž as two letters (a prefix
+# ending in l/n/d joined to a stem starting with j/ž). Looked at once; the pair is
+# one letter, which is what the converter does. Words where it really is two
+# letters (injekcija, konjunktiv, nadživeti, odžvakati, podžupan) are handled in
+# TWO_LETTERS in script.ts and scripts/check_cyrillic.py instead.
+digraph_ok:
+  konj: "a horse, not kon+j: the pair is one letter (коњ)"
+
+# A word that the Latin dictionary accepts but whose converted form the Cyrillic dictionary
+# does not (python3 scripts/check_cyrillic.py --dictionary). Looked at once; say why the
+# conversion is right anyway (a form the dictionary does not carry, an abbreviation).
+dictionary_ok: {}

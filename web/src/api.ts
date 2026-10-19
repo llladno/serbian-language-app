@@ -127,6 +127,8 @@ export const api = {
 
   getMe: () => request<Me>('/me'),
   patchMe: (name: string) => request<SessionUser>('/me', { method: 'PATCH', body: JSON.stringify({ name }) }),
+  setScript: (script: 'latin' | 'cyrillic') =>
+    request<SessionUser>('/me', { method: 'PATCH', body: JSON.stringify({ script }) }),
   setPassword: (payload: { current?: string; new: string; email?: string }) =>
     request<{ status: string }>('/me/password', { method: 'POST', body: JSON.stringify(payload) }),
   linkTelegram: (payload: Record<string, unknown>) =>

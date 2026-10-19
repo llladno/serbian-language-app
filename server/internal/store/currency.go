@@ -293,6 +293,26 @@ func userLocation(q querier, userID string) *time.Location {
 // SetUserTimezone stores an IANA timezone name after checking the runtime can
 // load it. Days already written to user_daily_activity are never recomputed,
 // so changing this cannot rewrite past streaks.
+// The two Serbian scripts a learner can read the course in.
+const (
+	ScriptLatin    = "latin"
+	ScriptCyrillic = "cyrillic"
+)
+
+// IsScript reports whether v is one of the two known scripts.
+func IsScript(v string) bool { return v == ScriptLatin || v == ScriptCyrillic }
+
+// SetUserScript stores the script the learner reads the course in.
+func (s *Store) SetUserScript(userID, script string) error {
+	if !IsScript(script) {
+		return fmt.Errorf("unknown script %q", script)
+	}
+	if _, err := s.db.Exec(`UPDATE users SET script = ? WHERE id = ?`, script, userID); err != nil {
+		return fmt.Errorf("set script: %w", err)
+	}
+	return nil
+}
+
 func (s *Store) SetUserTimezone(userID, tz string) error {
 	if _, err := time.LoadLocation(tz); err != nil {
 		return fmt.Errorf("unknown timezone %q: %w", tz, err)

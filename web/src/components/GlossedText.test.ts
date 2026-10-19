@@ -4,6 +4,8 @@ import GlossedText from './GlossedText.vue'
 import { api } from '../api'
 import { _resetLookupCache } from '../lib/lookup'
 import { _resetAddedToReview } from '../lib/review'
+import { useSessionStore } from '../stores/session'
+import type { SessionUser } from '../types'
 
 vi.mock('../api', () => ({ api: { lookup: vi.fn(), addToReview: vi.fn() } }))
 
@@ -192,5 +194,90 @@ describe('GlossedText', () => {
     expect(scrollRemoves).toBeGreaterThanOrEqual(scrollAdds)
     add.mockRestore()
     remove.mockRestore()
+  })
+})
+
+describe('GlossedText in Cyrillic', () => {
+  const readInCyrillic = () => {
+    useSessionStore().user = {
+      id: 'u', name: 'Гриша', email: '', email_verified: true,
+      telegram: { linked: false, username: '' }, script: 'cyrillic',
+    } as SessionUser
+  }
+
+  it('shows the words in Cyrillic and still looks them up in Latin', async () => {
+    readInCyrillic()
+    vi.mocked(api.lookup).mockResolvedValue({ query: 'košta', partial: false, matches: [] })
+    const w = mountGT('Koliko košta kafa?')
+    expect(w.text()).toContain('Колико кошта кафа?')
+    expect(w.findAll('span.cursor-pointer').map((s) => s.text())).toEqual(['Колико', 'кошта', 'кафа'])
+    await clickWord(w, 'кошта')
+    await flushPromises()
+    expect(api.lookup).toHaveBeenCalledWith('košta')
+  })
+
+  it('leads the dictionary card with the Cyrillic spelling and puts the Latin one second', async () => {
+    readInCyrillic()
+    vi.mocked(api.lookup).mockResolvedValue({
+      query: 'košta',
+      partial: false,
+      matches: [{ id: 'kostati', latin: 'koštati', cyrillic: 'коштати', ru: 'стоить' }],
+    })
+    const w = mountGT('Koliko košta?')
+    await clickWord(w, 'кошта')
+    await flushPromises()
+    const head = w.find('.font-semibold')
+    expect(head.text().startsWith('коштати')).toBe(true)
+    expect(head.text()).toContain('koštati')
+  })
+
+  it('names an unknown word in Cyrillic but searches the dictionary by its Latin spelling', async () => {
+    readInCyrillic()
+    vi.mocked(api.lookup).mockResolvedValue({ query: 'čaj', partial: false, matches: [] })
+    const w = mountGT('čaj molim')
+    await clickWord(w, 'чај')
+    await flushPromises()
+    expect(w.text()).toContain('«чај» — нет в словаре курса')
+    expect(w.find('a').attributes('href')).toBe('/vocab?q=čaj')
+  })
+
+  it('shows the note of a dictionary card in Cyrillic too', async () => {
+    readInCyrillic()
+    vi.mocked(api.lookup).mockResolvedValue({
+      query: 'biti',
+      partial: false,
+      matches: [{ id: 'biti', latin: 'biti', cyrillic: 'бити', ru: 'быть', note: 'jesam / sam / nisam' }],
+    })
+    const w = mountGT('biti')
+    await clickWord(w, 'бити')
+    await flushPromises()
+    expect(w.text()).toContain('јесам / сам / нисам')
+    expect(w.text()).not.toContain('jesam')
+  })
+
+  it('shows the Russian translation of a dictionary card in Cyrillic when it names a Serbian word', async () => {
+    readInCyrillic()
+    vi.mocked(api.lookup).mockResolvedValue({
+      query: 'kojem',
+      partial: false,
+      matches: [{ id: 'koji', latin: 'koji', cyrillic: 'који', ru: 'какой (локатив от koji)' }],
+    })
+    const w = mountGT('kojem')
+    await clickWord(w, 'којем')
+    await flushPromises()
+    expect(w.text()).toContain('какой (локатив от који)')
+  })
+
+  it('says a fuzzy match in Cyrillic too', async () => {
+    readInCyrillic()
+    vi.mocked(api.lookup).mockResolvedValue({
+      query: 'kosta',
+      partial: true,
+      matches: [{ id: 'kostati', latin: 'koštati', cyrillic: 'коштати', ru: 'стоить' }],
+    })
+    const w = mountGT('kosta')
+    await clickWord(w, 'коста')
+    await flushPromises()
+    expect(w.text()).toContain('похоже на «коста»')
   })
 })

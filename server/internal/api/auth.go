@@ -116,6 +116,10 @@ func (h handlers) summaryToDTO(userID string, s userSummary) sessionUserDTO {
 		Name:          s.Name,
 		Email:         s.Email,
 		EmailVerified: s.EmailVerified,
+		Script:        s.Script,
+	}
+	if dto.Script == "" {
+		dto.Script = store.ScriptLatin
 	}
 	dto.Telegram.Linked = s.TelegramLinked
 	dto.Telegram.Username = s.TelegramUsername

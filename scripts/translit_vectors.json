@@ -1,0 +1,45 @@
+{
+  "_comment": "Shared by web/src/lib/script.test.ts and scripts/check_cyrillic.py: the Latin -> Cyrillic converter exists twice (TS for the app, Python for the content check) and this file is what keeps them identical. Stress is a combining acute (U+0301); note that a decomposed 'c'+U+0301 is the letter c-acute, not a stressed c.",
+  "vectors": [
+    { "latin": "čokolada", "cyrillic": "чоколада" },
+    { "latin": "ćevapi", "cyrillic": "ћевапи" },
+    { "latin": "đak", "cyrillic": "ђак" },
+    { "latin": "džem", "cyrillic": "џем" },
+    { "latin": "ljubav", "cyrillic": "љубав" },
+    { "latin": "konj", "cyrillic": "коњ" },
+    { "latin": "kuhinja", "cyrillic": "кухиња" },
+    { "latin": "počinjem", "cyrillic": "почињем" },
+    { "latin": "laku noć", "cyrillic": "лаку ноћ" },
+    { "latin": "šešir, žaba, cipela, jabuka, hvala", "cyrillic": "шешир, жаба, ципела, јабука, хвала" },
+    { "latin": "Zdravo! Kako si?", "cyrillic": "Здраво! Како си?" },
+    { "latin": "1) Da, 2) Ne.", "cyrillic": "1) Да, 2) Не." },
+
+    { "latin": "Ljubljana", "cyrillic": "Љубљана" },
+    { "latin": "Njegoš", "cyrillic": "Његош" },
+    { "latin": "Džemper", "cyrillic": "Џемпер" },
+    { "latin": "NJEGOŠ LJUBAV DŽEM", "cyrillic": "ЊЕГОШ ЉУБАВ ЏЕМ" },
+    { "latin": "Đorđe", "cyrillic": "Ђорђе" },
+
+    { "latin": "mo\u0301lim", "cyrillic": "мо\u0301лим" },
+    { "latin": "mólim", "cyrillic": "мо\u0301лим" },
+    { "latin": "sr\u0301pski", "cyrillic": "ср\u0301пски" },
+    { "latin": "c\u0301ao", "cyrillic": "ћао" },
+    { "latin": "c\u030cokolada", "cyrillic": "чоколада" },
+    { "latin": "s\u030cesir z\u030caba", "cyrillic": "шесир жаба" },
+    { "latin": "ćao, do\u0301bar dan", "cyrillic": "ћао, до\u0301бар дан" },
+    { "latin": "ǆem ǉubav ǌiva", "cyrillic": "џем љубав њива" },
+
+    { "latin": "injekcija", "cyrillic": "инјекција" },
+    { "latin": "konjunktiv", "cyrillic": "конјунктив" },
+    { "latin": "nadživeti", "cyrillic": "надживети" },
+    { "latin": "odžvakati", "cyrillic": "оджвакати" },
+    { "latin": "podžupan", "cyrillic": "поджупан" },
+
+    { "latin": "Привет! (Zdravo!)", "cyrillic": "Привет! (Здраво!)" },
+    { "latin": "«Шоколад» по-сербски — čokolada", "cyrillic": "«Шоколад» по-сербски — чоколада" },
+    { "latin": "Это мой друг, ёж и йод. Ещё щи.", "cyrillic": "Это мой друг, ёж и йод. Ещё щи." },
+    { "latin": "[до\u0301бар дан]", "cyrillic": "[до\u0301бар дан]" },
+    { "latin": "`molim` [мо\u0301лим] *(молим — пожалуйста)*", "cyrillic": "`молим` [мо\u0301лим] *(молим — пожалуйста)*" },
+    { "latin": "", "cyrillic": "" }
+  ]
+}

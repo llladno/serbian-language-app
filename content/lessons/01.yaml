@@ -1,6 +1,7 @@
 lesson: "01"
 title: "Особые звуки (Specifični glasovi)"
 subtitle: "особые буквы č ć š ž đ dž lj nj, проверка"
+script: latin   # teaches the letters themselves: stays Latin whatever script the learner reads in
 teaches: [cokolada, cevapi, sesir, zaba, djak, dzem, ljubav, konj]
 
 steps:

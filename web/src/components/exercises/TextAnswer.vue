@@ -3,6 +3,7 @@ import { computed, ref } from 'vue'
 import { RefreshCw } from 'lucide-vue-next'
 import { api } from '../../api'
 import { useWrongGoesToEnd } from '../../lib/lessonRules'
+import { useScript } from '../../lib/useScript'
 import type { CheckResult, LessonAttempt } from '../../types'
 import SerbianKeys from '../SerbianKeys.vue'
 import SpeakButton from '../SpeakButton.vue'
@@ -35,6 +36,9 @@ const props = defineProps<{
 const glossPrompt = computed(() => props.type === 'fill_blank' || props.type === 'fix_error')
 
 const emit = defineEmits<{ graded: [ok: boolean, result: CheckResult, answer: string]; ungraded: []; cantListen: [] }>()
+// Display only: the typed answer goes to the server exactly as typed, and the
+// server compares it with the Latin answer (it accepts Cyrillic input too).
+const { show } = useScript()
 
 // fix_error: start from the wrong sentence so the learner edits it instead of
 // retyping (people were typing only the missing word — «ja sam» — and failing).
@@ -100,14 +104,14 @@ function retry() {
     </button>
 
     <div v-if="type === 'listen' && text" class="mb-5 px-8" data-test="listen-as-text">
-      <p class="mb-1.5 text-sm text-[var(--muted)]">{{ prompt }}</p>
-      <p class="serbian whitespace-pre-wrap text-xl font-medium">{{ text }}</p>
+      <p class="mb-1.5 text-sm text-[var(--muted)]">{{ show(prompt) }}</p>
+      <p class="serbian whitespace-pre-wrap text-xl font-medium">{{ show(text) }}</p>
     </div>
     <div v-else-if="type === 'listen'" class="mb-5 flex flex-col items-center gap-3 px-8">
       <SpeakButton :src="audio" :size="52" />
       <span class="flex items-center gap-1.5 text-sm text-[var(--muted)]">
-        {{ prompt || 'Напиши, что слышишь' }}
-        <HintButton v-if="explain && !fromPrior && !result" :text="explain" />
+        {{ show(prompt) || 'Напиши, что слышишь' }}
+        <HintButton v-if="explain && !fromPrior && !result" :text="show(explain)" />
       </span>
       <button
         v-if="!fromPrior && !result"
@@ -125,7 +129,7 @@ function retry() {
       </p>
       <p class="flex flex-wrap items-center justify-center gap-1.5 whitespace-pre-wrap text-xl font-medium">
         <GlossedText v-if="glossPrompt" :text="prompt" />
-        <template v-else>{{ prompt }}</template>
+        <template v-else>{{ show(prompt) }}</template>
         <PromptSpeak :prompt="prompt" />
         <HintButton v-if="explain && !fromPrior && !result" :text="explain" />
       </p>
@@ -137,7 +141,7 @@ function retry() {
         <span>{{ prior!.correct ? '✓' : '✗' }}</span>
         <span>{{ prior!.correct ? 'Отвечено верно' : 'Был ответ с ошибкой' }}</span>
       </p>
-      <p class="text-[var(--muted)]">ты писал: <span class="text-[var(--fg)]" :class="{ serbian: !text }">{{ prior!.answer }}</span></p>
+      <p class="text-[var(--muted)]">ты писал: <span class="text-[var(--fg)]" :class="{ serbian: !text }">{{ show(prior!.answer) }}</span></p>
     </div>
 
     <form v-if="!fromPrior && !result" class="mx-auto max-w-sm" @submit.prevent="submit">
@@ -168,19 +172,19 @@ function retry() {
         <span>{{ result.ok ? 'Верно' : result.near_miss ? 'Почти — опечатка?' : 'Не совсем' }}</span>
       </p>
       <p v-if="result.ok && result.typo && result.expected" class="mb-1 text-sm text-[var(--warning)]">
-        Засчитано, но проверь написание: <span class="font-semibold" :class="{ serbian: !text }">{{ result.expected }}</span>
+        Засчитано, но проверь написание: <span class="font-semibold" :class="{ serbian: !text }">{{ show(result.expected) }}</span>
       </p>
       <p v-if="result.diff?.length && !result.ok" class="mb-1">
-        <span v-for="(c, i) in result.diff" :key="i" :class="c.ok ? '' : 'chunk-wrong'">{{ c.text
+        <span v-for="(c, i) in result.diff" :key="i" :class="c.ok ? '' : 'chunk-wrong'">{{ show(c.text)
         }}{{ i < result.diff.length - 1 ? ' ' : '' }}</span>
       </p>
       <p v-if="!result.ok && result.expected" class="text-sm">
-        Правильно: <span class="font-semibold" :class="{ serbian: !text }">{{ result.expected }}</span>
+        Правильно: <span class="font-semibold" :class="{ serbian: !text }">{{ show(result.expected) }}</span>
       </p>
       <p v-if="resultPhrase" class="mt-1 flex justify-center">
         <PhraseSpeak :text="resultPhrase" />
       </p>
-      <p v-if="result.explain" class="mt-1 text-sm text-[var(--muted)]">{{ result.explain }}</p>
+      <p v-if="result.explain" class="mt-1 text-sm text-[var(--muted)]">{{ show(result.explain) }}</p>
     </div>
   </div>
 </template>

@@ -1,6 +1,7 @@
 lesson: "91"
 title: "Fixture dialogue"
 subtitle: "диалог для тестов API"
+script: latin
 
 steps:
   - id: "91.1"

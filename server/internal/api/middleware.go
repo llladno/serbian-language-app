@@ -131,6 +131,7 @@ type userSummary struct {
 	EmailVerified    bool
 	TelegramLinked   bool
 	TelegramUsername string
+	Script           string
 }
 
 // authCtx is what requireAuth puts on the request context. SessionHash is the
@@ -254,6 +255,7 @@ func (h handlers) summaryFor(userID string) (userSummary, error) {
 	// on rather than fail the request.
 	if u, err := h.Store.UserByID(userID); err == nil {
 		sum.Name = u.Name
+		sum.Script = u.Script
 	} else if !errors.Is(err, sql.ErrNoRows) {
 		return userSummary{}, fmt.Errorf("load summary: %w", err)
 	}

@@ -8,9 +8,18 @@ import WordMedia from '../components/WordMedia.vue'
 import SpeakButton from '../components/SpeakButton.vue'
 import SerbianKeys from '../components/SerbianKeys.vue'
 import BottomBar from '../components/BottomBar.vue'
-import type { GramCheckResult } from '../types'
+import ScriptToggle from '../components/ScriptToggle.vue'
+import { useScript } from '../lib/useScript'
+import type { GramCheckResult, ReviewCard } from '../types'
 
 const store = useReviewStore()
+// Display only: grades, quiz answers and typed forms all go to the server as
+// before; only what is painted follows the learner's script.
+const { script, show } = useScript()
+// A Cyrillic reader gets the Cyrillic spelling as the headword and the Latin one
+// second (a false friend has no authored Cyrillic, so it is converted).
+const headword = (c: ReviewCard) => (script.value === 'cyrillic' ? c.cyrillic || show(c.front) : c.front)
+const subword = (c: ReviewCard) => (script.value === 'cyrillic' ? c.front : c.cyrillic)
 const wallet = useWalletStore()
 const { current, remaining, total, sessionCount, tally, loading, error } = storeToRefs(store)
 const revealed = ref(false)
@@ -124,6 +133,8 @@ onUnmounted(() => window.removeEventListener('keydown', onKey))
 <template>
   <div class="mb-4 flex items-center justify-between">
     <h1 class="text-2xl font-extrabold">Слова</h1>
+    <div class="flex items-center gap-2">
+    <ScriptToggle compact />
     <div class="relative">
       <button class="icon-btn" title="Как это работает" @click="showHelp = !showHelp">
         <CircleQuestionMark :size="19" :stroke-width="2.25" />
@@ -150,6 +161,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKey))
           </p>
         </div>
       </template>
+    </div>
     </div>
   </div>
 
@@ -207,12 +219,12 @@ onUnmounted(() => window.removeEventListener('keydown', onKey))
       <!-- grammar item: type the asked form, checked for real -->
       <div v-if="current.kind === 'gram'" class="card flex min-h-[13rem] flex-col items-center p-8 text-center" :key="current.card_id">
         <p class="mb-2 text-[10px] uppercase tracking-widest text-[var(--accent)]">грамматика</p>
-        <p class="serbian text-lg font-semibold">{{ current.front }}</p>
-        <p v-if="current.note" class="mt-1 text-sm text-[var(--muted)]">{{ current.note }}</p>
+        <p class="serbian text-lg font-semibold">{{ show(current.front) }}</p>
+        <p v-if="current.note" class="mt-1 text-sm text-[var(--muted)]">{{ show(current.note) }}</p>
 
         <div class="mt-5 flex flex-col items-center gap-1">
           <p class="text-[10px] uppercase tracking-widest text-[var(--muted)]">впиши форму</p>
-          <p class="serbian text-2xl font-semibold">{{ current.item_prompt }}</p>
+          <p class="serbian text-2xl font-semibold">{{ show(current.item_prompt) }}</p>
         </div>
 
         <form v-if="!gramResult" class="mx-auto mt-4 w-full max-w-sm" @submit.prevent="submitGram">
@@ -235,12 +247,12 @@ onUnmounted(() => window.removeEventListener('keydown', onKey))
               {{ gramResult.ok ? '✓ Верно' : gramResult.near_miss ? 'Почти — опечатка?' : '✗ Не то' }}
             </p>
             <p v-if="gramResult.ok && gramResult.typo && gramResult.expected" class="text-sm text-[var(--warning)]">
-              Засчитано, но проверь написание: <span class="serbian font-semibold">{{ gramResult.expected }}</span>
+              Засчитано, но проверь написание: <span class="serbian font-semibold">{{ show(gramResult.expected) }}</span>
             </p>
             <p v-if="!gramResult.ok && gramResult.expected" class="text-sm">
-              Правильно: <span class="serbian font-semibold">{{ gramResult.expected }}</span>
+              Правильно: <span class="serbian font-semibold">{{ show(gramResult.expected) }}</span>
             </p>
-            <p v-if="current.example_sr" class="serbian mt-2 text-[var(--fg)]">{{ current.example_sr }}</p>
+            <p v-if="current.example_sr" class="serbian mt-2 text-[var(--fg)]">{{ show(current.example_sr) }}</p>
             <p v-if="current.example_ru" class="text-sm text-[var(--muted)]">{{ current.example_ru }}</p>
           </div>
         </Transition>
@@ -259,10 +271,10 @@ onUnmounted(() => window.removeEventListener('keydown', onKey))
       <div v-else-if="isQuiz" class="card flex min-h-[13rem] flex-col items-center p-8 text-center" :key="current.card_id">
         <p class="mb-2 text-[10px] uppercase tracking-widest text-[var(--accent)]">новое слово</p>
         <div class="flex items-center gap-2">
-          <p class="serbian text-4xl font-semibold">{{ current.front }}</p>
+          <p class="serbian text-4xl font-semibold">{{ headword(current) }}</p>
           <SpeakButton :src="current.audio" :size="36" />
         </div>
-        <p v-if="current.cyrillic" class="mt-1 text-sm text-[var(--muted)]">{{ current.cyrillic }}</p>
+        <p v-if="subword(current)" class="mt-1 text-sm text-[var(--muted)]">{{ subword(current) }}</p>
         <p v-if="current.transcription" class="text-sm text-[var(--muted)]">[{{ current.transcription }}]</p>
 
         <div class="mt-5 grid w-full max-w-sm grid-cols-1 gap-2 sm:grid-cols-2">
@@ -277,7 +289,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKey))
             :disabled="!!quizPicked"
             @click="pickOption(opt)"
           >
-            {{ opt }}
+            {{ show(opt) }}
           </button>
         </div>
 
@@ -285,9 +297,9 @@ onUnmounted(() => window.removeEventListener('keydown', onKey))
           <div v-if="quizPicked" class="mt-4 flex flex-col items-center border-t border-[var(--border)] pt-4">
             <WordMedia :image="current.image" :emoji="current.emoji" :alt="current.back" :size="96" />
             <p class="mt-2 font-semibold" :class="quizPicked === current.back ? 'text-[var(--good)]' : 'text-[var(--bad)]'">
-              {{ quizPicked === current.back ? '✓ Верно' : '✗ Не то — правильно: ' + current.back }}
+              {{ quizPicked === current.back ? '✓ Верно' : '✗ Не то — правильно: ' + show(current.back) }}
             </p>
-            <p v-if="current.example_sr" class="serbian mt-2 text-[var(--fg)]">{{ current.example_sr }}</p>
+            <p v-if="current.example_sr" class="serbian mt-2 text-[var(--fg)]">{{ show(current.example_sr) }}</p>
             <p v-if="current.example_ru" class="text-sm text-[var(--muted)]">{{ current.example_ru }}</p>
           </div>
         </Transition>
@@ -304,18 +316,18 @@ onUnmounted(() => window.removeEventListener('keydown', onKey))
       >
         <p v-if="current.kind === 'ff'" class="mb-2 text-[10px] uppercase tracking-widest text-[var(--accent)]">ложный друг</p>
         <div class="flex items-center gap-2">
-          <p class="serbian text-4xl font-semibold">{{ current.front }}</p>
+          <p class="serbian text-4xl font-semibold">{{ headword(current) }}</p>
           <SpeakButton :src="current.audio" :size="36" />
         </div>
-        <p v-if="current.cyrillic" class="mt-1 text-sm text-[var(--muted)]">{{ current.cyrillic }}</p>
+        <p v-if="subword(current)" class="mt-1 text-sm text-[var(--muted)]">{{ subword(current) }}</p>
         <p v-if="current.transcription" class="text-sm text-[var(--muted)]">[{{ current.transcription }}]</p>
 
         <Transition name="fade">
           <div v-if="revealed" class="mt-4 flex flex-col items-center border-t border-[var(--border)] pt-4">
             <WordMedia :image="current.image" :emoji="current.emoji" :alt="current.back" :size="112" />
-            <p class="mt-3 text-xl">{{ current.back }}</p>
-            <p v-if="current.note" class="mt-1 text-sm text-[var(--muted)]">{{ current.note }}</p>
-            <p v-if="current.example_sr" class="serbian mt-2.5 text-[var(--fg)]">{{ current.example_sr }}</p>
+            <p class="mt-3 text-xl">{{ show(current.back) }}</p>
+            <p v-if="current.note" class="mt-1 text-sm text-[var(--muted)]">{{ show(current.note) }}</p>
+            <p v-if="current.example_sr" class="serbian mt-2.5 text-[var(--fg)]">{{ show(current.example_sr) }}</p>
             <p v-if="current.example_ru" class="text-sm text-[var(--muted)]">{{ current.example_ru }}</p>
           </div>
         </Transition>

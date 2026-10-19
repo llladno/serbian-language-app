@@ -5,7 +5,8 @@ import LessonView from './LessonView.vue'
 import { api } from '../api'
 import { useToasts } from '../lib/toasts'
 import { useRewardModal } from '../lib/rewardModal'
-import type { Lesson, ExerciseBlock, Quest } from '../types'
+import { useSessionStore } from '../stores/session'
+import type { Lesson, ExerciseBlock, Quest, SessionUser } from '../types'
 
 vi.mock('vue-router', () => ({
   useRoute: () => ({ params: { id: '01' }, query: {} }),
@@ -537,3 +538,91 @@ describe('LessonView, cannot listen', () => {
   })
 })
 
+
+describe('LessonView and the learner’s script', () => {
+  const readIn = (script: 'latin' | 'cyrillic') => {
+    useSessionStore().user = {
+      id: 'u', name: 'Гриша', email: '', email_verified: true,
+      telegram: { linked: false, username: '' }, script,
+    } as SessionUser
+  }
+  const open = async (over: Partial<Lesson>) => {
+    const l = structuredClone(lesson)
+    Object.assign(l, over)
+    l.steps![0].title = 'Šta ti je?'
+    l.steps![0].markdown = 'Скажи `čokolada` и всё.'
+    vi.spyOn(api, 'lesson').mockResolvedValue(l)
+    vi.spyOn(api, 'exercises').mockResolvedValue(structuredClone(blocks))
+    vi.spyOn(api, 'lessonAttempts').mockResolvedValue({})
+    const w = mount(LessonView)
+    await flushPromises()
+    return w
+  }
+
+  it('shows the lesson title, subtitle, step title and theory in Cyrillic', async () => {
+    readIn('cyrillic')
+    const w = await open({ title: 'Привет (Zdravo)', subtitle: 'буквы č ć š' })
+    expect(w.text()).toContain('Привет (Здраво)')
+    expect(w.text()).toContain('буквы ч ћ ш')
+    expect(w.text()).toContain('Шта ти је?')
+    expect(w.text()).toContain('чоколада')
+  })
+
+  it('keeps a lesson about the letters in Latin whatever the account says', async () => {
+    readIn('cyrillic')
+    const w = await open({ title: 'Привет (Zdravo)', subtitle: 'буквы č ć š', keep_latin: true })
+    expect(w.text()).toContain('Привет (Zdravo)')
+    expect(w.text()).toContain('буквы č ć š')
+    expect(w.text()).toContain('Šta ti je?')
+    expect(w.text()).toContain('čokolada')
+  })
+
+  it('shows the note above a practice step in Cyrillic, and in Latin inside a lesson about the letters', async () => {
+    const practice = (over: Partial<Lesson>) => {
+      const l = structuredClone(lesson)
+      l.steps = [{ id: '01.1', kind: 'practice', title: 'Практика', markdown: 'Ответь по образцу «ja sam ovde».', exercise_ids: ['01.2.1'], status: 'not_started' }]
+      Object.assign(l, over)
+      vi.spyOn(api, 'lesson').mockResolvedValue(l)
+      vi.spyOn(api, 'exercises').mockResolvedValue([
+        { id: '01.1', title: 'Практика', exercises: [{ id: '01.2.1', type: 'translate', prompt: 'Привет' }] },
+      ])
+      vi.spyOn(api, 'lessonAttempts').mockResolvedValue({})
+    }
+    readIn('cyrillic')
+    practice({})
+    let w = mount(LessonView)
+    await flushPromises()
+    expect(w.text()).toContain('Ответь по образцу «ја сам овде».')
+
+    practice({ keep_latin: true })
+    w = mount(LessonView)
+    await flushPromises()
+    expect(w.text()).toContain('Ответь по образцу «ja sam ovde».')
+  })
+
+  it('has the script pill in its header', async () => {
+    readIn('latin')
+    const w = await open({})
+    expect(w.find('[data-test="script-cyrillic"]').exists()).toBe(true)
+  })
+
+  it('has no pill inside a lesson about the letters, and says why to a Cyrillic reader', async () => {
+    readIn('cyrillic')
+    const w = await open({ keep_latin: true })
+    expect(w.find('[data-test="script-cyrillic"]').exists()).toBe(false)
+    expect(w.text()).toContain('Урок про буквы — он остаётся на латинице')
+  })
+
+  it('does not explain it to a Latin reader, who sees no difference', async () => {
+    readIn('latin')
+    const w = await open({ keep_latin: true })
+    expect(w.text()).not.toContain('остаётся на латинице')
+  })
+
+  it('does not change a thing for a Latin reader', async () => {
+    readIn('latin')
+    const w = await open({ title: 'Привет (Zdravo)' })
+    expect(w.text()).toContain('Привет (Zdravo)')
+    expect(w.text()).toContain('čokolada')
+  })
+})

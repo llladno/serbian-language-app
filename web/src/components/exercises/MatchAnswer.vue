@@ -5,6 +5,7 @@ import { computed, reactive, ref } from 'vue'
 import { RefreshCw } from 'lucide-vue-next'
 import { api } from '../../api'
 import { useWrongGoesToEnd } from '../../lib/lessonRules'
+import { useScript } from '../../lib/useScript'
 import type { CheckResult, LessonAttempt } from '../../types'
 import BottomBar from '../BottomBar.vue'
 import HintButton from '../HintButton.vue'
@@ -21,6 +22,8 @@ const props = defineProps<{
   prior?: LessonAttempt
 }>()
 const emit = defineEmits<{ graded: [ok: boolean]; ungraded: [] }>()
+// Display only: the pairs sent to the server are keyed by the Latin originals.
+const { show } = useScript()
 
 const choices = ref([...props.right].sort(() => Math.random() - 0.5))
 // sparse: only left words that are currently paired have an entry
@@ -128,9 +131,9 @@ function retry() {
     </button>
 
     <p class="mb-5 flex flex-wrap items-center justify-center gap-1.5 whitespace-pre-wrap px-8 text-xl font-medium">
-      {{ prompt }}
+      {{ show(prompt) }}
       <PromptSpeak :prompt="prompt" />
-      <HintButton v-if="explain && !result && !fromPrior" :text="explain" />
+      <HintButton v-if="explain && !result && !fromPrior" :text="show(explain)" />
     </p>
 
     <div v-if="fromPrior" class="text-sm">
@@ -150,7 +153,7 @@ function retry() {
               :disabled="!!result"
               @click="tapLeft(l)"
             >
-              {{ l }}
+              {{ show(l) }}
             </button>
             <PhraseSpeak :text="l" :size="24" />
           </div>
@@ -164,7 +167,7 @@ function retry() {
               :disabled="!!result"
               @click="tapRight(r)"
             >
-              {{ r }}
+              {{ show(r) }}
             </button>
             <PhraseSpeak :text="r" :size="24" />
           </div>
@@ -181,7 +184,7 @@ function retry() {
         <p class="font-semibold" :class="result.ok ? 'text-[var(--good)]' : 'text-[var(--bad)]'">
           {{ result.ok ? '✓ Верно' : '✗ Есть ошибки' }}
         </p>
-        <p v-if="result.explain" class="mt-1 text-[var(--muted)]">{{ result.explain }}</p>
+        <p v-if="result.explain" class="mt-1 text-[var(--muted)]">{{ show(result.explain) }}</p>
       </div>
     </template>
   </div>

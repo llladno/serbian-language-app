@@ -3,6 +3,7 @@ import { computed, ref } from 'vue'
 import { RefreshCw } from 'lucide-vue-next'
 import { api } from '../../api'
 import { useWrongGoesToEnd } from '../../lib/lessonRules'
+import { useScript } from '../../lib/useScript'
 import type { CheckResult, LessonAttempt } from '../../types'
 import HintButton from '../HintButton.vue'
 import PhraseSpeak from '../PhraseSpeak.vue'
@@ -17,6 +18,8 @@ const props = defineProps<{
   prior?: LessonAttempt
 }>()
 const emit = defineEmits<{ graded: [ok: boolean, result: CheckResult, answer: string]; ungraded: [] }>()
+// Display only: what is sent to the server and compared stays the Latin original.
+const { show } = useScript()
 
 const shuffled = ref([...props.options].sort(() => Math.random() - 0.5))
 const picked = ref<string | null>(props.prior?.answer ?? null)
@@ -63,9 +66,9 @@ function retry() {
     </button>
 
     <p class="mb-5 flex flex-wrap items-center justify-center gap-1.5 whitespace-pre-wrap px-8 text-xl font-medium">
-      {{ prompt }}
+      {{ show(prompt) }}
       <PromptSpeak :prompt="prompt" />
-      <HintButton v-if="explain && !result && !fromPrior" :text="explain" />
+      <HintButton v-if="explain && !result && !fromPrior" :text="show(explain)" />
     </p>
 
     <div class="flex flex-wrap justify-center gap-2.5">
@@ -80,7 +83,7 @@ function retry() {
         :disabled="!!result || fromPrior"
         @click="choose(o)"
       >
-        {{ o }}
+        {{ show(o) }}
       </button>
     </div>
 
@@ -96,13 +99,13 @@ function retry() {
         {{ result.ok ? '✓ Верно' : '✗ Не то' }}
       </p>
       <p v-if="!result.ok && result.expected">
-        Правильно: <span class="serbian font-semibold">{{ result.expected }}</span>
+        Правильно: <span class="serbian font-semibold">{{ show(result.expected) }}</span>
       </p>
       <!-- only ever the right phrase: the options themselves stay silent, a wrong one must not be voiced -->
       <p class="mt-1 flex justify-center">
         <PhraseSpeak :text="result.ok ? picked! : result.expected" />
       </p>
-      <p v-if="result.explain" class="mt-1 text-[var(--muted)]">{{ result.explain }}</p>
+      <p v-if="result.explain" class="mt-1 text-[var(--muted)]">{{ show(result.explain) }}</p>
     </div>
   </div>
 </template>

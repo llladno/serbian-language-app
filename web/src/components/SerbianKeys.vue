@@ -4,8 +4,14 @@
 // so you don't need a Serbian keyboard layout.
 //
 // pointerdown.prevent keeps the field focused (and the mobile keyboard up).
+//
+// A Cyrillic reader gets the letters a Russian keyboard does not have (ч ш ж
+// are on it already): ђ ћ ј љ њ џ.
+import { computed } from 'vue'
+import { useScript } from '../lib/useScript'
 
-const CHARS = ['č', 'ć', 'đ', 'š', 'ž']
+const { script } = useScript()
+const CHARS = computed(() => (script.value === 'cyrillic' ? ['ђ', 'ћ', 'ј', 'љ', 'њ', 'џ'] : ['č', 'ć', 'đ', 'š', 'ž']))
 
 function insert(ch: string) {
   const el = document.activeElement as HTMLInputElement | HTMLTextAreaElement | null

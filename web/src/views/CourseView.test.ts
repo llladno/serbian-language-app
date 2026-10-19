@@ -323,3 +323,20 @@ describe('CourseView: folding levels', () => {
     expect(w.get('[data-test="price-2"]').text()).toContain('230')
   })
 })
+
+describe('CourseView and the learner’s script', () => {
+  it('shows lesson titles and subtitles in Cyrillic for a Cyrillic reader', async () => {
+    const c = course()
+    c.lessons[0].title = 'Привет! (Zdravo!)'
+    c.lessons[0].subtitle = 'особые буквы č ć'
+    vi.spyOn(api, 'course').mockResolvedValue(c)
+    useSessionStore().user = {
+      id: 'u', name: 'Гриша', email: '', email_verified: true,
+      telegram: { linked: false, username: '' }, script: 'cyrillic',
+    } as never
+    const w = mountView()
+    await flushPromises()
+    expect(w.text()).toContain('Привет! (Здраво!)')
+    expect(w.text()).toContain('особые буквы ч ћ')
+  })
+})

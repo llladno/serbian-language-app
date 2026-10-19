@@ -9,10 +9,13 @@ import SeedIcon from '../components/SeedIcon.vue'
 import UnlockLevelModal from '../components/UnlockLevelModal.vue'
 import { useWalletStore } from '../stores/wallet'
 import { useUnlockModal } from '../lib/unlockModal'
+import { useScript } from '../lib/useScript'
 import { levelPassed, levelProgress, readCollapsed, writeCollapsed } from '../lib/courseCollapse'
 import type { LessonRef, Phase } from '../types'
 
 const store = useCourseStore()
+// Display only: lesson titles follow the learner's script.
+const { show } = useScript()
 const { course, loading, error } = storeToRefs(store)
 
 const wallet = useWalletStore()
@@ -187,8 +190,8 @@ function badgeClass(lesson?: LessonRef) {
               {{ lid }}
             </span>
             <span class="min-w-0 flex-1">
-              <span class="block text-sm font-semibold leading-snug sm:text-base">{{ byId.get(lid)?.title || 'Урок ' + lid }}</span>
-              <span class="block truncate text-xs text-[var(--muted)] sm:text-sm">{{ byId.get(lid)?.subtitle }}</span>
+              <span class="block text-sm font-semibold leading-snug sm:text-base">{{ show(byId.get(lid)?.title || 'Урок ' + lid) }}</span>
+              <span class="block truncate text-xs text-[var(--muted)] sm:text-sm">{{ show(byId.get(lid)?.subtitle) }}</span>
             </span>
             <StatusBadge
               v-if="byId.get(lid)"

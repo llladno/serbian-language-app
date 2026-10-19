@@ -5,12 +5,15 @@ import type { Progress, Vocab } from '../types'
 import ProgressRing from './ProgressRing.vue'
 import ActivityHeatmap from './ActivityHeatmap.vue'
 import WordMedia from './WordMedia.vue'
+import { useScript } from '../lib/useScript'
 
 // progress/wotd are fetched once by ProfileView (alongside the account and
 // leaderboard) so all the profile's cards land together instead of each
 // popping in behind its own skeleton — see ProfileView's loadAll().
 const props = defineProps<{ progress: Progress; wotd: Vocab | null }>()
 const course = useCourseStore()
+// Display only: titles and the word of the day follow the learner's script.
+const { script, show } = useScript()
 
 // Not part of the shared skeleton gate: harmless if it resolves a beat
 // later, since it only affects the "continue lesson" card below, which
@@ -88,16 +91,16 @@ const dueTotal = computed(() => props.progress.srs.due_today + props.progress.sr
         class="card block p-4 transition hover:-translate-y-0.5"
       >
         <p class="text-xs uppercase tracking-wide text-[var(--muted)]">{{ continueLesson.label }}</p>
-        <p class="text-lg font-bold">{{ continueLesson.id }}. {{ continueLesson.title }}</p>
+        <p class="text-lg font-bold">{{ continueLesson.id }}. {{ show(continueLesson.title) }}</p>
       </RouterLink>
 
       <div v-if="wotd" class="card flex gap-4 p-4">
         <WordMedia :image="wotd.image" :emoji="wotd.emoji" :alt="wotd.ru" :size="72" class="shrink-0" />
         <div class="min-w-0">
           <p class="mb-1 text-xs uppercase tracking-wide text-[var(--muted)]">Слово дня</p>
-          <p class="serbian text-2xl font-semibold">{{ wotd.latin }}</p>
-          <p class="text-[var(--muted)]">{{ wotd.cyrillic }} — {{ wotd.ru }}</p>
-          <p v-if="wotd.note" class="mt-0.5 text-sm text-[var(--muted)]">{{ wotd.note }}</p>
+          <p class="serbian text-2xl font-semibold">{{ script === 'cyrillic' ? wotd.cyrillic : wotd.latin }}</p>
+          <p class="text-[var(--muted)]">{{ script === 'cyrillic' ? wotd.latin : wotd.cyrillic }} — {{ show(wotd.ru) }}</p>
+          <p v-if="wotd.note" class="mt-0.5 text-sm text-[var(--muted)]">{{ show(wotd.note) }}</p>
         </div>
       </div>
     </div>
@@ -110,7 +113,7 @@ const dueTotal = computed(() => props.progress.srs.due_today + props.progress.sr
       <ul class="space-y-1.5 text-sm">
         <li v-for="w in progress.weak_exercises" :key="w.exercise_id" class="flex gap-2">
           <span class="shrink-0 font-mono text-[var(--bad)]">{{ w.wrong }}/{{ w.total }}</span>
-          <span class="text-[var(--muted)]">{{ w.prompt || w.exercise_id }}</span>
+          <span class="text-[var(--muted)]">{{ show(w.prompt) || w.exercise_id }}</span>
         </li>
       </ul>
     </div>

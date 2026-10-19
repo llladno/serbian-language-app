@@ -1,7 +1,7 @@
 GO ?= /opt/homebrew/bin/go
 export PATH := /opt/homebrew/bin:$(PATH)
 
-.PHONY: dev build test test-pg tidy lint-sr
+.PHONY: dev build test test-pg tidy lint-sr lint-cyr
 
 TEST_DATABASE_URL ?= postgres://localhost/srpski_test?sslmode=disable
 
@@ -37,3 +37,9 @@ lint-sr:
 	python3 scripts/lint_serbian.py
 	python3 scripts/check_stress.py
 	python3 scripts/check_stress_tokens.py
+	python3 scripts/check_cyrillic.py
+
+# The slower, independent half of the Cyrillic check: every word of the course, converted,
+# against the real Serbian Cyrillic dictionary (~30 s; downloads it on first use).
+lint-cyr:
+	python3 scripts/check_cyrillic.py --dictionary

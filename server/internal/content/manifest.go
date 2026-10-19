@@ -10,11 +10,14 @@ import (
 )
 
 type manifestFile struct {
-	Lesson   string     `yaml:"lesson"`
-	Title    string     `yaml:"title"`
-	Subtitle string     `yaml:"subtitle"`
-	Teaches  []string   `yaml:"teaches"`
-	Steps    []stepYAML `yaml:"steps"`
+	Lesson   string   `yaml:"lesson"`
+	Title    string   `yaml:"title"`
+	Subtitle string   `yaml:"subtitle"`
+	Teaches  []string `yaml:"teaches"`
+	// Script is "latin" for a lesson about the letters themselves, which must
+	// not follow the learner's script choice; empty for every other lesson.
+	Script string     `yaml:"script"`
+	Steps  []stepYAML `yaml:"steps"`
 }
 
 type stepYAML struct {
@@ -50,9 +53,13 @@ func parseManifest(dir, rel string) (*Lesson, error) {
 	if mf.Lesson == "" {
 		return nil, fmt.Errorf("%s: missing lesson id", rel)
 	}
+	if mf.Script != "" && mf.Script != "latin" {
+		return nil, fmt.Errorf("%s: script must be \"latin\" or absent, got %q", rel, mf.Script)
+	}
 	l := &Lesson{
 		ID: mf.Lesson, Title: mf.Title, Subtitle: mf.Subtitle,
 		Manifest: true, MarkdownPath: rel, Teaches: mf.Teaches,
+		KeepLatin: mf.Script == "latin",
 	}
 
 	seenStep, seenEx := map[string]bool{}, map[string]bool{}

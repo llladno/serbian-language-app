@@ -168,6 +168,13 @@ describe('MistakesView', () => {
     expect(w.text()).toContain('Первое')
   })
 
+  it('has the script pill in its header', async () => {
+    vi.spyOn(api, 'mistakes').mockResolvedValue(batch(choice('a', 'Первое')))
+    const w = mount(MistakesView)
+    await flushPromises()
+    expect(w.find('[data-test="script-cyrillic"]').exists()).toBe(true)
+  })
+
   it('leaves for the profile from the close button', async () => {
     vi.spyOn(api, 'mistakes').mockResolvedValue(batch(choice('a', 'Первое')))
     const w = mount(MistakesView)

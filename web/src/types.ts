@@ -63,6 +63,9 @@ export interface Lesson {
   reading_ru?: string
   status: LessonStatus
   steps?: Step[]
+  // A lesson about the letters themselves: shown in Latin whatever script the
+  // learner picked.
+  keep_latin?: boolean
 }
 
 export interface LookupResult {
@@ -300,6 +303,9 @@ export interface SessionUser {
   telegram: { linked: boolean; username: string }
   // Parts of the app that are not open to everyone yet; the server decides.
   features?: { tariffs: boolean }
+  // The Serbian script the learner reads in. Absent on an account cached before
+  // the setting existed, which reads as Latin.
+  script?: 'latin' | 'cyrillic'
 }
 
 export interface SessionDevice {

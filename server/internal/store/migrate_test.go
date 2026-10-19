@@ -707,8 +707,12 @@ func TestUpgradeFromProductionAtMigration012(t *testing.T) {
 	if got, want := count(`SELECT COUNT(*) FROM schema_migrations`), count(`SELECT COUNT(DISTINCT version) FROM schema_migrations`); got != want {
 		t.Errorf("schema_migrations has repeated versions: %d rows, %d distinct", got, want)
 	}
-	if got := count(`SELECT MAX(version) FROM schema_migrations`); got != 28 {
-		t.Errorf("latest version = %d, want 28", got)
+	if got := count(`SELECT MAX(version) FROM schema_migrations`); got != 29 {
+		t.Errorf("latest version = %d, want 29", got)
+	}
+	// every account that existed before the script setting reads in Latin, as before
+	if got, want := count(`SELECT COUNT(*) FROM users WHERE script = 'latin'`), count(`SELECT COUNT(*) FROM users`); got != want || want == 0 {
+		t.Errorf("users on the latin default = %d of %d, want all of a non-empty set", got, want)
 	}
 	// the two tariffs are seeded, nobody has paid, and an old entitlement row has no end date
 	if got := count(`SELECT COUNT(*) FROM tariffs`); got != 2 {

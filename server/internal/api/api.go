@@ -492,6 +492,7 @@ func (h handlers) getLesson(w http.ResponseWriter, r *http.Request) {
 		ID: l.ID, Title: l.Title, Subtitle: l.Subtitle,
 		Planned: l.Planned, Markdown: l.Markdown, Status: st,
 		Reading: l.Reading, ReadingRU: l.ReadingRU, Steps: steps,
+		KeepLatin: l.KeepLatin,
 	})
 }
 

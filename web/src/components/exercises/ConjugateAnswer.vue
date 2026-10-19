@@ -3,6 +3,7 @@ import { computed, ref } from 'vue'
 import { RefreshCw } from 'lucide-vue-next'
 import { api } from '../../api'
 import { useWrongGoesToEnd } from '../../lib/lessonRules'
+import { useScript } from '../../lib/useScript'
 import type { CheckResult, LessonAttempt } from '../../types'
 import SerbianKeys from '../SerbianKeys.vue'
 import BottomBar from '../BottomBar.vue'
@@ -17,6 +18,8 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{ graded: [ok: boolean]; ungraded: [] }>()
+// Display only: the forms sent to the server stay as typed.
+const { show } = useScript()
 
 const priorAnswers = props.prior ? props.prior.answer.split(' | ') : []
 const answers = ref<string[]>(props.forms.map((_, i) => priorAnswers[i] ?? ''))
@@ -65,8 +68,8 @@ function retry() {
     <div class="mb-5 px-8 text-center">
       <p class="mb-1.5 text-[10px] uppercase tracking-widest text-[var(--accent)]">напиши все формы</p>
       <p>
-        <span class="serbian text-xl font-semibold">{{ prompt }}</span>
-        <span v-if="meta" class="ml-2 rounded bg-[var(--bg-soft)] px-1.5 py-0.5 text-xs text-[var(--muted)]">{{ meta }}</span>
+        <span class="serbian text-xl font-semibold">{{ show(prompt) }}</span>
+        <span v-if="meta" class="ml-2 rounded bg-[var(--bg-soft)] px-1.5 py-0.5 text-xs text-[var(--muted)]">{{ show(meta) }}</span>
       </p>
     </div>
 
@@ -74,12 +77,12 @@ function retry() {
       <p class="mb-1 font-semibold" :class="prior!.correct ? 'text-[var(--good)]' : 'text-[var(--bad)]'">
         {{ prior!.correct ? '✓ Отвечено верно' : '✗ Был ответ с ошибкой' }}
       </p>
-      <p class="serbian text-[var(--muted)]">{{ answers.filter(Boolean).join(', ') }}</p>
+      <p class="serbian text-[var(--muted)]">{{ show(answers.filter(Boolean).join(', ')) }}</p>
     </div>
 
     <form v-else class="mx-auto grid max-w-sm grid-cols-1 gap-2" @submit.prevent="submit">
       <label v-for="(f, i) in forms" :key="f" class="flex items-center gap-2 text-sm">
-        <span class="w-24 shrink-0 text-[var(--muted)]">{{ f }}</span>
+        <span class="w-24 shrink-0 text-[var(--muted)]">{{ show(f) }}</span>
         <input
           v-model="answers[i]"
           type="text"
@@ -108,10 +111,10 @@ function retry() {
 
     <div v-if="result" class="mx-auto mt-4 max-w-sm text-sm pop">
       <p v-for="(r, i) in result.forms" :key="'t' + i" v-show="r.ok && r.typo" class="text-[var(--warning)]">
-        {{ forms[i] }}: засчитано, но пишется <span class="serbian font-semibold">{{ r.expected }}</span>
+        {{ show(forms[i]) }}: засчитано, но пишется <span class="serbian font-semibold">{{ show(r.expected) }}</span>
       </p>
       <p v-for="(r, i) in result.forms" :key="i" v-show="!r.ok" class="text-[var(--muted)]">
-        {{ forms[i] }} → <span class="serbian font-semibold text-[var(--fg)]">{{ r.expected }}</span>
+        {{ show(forms[i]) }} → <span class="serbian font-semibold text-[var(--fg)]">{{ show(r.expected) }}</span>
       </p>
     </div>
   </div>

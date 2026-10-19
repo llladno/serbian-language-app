@@ -1,6 +1,7 @@
 lesson: "56"
 title: "Переписка (Poruke)"
 subtitle: "сообщения, обращения, «стриженая» латиница"
+script: latin   # teaches reading chat Latin written without diacritics: stays Latin whatever script the learner reads in
 teaches: [stizati, srecno, pozdrav, evo-me, javi-se, uskoro]
 
 steps:

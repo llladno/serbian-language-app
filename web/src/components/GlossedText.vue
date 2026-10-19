@@ -7,9 +7,13 @@ import type { LookupResult } from '../types'
 import { tokenize } from '../lib/reading'
 import { lookupWord } from '../lib/lookup'
 import { addWordToReview, isAddedToReview } from '../lib/review'
+import { useScript } from '../lib/useScript'
 import SpeakButton from './SpeakButton.vue'
 
 const props = defineProps<{ text: string }>()
+// Display only: lookups, the open-word highlight and the dictionary link all keep
+// the Latin spelling the course is written in.
+const { script, show } = useScript()
 
 const adding = ref('')
 async function addToReview(vocabId: string) {
@@ -120,7 +124,7 @@ onBeforeUnmount(() => {
         class="cursor-pointer rounded px-[1px] transition hover:bg-[var(--ring-track)] hover:text-[var(--accent)]"
         :class="{ 'bg-[var(--ring-track)] text-[var(--accent)]': open && word === t.text }"
         @click="onWordClick(t.text, $event)"
-        >{{ t.text }}</span
+        >{{ show(t.text) }}</span
       ><template v-else>{{ t.text }}</template></template
     >
 
@@ -135,7 +139,7 @@ onBeforeUnmount(() => {
 
         <template v-else-if="result && result.matches.length">
           <p v-if="result.partial" class="mb-1 text-xs text-[var(--muted)]">
-            похоже на «{{ word }}» — возможно:
+            похоже на «{{ show(word) }}» — возможно:
           </p>
           <div
             v-for="m in result.matches"
@@ -145,12 +149,14 @@ onBeforeUnmount(() => {
             <SpeakButton v-if="m.audio" :src="m.audio" :size="24" class="mt-[2px]" />
             <div class="min-w-0">
               <div class="font-semibold">
-                {{ m.latin }}
-                <span v-if="m.cyrillic" class="font-normal text-[var(--muted)]">· {{ m.cyrillic }}</span>
+                {{ script === 'cyrillic' ? m.cyrillic || show(m.latin) : m.latin }}
+                <span v-if="m.cyrillic" class="font-normal text-[var(--muted)]"
+                  >· {{ script === 'cyrillic' ? m.latin : m.cyrillic }}</span
+                >
                 <span v-if="m.transcription" class="font-normal text-[var(--muted)]">[{{ m.transcription }}]</span>
               </div>
-              <div>{{ m.ru }}</div>
-              <div v-if="m.note" class="text-xs text-[var(--muted)]">{{ m.note }}</div>
+              <div>{{ show(m.ru) }}</div>
+              <div v-if="m.note" class="text-xs text-[var(--muted)]">{{ show(m.note) }}</div>
               <button
                 type="button"
                 class="mt-1 text-xs font-medium"
@@ -169,7 +175,7 @@ onBeforeUnmount(() => {
         </template>
 
         <template v-else>
-          <p class="text-[var(--muted)]">«{{ word }}» — нет в словаре курса</p>
+          <p class="text-[var(--muted)]">«{{ show(word) }}» — нет в словаре курса</p>
           <RouterLink
             :to="{ name: 'vocab', query: { q: word } }"
             class="mt-1 inline-block text-[var(--accent)] hover:underline"

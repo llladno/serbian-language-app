@@ -122,3 +122,15 @@ describe('ProfileView', () => {
     vi.useRealTimers()
   })
 })
+
+describe('ProfileView script setting', () => {
+  it('offers the Latin / Cyrillic choice in the settings, in full words', async () => {
+    vi.spyOn(api, 'getMe').mockResolvedValue(me())
+    vi.spyOn(api, 'progress').mockRejectedValue(new Error('n/a'))
+    const w = mountProfile()
+    await flushPromises()
+    await openSettings(w)
+    expect(w.find('[data-test="script-latin"]').text()).toBe('Латиница')
+    expect(w.find('[data-test="script-cyrillic"]').text()).toBe('Кириллица')
+  })
+})

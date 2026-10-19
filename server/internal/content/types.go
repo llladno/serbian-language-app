@@ -47,6 +47,9 @@ type Lesson struct {
 	Steps []Step
 	// Teaches lists the vocab ids this lesson introduces (manifest only).
 	Teaches []string
+	// KeepLatin marks a lesson about the letters themselves (`script: latin`
+	// in the manifest): it stays in Latin whatever script the learner reads in.
+	KeepLatin bool
 }
 
 // Step is one screen of a lesson: a short teach card, a practice block, a

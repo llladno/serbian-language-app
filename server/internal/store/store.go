@@ -339,6 +339,9 @@ type UserRow struct {
 	UtmMedium   string
 	UtmCampaign string
 	UtmContent  string
+	// Script is the Serbian script the learner reads in: ScriptLatin or
+	// ScriptCyrillic.
+	Script string
 }
 
 // CreateUser inserts a users row with a generated id and returns it.
@@ -362,9 +365,9 @@ func (s *Store) CreateUser(name string) (string, error) {
 func (s *Store) UserByID(id string) (UserRow, error) {
 	var u UserRow
 	err := s.db.QueryRow(
-		`SELECT id, name, created_at, COALESCE(utm_source,''), COALESCE(utm_medium,''), COALESCE(utm_campaign,''), COALESCE(utm_content,'')
+		`SELECT id, name, created_at, COALESCE(utm_source,''), COALESCE(utm_medium,''), COALESCE(utm_campaign,''), COALESCE(utm_content,''), script
 		 FROM users WHERE id = ?`, id).
-		Scan(&u.ID, &u.Name, &u.CreatedAt, &u.UtmSource, &u.UtmMedium, &u.UtmCampaign, &u.UtmContent)
+		Scan(&u.ID, &u.Name, &u.CreatedAt, &u.UtmSource, &u.UtmMedium, &u.UtmCampaign, &u.UtmContent, &u.Script)
 	return u, err
 }
 

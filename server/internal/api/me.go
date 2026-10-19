@@ -53,8 +53,9 @@ func (h handlers) getMe(w http.ResponseWriter, r *http.Request) {
 }
 
 // patchMe updates the account: an optional rename ({name}, normalized and
-// capped like registration) and/or an optional timezone refresh ({timezone}).
-// Both fields are independent — name is a *string so a timezone-only call
+// capped like registration), an optional timezone refresh ({timezone}) and an
+// optional script choice ({script}: "latin" or "cyrillic").
+// The fields are independent — name is a *string so a timezone-only call
 // (e.g. a background refresh on login) can omit it entirely rather than
 // having to resend a possibly-stale cached display name, which could
 // otherwise silently revert a rename made from another device. At least one
@@ -68,13 +69,18 @@ func (h handlers) patchMe(w http.ResponseWriter, r *http.Request) {
 	var req struct {
 		Name     *string `json:"name"`
 		Timezone string  `json:"timezone"`
+		Script   *string `json:"script"`
 	}
 	if err := decode(r, &req); err != nil {
 		fail(w, http.StatusBadRequest, "bad request body")
 		return
 	}
-	if req.Name == nil && req.Timezone == "" {
-		fail(w, http.StatusBadRequest, "name or timezone required")
+	if req.Name == nil && req.Timezone == "" && req.Script == nil {
+		fail(w, http.StatusBadRequest, "name, timezone or script required")
+		return
+	}
+	if req.Script != nil && !store.IsScript(*req.Script) {
+		fail(w, http.StatusBadRequest, "script must be latin or cyrillic")
 		return
 	}
 	if req.Name != nil {
@@ -94,6 +100,13 @@ func (h handlers) patchMe(w http.ResponseWriter, r *http.Request) {
 	if req.Timezone != "" {
 		if err := h.Store.SetUserTimezone(ac.UserID, req.Timezone); err != nil {
 			log.Printf("patch me: timezone %q: %v", req.Timezone, err)
+		}
+	}
+	if req.Script != nil {
+		if err := h.Store.SetUserScript(ac.UserID, *req.Script); err != nil {
+			log.Printf("patch me: script: %v", err)
+			fail(w, http.StatusInternalServerError, "internal error")
+			return
 		}
 	}
 	sum, err := h.summaryFor(ac.UserID)

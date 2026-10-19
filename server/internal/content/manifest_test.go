@@ -102,6 +102,14 @@ steps:
     kind: quiz
     md: "x.md"
 `,
+		"unknown script": `lesson: "90"
+title: t
+script: greek
+steps:
+  - id: "90.1"
+    kind: teach
+    md: "x.md"
+`,
 	}
 	for name, body := range cases {
 		t.Run(name, func(t *testing.T) {
@@ -117,6 +125,21 @@ steps:
 				t.Fatalf("%s: expected error", name)
 			}
 		})
+	}
+}
+
+// A lesson that teaches the letters themselves (00, 01) must stay in Latin
+// whatever script the learner reads in: `script: latin` in the manifest.
+func TestManifestScriptFlag(t *testing.T) {
+	c, err := Load("testdata/content")
+	if err != nil {
+		t.Fatalf("load: %v", err)
+	}
+	if !c.Lessons["91"].KeepLatin {
+		t.Error("lesson 91 has `script: latin`: KeepLatin = false, want true")
+	}
+	if c.Lessons["90"].KeepLatin {
+		t.Error("lesson 90 has no script key: KeepLatin = true, want false")
 	}
 }
 

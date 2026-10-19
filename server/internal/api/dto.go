@@ -41,6 +41,9 @@ type lessonDTO struct {
 	ReadingRU string    `json:"reading_ru,omitempty"`
 	Status    string    `json:"status"`
 	Steps     []stepDTO `json:"steps,omitempty"`
+	// KeepLatin: the lesson teaches the letters, so the client shows it in Latin
+	// whatever script the learner picked.
+	KeepLatin bool `json:"keep_latin,omitempty"`
 }
 
 // stepDTO carries a step's metadata only — its exercises are fetched from the
@@ -149,7 +152,9 @@ type sessionUserDTO struct {
 	Name          string `json:"name"`
 	Email         string `json:"email"`
 	EmailVerified bool   `json:"email_verified"`
-	Telegram      struct {
+	// Script is the Serbian script the learner reads in, "latin" or "cyrillic".
+	Script   string `json:"script"`
+	Telegram struct {
 		Linked   bool   `json:"linked"`
 		Username string `json:"username"`
 	} `json:"telegram"`

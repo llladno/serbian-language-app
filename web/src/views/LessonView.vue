@@ -8,11 +8,13 @@ import { useRewardModal } from '../lib/rewardModal'
 import { useSurveyModal } from '../lib/surveyModal'
 import { provideWrongGoesToEnd } from '../lib/lessonRules'
 import { nextLesson } from '../lib/nextLesson'
+import { provideKeepLatin, useScript } from '../lib/useScript'
 import type { Lesson, ExerciseBlock, LessonAttempts, LessonStats, Step } from '../types'
 import MarkdownView from '../components/MarkdownView.vue'
 import ReadingText from '../components/ReadingText.vue'
 import DialogueStep from '../components/DialogueStep.vue'
 import StepProgress from '../components/StepProgress.vue'
+import ScriptToggle from '../components/ScriptToggle.vue'
 import BottomBar from '../components/BottomBar.vue'
 import ExerciseBlockView from '../components/exercises/ExerciseBlock.vue'
 import LessonSummary from '../components/LessonSummary.vue'
@@ -24,6 +26,15 @@ const store = useCourseStore()
 const wallet = useWalletStore()
 
 const lesson = ref<Lesson | null>(null)
+
+// A lesson about the letters themselves stays in Latin whatever script the
+// learner reads in: the components below see that through provideKeepLatin, and
+// the view's own titles follow the same rule (a provider cannot inject its own
+// provide, hence lessonShow).
+const { script, show } = useScript()
+const keepLatin = computed(() => !!lesson.value?.keep_latin)
+provideKeepLatin(keepLatin)
+const lessonShow = (text: string | null | undefined) => (keepLatin.value ? (text ?? '') : show(text))
 const blocks = ref<ExerciseBlock[]>([])
 const priors = ref<LessonAttempts>({})
 const error = ref<string | null>(null)
@@ -446,15 +457,15 @@ function closeLesson() {
     <div v-else-if="lesson.planned" key="planned">
       <RouterLink to="/course" class="text-sm text-[var(--muted)] hover:text-[var(--fg)]">← к курсу</RouterLink>
       <div class="card mt-4 border-dashed p-8 text-center">
-        <h1 class="text-lg font-bold sm:text-xl">{{ lesson.title }}</h1>
-        <p class="mt-1 text-sm text-[var(--muted)] sm:text-base">{{ lesson.subtitle }}</p>
+        <h1 class="text-lg font-bold sm:text-xl">{{ lessonShow(lesson.title) }}</h1>
+        <p class="mt-1 text-sm text-[var(--muted)] sm:text-base">{{ lessonShow(lesson.subtitle) }}</p>
         <p class="mt-4 text-sm text-[var(--muted)]">Урок ещё не готов — скоро появится.</p>
       </div>
     </div>
 
     <div v-else-if="summary" key="summary" class="flex min-h-[calc(100dvh-11rem)] flex-col justify-center py-4">
       <LessonSummary
-        :title="lesson.title"
+        :title="lessonShow(lesson.title)"
         :reward="summary.reward"
         :stats="summary.stats"
         :next="upNext"
@@ -469,14 +480,16 @@ function closeLesson() {
           </button>
           <div class="min-w-0 flex-1">
             <p class="truncate text-[12px] sm:text-[14px]">
-              {{ lesson.title }}
+              {{ lessonShow(lesson.title) }}
             </p>
             <p class="truncate text-[9px] text-[var(--muted)] sm:text-[10px]">
-              {{ lesson.subtitle }}
+              {{ lessonShow(lesson.subtitle) }}
             </p>
           </div>
+          <ScriptToggle v-if="!keepLatin" compact class="ml-auto mr-1.5" />
           <button
-              class="icon-btn shrink-0 ml-auto"
+              class="icon-btn shrink-0"
+              :class="{ 'ml-auto': keepLatin }"
               title="Закрыть урок"
               aria-label="Закрыть урок"
               @click="closeLesson"
@@ -489,7 +502,10 @@ function closeLesson() {
 
           <StepProgress class="flex-1" :steps="steps" :current="idx" :current-fraction="currentFraction" />
         </div>
-        <p class="mt-2 truncate pl-1 text-sm font-semibold text-[var(--muted)]">{{ cur.title }}</p>
+        <p class="mt-2 truncate pl-1 text-sm font-semibold text-[var(--muted)]">{{ lessonShow(cur.title) }}</p>
+        <p v-if="keepLatin && script === 'cyrillic'" class="mt-1 pl-1 text-xs text-[var(--muted)]">
+          Урок про буквы — он остаётся на латинице
+        </p>
       </header>
 
       <div class="flex flex-1 flex-col justify-center">
@@ -531,7 +547,7 @@ function closeLesson() {
 
             <div v-else-if="curBlock" class="space-y-4">
               <p v-if="cur.markdown" class="rounded-xl bg-[var(--bg-soft)] px-4 py-2.5 text-sm text-[var(--muted)]">
-                {{ cur.markdown }}
+                {{ lessonShow(cur.markdown) }}
               </p>
               <ExerciseBlockView
                 :lesson="lesson.id"

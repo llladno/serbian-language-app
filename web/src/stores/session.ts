@@ -121,6 +121,22 @@ export const useSessionStore = defineStore('session', () => {
     writeCachedUser(user.value)
   }
 
+  // Switches the learner's script at once (the text flips before the round trip),
+  // and puts the old one back if the server does not take it.
+  async function setScript(script: 'latin' | 'cyrillic') {
+    const before = user.value
+    if (!before) return
+    user.value = { ...before, script }
+    try {
+      user.value = await api.setScript(script)
+    } catch (e) {
+      user.value = before
+      throw e
+    } finally {
+      writeCachedUser(user.value)
+    }
+  }
+
   async function resendVerification(email: string) {
     await api.resendVerification(email)
   }
@@ -137,6 +153,7 @@ export const useSessionStore = defineStore('session', () => {
     logoutAll,
     forgot,
     reset,
+    setScript,
     resendVerification,
   }
 })
