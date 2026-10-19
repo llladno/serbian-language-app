@@ -21,6 +21,17 @@ export const useCourseStore = defineStore('course', () => {
     }
   }
 
+  // Reads the course again without the loading state, so what is on screen stays put
+  // while the statuses catch up: lessons are started and finished elsewhere, and the
+  // copy remembered from an earlier visit does not know.
+  async function refresh() {
+    try {
+      course.value = await api.course()
+    } catch {
+      /* keep showing what we have */
+    }
+  }
+
   function setStatus(id: string, status: LessonStatus) {
     const l = course.value?.lessons.find((x) => x.id === id)
     if (l) l.status = status
@@ -33,5 +44,5 @@ export const useCourseStore = defineStore('course', () => {
     return done
   }
 
-  return { course, loading, error, load, markDone, setStatus }
+  return { course, loading, error, load, refresh, markDone, setStatus }
 })

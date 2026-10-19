@@ -6,7 +6,8 @@ import { api, ApiError } from '../api'
 import { useUnlockModal } from '../lib/unlockModal'
 import { useSessionStore } from '../stores/session'
 import { enableTariffs, sessionUser, tariffsInfo } from '../test/tariffsFixture'
-import type { Course } from '../types'
+import { useCourseStore } from '../stores/course'
+import type { Course, LessonStatus } from '../types'
 
 vi.mock('vue-router', () => ({
   RouterLink: { props: ['to'], template: '<a :href="to"><slot /></a>' },
@@ -338,5 +339,97 @@ describe('CourseView and the learner’s script', () => {
     await flushPromises()
     expect(w.text()).toContain('Привет! (Здраво!)')
     expect(w.text()).toContain('особые буквы ч ћ')
+  })
+})
+
+describe('CourseView scrolls to where the learner left off', () => {
+  // Two levels, A (10-12) and B (20-21), nothing locked. `statuses` says what is started or done.
+  function progress(statuses: Record<string, LessonStatus>): Course {
+    const ids = { A: ['10', '11', '12'], B: ['20', '21'] }
+    return {
+      title: 'Курс',
+      phases: [
+        { id: 'A', title: 'Уровень A', lessons: ids.A, locked: false },
+        { id: 'B', title: 'Уровень B', lessons: ids.B, locked: false },
+      ],
+      lessons: [...ids.A, ...ids.B].map((id) => ({
+        id, title: `Урок ${id}`, subtitle: '', planned: false, status: statuses[id] ?? 'not_started',
+      })),
+    }
+  }
+
+  let scrolled: string[]
+  beforeEach(() => {
+    scrolled = []
+    Element.prototype.scrollIntoView = vi.fn(function (this: Element) {
+      scrolled.push(this.getAttribute('data-lesson') ?? 'level ' + this.getAttribute('data-phase'))
+    })
+  })
+  afterEach(() => {
+    delete (Element.prototype as { scrollIntoView?: unknown }).scrollIntoView
+  })
+
+  async function open(statuses: Record<string, LessonStatus>) {
+    vi.spyOn(api, 'course').mockResolvedValue(progress(statuses))
+    const w = mountView()
+    await flushPromises()
+    await new Promise((r) => setTimeout(r, 70)) // the card may need a beat to appear
+    return w
+  }
+
+  it('scrolls to the lesson that is started', async () => {
+    await open({ '10': 'done', '11': 'in_progress' })
+    expect(scrolled).toEqual(['11'])
+  })
+
+  it('scrolls to the furthest started lesson when several are', async () => {
+    await open({ '10': 'done', '11': 'in_progress', '20': 'in_progress' })
+    expect(scrolled).toEqual(['20'])
+  })
+
+  it('scrolls to the last finished lesson when none is started', async () => {
+    await open({ '10': 'done', '11': 'done' })
+    expect(scrolled).toEqual(['11'])
+  })
+
+  it('stays put for a learner who has not begun', async () => {
+    await open({})
+    expect(scrolled).toEqual([])
+  })
+
+  it('scrolls to the header of a finished level that is folded, and does not open it', async () => {
+    // Level A is all done, so it is folded by default; the last lesson studied is in it.
+    const w = await open({ '10': 'done', '11': 'done', '12': 'done' })
+    expect(scrolled).toEqual(['level A'])
+    expect(w.find('[data-test="toggle-A"]').attributes('aria-expanded')).toBe('false')
+    expect(w.find('[data-lesson="12"]').exists()).toBe(false)
+    expect(localStorage.getItem('course.collapsed.A')).toBeNull()
+  })
+
+  it('respects a level the learner folded by hand, and scrolls to its header', async () => {
+    localStorage.setItem('course.collapsed.A', '1')
+    const w = await open({ '10': 'in_progress' })
+    expect(scrolled).toEqual(['level A'])
+    expect(w.find('[data-test="toggle-A"]').attributes('aria-expanded')).toBe('false')
+    expect(localStorage.getItem('course.collapsed.A')).toBe('1')
+  })
+
+  it('goes by what the server says now, not by a course remembered from an earlier visit', async () => {
+    // The cache still says nothing is started; the learner has since started lesson 12.
+    useCourseStore().course = progress({ '10': 'done' })
+    const spy = vi.spyOn(api, 'course').mockResolvedValue(progress({ '10': 'done', '12': 'in_progress' }))
+    mountView()
+    await flushPromises()
+    await new Promise((r) => setTimeout(r, 70))
+    expect(spy).toHaveBeenCalledTimes(1)
+    expect(scrolled).toEqual(['12'])
+  })
+
+  it('scrolls once per visit, not again when the course is read afresh', async () => {
+    await open({ '11': 'in_progress' })
+    useCourseStore().course = progress({ '11': 'done', '20': 'in_progress' })
+    await flushPromises()
+    await new Promise((r) => setTimeout(r, 70))
+    expect(scrolled).toEqual(['11'])
   })
 })

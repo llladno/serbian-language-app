@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, reactive } from 'vue'
+import { computed, nextTick, onMounted, reactive } from 'vue'
 import { storeToRefs } from 'pinia'
 import { RouterLink } from 'vue-router'
 import { Check, ChevronDown } from 'lucide-vue-next'
@@ -10,6 +10,7 @@ import UnlockLevelModal from '../components/UnlockLevelModal.vue'
 import { useWalletStore } from '../stores/wallet'
 import { useUnlockModal } from '../lib/unlockModal'
 import { useScript } from '../lib/useScript'
+import { lastStudiedLesson } from '../lib/lastStudied'
 import { levelPassed, levelProgress, readCollapsed, writeCollapsed } from '../lib/courseCollapse'
 import type { LessonRef, Phase } from '../types'
 
@@ -23,11 +24,37 @@ const unlock = useUnlockModal()
 
 // The balance and the shop are what the unlock modal needs; the course itself
 // does not wait for them.
-onMounted(() => {
-  store.load()
+onMounted(async () => {
   wallet.refresh()
   wallet.loadShop().catch(() => {})
+  // A course remembered from an earlier visit can be out of date (a lesson started
+  // since is not in it), and where to scroll depends on the statuses, so read it again.
+  await (course.value ? store.refresh() : store.load())
+  void scrollToLastStudied()
 })
+
+// Scrolls the course to the lesson the learner was last at (see lastStudiedLesson),
+// once, when the screen opens. If that lesson sits in a folded level, the level stays
+// folded (a finished level folds itself, and a fold is the learner's own choice) and
+// the screen goes to the level's header instead.
+async function scrollToLastStudied() {
+  const c = course.value
+  if (!c) return
+  const target = lastStudiedLesson(c.lessons)
+  const phase = target && c.phases.find((p) => p.lessons.includes(target.id))
+  if (!target || !phase) return
+  const selector = collapsed(phase) ? `[data-phase="${phase.id}"]` : `[data-lesson="${target.id}"]`
+  await nextTick()
+  // The cards appear after the loading placeholder has faded out.
+  for (let i = 0; i < 40; i++) {
+    const found = document.querySelector(selector)
+    if (found) {
+      found.scrollIntoView?.({ block: 'center' })
+      return
+    }
+    await new Promise((r) => setTimeout(r, 50))
+  }
+}
 
 const byId = computed(() => {
   const m = new Map<string, LessonRef>()
@@ -126,7 +153,7 @@ function badgeClass(lesson?: LessonRef) {
 
     <div v-else-if="course" key="course" class="space-y-8">
       <section v-for="phase in course.phases" :key="phase.id">
-        <div class="flex items-center justify-between gap-3" :class="collapsed(phase) ? '' : 'mb-3'">
+        <div class="flex items-center justify-between gap-3" :class="collapsed(phase) ? '' : 'mb-3'" :data-phase="phase.id">
           <h2 class="min-w-0 text-sm font-bold uppercase tracking-wide text-[var(--muted)]">
             <button
               type="button"
@@ -178,6 +205,7 @@ function badgeClass(lesson?: LessonRef) {
             v-for="lid in phase.lessons"
             :key="lid"
             v-bind="cardAttrs(phase, lid)"
+            :data-lesson="lid"
             class="card flex items-center gap-3.5 p-4 transition"
             :class="comingSoon(phase) ? '' : 'cursor-pointer active:scale-[0.99] hover:-translate-y-0.5'"
             @click="forSale(phase) && unlock.openFor(phase.id)"
