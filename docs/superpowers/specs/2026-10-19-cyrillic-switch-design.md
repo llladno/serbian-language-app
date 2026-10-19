@@ -143,7 +143,7 @@ The typed answer stays what the learner typed. `SerbianKeys` swaps its row to
    (letters as the subject) and Latin words missing from the Serbian dictionary
    (allowlist candidates).
 
-The TS converter and the Python check use one shared vector file (`scripts/translit_vectors.json`),
+The TS converter and the Python check use one shared vector file (`web/src/lib/translit_vectors.json`),
 the same way `phraseKey` is kept in step with `tts.py`.
 
 Component tests mount each area in Cyrillic mode and assert that no Latin Serbian letters

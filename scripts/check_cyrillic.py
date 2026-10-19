@@ -8,7 +8,7 @@ really are single letters. This script checks the course for the places where
 that is not so, and checks the Python copy of the converter against the same
 vectors the TypeScript one is tested with.
 
-  1. vectors      -- scripts/translit_vectors.json (shared with the TS test).
+  1. vectors      -- web/src/lib/translit_vectors.json (shared with the TS test).
   2. vocab        -- the converter reproduces the authored `cyrillic` of every
                      content/vocab.yaml word (the part before any note in brackets).
   3. roman        -- a roman numeral written with Latin letters inside Russian
@@ -50,7 +50,7 @@ import yaml
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CONTENT = os.path.join(ROOT, "content")
-VECTORS = os.path.join(ROOT, "scripts", "translit_vectors.json")
+VECTORS = os.path.join(ROOT, "web", "src", "lib", "translit_vectors.json")
 
 # ---- the converter (keep in step with web/src/lib/script.ts) ----------------
 

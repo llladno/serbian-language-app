@@ -7,7 +7,7 @@
 // Latin run in a displayed string is Serbian and only those runs are converted;
 // Cyrillic text is returned byte for byte (a blanket Unicode normalisation would
 // split Russian й and ё). scripts/check_cyrillic.py runs the same rules over the
-// whole course, and scripts/translit_vectors.json keeps the two implementations
+// whole course, and web/src/lib/translit_vectors.json keeps the two implementations
 // identical.
 export type Script = 'latin' | 'cyrillic'
 

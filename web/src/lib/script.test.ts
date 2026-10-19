@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import shared from '../../../scripts/translit_vectors.json'
+import shared from './translit_vectors.json'
 import { toCyrillic, toScript } from './script'
 
 // The same file drives scripts/check_cyrillic.py: the converter exists in two
