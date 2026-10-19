@@ -7,6 +7,7 @@ import { useWalletStore } from '../stores/wallet'
 import SupportModal from './SupportModal.vue'
 import DonateModal from './DonateModal.vue'
 import RewardModal from './RewardModal.vue'
+import SurveyModal from './SurveyModal.vue'
 import ToastStack from './ToastStack.vue'
 import NotificationBell from './NotificationBell.vue'
 import SeedIcon from './SeedIcon.vue'
@@ -146,5 +147,6 @@ watch(() => route.path, refreshWallet)
   <SupportModal />
   <DonateModal />
   <RewardModal />
+  <SurveyModal />
   <ToastStack />
 </template>

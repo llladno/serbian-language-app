@@ -451,3 +451,13 @@ export interface Order {
   phase_title?: string
   bonus?: number
 }
+
+// The one-time feedback survey. Option codes are shared with the server.
+export interface SurveyAnswers {
+  rating: number
+  likes: string[]
+  pains: string[]
+  pain_text: string
+  purpose: string
+  wish: string
+}

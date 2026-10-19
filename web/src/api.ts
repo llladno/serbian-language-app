@@ -1,4 +1,5 @@
 import type {
+  SurveyAnswers,
   Referral,
   Course,
   Lesson,
@@ -142,6 +143,10 @@ export const api = {
     request<void>('/me', { method: 'DELETE', body: JSON.stringify({ password }) }),
   sendSupportMessage: (message: string) =>
     request<{ status: string }>('/me/support', { method: 'POST', body: JSON.stringify({ message }) }),
+  surveyOffer: () => request<{ offer: boolean; reward: number }>('/me/survey'),
+  answerSurvey: (answers: SurveyAnswers) =>
+    request<{ status: string; reward: number }>('/me/survey', { method: 'POST', body: JSON.stringify(answers) }),
+  dismissSurvey: () => request<{ status: string }>('/me/survey/dismiss', { method: 'POST' }),
   wallet: () => request<Wallet>('/me/wallet'),
   tariffs: () => request<TariffsInfo>('/me/tariffs'),
   // contact: the email or phone the receipt goes to, only for an account that has no email of its own.

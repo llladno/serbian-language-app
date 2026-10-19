@@ -5,6 +5,7 @@ import { api, ApiError } from '../api'
 import { useCourseStore } from '../stores/course'
 import { useWalletStore } from '../stores/wallet'
 import { useRewardModal } from '../lib/rewardModal'
+import { useSurveyModal } from '../lib/surveyModal'
 import { provideWrongGoesToEnd } from '../lib/lessonRules'
 import { nextLesson } from '../lib/nextLesson'
 import type { Lesson, ExerciseBlock, LessonAttempts, LessonStats, Step } from '../types'
@@ -403,6 +404,10 @@ async function finish() {
   } catch {
     /* the quests screen will show it */
   }
+
+  // The one-time feedback survey waits for a quiet moment: not on top of a
+  // reward the learner is just being told about (the next lesson offers it).
+  if (!useRewardModal().open.value) useSurveyModal().offerAfterLesson()
 }
 
 // Progress is already saved step by step as the learner goes (each answered

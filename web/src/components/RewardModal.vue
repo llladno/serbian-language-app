@@ -10,7 +10,7 @@ import { pileFor } from '../lib/seeds'
 import SparkleBurst from './SparkleBurst.vue'
 import ModalShell from './ModalShell.vue'
 
-const { open, reward, title, questsLink, closeModal } = useRewardModal()
+const { open, reward, title, kicker, questsLink, closeModal } = useRewardModal()
 const wallet = useWalletStore()
 
 // The heap grows with what the learner now has, so the picture itself is a
@@ -32,7 +32,7 @@ const pile = computed(() => pileFor(wallet.balance))
       <img :src="pile" alt="" aria-hidden="true" class="pile" />
     </div>
 
-    <p class="text-sm font-semibold text-[var(--muted)]">Задание выполнено</p>
+    <p class="text-sm font-semibold text-[var(--muted)]">{{ kicker }}</p>
     <p class="mt-0.5 text-lg font-extrabold" data-test="reward-quest">{{ title }}</p>
     <p class="mt-3 text-2xl font-extrabold text-[var(--accent)]" data-test="reward-amount">
       +{{ wallet.amount(reward) }}

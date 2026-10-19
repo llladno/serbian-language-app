@@ -193,6 +193,9 @@ func Handler(deps Deps) http.Handler {
 	root.HandleFunc("DELETE /api/me/sessions/{id}", h.requireSession(h.deleteSession))
 	root.HandleFunc("DELETE /api/me", h.requireSession(h.deleteMe))
 	root.HandleFunc("POST /api/me/support", h.requireSession(h.createSupportMessage))
+	root.HandleFunc("GET /api/me/survey", h.requireSession(h.getSurvey))
+	root.HandleFunc("POST /api/me/survey", h.requireSession(h.answerSurvey))
+	root.HandleFunc("POST /api/me/survey/dismiss", h.requireSession(h.dismissSurvey))
 	root.HandleFunc("GET /api/me/notifications", h.requireSession(h.listNotifications))
 	root.HandleFunc("POST /api/me/notifications/mark-read", h.requireSession(h.markNotificationsRead))
 

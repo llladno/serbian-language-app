@@ -151,6 +151,7 @@ func (s *Store) ListLedger(userID string, limit, offset int) ([]LedgerEntry, err
 const (
 	defaultDailyGoal         = 10
 	defaultRepairWindowHours = 48
+	defaultSurveyReward      = 10
 	defaultDrip              = `[[1,1],[30,2],[100,3]]`
 	defaultCurrencyNameOne   = "зёрнышко"
 	defaultCurrencyNameFew   = "зёрнышка"
@@ -166,6 +167,7 @@ type Settings struct {
 	Drip              economy.Ladder
 	RepairWindowHours int
 	TelegramChannel   string
+	SurveyReward      int // seeds paid for answering the feedback survey
 }
 
 // querier is the read/write surface shared by *database and *dbtx, so helpers
@@ -248,6 +250,7 @@ func economySettings(q querier) (Settings, error) {
 		// leaving it blank. Do not "fix" this for consistency with the
 		// other string fields above.
 		TelegramChannel: raw["telegram_channel"],
+		SurveyReward:    nonNegativeOrDefault("survey_reward", defaultSurveyReward),
 	}, nil
 }
 
