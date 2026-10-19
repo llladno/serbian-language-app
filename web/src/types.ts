@@ -104,6 +104,19 @@ export interface ExerciseBlock {
   exercises: Exercise[]
 }
 
+// An exercise the learner last got wrong, with the lesson it belongs to (the
+// check endpoint is addressed by lesson + exercise id).
+export interface MistakeItem {
+  lesson: string
+  exercise: Exercise
+}
+
+export interface MistakesResponse {
+  // Every exercise currently marked as a mistake, not only this batch.
+  total: number
+  items: MistakeItem[]
+}
+
 export interface Chunk {
   text: string
   ok: boolean

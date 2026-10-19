@@ -103,13 +103,14 @@ const dueTotal = computed(() => props.progress.srs.due_today + props.progress.sr
     </div>
 
     <div v-if="progress.weak_exercises.length" class="card p-5">
-      <p class="mb-2 font-bold">Стоит повторить</p>
+      <div class="mb-3 flex items-center justify-between gap-3">
+        <p class="font-bold">Стоит повторить</p>
+        <RouterLink to="/mistakes" class="btn btn-primary shrink-0 px-4 py-2 text-sm">Исправить ошибки</RouterLink>
+      </div>
       <ul class="space-y-1.5 text-sm">
-        <li v-for="w in progress.weak_exercises" :key="w.exercise_id">
-          <RouterLink :to="`/lesson/${w.lesson}`" class="flex gap-2 hover:underline">
-            <span class="shrink-0 font-mono text-[var(--bad)]">{{ w.wrong }}/{{ w.total }}</span>
-            <span class="text-[var(--muted)]">{{ w.prompt || w.exercise_id }}</span>
-          </RouterLink>
+        <li v-for="w in progress.weak_exercises" :key="w.exercise_id" class="flex gap-2">
+          <span class="shrink-0 font-mono text-[var(--bad)]">{{ w.wrong }}/{{ w.total }}</span>
+          <span class="text-[var(--muted)]">{{ w.prompt || w.exercise_id }}</span>
         </li>
       </ul>
     </div>

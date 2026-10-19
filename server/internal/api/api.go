@@ -208,6 +208,7 @@ func Handler(deps Deps) http.Handler {
 	protected.HandleFunc("GET /api/lessons/{id}/exercises", h.getExercises)
 	protected.HandleFunc("POST /api/lessons/{id}/exercises/{exId}/check", h.checkExercise)
 	protected.HandleFunc("GET /api/lessons/{id}/attempts", h.lessonAttempts)
+	protected.HandleFunc("GET /api/mistakes", h.getMistakes)
 	protected.HandleFunc("POST /api/lessons/{id}/steps/{step}", h.setStepStatus)
 	protected.HandleFunc("POST /api/lessons/{id}/complete", h.completeLesson)
 	protected.HandleFunc("POST /api/lessons/{id}/reset", h.resetLesson)
@@ -507,36 +508,44 @@ func (h handlers) getExercises(w http.ResponseWriter, r *http.Request) {
 	if h.denyLockedLesson(w, us, id) {
 		return
 	}
+	audioOff := r.URL.Query().Get("audio") == "off"
 	out := []exerciseBlockDTO{}
 	for _, b := range h.Course().Exercises[id] {
 		bd := exerciseBlockDTO{ID: b.ID, Title: b.Title, Instruction: b.Instruction}
 		for _, e := range b.Exercises {
-			d := exerciseDTO{ID: e.ID, Type: e.Type, Prompt: e.Prompt, Forms: e.Forms, Meta: e.Meta, Audio: e.Audio, Explain: e.Explain, Hint: e.Hint}
-			switch e.Type {
-			case "listen":
-				// A learner who cannot listen gets the sentence as text to
-				// translate into Russian. The text is the dictation's answer,
-				// so it goes out only when asked for.
-				if r.URL.Query().Get("audio") == "off" {
-					d.Audio, d.Explain = "", ""
-					d.Text = e.Say
-					d.Prompt = "Переведи на русский."
-				}
-			case "choice":
-				d.Options = e.Options
-			case "word_bank":
-				d.Bank = e.Bank
-			case "match":
-				for _, p := range e.Pairs {
-					d.Left = append(d.Left, p[0])
-					d.Right = append(d.Right, p[1])
-				}
-			}
-			bd.Exercises = append(bd.Exercises, d)
+			bd.Exercises = append(bd.Exercises, toExerciseDTO(e, audioOff))
 		}
 		out = append(out, bd)
 	}
 	writeJSON(w, 200, out)
+}
+
+// toExerciseDTO is the learner-facing view of an exercise: everything needed to
+// show and answer it, nothing that gives the answer away. Shared by the lesson
+// player and the mistakes screen so the two can never drift apart.
+func toExerciseDTO(e content.Exercise, audioOff bool) exerciseDTO {
+	d := exerciseDTO{ID: e.ID, Type: e.Type, Prompt: e.Prompt, Forms: e.Forms, Meta: e.Meta, Audio: e.Audio, Explain: e.Explain, Hint: e.Hint}
+	switch e.Type {
+	case "listen":
+		// A learner who cannot listen gets the sentence as text to
+		// translate into Russian. The text is the dictation's answer,
+		// so it goes out only when asked for.
+		if audioOff {
+			d.Audio, d.Explain = "", ""
+			d.Text = e.Say
+			d.Prompt = "Переведи на русский."
+		}
+	case "choice":
+		d.Options = e.Options
+	case "word_bank":
+		d.Bank = e.Bank
+	case "match":
+		for _, p := range e.Pairs {
+			d.Left = append(d.Left, p[0])
+			d.Right = append(d.Right, p[1])
+		}
+	}
+	return d
 }
 
 type checkRequest struct {
@@ -1316,19 +1325,16 @@ func (h handlers) getProgress(w http.ResponseWriter, r *http.Request) {
 	streak, _ := us.StreakDays(now)
 	out.StreakDays = streak
 
-	weak, _ := us.WeakExercises(10)
-	promptByID := map[string]string{}
-	for _, blocks := range c.Exercises {
-		for _, b := range blocks {
-			for _, e := range b.Exercises {
-				promptByID[e.ID] = e.Prompt
-			}
+	// The same list the mistakes screen works through (see openMistakes), cut to the
+	// ten worst for the profile.
+	weak, _ := h.openMistakes(us)
+	for i, m := range weak {
+		if i == 10 {
+			break
 		}
-	}
-	for _, wk := range weak {
 		out.WeakExercises = append(out.WeakExercises, weakExerciseDTO{
-			ExerciseID: wk.ExerciseID, Lesson: wk.Lesson, Prompt: promptByID[wk.ExerciseID],
-			Wrong: wk.Wrong, Total: wk.Total,
+			ExerciseID: m.ExerciseID, Lesson: m.Lesson, Prompt: m.Exercise.Prompt,
+			Wrong: m.Wrong, Total: m.Total,
 		})
 	}
 

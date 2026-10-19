@@ -32,6 +32,7 @@ import type {
   TariffsInfo,
   TariffCode,
   Order,
+  MistakesResponse,
 } from './types'
 import { getStoredAttribution, getStoredReferral } from './attribution'
 
@@ -182,6 +183,9 @@ export const api = {
   exercises: (id: string, opts: { audioOff?: boolean } = {}) =>
     request<ExerciseBlock[]>(`/lessons/${id}/exercises${opts.audioOff ? '?audio=off' : ''}`),
   lessonAttempts: (id: string) => request<LessonAttempts>(`/lessons/${id}/attempts`),
+  // The exercises the learner last got wrong, a short batch at a time.
+  mistakes: (opts: { audioOff?: boolean } = {}) =>
+    request<MistakesResponse>(`/mistakes${opts.audioOff ? '?audio=off' : ''}`),
   check: (lesson: string, exId: string, payload: CheckPayload) =>
     request<CheckResult>(`/lessons/${lesson}/exercises/${exId}/check`, {
       method: 'POST',
