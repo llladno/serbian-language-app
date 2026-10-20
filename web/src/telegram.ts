@@ -14,6 +14,8 @@ interface TgWebApp {
   onEvent?: (e: string, cb: () => void) => void
   openTelegramLink?: (url: string) => void
   openLink?: (url: string, options?: { try_instant_view?: boolean }) => void
+  isVersionAtLeast?: (version: string) => boolean
+  HapticFeedback?: { notificationOccurred: (type: 'error' | 'success' | 'warning') => void }
 }
 
 function tg(): TgWebApp | undefined {
@@ -53,6 +55,27 @@ export function openExternalLink(url: string) {
 
 export function isTelegram() {
   return !!tg()
+}
+
+// Whether this page is really running inside the Mini App. isTelegram() alone is
+// not enough: telegram-web-app.js is loaded in every browser, so the SDK object is
+// always there; only a real Mini App session carries signed initData.
+export function inMiniApp() {
+  return isTelegram() && !!initData()
+}
+
+// A short "well done" buzz of the phone's taptic engine. Telegram only: a
+// browser has no equivalent that works on every phone (navigator.vibrate does
+// nothing on iOS), and haptics arrived in Mini App version 6.1, so an older
+// client is left alone rather than logging a warning on every call.
+export function hapticSuccess() {
+  const wa = tg()
+  if (!wa?.HapticFeedback || wa.isVersionAtLeast?.('6.1') === false) return
+  try {
+    wa.HapticFeedback.notificationOccurred('success')
+  } catch {
+    /* a client that cannot buzz just stays still */
+  }
 }
 
 // The raw, HMAC-signed query string the backend's VerifyInitData checks.

@@ -18,6 +18,7 @@ import SupportCard from '../components/SupportCard.vue'
 import DonateCard from '../components/DonateCard.vue'
 import BotPrefsSection from '../components/BotPrefsSection.vue'
 import ScriptToggle from '../components/ScriptToggle.vue'
+import SoundSettings from '../components/SoundSettings.vue'
 import TariffsCard from '../components/TariffsCard.vue'
 import SeedIcon from '../components/SeedIcon.vue'
 import { pluralRu } from '../lib/plural'
@@ -291,6 +292,10 @@ async function logout() {
       <div class="border-t border-[var(--border)] pt-3">
         <p class="mb-2 text-sm text-[var(--muted)]">Письмо</p>
         <ScriptToggle />
+      </div>
+
+      <div class="border-t border-[var(--border)] pt-3">
+        <SoundSettings />
       </div>
 
       <div class="border-t border-[var(--border)] pt-3">

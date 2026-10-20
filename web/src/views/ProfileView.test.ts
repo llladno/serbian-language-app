@@ -134,3 +134,14 @@ describe('ProfileView script setting', () => {
     expect(w.find('[data-test="script-cyrillic"]').text()).toBe('Кириллица')
   })
 })
+
+describe('ProfileView sound setting', () => {
+  it('offers the sound switch in the settings', async () => {
+    vi.spyOn(api, 'getMe').mockResolvedValue(me())
+    vi.spyOn(api, 'progress').mockRejectedValue(new Error('n/a'))
+    const w = mountProfile()
+    await flushPromises()
+    await openSettings(w)
+    expect(w.find('[data-test="setting-sound"]').exists()).toBe(true)
+  })
+})

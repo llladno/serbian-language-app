@@ -135,7 +135,7 @@ function retry() {
           <template v-if="!result.ok && result.expected">
             Правильно: <span class="serbian font-semibold">{{ show(result.expected) }}</span>
           </template>
-          <PhraseSpeak :text="result.ok ? sentence : result.expected" />
+          <PhraseSpeak :text="result.ok ? sentence : result.expected" autoplay />
         </p>
         <p v-if="result.explain" class="mt-1 text-[var(--muted)]">{{ show(result.explain) }}</p>
       </div>

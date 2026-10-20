@@ -7,12 +7,13 @@
 // The figures are first-try, not final: a step cannot be finished with an
 // exercise still wrong, so "how many did you get right in the end" is always
 // all of them and would say nothing.
-import { computed, onBeforeUnmount, reactive, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, reactive, ref } from 'vue'
 import { RouterLink } from 'vue-router'
 import { useWalletStore } from '../stores/wallet'
 import { cheerFor } from '../lib/cheers'
 import { SEED } from '../lib/seeds'
 import { pluralRu } from '../lib/plural'
+import { celebrate } from '../lib/sound'
 import type { LessonRef, LessonStats } from '../types'
 import ArcGauge from './ArcGauge.vue'
 import AnimatedNumber from './AnimatedNumber.vue'
@@ -73,6 +74,10 @@ function reveal() {
   })
 }
 onBeforeUnmount(() => timers.forEach(clearTimeout))
+
+// The chime and, inside Telegram, the buzz: the lesson is done, the moment this screen
+// appears. Whether either is heard is the learner's choice in the settings.
+onMounted(celebrate)
 
 // With no arc to wait for, the sequence starts by itself.
 if (percent.value === null) timers.push(window.setTimeout(reveal, 500))

@@ -3,13 +3,17 @@ import { mount, flushPromises } from '@vue/test-utils'
 import { setActivePinia, createPinia } from 'pinia'
 import LessonSummary from './LessonSummary.vue'
 import { CHEERS, bandFor } from '../lib/cheers'
+import { celebrate } from '../lib/sound'
 import type { LessonRef, LessonStats } from '../types'
 
 vi.mock('vue-router', () => ({
   RouterLink: { props: ['to'], template: '<a :href="to"><slot /></a>' },
 }))
 
+vi.mock('../lib/sound', () => ({ celebrate: vi.fn() }))
+
 beforeEach(() => {
+  vi.mocked(celebrate).mockClear()
   setActivePinia(createPinia())
   vi.stubGlobal('matchMedia', (q: string) => ({ matches: /reduce/.test(q), media: q, addEventListener() {}, removeEventListener() {} }))
 })
@@ -85,5 +89,18 @@ describe('LessonSummary', () => {
     const w = await show({ stats: undefined })
     expect(w.text()).toContain('Урок пройден')
     expect(w.find('[data-test="stat-reward"]').exists()).toBe(true)
+  })
+
+  it('celebrates once, as the screen appears: the chime and the buzz', async () => {
+    const w = await show({})
+    expect(celebrate).toHaveBeenCalledTimes(1)
+    await w.setProps({ reward: 5 })
+    await flushPromises()
+    expect(celebrate).toHaveBeenCalledTimes(1)
+  })
+
+  it('celebrates a lesson with nothing to answer too', async () => {
+    await show({ stats: undefined, reward: 0 })
+    expect(celebrate).toHaveBeenCalledTimes(1)
   })
 })

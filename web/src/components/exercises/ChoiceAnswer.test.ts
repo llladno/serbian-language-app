@@ -1,8 +1,12 @@
-import { describe, it, expect, vi, afterEach } from 'vitest'
+import { describe, it, expect, vi, afterEach, beforeEach } from 'vitest'
 import { mount, flushPromises } from '@vue/test-utils'
 import ChoiceAnswer from './ChoiceAnswer.vue'
 import { api } from '../../api'
 import { phraseKey, _setPhraseIndex } from '../../lib/phraseAudio'
+import { speakClip } from '../../lib/sound'
+
+vi.mock('../../lib/sound', () => ({ speakClip: vi.fn() }))
+
 
 afterEach(() => {
   vi.restoreAllMocks()
@@ -68,5 +72,42 @@ describe('ChoiceAnswer', () => {
       await flushPromises()
       expect(w.findAll(speaker)).toHaveLength(1)
     })
+  })
+})
+
+describe('ChoiceAnswer reads the right phrase out after an answer', () => {
+  const clipOf = (t: string) => `p/${phraseKey(t)}.mp3`
+  const pick = async (w: ReturnType<typeof mount>, label: string) => {
+    await w.findAll('button').find((b) => b.text() === label)!.trigger('click')
+    await flushPromises()
+  }
+  beforeEach(() => vi.mocked(speakClip).mockClear())
+
+  it('after a right pick', async () => {
+    _setPhraseIndex([phraseKey('Hvala'), phraseKey('Molim')])
+    vi.spyOn(api, 'check').mockResolvedValue({ ok: true })
+    await pick(mount(ChoiceAnswer, { props }), 'Hvala')
+    expect(speakClip).toHaveBeenCalledTimes(1)
+    expect(speakClip).toHaveBeenCalledWith(clipOf('Hvala'))
+  })
+
+  it('after a wrong pick it is the right phrase, never the picked one', async () => {
+    _setPhraseIndex([phraseKey('Hvala'), phraseKey('Molim')])
+    vi.spyOn(api, 'check').mockResolvedValue({ ok: false, expected: 'Hvala' })
+    await pick(mount(ChoiceAnswer, { props }), 'Molim')
+    expect(speakClip).toHaveBeenCalledTimes(1)
+    expect(speakClip).toHaveBeenCalledWith(clipOf('Hvala'))
+  })
+
+  it('not while an earlier answer is only being looked at', () => {
+    _setPhraseIndex([phraseKey('Hvala')])
+    mount(ChoiceAnswer, { props: { ...props, prior: { answer: 'Hvala', correct: true } } })
+    expect(speakClip).not.toHaveBeenCalled()
+  })
+
+  it('not before an answer', () => {
+    _setPhraseIndex([phraseKey('Hvala'), phraseKey('Molim')])
+    mount(ChoiceAnswer, { props })
+    expect(speakClip).not.toHaveBeenCalled()
   })
 })

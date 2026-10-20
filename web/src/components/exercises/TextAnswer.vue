@@ -182,7 +182,7 @@ function retry() {
         Правильно: <span class="font-semibold" :class="{ serbian: !text }">{{ show(result.expected) }}</span>
       </p>
       <p v-if="resultPhrase" class="mt-1 flex justify-center">
-        <PhraseSpeak :text="resultPhrase" />
+        <PhraseSpeak :text="resultPhrase" autoplay />
       </p>
       <p v-if="result.explain" class="mt-1 text-sm text-[var(--muted)]">{{ show(result.explain) }}</p>
     </div>

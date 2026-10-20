@@ -1,8 +1,12 @@
-import { describe, it, expect, vi, afterEach } from 'vitest'
+import { describe, it, expect, vi, afterEach, beforeEach } from 'vitest'
 import { mount, flushPromises } from '@vue/test-utils'
 import TextAnswer from './TextAnswer.vue'
 import { api } from '../../api'
 import { phraseKey, _setPhraseIndex } from '../../lib/phraseAudio'
+import { speakClip } from '../../lib/sound'
+
+vi.mock('../../lib/sound', () => ({ speakClip: vi.fn() }))
+
 
 afterEach(() => {
   vi.restoreAllMocks()
@@ -204,5 +208,53 @@ describe('TextAnswer, a dictation read as text', () => {
       await submit(w, 'Odakle si?')
       expect(w.findAll(speaker)).toHaveLength(1)
     })
+  })
+})
+
+describe('TextAnswer reads the right sentence out after an answer', () => {
+  const clipOf = (t: string) => `p/${phraseKey(t)}.mp3`
+  beforeEach(() => vi.mocked(speakClip).mockClear())
+  const answerWith = async (extra: Record<string, unknown>, typed: string) => {
+    const w = mount(TextAnswer, { props: { ...props, ...extra } })
+    await w.find('input').setValue(typed)
+    await w.find('form').trigger('submit')
+    await flushPromises()
+    return w
+  }
+
+  it('reads what was typed when it is right', async () => {
+    _setPhraseIndex([phraseKey('Zdravo!')])
+    vi.spyOn(api, 'check').mockResolvedValue({ ok: true, expected: 'Zdravo!' })
+    await answerWith({}, 'Zdravo!')
+    expect(speakClip).toHaveBeenCalledTimes(1)
+    expect(speakClip).toHaveBeenCalledWith(clipOf('Zdravo!'))
+  })
+
+  it('reads the right answer, not the typed mistake', async () => {
+    _setPhraseIndex([phraseKey('Zdravo!'), phraseKey('Zdrvo!')])
+    vi.spyOn(api, 'check').mockResolvedValue({ ok: false, expected: 'Zdravo!' })
+    await answerWith({}, 'Zdrvo!')
+    expect(speakClip).toHaveBeenCalledTimes(1)
+    expect(speakClip).toHaveBeenCalledWith(clipOf('Zdravo!'))
+  })
+
+  it('reads the whole sentence of a gap-fill, not the missing word', async () => {
+    _setPhraseIndex([phraseKey('Ja sam iza vama.')])
+    vi.spyOn(api, 'check').mockResolvedValue({ ok: true, expected: 'iza' })
+    await answerWith({ type: 'fill_blank', prompt: 'Ja sam ___ vama.' }, 'iza')
+    expect(speakClip).toHaveBeenCalledWith(clipOf('Ja sam iza vama.'))
+  })
+
+  it('leaves a dictation alone: its own sentence has just been played', async () => {
+    _setPhraseIndex([phraseKey('Zdravo!')])
+    vi.spyOn(api, 'check').mockResolvedValue({ ok: true, expected: 'Zdravo!' })
+    await answerWith({ type: 'listen', audio: 'x.mp3' }, 'Zdravo!')
+    expect(speakClip).not.toHaveBeenCalled()
+  })
+
+  it('is silent while an earlier answer is only being looked at', () => {
+    _setPhraseIndex([phraseKey('Zdravo!')])
+    mount(TextAnswer, { props: { ...props, prior: { answer: 'Zdravo!', correct: true } } })
+    expect(speakClip).not.toHaveBeenCalled()
   })
 })

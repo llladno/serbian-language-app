@@ -103,7 +103,7 @@ function retry() {
       </p>
       <!-- only ever the right phrase: the options themselves stay silent, a wrong one must not be voiced -->
       <p class="mt-1 flex justify-center">
-        <PhraseSpeak :text="result.ok ? picked! : result.expected" />
+        <PhraseSpeak :text="result.ok ? picked! : result.expected" autoplay />
       </p>
       <p v-if="result.explain" class="mt-1 text-[var(--muted)]">{{ show(result.explain) }}</p>
     </div>

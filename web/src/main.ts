@@ -6,12 +6,14 @@ import router from './router'
 import { applyTheme } from './theme'
 import { applyPalette } from './palette'
 import { initTelegram } from './telegram'
+import { installAudioUnlock } from './lib/sound'
 import { captureAttribution, captureReferral } from './attribution'
 import { initMetrika } from './metrika'
 
 applyTheme()
 applyPalette()
 initTelegram()
+installAudioUnlock()
 captureAttribution()
 captureReferral()
 initMetrika()
