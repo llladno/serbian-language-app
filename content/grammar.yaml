@@ -14,16 +14,28 @@
   items:
     - prompt: "ja (я)"
       accept: ["sam"]
+      example_sr: "Ja sam iz Rusije."
+      example_ru: "Я из России."
     - prompt: "ti (ты)"
       accept: ["si"]
+      example_sr: "Ti si iz Rusije."
+      example_ru: "Ты из России."
     - prompt: "on/ona/ono (он/она/оно)"
       accept: ["je"]
+      example_sr: "On je iz Rusije."
+      example_ru: "Он из России."
     - prompt: "mi (мы)"
       accept: ["smo"]
+      example_sr: "Mi smo iz Rusije."
+      example_ru: "Мы из России."
     - prompt: "vi (вы)"
       accept: ["ste"]
+      example_sr: "Vi ste iz Rusije."
+      example_ru: "Вы из России."
     - prompt: "oni/one/ona (они)"
       accept: ["su"]
+      example_sr: "Oni su iz Rusije."
+      example_ru: "Они из России."
 
 - id: "imati"
   front: "imati — иметь, презент (настоящее время, + nemati)"
@@ -34,16 +46,28 @@
   items:
     - prompt: "ja (я)"
       accept: ["imam"]
+      example_sr: "Imam brata."
+      example_ru: "У меня есть брат."
     - prompt: "ti (ты)"
       accept: ["imaš"]
+      example_sr: "Imaš brata."
+      example_ru: "У тебя есть брат."
     - prompt: "on/ona/ono (он/она/оно)"
       accept: ["ima"]
+      example_sr: "Ona ima brata."
+      example_ru: "У неё есть брат."
     - prompt: "mi (мы)"
       accept: ["imamo"]
+      example_sr: "Imamo brata."
+      example_ru: "У нас есть брат."
     - prompt: "vi (вы)"
       accept: ["imate"]
+      example_sr: "Imate brata."
+      example_ru: "У вас есть брат."
     - prompt: "oni/one/ona (они)"
       accept: ["imaju"]
+      example_sr: "Imaju brata."
+      example_ru: "У них есть брат."
 
 - id: "moj-tvoj"
   front: "moj / tvoj — согласование по роду"
@@ -74,16 +98,28 @@
   items:
     - prompt: "ja (я)"
       accept: ["čitam"]
+      example_sr: "Čitam knjigu."
+      example_ru: "Я читаю книгу."
     - prompt: "ti (ты)"
       accept: ["čitaš"]
+      example_sr: "Čitaš knjigu."
+      example_ru: "Ты читаешь книгу."
     - prompt: "on/ona/ono (он/она/оно)"
       accept: ["čita"]
+      example_sr: "Ona čita knjigu."
+      example_ru: "Она читает книгу."
     - prompt: "mi (мы)"
       accept: ["čitamo"]
+      example_sr: "Čitamo knjigu."
+      example_ru: "Мы читаем книгу."
     - prompt: "vi (вы)"
       accept: ["čitate"]
+      example_sr: "Čitate knjigu."
+      example_ru: "Вы читаете книгу."
     - prompt: "oni/one/ona (они)"
       accept: ["čitaju"]
+      example_sr: "Čitaju knjigu."
+      example_ru: "Они читают книгу."
 
 - id: "prezent-im"
   front: "презент, тип -im: raditi — работать (настоящее время)"
@@ -94,16 +130,28 @@
   items:
     - prompt: "ja (я)"
       accept: ["radim"]
+      example_sr: "Radim ceo dan."
+      example_ru: "Я работаю весь день."
     - prompt: "ti (ты)"
       accept: ["radiš"]
+      example_sr: "Radiš ceo dan."
+      example_ru: "Ты работаешь весь день."
     - prompt: "on/ona/ono (он/она/оно)"
       accept: ["radi"]
+      example_sr: "Ona radi ceo dan."
+      example_ru: "Она работает весь день."
     - prompt: "mi (мы)"
       accept: ["radimo"]
+      example_sr: "Radimo ceo dan."
+      example_ru: "Мы работаем весь день."
     - prompt: "vi (вы)"
       accept: ["radite"]
+      example_sr: "Radite ceo dan."
+      example_ru: "Вы работаете весь день."
     - prompt: "oni/one/ona (они)"
       accept: ["rade"]
+      example_sr: "Oni rade ceo dan."
+      example_ru: "Они работают весь день."
 
 - id: "prezent-em"
   front: "презент, тип -em: pisati — писать (настоящее время)"
@@ -114,16 +162,28 @@
   items:
     - prompt: "ja (я)"
       accept: ["pišem"]
+      example_sr: "Pišem poruku."
+      example_ru: "Я пишу сообщение."
     - prompt: "ti (ты)"
       accept: ["pišeš"]
+      example_sr: "Pišeš poruku."
+      example_ru: "Ты пишешь сообщение."
     - prompt: "on/ona/ono (он/она/оно)"
       accept: ["piše"]
+      example_sr: "Ona piše poruku."
+      example_ru: "Она пишет сообщение."
     - prompt: "mi (мы)"
       accept: ["pišemo"]
+      example_sr: "Pišemo poruku."
+      example_ru: "Мы пишем сообщение."
     - prompt: "vi (вы)"
       accept: ["pišete"]
+      example_sr: "Pišete poruku."
+      example_ru: "Вы пишете сообщение."
     - prompt: "oni/one/ona (они)"
       accept: ["pišu"]
+      example_sr: "Pišu poruku."
+      example_ru: "Они пишут сообщение."
 
 - id: "u-na"
   front: "u / na — где (место)"
@@ -180,16 +240,28 @@
   items:
     - prompt: "ja, radio je muškarac (я, говорит мужчина)"
       accept: ["radio sam"]
+      example_sr: "Radio sam juče."
+      example_ru: "Я работал вчера."
     - prompt: "ja, radila je žena (я, говорит женщина)"
       accept: ["radila sam"]
+      example_sr: "Radila sam juče."
+      example_ru: "Я работала вчера."
     - prompt: "ti, muškarac (ты, о мужчине)"
       accept: ["radio si"]
+      example_sr: "Radio si juče."
+      example_ru: "Ты работал вчера."
     - prompt: "ti, žena (ты, о женщине)"
       accept: ["radila si"]
+      example_sr: "Radila si juče."
+      example_ru: "Ты работала вчера."
     - prompt: "on (он)"
       accept: ["radio je"]
+      example_sr: "Radio je juče."
+      example_ru: "Он работал вчера."
     - prompt: "ona (она)"
       accept: ["radila je"]
+      example_sr: "Radila je juče."
+      example_ru: "Она работала вчера."
 
 - id: "vid-glagola"
   front: "вид глагола: kupovati / kupiti — покупать / купить"
@@ -216,16 +288,28 @@
   items:
     - prompt: "ja (я)"
       accept: ["ću da radim", "radiću", "ću raditi"]
+      example_sr: "Sutra ću da radim."
+      example_ru: "Я буду работать завтра."
     - prompt: "ti (ты)"
       accept: ["ćeš da radiš", "radićeš", "ćeš raditi"]
+      example_sr: "Sutra ćeš da radiš."
+      example_ru: "Ты будешь работать завтра."
     - prompt: "on/ona (он/она)"
       accept: ["će da radi", "radiće", "će raditi"]
+      example_sr: "Sutra će da radi."
+      example_ru: "Он будет работать завтра."
     - prompt: "mi (мы)"
       accept: ["ćemo da radimo", "radićemo", "ćemo raditi"]
+      example_sr: "Sutra ćemo da radimo."
+      example_ru: "Мы будем работать завтра."
     - prompt: "vi (вы)"
       accept: ["ćete da radite", "radićete", "ćete raditi"]
+      example_sr: "Sutra ćete da radite."
+      example_ru: "Вы будете работать завтра."
     - prompt: "oni (они)"
       accept: ["će da rade", "radiće", "će raditi"]
+      example_sr: "Sutra će da rade."
+      example_ru: "Они будут работать завтра."
 
 - id: "instrumental-transport"
   front: "инструментал транспорта: autobus → autobusom"

@@ -1115,7 +1115,6 @@ func (h handlers) reviewQueue(w http.ResponseWriter, r *http.Request) {
 				continue
 			}
 			d.Front, d.Note = g.Front, g.Note
-			d.ExampleSR, d.ExampleRU = g.ExampleSR, g.ExampleRU
 			// A grammar card doesn't flip-and-self-grade like vocab/ff: each
 			// review asks ONE item from the card, typed and auto-checked
 			// (see reviewGradeGram) — picked fresh every time so repeated
@@ -1125,6 +1124,10 @@ func (h handlers) reviewQueue(w http.ResponseWriter, r *http.Request) {
 			idx := rand.Intn(len(g.Items))
 			d.ItemIndex = idx
 			d.ItemPrompt = g.Items[idx].Prompt
+			// The example is the asked item's own where it has one: the card's fits
+			// one form of a verb at most, and under another form's answer it reads
+			// as that answer's translation.
+			d.ExampleSR, d.ExampleRU = g.ExampleFor(idx)
 		}
 		out = append(out, d)
 	}

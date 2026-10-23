@@ -84,6 +84,41 @@ func TestReviewQueueIncludesGrammarCard(t *testing.T) {
 	}
 }
 
+// The example under the answer is the asked item's own: "ja" has none and shows
+// the card's, "ti" has its own. A card that showed "Radim ceo dan." under the
+// answer "radiš" was read by a learner as the translation of that answer.
+func TestReviewQueueGivesTheAskedItemsExample(t *testing.T) {
+	h, _ := newTestAPI(t)
+	want := map[string][2]string{
+		"ja (я)":  {"Radim ceo dan.", "Я работаю весь день."},
+		"ti (ты)": {"Radiš ceo dan.", "Ты работаешь весь день."},
+	}
+	seen := map[string]bool{}
+	// The item is picked at random, so ask until both have come up.
+	for i := 0; i < 80 && len(seen) < len(want); i++ {
+		rr := do(h, "GET", "/api/review/queue", "")
+		if rr.Code != 200 {
+			t.Fatalf("%d %s", rr.Code, rr.Body)
+		}
+		for _, c := range decodeBody[[]reviewCardDTO](t, rr) {
+			if c.Kind != "gram" {
+				continue
+			}
+			w, ok := want[c.ItemPrompt]
+			if !ok {
+				t.Fatalf("item_prompt = %q", c.ItemPrompt)
+			}
+			if c.ExampleSR != w[0] || c.ExampleRU != w[1] {
+				t.Errorf("%s: example = %q / %q, want %q / %q", c.ItemPrompt, c.ExampleSR, c.ExampleRU, w[0], w[1])
+			}
+			seen[c.ItemPrompt] = true
+		}
+	}
+	if len(seen) != len(want) {
+		t.Errorf("only saw %v of the two items", seen)
+	}
+}
+
 // TestReviewGradeRejectsGramCard checks the old self-report endpoint refuses
 // a grammar card — grading one now has to go through an actual correctness
 // check (grade-gram), not a bare client-supplied grade.

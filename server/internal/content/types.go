@@ -176,4 +176,22 @@ type GrammarCard struct {
 type GrammarItem struct {
 	Prompt string
 	Accept []string
+	// ExampleSR/ExampleRU, when set, are the example shown after this item is
+	// answered, in place of the card's. A card that drills the persons of a verb
+	// needs them: the card's own example fits one person, and shown under the
+	// answer for another it reads as that answer's translation.
+	ExampleSR string
+	ExampleRU string
+}
+
+// ExampleFor is the example to show after the item at idx is answered: its own
+// if it has one, else the card's. Nothing for an index the card does not have.
+func (g GrammarCard) ExampleFor(idx int) (sr, ru string) {
+	if idx < 0 || idx >= len(g.Items) {
+		return "", ""
+	}
+	if it := g.Items[idx]; it.ExampleSR != "" || it.ExampleRU != "" {
+		return it.ExampleSR, it.ExampleRU
+	}
+	return g.ExampleSR, g.ExampleRU
 }

@@ -9,3 +9,5 @@
       accept: ["radim"]
     - prompt: "ti (ты)"
       accept: ["radiš"]
+      example_sr: "Radiš ceo dan."
+      example_ru: "Ты работаешь весь день."

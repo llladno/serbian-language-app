@@ -108,8 +108,10 @@ type grammarFile []struct {
 	ExampleSR string `yaml:"example_sr"`
 	ExampleRU string `yaml:"example_ru"`
 	Items     []struct {
-		Prompt string   `yaml:"prompt"`
-		Accept []string `yaml:"accept"`
+		Prompt    string   `yaml:"prompt"`
+		Accept    []string `yaml:"accept"`
+		ExampleSR string   `yaml:"example_sr"`
+		ExampleRU string   `yaml:"example_ru"`
 	} `yaml:"items"`
 }
 
@@ -143,7 +145,7 @@ func loadGrammar(dir string) ([]GrammarCard, error) {
 			if len(it.Accept) == 0 {
 				return nil, fmt.Errorf("grammar.yaml: %s: item %q has no accept", g.ID, it.Prompt)
 			}
-			items = append(items, GrammarItem{Prompt: it.Prompt, Accept: it.Accept})
+			items = append(items, GrammarItem{Prompt: it.Prompt, Accept: it.Accept, ExampleSR: it.ExampleSR, ExampleRU: it.ExampleRU})
 		}
 		out = append(out, GrammarCard{
 			ID: g.ID, Front: g.Front, Note: g.Note, Lesson: g.Lesson,
