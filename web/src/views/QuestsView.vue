@@ -370,15 +370,4 @@ async function claim(q: Quest) {
   border-radius: 20px;
   box-shadow: var(--shadow);
 }
-.btn-seed {
-  background: var(--seed);
-  color: var(--seed-ink);
-}
-.btn-seed:not(:disabled):hover {
-  background: var(--seed-hi);
-}
-.btn-seed:disabled {
-  opacity: 0.7;
-  cursor: not-allowed;
-}
 </style>

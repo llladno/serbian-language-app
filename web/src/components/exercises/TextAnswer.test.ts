@@ -38,6 +38,26 @@ describe('TextAnswer', () => {
     expect(w.emitted('graded')?.[0]?.[0]).toBe(false)
   })
 
+  it('says «Вы написали:» before the learner\'s own words, with the wrong ones marked', async () => {
+    vi.spyOn(api, 'check').mockResolvedValue({
+      ok: false,
+      expected: 'Zdravo! Kako si?',
+      diff: [
+        { text: 'zdravo', ok: true },
+        { text: 'sti', ok: false },
+      ],
+    })
+    const w = mount(TextAnswer, { props })
+    await w.find('input').setValue('zdravo sti')
+    await w.find('form').trigger('submit')
+    await flushPromises()
+
+    const wrote = w.get('[data-test="wrote"]')
+    expect(wrote.text().replace(/\s+/g, ' ')).toBe('Вы написали: zdravo sti')
+    expect(wrote.find('.chunk-wrong').text()).toBe('sti')
+    expect(w.text()).toContain('Правильно: Zdravo! Kako si?')
+  })
+
   it('reports success and emits graded true', async () => {
     vi.spyOn(api, 'check').mockResolvedValue({ ok: true, expected: 'Zdravo!' })
     const w = mount(TextAnswer, { props })
@@ -108,6 +128,19 @@ describe('TextAnswer, soft acceptance and fix_error', () => {
     expect(w.text()).toContain('проверь написание')
     expect(w.text()).toContain('Dobro veče')
     expect(w.emitted('graded')?.[0]?.[0]).toBe(true)
+  })
+
+  it('shows what the learner wrote next to the right spelling when it passed with a typo', async () => {
+    vi.spyOn(api, 'check').mockResolvedValue({ ok: true, typo: true, expected: 'Ovo je sestru' })
+    const w = mount(TextAnswer, { props: { ...props, type: 'fill_blank' as const, prompt: 'Ovo je ___.' }, global: { stubs: { RouterLink: true } } })
+    await w.find('input').setValue('Ovo je sestra')
+    await w.find('form').trigger('submit')
+    await flushPromises()
+
+    const note = w.get('[data-test="typo-note"]').text().replace(/\s+/g, ' ')
+    expect(note).toContain('Засчитано, но проверь написание')
+    expect(note).toContain('Вы написали: Ovo je sestra')
+    expect(note).toContain('Правильно: Ovo je sestru')
   })
 
   it('does not nag about spelling on a plain correct answer', async () => {
@@ -256,5 +289,90 @@ describe('TextAnswer reads the right sentence out after an answer', () => {
     _setPhraseIndex([phraseKey('Zdravo!')])
     mount(TextAnswer, { props: { ...props, prior: { answer: 'Zdravo!', correct: true } } })
     expect(speakClip).not.toHaveBeenCalled()
+  })
+})
+
+describe('TextAnswer: what to type', () => {
+  const tapQuestion = async (w: ReturnType<typeof mount>) => {
+    await w.get('button[aria-label="Подсказка"]').trigger('click')
+    return w.text()
+  }
+
+  it('has a «?» on every typed exercise that says what kind of answer is wanted', async () => {
+    const cases: [string, string][] = [
+      ['blank', 'только пропущенное слово'],
+      ['word', 'одно слово'],
+      ['phrase', 'фразу целиком'],
+      ['sentence', 'предложение целиком'],
+    ]
+    for (const [shape, words] of cases) {
+      const w = mount(TextAnswer, { props: { ...props, shape: shape as 'blank' }, global: { stubs: { RouterLink: true } } })
+      expect(await tapQuestion(w)).toContain(words)
+    }
+  })
+
+  it('puts the exercise’s own hint after the line about what to type', async () => {
+    const w = mount(TextAnswer, { props: { ...props, shape: 'word' as const, explain: 'Начинается на š.' } })
+    const text = await tapQuestion(w)
+    expect(text).toContain('одно слово')
+    expect(text).toContain('Начинается на š.')
+  })
+
+  it('opens the description on its own line below the prompt, in a dictation too', async () => {
+    const w = mount(TextAnswer, { props: { ...props, type: 'listen' as const, prompt: 'Запиши, что слышишь.', audio: 'a.mp3', shape: 'phrase' as const } })
+    await tapQuestion(w)
+    const note = w.get('span.block.w-full')
+    expect(note.text()).toContain('фразу целиком')
+    // The prompt row wraps, so a full-width note drops under it instead of sitting beside the «?».
+    expect(note.element.closest('.flex')!.className).toContain('flex-wrap')
+  })
+
+  it('has no «?» when nothing is known about the shape and there is no hint', () => {
+    const w = mount(TextAnswer, { props })
+    expect(w.find('button[aria-label="Подсказка"]').exists()).toBe(false)
+  })
+})
+
+describe('TextAnswer: only a piece of the answer', () => {
+  it('asks for the whole thing, grades nothing and keeps what was typed', async () => {
+    const check = vi.spyOn(api, 'check').mockResolvedValue({ ok: false, format: 'too_short' })
+    const w = mount(TextAnswer, { props: { ...props, type: 'fix_error' as const, prompt: 'Iz Rusije.', shape: 'sentence' as const }, global: { stubs: { RouterLink: true } } })
+    await w.find('input').setValue('ja sam')
+    await w.find('form').trigger('submit')
+    await flushPromises()
+
+    expect(check).toHaveBeenCalledTimes(1)
+    expect(w.get('[data-test="too-short"]').text()).toContain('Перепиши предложение целиком')
+    expect(w.emitted('graded')).toBeUndefined()
+    expect((w.find('input').element as HTMLInputElement).value).toBe('ja sam')
+    expect(w.text()).not.toContain('Не совсем')
+    expect(w.text()).not.toContain('Верно')
+  })
+
+  it('says it for a translation too, and goes away as soon as the learner types more', async () => {
+    vi.spyOn(api, 'check').mockResolvedValue({ ok: false, format: 'too_short' })
+    const w = mount(TextAnswer, { props })
+    await w.find('input').setValue('Hvala')
+    await w.find('form').trigger('submit')
+    await flushPromises()
+    expect(w.get('[data-test="too-short"]').text()).toContain('часть ответа')
+
+    await w.find('input').setValue('Hvala, ')
+    expect(w.find('[data-test="too-short"]').exists()).toBe(false)
+  })
+
+  it('grades normally once the whole answer is sent', async () => {
+    const check = vi.spyOn(api, 'check')
+    check.mockResolvedValueOnce({ ok: false, format: 'too_short' })
+    check.mockResolvedValueOnce({ ok: true, expected: 'Hvala, prijatno!' })
+    const w = mount(TextAnswer, { props })
+    await w.find('input').setValue('Hvala')
+    await w.find('form').trigger('submit')
+    await flushPromises()
+    await w.find('input').setValue('Hvala, prijatno!')
+    await w.find('form').trigger('submit')
+    await flushPromises()
+    expect(w.text()).toContain('Верно')
+    expect(w.emitted('graded')?.[0]?.[0]).toBe(true)
   })
 })

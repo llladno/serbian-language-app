@@ -10,6 +10,8 @@ import type { Quest } from '../types'
 
 vi.mock('vue-router', () => ({
   useRoute: () => ({ path: '/profile', meta: {} }),
+  // the choose-a-level window mounted in AppNav goes to the course after a choice
+  useRouter: () => ({ push: () => {} }),
   RouterLink: { template: '<a><slot /></a>' },
 }))
 

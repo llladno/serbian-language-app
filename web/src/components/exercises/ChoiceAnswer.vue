@@ -8,6 +8,8 @@ import type { CheckResult, LessonAttempt } from '../../types'
 import HintButton from '../HintButton.vue'
 import PhraseSpeak from '../PhraseSpeak.vue'
 import PromptSpeak from '../PromptSpeak.vue'
+import SpeakButton from '../SpeakButton.vue'
+import SuccessCheck from '../SuccessCheck.vue'
 
 const props = defineProps<{
   lesson: string
@@ -15,9 +17,17 @@ const props = defineProps<{
   prompt: string
   options: string[]
   explain?: string
+  // «Послушай и выбери»: a clip instead of text. With `text` (audio off) the
+  // sentence is shown instead of the clip, for a learner who cannot listen.
+  audio?: string
+  text?: string
   prior?: LessonAttempt
 }>()
-const emit = defineEmits<{ graded: [ok: boolean, result: CheckResult, answer: string]; ungraded: [] }>()
+const emit = defineEmits<{
+  graded: [ok: boolean, result: CheckResult, answer: string]
+  ungraded: []
+  cantListen: []
+}>()
 // Display only: what is sent to the server and compared stays the Latin original.
 const { show } = useScript()
 
@@ -65,7 +75,25 @@ function retry() {
       <RefreshCw :size="15" :stroke-width="2.25" />
     </button>
 
-    <p class="mb-5 flex flex-wrap items-center justify-center gap-1.5 whitespace-pre-wrap px-8 text-xl font-medium">
+    <div v-if="audio || text" class="mb-5 flex flex-col items-center gap-3 px-8">
+      <p v-if="text" class="serbian whitespace-pre-wrap text-xl font-medium" data-test="listen-as-text">{{ show(text) }}</p>
+      <SpeakButton v-else :src="audio" :size="52" />
+      <p v-if="result?.say" class="serbian text-xl font-medium" data-test="listen-said">{{ show(result.say) }}</p>
+      <span class="flex items-center gap-1.5 text-sm text-[var(--muted)]">
+        {{ show(prompt) }}
+        <HintButton v-if="explain && !result && !fromPrior" :text="show(explain)" />
+      </span>
+      <button
+        v-if="audio && !fromPrior && !result"
+        type="button"
+        class="btn btn-ghost text-sm"
+        data-test="cant-listen"
+        @click="emit('cantListen')"
+      >
+        не могу прослушать :(
+      </button>
+    </div>
+    <p v-else class="mb-5 flex flex-wrap items-center justify-center gap-1.5 whitespace-pre-wrap px-8 text-xl font-medium">
       {{ show(prompt) }}
       <PromptSpeak :prompt="prompt" />
       <HintButton v-if="explain && !result && !fromPrior" :text="show(explain)" />
@@ -95,8 +123,9 @@ function retry() {
     </div>
 
     <div v-else-if="result" class="pop mt-4 text-sm">
-      <p class="font-semibold" :class="result.ok ? 'text-[var(--good)]' : 'text-[var(--bad)]'">
-        {{ result.ok ? '✓ Верно' : '✗ Не то' }}
+      <p class="flex items-center justify-center gap-2 font-semibold" :class="result.ok ? 'text-[var(--good)]' : 'text-[var(--bad)]'">
+        <SuccessCheck v-if="result.ok" />
+        {{ result.ok ? 'Верно' : '✗ Не то' }}
       </p>
       <p v-if="!result.ok && result.expected">
         Правильно: <span class="serbian font-semibold">{{ show(result.expected) }}</span>

@@ -9,6 +9,7 @@ import BottomBar from '../BottomBar.vue'
 import HintButton from '../HintButton.vue'
 import PhraseSpeak from '../PhraseSpeak.vue'
 import PromptSpeak from '../PromptSpeak.vue'
+import SuccessCheck from '../SuccessCheck.vue'
 
 const props = defineProps<{
   lesson: string
@@ -128,8 +129,9 @@ function retry() {
       </BottomBar>
 
       <div v-else class="pop mt-4 text-sm">
-        <p class="mb-1 font-semibold" :class="result.ok ? 'text-[var(--good)]' : 'text-[var(--bad)]'">
-          {{ result.ok ? '✓ Верно' : result.near_miss ? 'Почти — опечатка?' : '✗ Не совсем' }}
+        <p class="mb-1 flex items-center justify-center gap-2 font-semibold" :class="result.ok ? 'text-[var(--good)]' : 'text-[var(--bad)]'">
+          <SuccessCheck v-if="result.ok" />
+          {{ result.ok ? 'Верно' : result.near_miss ? 'Почти — опечатка?' : '✗ Не совсем' }}
         </p>
         <p class="flex items-center justify-center gap-1">
           <template v-if="!result.ok && result.expected">

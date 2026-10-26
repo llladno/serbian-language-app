@@ -1,16 +1,18 @@
 <script setup lang="ts">
-// Shown once, when the learner comes back from the bank with a paid order: a
-// thank-you, what the payment opened, and one way forward, the course. It sits
-// in the app's usual modal frame; the two swallows are the same picture the
-// invite screen and the quests banner use for "a gift", so it reads as one family.
+// Shown once, when the learner comes back from the bank with a paid order that needs no choice (a
+// year; a level is spent in LevelChoiceModal): a thank-you, what the payment opened, and one way
+// forward, the course. It sits in the app's usual modal frame; the two swallows are the same picture
+// the invite screen and the quests banner use for "a gift", so it reads as one family. The tone is
+// that of the tariffs screen and the Telegram channel: «вы», and the pixel heart.
 import { computed } from 'vue'
-import { X, LockOpen, Heart } from 'lucide-vue-next'
+import { X, LockOpen } from 'lucide-vue-next'
 import ModalShell from './ModalShell.vue'
 import SeedIcon from './SeedIcon.vue'
 import { useWalletStore } from '../stores/wallet'
 import { grouped, longDate } from '../lib/tariffs'
 import type { Order } from '../types'
 import scene from '../assets/invite-scene.webp'
+import heart from '../assets/donate/heart.png'
 
 const props = defineProps<{ order: Order | null; yearUntil: string | null }>()
 const emit = defineEmits<{ close: [] }>()
@@ -45,11 +47,11 @@ const opened = computed(() => {
 
       <div class="space-y-4 px-5 pb-5 pt-1">
         <h2 id="thanks-title" class="text-xl font-extrabold leading-snug">
-          Спасибо, что ты с нами и поддерживаешь проект
-          <!-- A yellow heart after the thanks; decorative, the words carry the meaning. -->
-          <Heart :size="22" :stroke-width="2" fill="currentColor" class="heart" aria-hidden="true" data-test="thanks-heart" />
+          Спасибо, что вы с нами и поддерживаете проект
+          <!-- The pixel heart of the support card after the thanks; decorative, the words carry the meaning. -->
+          <img :src="heart" alt="" aria-hidden="true" class="heart" data-test="thanks-heart" />
         </h2>
-        <p class="text-sm text-[var(--muted)]">Оплата прошла. Вот что теперь у тебя есть.</p>
+        <p class="text-sm text-[var(--muted)]">Оплата прошла. Вот что теперь у вас есть.</p>
 
         <ul class="got">
           <li data-test="thanks-opened">
@@ -88,13 +90,13 @@ const opened = computed(() => {
   mask-image: linear-gradient(to bottom, #000 60%, transparent);
   -webkit-mask-image: linear-gradient(to bottom, #000 60%, transparent);
 }
-/* A clear yellow (the currency's gold is muted next to it); it sits on the text
-   line like a letter would. */
+/* The pixel heart sits on the text line like a letter would. */
 .heart {
   display: inline-block;
-  vertical-align: -0.2em;
-  margin-left: 0.1em;
-  color: #f6c13a;
+  height: 0.95em;
+  width: auto;
+  vertical-align: -0.14em;
+  image-rendering: pixelated;
 }
 .got {
   display: grid;

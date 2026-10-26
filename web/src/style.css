@@ -295,6 +295,44 @@ body {
   }
 }
 
+/* A soft scrollbar for lists that scroll inside a card: thin, rounded, in the accent's own tone instead of
+   the system grey. Chrome and Safari draw it with the -webkit- parts; Firefox gets the standard two properties
+   (which, set in Chrome too, would switch the rounded thumb off, hence the @supports). Phones show no
+   scrollbar, so such a list also hints at more content with a fade at the edge (see LevelChoiceModal). */
+.soft-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+.soft-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.soft-scroll::-webkit-scrollbar-thumb {
+  background-color: color-mix(in srgb, var(--accent) 32%, transparent);
+  border-radius: 999px;
+}
+.soft-scroll::-webkit-scrollbar-thumb:hover {
+  background-color: color-mix(in srgb, var(--accent) 60%, transparent);
+}
+@supports not selector(::-webkit-scrollbar) {
+  .soft-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in srgb, var(--accent) 40%, transparent) transparent;
+  }
+}
+
+/* The gold button: the one that collects a reward on the quests screen, and the one that offers
+   to pay when зёрнышки run short. Gold is the currency's colour, so it says "this is about зёрнышки". */
+.btn-seed {
+  background: var(--seed);
+  color: var(--seed-ink);
+}
+.btn-seed:not(:disabled):hover {
+  background: var(--seed-hi);
+}
+.btn-seed:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
 :root[data-theme='dark'] {
   --seed-wash: rgba(246, 216, 138, 0.09);
 }

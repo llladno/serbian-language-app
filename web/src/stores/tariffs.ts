@@ -10,7 +10,7 @@ import { api, ApiError } from '../api'
 import { initData, isTelegram, openExternalLink } from '../telegram'
 import { useSessionStore } from './session'
 import { discountPercent, looksLikeContact, monthlyYearCost, yearSaving } from '../lib/tariffs'
-import type { Order, TariffCode, TariffsInfo } from '../types'
+import type { LevelChoice, Order, TariffCode, TariffsInfo } from '../types'
 
 export const useTariffsStore = defineStore('tariffs', () => {
   const session = useSessionStore()
@@ -62,7 +62,15 @@ export const useTariffsStore = defineStore('tariffs', () => {
   const hasPaidLevel = computed(() => info.value?.has_paid_level ?? false)
   const yearUntil = computed(() => info.value?.year.until ?? null)
   const yearActive = computed(() => yearUntil.value !== null && new Date(yearUntil.value) > new Date())
+  // Has a tariff: a running year, or a level paid for in rubles. A level bought
+  // with зёрнышки is not one, and nor is a year that has run out.
+  const hasTariff = computed(() => yearActive.value || hasPaidLevel.value)
   const paymentsReady = computed(() => info.value?.payments_ready ?? false)
+  // A paid level is a credit: the learner chooses the level after paying. These are the levels
+  // they can still choose and the paid orders waiting to be spent.
+  const choices = computed<LevelChoice[]>(() => info.value?.level.choices ?? [])
+  const credits = computed<number[]>(() => info.value?.level.credits ?? [])
+  const hasCredit = computed(() => credits.value.length > 0)
 
   async function load(force = false) {
     if (!enabled.value || loading.value) return
@@ -99,6 +107,14 @@ export const useTariffsStore = defineStore('tariffs', () => {
     }
   }
 
+  // Spends a paid level on the level picked, then reads the quote again: the credit is gone and
+  // the list of levels left to choose has changed.
+  async function chooseLevel(orderId: number, phase: string): Promise<Order> {
+    const order = await api.chooseLevel(orderId, phase)
+    await load(true)
+    return order
+  }
+
   // Where a payment stands, after the learner comes back from the payment
   // service. The server asks the service itself, and settles the order if it was
   // paid.
@@ -110,7 +126,7 @@ export const useTariffsStore = defineStore('tariffs', () => {
 
   return {
     info, loading, paying, enabled, ready, needsReceiptContact, receiptContact, receiptContactValid, setReceiptContact, levelNow, levelRegular, yearPrice, yearOld,
-    levelDiscount, levelFrom, monthlyCost, yearSaves, levelBonus, yearBonus, yearBonusExtra, hasPaidLevel, yearUntil, yearActive, paymentsReady, load, pay, checkOrder,
+    levelDiscount, levelFrom, monthlyCost, yearSaves, levelBonus, yearBonus, yearBonusExtra, hasPaidLevel, hasTariff, yearUntil, yearActive, paymentsReady, choices, credits, hasCredit, load, pay, checkOrder, chooseLevel,
   }
 })
 
@@ -126,9 +142,10 @@ export function payErrorMessage(e: unknown): string {
   if (e instanceof ApiError) {
     if (e.message === 'payments_unavailable') return 'Оплата ещё не подключена'
     if (e.message === 'nothing_to_buy') return 'Все платные уровни уже открыты'
+    if (e.message === 'level_pending_choice') return 'Сначала выберите уровень, который вы уже оплатили'
     if (e.message === 'level_cooldown') return 'Уровень за рубли можно открывать раз в месяц. Дата — на странице тарифов'
     if (e.message === 'receipt_contact_invalid') return 'Проверь почту или телефон для чека: в них, похоже, опечатка'
-    if (e.message === 'payment_failed') return 'Платёжная система не ответила. Попробуй ещё раз'
+    if (e.message === 'payment_failed') return 'Платёжная система не ответила. Попробуйте ещё раз'
   }
-  return 'Не получилось начать оплату. Попробуй ещё раз'
+  return 'Не получилось начать оплату. Попробуйте ещё раз'
 }

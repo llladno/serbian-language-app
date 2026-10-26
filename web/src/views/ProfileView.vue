@@ -8,6 +8,7 @@ import { palette, setPalette, PALETTE_META, type Palette } from '../palette'
 import { theme, setTheme, THEME_META, type Theme } from '../theme'
 import { useSessionStore } from '../stores/session'
 import { useWalletStore } from '../stores/wallet'
+import { useTariffsStore } from '../stores/tariffs'
 import { authErrorMessage } from '../lib/authErrors'
 import { useTelegramStart } from '../lib/telegramStart'
 import ProgressDashboard from '../components/ProgressDashboard.vue'
@@ -20,6 +21,8 @@ import BotPrefsSection from '../components/BotPrefsSection.vue'
 import ScriptToggle from '../components/ScriptToggle.vue'
 import SoundSettings from '../components/SoundSettings.vue'
 import TariffsCard from '../components/TariffsCard.vue'
+import TariffsPromo from '../components/TariffsPromo.vue'
+import LevelCreditNotice from '../components/LevelCreditNotice.vue'
 import SeedIcon from '../components/SeedIcon.vue'
 import { pluralRu } from '../lib/plural'
 import type { LeaderRow, Me, Progress, Vocab } from '../types'
@@ -27,6 +30,7 @@ import type { LeaderRow, Me, Progress, Vocab } from '../types'
 const router = useRouter()
 const session = useSessionStore()
 const wallet = useWalletStore()
+const tariffs = useTariffsStore()
 
 const me = ref<Me | null>(null)
 const progress = ref<Progress | null>(null)
@@ -60,6 +64,9 @@ async function loadAll() {
     api.progress(),
     api.vocab(),
     api.leaderboard({ limit: 3 }),
+    // The tariffs advert at the top needs the prices; load() swallows its own
+    // errors and does nothing for an account without tariffs.
+    tariffs.load(),
   ])
   if (meRes.status === 'fulfilled') me.value = meRes.value
   else loadError.value = authErrorMessage(meRes.reason)
@@ -203,7 +210,10 @@ async function logout() {
         </div>
       </div>
 
-      <div v-else key="loaded" class="grid grid-cols-1 items-start gap-4 lg:grid-cols-3">
+      <div v-else key="loaded" class="space-y-4">
+      <LevelCreditNotice />
+      <TariffsPromo />
+      <div class="grid grid-cols-1 items-start gap-4 lg:grid-cols-3">
         <div class="space-y-4 lg:col-span-2 lg:order-1">
           <ProgressDashboard v-if="progress" :progress="progress" :wotd="wotd" />
           <PhaseProgressCard v-if="progress" :progress="progress" />
@@ -259,6 +269,7 @@ async function logout() {
 
           <LeaderboardCard :name="me.name" :leaders="leaders" />
         </div>
+      </div>
       </div>
     </Transition>
 

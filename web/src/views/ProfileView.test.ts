@@ -4,6 +4,7 @@ import { setActivePinia, createPinia } from 'pinia'
 import ProfileView from './ProfileView.vue'
 import { api, ApiError } from '../api'
 import { useSessionStore } from '../stores/session'
+import { sessionUser, tariffsInfo } from '../test/tariffsFixture'
 import type { Me } from '../types'
 
 vi.mock('vue-router', () => ({
@@ -143,5 +144,63 @@ describe('ProfileView sound setting', () => {
     await flushPromises()
     await openSettings(w)
     expect(w.find('[data-test="setting-sound"]').exists()).toBe(true)
+  })
+})
+
+describe('ProfileView tariffs advert', () => {
+  function profileWithTariffs(info = tariffsInfo()) {
+    useSessionStore().user = sessionUser(true)
+    vi.spyOn(api, 'getMe').mockResolvedValue(me())
+    vi.spyOn(api, 'progress').mockRejectedValue(new Error('n/a'))
+    return { tariffs: vi.spyOn(api, 'tariffs').mockResolvedValue(info) }
+  }
+
+  it('opens the profile with the offer, above everything else, once the prices are in', async () => {
+    const { tariffs } = profileWithTariffs()
+    const w = mountProfile()
+    await flushPromises()
+    expect(tariffs).toHaveBeenCalledTimes(1)
+    const promo = w.find('[data-test="tariffs-promo"]')
+    expect(promo.exists()).toBe(true)
+    const quests = w.find('[data-test="quests-card"]').element
+    expect(promo.element.compareDocumentPosition(quests) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    // the offer replaces the small card, it does not sit next to it
+    expect(w.find('[data-test="tariffs-card"]').exists()).toBe(false)
+  })
+
+  it('shows no offer to a learner with a tariff, only the way back to it', async () => {
+    profileWithTariffs(tariffsInfo({ has_paid_level: true }))
+    const w = mountProfile()
+    await flushPromises()
+    expect(w.find('[data-test="tariffs-promo"]').exists()).toBe(false)
+    expect(w.find('[data-test="tariffs-card"]').exists()).toBe(true)
+  })
+
+  it('reminds a learner who paid for a level and has not chosen it, above everything, and shows no advert', async () => {
+    profileWithTariffs(
+      tariffsInfo({
+        has_paid_level: true,
+        level: { price: 299, regular_price: 299, next: null, choices: [{ id: '4', title: 'Уровень 5 — Падежи', lessons: 18 }], credits: [7] },
+      }),
+    )
+    const w = mountProfile()
+    await flushPromises()
+    const notice = w.find('[data-test="level-credit"]')
+    expect(notice.exists()).toBe(true)
+    const quests = w.find('[data-test="quests-card"]').element
+    expect(notice.element.compareDocumentPosition(quests) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    expect(w.find('[data-test="tariffs-promo"]').exists()).toBe(false)
+  })
+
+  it('asks the server nothing about prices when tariffs are not on for the account', async () => {
+    useSessionStore().user = sessionUser(false)
+    vi.spyOn(api, 'getMe').mockResolvedValue(me())
+    vi.spyOn(api, 'progress').mockRejectedValue(new Error('n/a'))
+    const tariffs = vi.spyOn(api, 'tariffs')
+    const w = mountProfile()
+    await flushPromises()
+    expect(tariffs).not.toHaveBeenCalled()
+    expect(w.find('[data-test="tariffs-promo"]').exists()).toBe(false)
+    expect(w.find('[data-test="tariffs-card"]').exists()).toBe(false)
   })
 })

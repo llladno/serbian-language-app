@@ -202,7 +202,7 @@ function badgeClass(lesson?: LessonRef) {
         <div v-if="!collapsed(phase)" :id="`phase-${phase.id}`" class="space-y-3">
           <component
             :is="forSale(phase) || comingSoon(phase) ? 'div' : RouterLink"
-            v-for="lid in phase.lessons"
+            v-for="(lid, n) in phase.lessons"
             :key="lid"
             v-bind="cardAttrs(phase, lid)"
             :data-lesson="lid"
@@ -211,11 +211,14 @@ function badgeClass(lesson?: LessonRef) {
             @click="forSale(phase) && unlock.openFor(phase.id)"
             @keydown.enter="forSale(phase) && unlock.openFor(phase.id)"
           >
+            <!-- The place in the level, not the lesson id: ids (`13b`, `15`) keep progress and rewards in place
+                 while short lessons are cut in, and would show as gaps and letters. -->
             <span
               class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-sm font-bold tabular-nums"
               :class="badgeClass(byId.get(lid))"
+              :data-test="`number-${lid}`"
             >
-              {{ lid }}
+              {{ n + 1 }}
             </span>
             <span class="min-w-0 flex-1">
               <span class="block text-sm font-semibold leading-snug sm:text-base">{{ show(byId.get(lid)?.title || 'Урок ' + lid) }}</span>

@@ -20,6 +20,7 @@ const textTypes = ['translate', 'fill_blank', 'fix_error', 'listen']
     :prompt="exercise.prompt"
     :forms="exercise.forms ?? []"
     :meta="exercise.meta"
+    :hint="exercise.hint"
     :prior="prior"
     @graded="$emit('graded', $event)"
     @ungraded="$emit('ungraded')"
@@ -31,9 +32,12 @@ const textTypes = ['translate', 'fill_blank', 'fix_error', 'listen']
     :prompt="exercise.prompt"
     :options="exercise.options ?? []"
     :explain="exercise.hint || exercise.explain"
+    :audio="exercise.audio"
+    :text="exercise.text"
     :prior="prior"
     @graded="$emit('graded', $event)"
     @ungraded="$emit('ungraded')"
+    @cant-listen="$emit('cantListen')"
   />
   <WordBankAnswer
     v-else-if="exercise.type === 'word_bank'"
@@ -66,6 +70,7 @@ const textTypes = ['translate', 'fill_blank', 'fix_error', 'listen']
     :prompt="exercise.prompt"
     :audio="exercise.audio"
     :text="exercise.text"
+    :shape="exercise.shape"
     :explain="exercise.hint || exercise.explain"
     :prior="prior"
     @graded="$emit('graded', $event)"

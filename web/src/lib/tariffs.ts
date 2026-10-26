@@ -1,7 +1,7 @@
 // Tariffs: paying rubles for paid levels. Spec: docs/superpowers/specs/2026-10-14-tariffs-design.md.
 //
 // Two products, one-off payments, no auto-renew:
-//   level - the NEXT level the learner has not opened, forever
+//   level - one level the learner has not opened, forever; they choose it after paying
 //   year  - every level for 365 days, new ones included
 //
 // The prices and who has paid come from the server (stores/tariffs.ts); this
@@ -64,30 +64,29 @@ export function yearSaving(yearPrice: number, monthlyCost: number): { rub: numbe
 }
 
 // What to offer a learner who tried to open `phaseId` without enough зёрнышки.
-// "Уровень" only ever opens the NEXT locked level, so asking for a later one
-// is answered with the year: it opens every level at once, which is the only
-// way to reach level 5 without level 4.
+// "Уровень" is the first tariff and is always what is offered: it is a credit for any closed level the
+// learner picks after paying, so it fits the level they tapped as much as the next one.
 //
-// Levels are sold one a month. While that limit holds the learner back, even the
-// next level is answered with the year (`why: 'cooldown'`, with the date the
-// level can be bought again).
+// Two things change what the offer can do:
+//  - levels are sold one a month: while the limit holds, the level is still offered but carries the date
+//    it can be bought (`from`);
+//  - a paid level that has not been spent yet (`hasCredit`): another cannot be bought until the learner
+//    has chosen, so the answer is to choose (`kind: 'credit'`).
 export type Offer =
-  | { kind: 'level'; level: Phase; price: number }
-  | { kind: 'year'; level: Phase; first: Phase; price: number; why: 'order' }
-  | { kind: 'year'; level: Phase; first: Phase; price: number; why: 'cooldown'; from: string }
+  | { kind: 'level'; level: Phase; price: number; from?: string }
+  | { kind: 'credit'; level: Phase }
 
 export function offerForPhase(
   course: Course | null,
   phaseId: string,
-  quote: { levelPrice: number; yearPrice: number; levelFrom?: string | null },
+  quote: { levelPrice: number; levelFrom?: string | null; hasCredit?: boolean },
 ): Offer | null {
-  const next = nextLockedLevel(course)
-  const asked = course?.phases.find((p) => p.id === phaseId)
-  if (!next || !asked || !asked.locked) return null
-  if (asked.id !== next.id) return { kind: 'year', level: asked, first: next, price: quote.yearPrice, why: 'order' }
-  if (quote.levelFrom) {
-    return { kind: 'year', level: asked, first: next, price: quote.yearPrice, why: 'cooldown', from: quote.levelFrom }
-  }
+  if (!course) return null
+  const planned = new Set(course.lessons.filter((l) => l.planned).map((l) => l.id))
+  const asked = course.phases.find((p) => p.id === phaseId)
+  if (!asked || !forSale(asked, (id) => planned.has(id))) return null
+  if (quote.hasCredit) return { kind: 'credit', level: asked }
+  if (quote.levelFrom) return { kind: 'level', level: asked, price: quote.levelPrice, from: quote.levelFrom }
   return { kind: 'level', level: asked, price: quote.levelPrice }
 }
 

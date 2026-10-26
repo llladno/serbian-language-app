@@ -32,7 +32,8 @@ import type {
   TariffsInfo,
   TariffCode,
   Order,
-  MistakesResponse,
+  DevOrder,
+  RepeatResponse,
 } from './types'
 import { getStoredAttribution, getStoredReferral } from './attribution'
 
@@ -156,6 +157,16 @@ export const api = {
   createOrder: (tariff: TariffCode, contact?: string) =>
     request<Order>('/me/orders', { method: 'POST', body: JSON.stringify(contact ? { tariff, contact } : { tariff }) }),
   order: (id: number) => request<Order>(`/me/orders/${id}`),
+  // Spends a paid level on the level the learner picked (docs/superpowers/specs/2026-10-26-level-choice-design.md).
+  chooseLevel: (id: number, phase: string) =>
+    request<Order>(`/me/orders/${id}/level`, { method: 'POST', body: JSON.stringify({ phase }) }),
+  // The stand-in cash desk (PAYMENTS_DEV, local development only): what is being bought, and the two buttons.
+  devOrder: (id: number) => request<DevOrder>(`/dev/pay/${id}`),
+  devPay: (id: number, outcome: 'paid' | 'failed') =>
+    request<Order>(`/dev/pay/${id}`, { method: 'POST', body: JSON.stringify({ outcome }) }),
+  // Where the tariffs were shown and pressed (the log behind the admin's «Воронка тарифов»).
+  trackTariffEvent: (kind: 'view' | 'click', source: string) =>
+    request<void>('/me/tariff-events', { method: 'POST', body: JSON.stringify({ kind, source }) }),
   botPrefs: () => request<BotPrefs>('/me/bot-prefs'),
   setBotPrefs: (patch: Partial<BotPrefs>) =>
     request<BotPrefs>('/me/bot-prefs', { method: 'PUT', body: JSON.stringify(patch) }),
@@ -185,9 +196,10 @@ export const api = {
   exercises: (id: string, opts: { audioOff?: boolean } = {}) =>
     request<ExerciseBlock[]>(`/lessons/${id}/exercises${opts.audioOff ? '?audio=off' : ''}`),
   lessonAttempts: (id: string) => request<LessonAttempts>(`/lessons/${id}/attempts`),
-  // The exercises the learner last got wrong, a short batch at a time.
-  mistakes: (opts: { audioOff?: boolean } = {}) =>
-    request<MistakesResponse>(`/mistakes${opts.audioOff ? '?audio=off' : ''}`),
+  // «Повторить»: today's batch of exercises already answered, worst first. Answers 402
+  // (ApiError.message === 'repeat_limit') once the free batch of the day is done.
+  repeat: (opts: { audioOff?: boolean } = {}) =>
+    request<RepeatResponse>(`/repeat${opts.audioOff ? '?audio=off' : ''}`),
   check: (lesson: string, exId: string, payload: CheckPayload) =>
     request<CheckResult>(`/lessons/${lesson}/exercises/${exId}/check`, {
       method: 'POST',

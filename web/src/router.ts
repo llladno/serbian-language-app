@@ -23,9 +23,10 @@ import LessonView from './views/LessonView.vue'
 import ReviewView from './views/ReviewView.vue'
 import VocabView from './views/VocabView.vue'
 import RatingView from './views/RatingView.vue'
-import MistakesView from './views/MistakesView.vue'
+import RepeatView from './views/RepeatView.vue'
 import QuestsView from './views/QuestsView.vue'
 import TariffsView from './views/TariffsView.vue'
+import DevPayView from './views/DevPayView.vue'
 import { useSessionStore } from './stores/session'
 
 const PUBLIC_AUTH_ROUTES = new Set(['login', 'register', 'verify', 'forgot', 'reset'])
@@ -98,12 +99,15 @@ const router = createRouter({
     { path: '/course', name: 'course', component: CourseView },
     { path: '/lesson/:id', name: 'lesson', component: LessonView, meta: { hideTabBar: true } },
     { path: '/review', name: 'review', component: ReviewView },
-    { path: '/mistakes', name: 'mistakes', component: MistakesView, meta: { hideTabBar: true } },
+    { path: '/repeat', name: 'repeat', component: RepeatView, meta: { hideTabBar: true } },
+    { path: '/mistakes', redirect: '/repeat' }, // the old «Работа над ошибками» link
     { path: '/vocab', name: 'vocab', component: VocabView },
     { path: '/false-friends', redirect: { path: '/vocab', query: { tab: 'traps' } } },
     { path: '/rating', name: 'rating', component: RatingView },
     { path: '/quests', name: 'quests', component: QuestsView },
     { path: '/tariffs', name: 'tariffs', component: TariffsView },
+    // The stand-in cash desk of PAYMENTS_DEV (local development); the server answers 404 where it is off.
+    { path: '/dev/pay', name: 'dev-pay', component: DevPayView, meta: { hideTabBar: true } },
   ],
 })
 

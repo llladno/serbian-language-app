@@ -11,6 +11,7 @@ import BottomBar from '../BottomBar.vue'
 import HintButton from '../HintButton.vue'
 import PhraseSpeak from '../PhraseSpeak.vue'
 import PromptSpeak from '../PromptSpeak.vue'
+import SuccessCheck from '../SuccessCheck.vue'
 
 const props = defineProps<{
   lesson: string
@@ -40,6 +41,9 @@ const showRetry = computed(
   () => (fromPrior.value || !!result.value) && !(wrongGoesToEnd.value && result.value && !result.value.ok),
 )
 const pending = ref(false)
+
+// One wrong pair that the server forgave is yellow, a real mistake is red.
+const wrongRing = computed(() => (result.value?.partial ? 'ring-[var(--warning)]' : 'ring-[var(--bad)]'))
 
 const complete = computed(() => props.left.every((l) => l in picks))
 
@@ -81,7 +85,7 @@ function tapRight(r: string) {
 function leftClass(l: string) {
   if (result.value) {
     if (!(l in picks)) return 'btn-ghost opacity-50'
-    return result.value.match?.[l] ? 'btn-ghost ring-2 ring-[var(--good)]' : 'btn-ghost ring-2 ring-[var(--bad)]'
+    return result.value.match?.[l] ? 'btn-ghost ring-2 ring-[var(--good)]' : `btn-ghost ring-2 ${wrongRing.value}`
   }
   if (l in picks) return 'border border-[var(--accent)] bg-[var(--accent-soft)] text-[var(--accent)]'
   if (selectedLeft.value === l) return 'btn-ghost ring-2 ring-[var(--accent)]'
@@ -91,7 +95,7 @@ function rightClass(r: string) {
   if (result.value) {
     const l = leftFor(r)
     if (!l) return 'btn-ghost opacity-50'
-    return result.value.match?.[l] ? 'btn-ghost ring-2 ring-[var(--good)]' : 'btn-ghost ring-2 ring-[var(--bad)]'
+    return result.value.match?.[l] ? 'btn-ghost ring-2 ring-[var(--good)]' : `btn-ghost ring-2 ${wrongRing.value}`
   }
   if (isRightUsed(r)) return 'border border-[var(--accent)] bg-[var(--accent-soft)] text-[var(--accent)]'
   if (selectedRight.value === r) return 'btn-ghost ring-2 ring-[var(--accent)]'
@@ -181,8 +185,12 @@ function retry() {
       </BottomBar>
 
       <div v-else class="mt-4 text-sm pop">
-        <p class="font-semibold" :class="result.ok ? 'text-[var(--good)]' : 'text-[var(--bad)]'">
-          {{ result.ok ? '✓ Верно' : '✗ Есть ошибки' }}
+        <p
+          class="flex items-center justify-center gap-2 font-semibold"
+          :class="result.partial ? 'text-[var(--warning)]' : result.ok ? 'text-[var(--good)]' : 'text-[var(--bad)]'"
+        >
+          <SuccessCheck v-if="result.ok && !result.partial" />
+          {{ result.partial ? 'Почти! Одна пара не та — засчитано' : result.ok ? 'Верно' : '✗ Есть ошибки' }}
         </p>
         <p v-if="result.explain" class="mt-1 text-[var(--muted)]">{{ show(result.explain) }}</p>
       </div>

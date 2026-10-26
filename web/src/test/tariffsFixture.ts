@@ -22,7 +22,18 @@ export function tariffsInfo(over: Partial<TariffsInfo> = {}): TariffsInfo {
   return {
     payments_ready: true,
     has_paid_level: false,
-    level: { price: 249, regular_price: 299, bonus: 1000, next: { id: '4', title: 'Уровень 4 — Падежи в жизни' } },
+    level: {
+      price: 249,
+      regular_price: 299,
+      bonus: 1000,
+      next: { id: '4', title: 'Уровень 4 — Падежи в жизни' },
+      // the levels a paid level can open, in course order, and the paid levels not yet spent
+      choices: [
+        { id: '4', title: 'Уровень 4 — Падежи в жизни', lessons: 18 },
+        { id: '5', title: 'Уровень 5 — Жизнь на сербском', lessons: 18, after: 'Уровень 4 — Падежи в жизни' },
+      ],
+      credits: [],
+    },
     year: { price: 1000, old_price: 2000, bonus: 15000 },
     ...over,
   }

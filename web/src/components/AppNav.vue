@@ -8,6 +8,7 @@ import SupportModal from './SupportModal.vue'
 import DonateModal from './DonateModal.vue'
 import RewardModal from './RewardModal.vue'
 import SurveyModal from './SurveyModal.vue'
+import LevelChoiceModal from './LevelChoiceModal.vue'
 import ToastStack from './ToastStack.vue'
 import NotificationBell from './NotificationBell.vue'
 import SeedIcon from './SeedIcon.vue'
@@ -148,5 +149,6 @@ watch(() => route.path, refreshWallet)
   <DonateModal />
   <RewardModal />
   <SurveyModal />
+  <LevelChoiceModal />
   <ToastStack />
 </template>

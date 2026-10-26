@@ -31,32 +31,32 @@ beforeEach(() => {
 })
 afterEach(() => vi.restoreAllMocks())
 
-describe('ProgressDashboard mistakes', () => {
-  it('offers to work through the mistakes when there are some', async () => {
-    const w = mountDashboard(
-      progress({ weak_exercises: [{ exercise_id: '01.2.1', lesson: '01', prompt: 'Привет', wrong: 2, total: 3 }] }),
-    )
-    await flushPromises()
-    const go = w.findAll('a').find((a) => /Исправить ошибки/.test(a.text()))
-    expect(go?.attributes('href')).toBe('/mistakes')
+describe('ProgressDashboard: repeating exercises', () => {
+  it('always has the «Повторить задания» card, with or without mistakes', async () => {
+    for (const p of [progress(), progress({ weak_exercises: [{ exercise_id: '01.2.1', lesson: '01', prompt: 'Привет', wrong: 2, total: 3 }] })]) {
+      const w = mountDashboard(p)
+      await flushPromises()
+      const card = w.find('[data-test="repeat-card"]')
+      expect(card.attributes('href')).toBe('/repeat')
+      expect(card.text()).toContain('Повторить задания')
+    }
   })
 
-  it('lists the weak exercises as plain text: the button is the way in, not a link per row', async () => {
-    const w = mountDashboard(
-      progress({ weak_exercises: [{ exercise_id: '01.2.1', lesson: '01', prompt: 'Привет', wrong: 2, total: 3 }] }),
-    )
-    await flushPromises()
-    expect(w.text()).toContain('Стоит повторить')
-    expect(w.text()).toContain('2/3')
-    expect(w.text()).toContain('Привет')
-    expect(w.findAll('a').some((a) => a.attributes('href')?.startsWith('/lesson/') && /Привет/.test(a.text()))).toBe(false)
-  })
-
-  it('shows nothing about mistakes when there are none', async () => {
+  it('keeps the words review separate from the exercises review', async () => {
     const w = mountDashboard(progress())
     await flushPromises()
-    expect(w.text()).not.toContain('Исправить ошибки')
+    const hrefs = w.findAll('a').map((a) => a.attributes('href'))
+    expect(hrefs).toContain('/review')
+    expect(hrefs).toContain('/repeat')
+  })
+
+  it('shows no list of mistakes: the batch itself is where they come back', async () => {
+    const w = mountDashboard(
+      progress({ weak_exercises: [{ exercise_id: '01.2.1', lesson: '01', prompt: 'Привет', wrong: 2, total: 3 }] }),
+    )
+    await flushPromises()
     expect(w.text()).not.toContain('Стоит повторить')
+    expect(w.text()).not.toContain('2/3')
   })
 })
 
@@ -68,7 +68,6 @@ describe('ProgressDashboard and the learner’s script', () => {
     } as SessionUser
   }
   const wotd: Vocab = { id: 'krompir', latin: 'krompir', cyrillic: 'кромпир', ru: 'картофель' }
-  const weak = [{ exercise_id: '01.2.4', lesson: '01', prompt: '«Сёла старые» → Sela su ____.', wrong: 1, total: 1 }]
 
   it('leads the word of the day with its Cyrillic spelling and shows the Latin one next to it', async () => {
     readIn('cyrillic')
@@ -87,16 +86,6 @@ describe('ProgressDashboard and the learner’s script', () => {
     })
     await flushPromises()
     expect(w.text()).toContain('картофель (в Сербии: кромпир)')
-  })
-
-  it('shows the Serbian in a weak exercise prompt in Cyrillic', async () => {
-    readIn('cyrillic')
-    const w = mount(ProgressDashboard, {
-      props: { progress: progress({ weak_exercises: weak }), wotd: null },
-      global: { stubs: { RouterLink } },
-    })
-    await flushPromises()
-    expect(w.text()).toContain('«Сёла старые» → Села су ____.')
   })
 
   it('keeps the Latin first for a Latin reader', async () => {

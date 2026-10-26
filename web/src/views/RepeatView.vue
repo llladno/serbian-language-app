@@ -1,14 +1,14 @@
 <script setup lang="ts">
-// "Работа над ошибками": the exercises the learner last got wrong, answered
-// again one after another without going back into their lessons. A wrong answer
-// goes to the back of the line (lib/mistakesQueue); answering goes through the
-// ordinary check endpoint, which is what takes a fixed exercise off the list.
+// «Повторить»: today's batch of exercises the learner has already answered (worst first, then
+// the almost-right ones, then the rest by level), answered again one after another without going
+// back into their lessons. A wrong answer goes to the back of the line (lib/mistakesQueue);
+// answering goes through the ordinary check endpoint, which is what the server counts as done.
+// One free batch a day: the second is a 402, and the answer to it is the limit modal.
 import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { ArrowRight, CircleCheckBig, RotateCcw, X } from 'lucide-vue-next'
-import { api } from '../api'
+import { api, ApiError } from '../api'
 import { provideWrongGoesToEnd } from '../lib/lessonRules'
-import { pluralRu } from '../lib/plural'
 import {
   createMistakesState,
   current,
@@ -21,6 +21,7 @@ import {
 import ExerciseItem from '../components/exercises/ExerciseItem.vue'
 import BottomBar from '../components/BottomBar.vue'
 import ScriptToggle from '../components/ScriptToggle.vue'
+import RepeatLimitModal from '../components/RepeatLimitModal.vue'
 
 const router = useRouter()
 // As in a lesson: after a mistake the way forward is the bottom button (the
@@ -30,8 +31,10 @@ provideWrongGoesToEnd(ref(true))
 const state = ref<MistakesState | null>(null)
 const loading = ref(true)
 const failed = ref(false)
-// Mistakes still waiting beyond the batch on screen.
-const more = ref(0)
+// A year or a paid level: another batch can be asked for straight away.
+const unlimited = ref(false)
+// Today's free batch is done: the screen says so and the modal explains the way out.
+const limited = ref(false)
 
 // A learner who cannot listen gets dictations as sentences to translate. One
 // switch for the whole screen, remembered for next time.
@@ -56,12 +59,14 @@ const silent = ref(readSilent())
 async function load() {
   loading.value = true
   failed.value = false
+  limited.value = false
   try {
-    const res = await api.mistakes(silent.value ? { audioOff: true } : {})
+    const res = await api.repeat(silent.value ? { audioOff: true } : {})
     state.value = createMistakesState(res.items)
-    more.value = Math.max(0, res.total - res.items.length)
-  } catch {
-    failed.value = true
+    unlimited.value = res.unlimited
+  } catch (e) {
+    if (e instanceof ApiError && e.status === 402) limited.value = true
+    else failed.value = true
   } finally {
     loading.value = false
   }
@@ -103,7 +108,7 @@ async function cantListen() {
   silent.value = true
   writeSilent(true)
   try {
-    const res = await api.mistakes({ audioOff: true })
+    const res = await api.repeat({ audioOff: true })
     const fresh = new Map(res.items.map((m) => [keyOf(m), m]))
     s.pending = s.pending.map((m) => (m.exercise.type === 'listen' ? (fresh.get(keyOf(m)) ?? m) : m))
   } catch {
@@ -113,7 +118,9 @@ async function cantListen() {
   }
 }
 
+// The way in is the profile's «Повторить задания» card, so that is where every exit goes back to.
 const close = () => router.push('/profile')
+const toCourse = () => router.push('/course')
 </script>
 
 <template>
@@ -121,8 +128,8 @@ const close = () => router.push('/profile')
     <header class="shrink-0 pb-4">
       <div class="flex w-full items-center">
         <div class="min-w-0 flex-1">
-          <p class="truncate text-[14px] font-semibold">Работа над ошибками</p>
-          <p class="truncate text-[11px] text-[var(--muted)]">те же упражнения, без возврата в уроки</p>
+          <p class="truncate text-[14px] font-semibold">Повторить</p>
+          <p class="truncate text-[11px] text-[var(--muted)]">ошибки, опечатки и сложные темы</p>
         </div>
         <ScriptToggle compact class="ml-auto mr-1.5" />
         <button class="icon-btn shrink-0" title="Закрыть" aria-label="Закрыть" @click="close">
@@ -145,26 +152,33 @@ const close = () => router.push('/profile')
       </div>
 
       <div v-else-if="failed" class="card p-6 text-center">
-        <p class="text-[var(--muted)]">Не получилось загрузить ошибки.</p>
+        <p class="text-[var(--muted)]">Не получилось загрузить задания.</p>
         <button class="btn btn-ghost mt-3" @click="load">Повторить</button>
       </div>
 
+      <div v-else-if="limited" class="card p-8 text-center" data-test="repeat-limited">
+        <CircleCheckBig :size="36" :stroke-width="2" class="mx-auto text-[var(--good)]" />
+        <p class="mt-3 text-lg font-bold">Серия на сегодня пройдена</p>
+        <p class="mt-1 text-sm text-[var(--muted)]">Новая появится завтра.</p>
+        <button class="btn btn-primary mt-5" @click="close">В профиль</button>
+      </div>
+
       <div v-else-if="empty" class="card p-8 text-center">
-        <p class="text-lg font-bold">Ошибок нет</p>
-        <p class="mt-1 text-sm text-[var(--muted)]">Всё, что ты проходил, отвечено верно.</p>
-        <button class="btn btn-primary mt-5" @click="close">К прогрессу</button>
+        <p class="text-lg font-bold">Пока нечего повторять</p>
+        <p class="mt-1 text-sm text-[var(--muted)]">Пройди первый урок, и здесь появятся задания.</p>
+        <button class="btn btn-primary mt-5" @click="toCourse">К курсу</button>
       </div>
 
       <div v-else-if="finished && state" class="card p-8 text-center">
         <CircleCheckBig :size="36" :stroke-width="2" class="mx-auto text-[var(--good)]" />
-        <p class="mt-3 text-lg font-bold">Все ошибки исправлены</p>
+        <p class="mt-3 text-lg font-bold">Серия пройдена</p>
         <p class="mt-1 text-sm text-[var(--muted)]">
           Исправлено {{ state.fixed }}, с первого раза — {{ state.fixedFirstTry }}
         </p>
-        <button v-if="more > 0" class="btn btn-primary mt-5" @click="load">
-          Ещё {{ more }} {{ pluralRu(more, 'ошибка', 'ошибки', 'ошибок') }}
+        <button v-if="unlimited" class="btn btn-primary mt-5" data-test="repeat-again" @click="load">
+          Ещё серию
         </button>
-        <button class="btn mt-3" :class="more > 0 ? 'btn-ghost' : 'btn-primary'" @click="close">Готово</button>
+        <button class="btn mt-3" :class="unlimited ? 'btn-ghost' : 'btn-primary'" @click="close">Готово</button>
       </div>
 
       <div v-else-if="cur" :key="keyOf(cur) + ':' + round">
@@ -178,6 +192,8 @@ const close = () => router.push('/profile')
       </div>
     </div>
   </div>
+
+  <RepeatLimitModal :open="limited" @close="close" />
 
   <BottomBar v-if="showBar">
     <button class="btn btn-primary w-full" :disabled="state?.answered === null" @click="advance">

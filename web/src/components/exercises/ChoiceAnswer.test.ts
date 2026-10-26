@@ -111,3 +111,59 @@ describe('ChoiceAnswer reads the right phrase out after an answer', () => {
     expect(speakClip).not.toHaveBeenCalled()
   })
 })
+
+// «Послушай и выбери»: a choice that comes with a clip (`audio`) instead of
+// text, or with the sentence as text (`text`) for a learner who cannot listen.
+describe('ChoiceAnswer as a listening task', () => {
+  const listenProps = {
+    lesson: '02a',
+    exerciseId: '02a.3.1',
+    prompt: 'Послушай и выбери перевод.',
+    options: ['Доброе утро.', 'Добрый вечер.'],
+    audio: '02a.3.1.mp3',
+  }
+  const speaker = 'button[aria-label="озвучить"]'
+
+  it('offers the clip and a way out for someone who cannot listen', async () => {
+    const w = mount(ChoiceAnswer, { props: listenProps })
+    expect(w.find(speaker).exists()).toBe(true)
+    expect(w.find('[data-test="listen-as-text"]').exists()).toBe(false)
+    await w.find('[data-test="cant-listen"]').trigger('click')
+    expect(w.emitted('cantListen')).toHaveLength(1)
+  })
+
+  it('checks the picked meaning like any other choice', async () => {
+    const check = vi.spyOn(api, 'check').mockResolvedValue({ ok: true, expected: 'Доброе утро.', say: 'Dobro jutro.' })
+    const w = mount(ChoiceAnswer, { props: listenProps })
+    await w.findAll('button').find((b) => b.text() === 'Доброе утро.')!.trigger('click')
+    await flushPromises()
+    expect(check).toHaveBeenCalledWith('02a', '02a.3.1', { answer: 'Доброе утро.' })
+    expect(w.emitted('graded')?.[0]?.[0]).toBe(true)
+  })
+
+  it('reveals the sentence that was played once it is answered', async () => {
+    vi.spyOn(api, 'check').mockResolvedValue({ ok: false, expected: 'Доброе утро.', say: 'Dobro jutro.' })
+    const w = mount(ChoiceAnswer, { props: listenProps })
+    expect(w.text()).not.toContain('Dobro jutro')
+    await w.findAll('button').find((b) => b.text() === 'Добрый вечер.')!.trigger('click')
+    await flushPromises()
+    expect(w.find('[data-test="listen-said"]').text()).toBe('Dobro jutro.')
+    // the clip stays available to hear it again
+    expect(w.find(speaker).exists()).toBe(true)
+  })
+
+  it('shows the sentence as text, without a clip or the way out, when audio is off', () => {
+    const w = mount(ChoiceAnswer, {
+      props: { ...listenProps, audio: undefined, text: 'Dobro jutro.', prompt: 'Выбери перевод.' },
+    })
+    expect(w.find('[data-test="listen-as-text"]').text()).toBe('Dobro jutro.')
+    expect(w.find(speaker).exists()).toBe(false)
+    expect(w.find('[data-test="cant-listen"]').exists()).toBe(false)
+  })
+
+  it('an ordinary choice has no way out and no listening block', () => {
+    const w = mount(ChoiceAnswer, { props })
+    expect(w.find('[data-test="cant-listen"]').exists()).toBe(false)
+    expect(w.find('[data-test="listen-as-text"]').exists()).toBe(false)
+  })
+})

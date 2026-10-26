@@ -8,6 +8,7 @@ import { useWalletStore } from '../stores/wallet'
 import { useToasts } from '../lib/toasts'
 import { isTelegram, initData, openExternalLink } from '../telegram'
 import { enableTariffs, tariffsInfo } from '../test/tariffsFixture'
+import { useLevelChoiceModal } from '../lib/levelChoiceModal'
 import type { Course, SessionUser, TariffsInfo } from '../types'
 
 vi.mock('vue-router', () => ({
@@ -18,6 +19,9 @@ vi.mock('../telegram', () => ({ isTelegram: vi.fn(), initData: vi.fn(), openExte
 enableAutoUnmount(afterEach)
 
 const assign = vi.fn()
+
+// The level part of the quote, with some of it changed (choices, credits, the limit).
+const levelOf = (over: Partial<TariffsInfo['level']>): TariffsInfo['level'] => ({ ...tariffsInfo().level, ...over })
 
 function course(locked: { '4': boolean; '5': boolean } = { '4': true, '5': true }): Course {
   return {
@@ -32,7 +36,7 @@ function course(locked: { '4': boolean; '5': boolean } = { '4': true, '5': true 
 }
 
 // What the learner sees once the prices have loaded. `search` is the address
-// bar's query, for the visit back from ЮKassa.
+// bar's query, for the visit back from the bank.
 async function mountView(over: Partial<TariffsInfo> = {}, c: Course = course(), search = '', user: Partial<SessionUser> = {}) {
   const info = tariffsInfo(over)
   vi.spyOn(api, 'tariffs').mockResolvedValue(info)
@@ -60,28 +64,40 @@ beforeEach(() => {
 afterEach(() => {
   vi.restoreAllMocks()
   vi.useRealTimers()
+  useLevelChoiceModal().closeModal()
 })
 
 describe('TariffsView: the two plans', () => {
-  it('offers the next locked level at the first-purchase price with the regular price struck through', async () => {
+  it('offers a level of your choice at the first-purchase price with the regular price struck through', async () => {
     const w = await mountView()
-    expect(w.get('[data-test="level-title"]').text()).toBe('Уровень 4 — Падежи в жизни')
+    expect(w.get('[data-test="level-title"]').text()).toBe('Уровень на ваш выбор')
     const price = w.get('[data-test="level-price"]').text()
     expect(price).toContain('249')
     expect(price).toContain('299')
     expect(w.get('[data-test="level-price"] .was').text()).toContain('299')
-    expect(w.get('[data-test="buy-level"]').text()).toContain('249')
+    expect(w.get('[data-test="buy-level"]').text()).toBe('Хочу уровень — 249\u00a0₽')
   })
 
-  it('moves to the next level once level 4 is open', async () => {
-    const w = await mountView({}, course({ '4': false, '5': true }))
-    expect(w.get('[data-test="level-title"]').text()).toBe('Уровень 5 — Жизнь на сербском')
+  it('lists by name, without the numbers, only the levels still left to choose', async () => {
+    const w = await mountView()
+    expect(w.get('[data-test="level-inside"]').text()).toContain('«Падежи в жизни», «Жизнь на сербском»')
+    const left = await mountView({ level: levelOf({ choices: [tariffsInfo().level.choices![1]] }) })
+    const inside = left.get('[data-test="level-inside"]').text()
+    expect(inside).toContain('«Жизнь на сербском»')
+    expect(inside).not.toContain('Падежи в жизни') // already open: not offered
+  })
+
+  it('says "and N more" when there are more than three levels to choose from', async () => {
+    const many = ['4', '5', '6', '7'].map((id) => ({ id, title: `Уровень ${id} — Тема ${id}`, lessons: 10 }))
+    const w = await mountView({ level: levelOf({ choices: many }) })
+    expect(w.get('[data-test="level-inside"]').text()).toContain('«Тема 4», «Тема 5», «Тема 6» и ещё 1')
   })
 
   it('keeps the 249 tariff on show when every level is open, with the button switched off', async () => {
-    const w = await mountView({}, course({ '4': false, '5': false }))
+    const w = await mountView({ level: levelOf({ choices: [], next: null }) })
     expect(w.get('[data-test="level-price"]').text()).toContain('249')
     expect(w.find('[data-test="buy-level"]').exists()).toBe(false)
+    expect(w.find('[data-test="level-inside"]').exists()).toBe(false)
     const off = w.get('[data-test="level-none"]')
     expect(off.text()).toContain('Все платные уровни открыты')
     expect(off.attributes('disabled')).toBeDefined()
@@ -137,22 +153,17 @@ describe('TariffsView: what makes buying worthwhile', () => {
     expect(w.find('[data-test="year-badge"]').exists()).toBe(false)
   })
 
-  it('sets out what each plan gives, in bold, and what the next level is about', async () => {
+  it('sets out what each plan gives, in bold', async () => {
     const w = await mountView()
     const level = w.get('[data-test="tariff-level"]')
-    expect(level.findAll('.perks li')).toHaveLength(4) // forever, the зёрнышки, one payment, once a month
-    expect(level.text()).toContain('Навсегда')
-    expect(level.text()).toContain('Один платёж')
-    expect(level.text()).toContain('Раз в месяц')
+    expect(level.findAll('.perks li')).toHaveLength(3) // forever, unlimited repeats, the зёрнышки
+    expect(level.text()).toContain('Навсегда, без подписки')
+    expect(level.text()).toContain('само ничего не спишется')
+    expect(w.get('[data-test="level-monthly"]').text()).toContain('раз в месяц')
     const year = w.get('[data-test="tariff-year"]')
-    expect(year.findAll('.perks li')).toHaveLength(4) // every level, the зёрнышки, new levels, one payment
-    expect(year.text()).toContain('Все платные уровни сразу')
+    expect(year.findAll('.perks li')).toHaveLength(4) // every level, unlimited repeats, the зёрнышки, new levels
+    expect(year.text()).toContain('Все уровни сразу')
     expect(year.text()).toContain('Новые уровни включены')
-  })
-
-  it('names the lessons in the next level', async () => {
-    const w = await mountView()
-    expect(w.get('[data-test="level-inside"]').text()).toContain('1\u00a0урок') // no-break: the number keeps its word
   })
 })
 
@@ -187,9 +198,15 @@ describe('TariffsView: the зёрнышки that come with a tariff', () => {
     expect(w.get('[data-test="year-bonus"]').text()).not.toContain('больше')
   })
 
+  it('says on both cards that repeats have no daily limit', async () => {
+    const w = await mountWithCurrency()
+    expect(w.get('[data-test="level-repeat"]').text()).toContain('Повторения без лимита')
+    expect(w.get('[data-test="year-repeat"]').text()).toContain('Повторения без лимита')
+  })
+
   it('shows no bonus line for a tariff that has none', async () => {
     const w = await mountWithCurrency({
-      level: { price: 249, regular_price: 299, next: { id: '4', title: 'Уровень 4 — Падежи в жизни' } },
+      level: levelOf({ bonus: undefined }),
       year: { price: 1000, old_price: 2000 },
     })
     expect(w.find('[data-test="level-bonus"]').exists()).toBe(false)
@@ -200,7 +217,7 @@ describe('TariffsView: the зёрнышки that come with a tariff', () => {
 describe('TariffsView: one level a month', () => {
   // A level was paid for recently: the button says when the next opens, and the
   // year, which is not held back, stays on offer.
-  const held = (from: string) => ({ level: { price: 299, regular_price: 299, available_from: from, next: null } })
+  const held = (from: string) => ({ level: levelOf({ price: 299, regular_price: 299, available_from: from }) })
   const future = () => new Date(Date.now() + 12 * 86_400_000).toISOString()
 
   it('replaces the buy button with the date the next level opens', async () => {
@@ -211,7 +228,7 @@ describe('TariffsView: one level a month', () => {
     expect(wait.text()).toContain('Следующий уровень — с ')
     const note = w.get('[data-test="level-cooldown"]').text().replace(/\s+/g, ' ')
     expect(note).toContain('через 12 дней')
-    expect(note).toContain('открой все уровни на год')
+    expect(note).toContain('откройте все уровни на год')
     expect(w.get('[data-test="level-cooldown"] a').attributes('href')).toBe('#tariff-year')
   })
 
@@ -260,7 +277,7 @@ describe('TariffsView: the offer', () => {
 })
 
 describe('TariffsView: paying', () => {
-  it('starts an order and takes the buyer to ЮKassa', async () => {
+  it('starts an order and takes the buyer to the bank', async () => {
     const create = vi.spyOn(api, 'createOrder').mockResolvedValue({
       id: 7, tariff: 'level', status: 'pending', confirmation_url: 'https://pay.test/confirm/7',
     })
@@ -300,7 +317,7 @@ describe('TariffsView: paying', () => {
     vi.mocked(isTelegram).mockReturnValue(true)
     vi.mocked(initData).mockReturnValue('')
     const w = await mountView()
-    expect(w.get('[data-test="buy-year"]').text()).toContain('Открыть всё за')
+    expect(w.get('[data-test="buy-year"]').text()).toContain('Хочу всё на год')
   })
 
   it('says so, and sends nothing, while payments are not connected', async () => {
@@ -384,7 +401,7 @@ describe('TariffsView: paying without an account email', () => {
   })
 })
 
-describe('TariffsView: coming back from ЮKassa', () => {
+describe('TariffsView: coming back from the bank', () => {
   // The modal is teleported to <body>, outside the mounted view.
   const thanks = () => document.body.querySelector('[data-test="thanks-modal"]')
   const text = (el: Element | null) => (el?.textContent ?? '').replace(/\s+/g, ' ').trim()
@@ -397,11 +414,20 @@ describe('TariffsView: coming back from ЮKassa', () => {
     await mountView({}, course(), '?order=7')
     expect(order).toHaveBeenCalledWith(7)
     expect(reload).toHaveBeenCalled() // the course is fetched again: level 4 is open now
-    expect(text(thanks())).toContain('Спасибо, что ты с нами и поддерживаешь проект')
-    expect(thanks()?.querySelector('[data-test="thanks-heart"]')).not.toBeNull() // the yellow heart after the thanks
+    expect(text(thanks())).toContain('Спасибо, что вы с нами и поддерживаете проект')
+    expect(thanks()?.querySelector('img[data-test="thanks-heart"]')).not.toBeNull() // the pixel heart after the thanks
     expect(text(thanks()?.querySelector('[data-test="thanks-opened"]') ?? null)).toBe('Открыт «Уровень 4 — Падежи в жизни»')
     expect(text(thanks()?.querySelector('[data-test="thanks-bonus"]') ?? null)).toContain('+1 000')
     expect(useToasts().items.value).toEqual([]) // the modal says it, not a toast too
+  })
+
+  // The tone of the banner, the tariffs screen and the Telegram channel: «вы», never «ты».
+  it('speaks to the buyer as «вы», like the rest of the paid screens', async () => {
+    vi.spyOn(api, 'order').mockResolvedValue({ id: 8, tariff: 'year', status: 'succeeded', bonus: 15000 })
+    await mountView({}, course(), '?order=8')
+    const said = text(thanks())
+    expect(said).toContain('у вас')
+    expect(said).not.toMatch(/(^|[^а-яё])(ты|тебя|тебе|твой|твоя|твои)([^а-яё]|$)/i)
   })
 
   it('the thank-you has one way forward: the course', async () => {
@@ -508,5 +534,109 @@ describe('TariffsView: a running year', () => {
     const w = await mountView(running(-3))
     expect(w.find('[data-test="my-tariff"]').exists()).toBe(false)
     expect(w.find('[data-test="tariff-year"]').exists()).toBe(true)
+  })
+})
+
+describe('TariffsView: the words and the pictures', () => {
+  async function mountWithCurrency() {
+    const w = await mountView()
+    const wallet = useWalletStore()
+    wallet.nameOne = 'зёрнышко'
+    wallet.nameFew = 'зёрнышка'
+    wallet.nameMany = 'зёрнышек'
+    await flushPromises()
+    return w
+  }
+
+  it('opens with the swallow, a hello in Serbian and a warm title', async () => {
+    const w = await mountView()
+    const hero = w.get('[data-test="tariffs-hero"]')
+    expect(hero.find('img').exists()).toBe(true)
+    expect(w.get('[data-test="tariffs-hello"]').text()).toBe('Ćao! 👋 Рады, что вы учите сербский с нами')
+    expect(hero.get('h1').text()).toBe('Ласточка летит дальше')
+    expect(w.text()).not.toContain('(Привет!)') // no gloss: the owner asked for none
+  })
+
+  it('wears the pixel icons: infinity and the repeat arrows, and the seed, not line icons', async () => {
+    const w = await mountView()
+    expect(w.find('[data-test="level-forever"] img.forever').exists()).toBe(true)
+    expect(w.find('[data-test="level-repeat"] img.repeat').exists()).toBe(true)
+    expect(w.find('[data-test="year-repeat"] img.repeat').exists()).toBe(true)
+    expect(w.find('[data-test="level-bonus"] .ico-seed img.seed').exists()).toBe(true)
+  })
+
+  it('says the зёрнышки are a gift, as a number and the seed glyph with the word kept for screen readers', async () => {
+    const w = await mountWithCurrency()
+    const level = w.get('[data-test="level-bonus"]')
+    expect(level.find('img.seed').exists()).toBe(true)
+    expect(level.text().replace(/\s+/g, ' ')).toContain('+1 000 зёрнышек в подарок к уровню.')
+  })
+
+  it('thanks in Serbian with the pixel heart, under the offer', async () => {
+    const w = await mountView()
+    const line = w.get('[data-test="thanks-line"]')
+    expect(line.text()).toBe('Hvala lepo')
+    expect(line.find('img.heart').exists()).toBe(true)
+    expect(w.get('[data-test="offer-note"]').text()).toContain('Оплачивая, вы принимаете')
+  })
+
+  it('speaks to the reader as "вы", the way the banner and the channel do', async () => {
+    const w = await mountView()
+    expect(w.text()).not.toMatch(/(^|[^а-яё])(ты|тебя|тебе|тобой|твой|твоё|твои)([^а-яё]|$)/i)
+  })
+
+  it('has the warm words and the heart in the running-year card too', async () => {
+    const until = new Date(Date.now() + 30 * 86_400_000).toISOString()
+    const w = await mountView({ year: { price: 1000, old_price: 2000, until } })
+    expect(w.get('[data-test="no-autorenew"]').text()).toContain('вы сами решите')
+    expect(w.find('[data-test="my-tariff-thanks"] img.heart').exists()).toBe(true)
+  })
+})
+
+describe('TariffsView: a paid level is spent on a level of the learner\'s choice', () => {
+  const waiting = () => ({ has_paid_level: true, level: levelOf({ price: 299, regular_price: 299, credits: [7] }) })
+
+  it('shows the reminder and swaps the buy button for the way to choose', async () => {
+    const w = await mountView(waiting())
+    expect(w.find('[data-test="level-credit"]').exists()).toBe(true)
+    expect(w.find('[data-test="buy-level"]').exists()).toBe(false)
+    expect(w.get('[data-test="level-choose"]').text()).toBe('Выбрать оплаченный уровень')
+  })
+
+  it('raises the choice window by itself when the screen opens with a paid level waiting', async () => {
+    await mountView(waiting())
+    expect(useLevelChoiceModal().open.value).toBe(true)
+    expect(useLevelChoiceModal().orderId.value).toBeNull() // the oldest one waiting
+  })
+
+  it('does not raise it when nothing is waiting', async () => {
+    await mountView()
+    expect(useLevelChoiceModal().open.value).toBe(false)
+  })
+
+  it('raises it again from the button after it was closed', async () => {
+    const w = await mountView(waiting())
+    useLevelChoiceModal().closeModal()
+    await w.get('[data-test="level-choose"]').trigger('click')
+    expect(useLevelChoiceModal().open.value).toBe(true)
+  })
+
+  it('opens it for the order just paid when coming back from the bank, instead of the thank-you', async () => {
+    vi.spyOn(api, 'order').mockResolvedValue({ id: 7, tariff: 'level', status: 'succeeded', bonus: 1000, choose: true })
+    await mountView({}, course(), '?order=7')
+    expect(useLevelChoiceModal().open.value).toBe(true)
+    expect(useLevelChoiceModal().orderId.value).toBe(7)
+    expect(document.body.querySelector('[data-test="thanks-modal"]')).toBeNull()
+  })
+
+  it('a refused order for a second level reloads the quote, raises the window and says why', async () => {
+    vi.spyOn(api, 'createOrder').mockRejectedValue(new ApiError(409, 'level_pending_choice'))
+    const w = await mountView()
+    const reload = vi.spyOn(api, 'tariffs').mockResolvedValue(tariffsInfo(waiting()))
+    await w.get('[data-test="buy-level"]').trigger('click')
+    await flushPromises()
+    expect(reload).toHaveBeenCalled()
+    expect(useLevelChoiceModal().open.value).toBe(true)
+    expect(useToasts().items.value[0].text).toContain('выберите уровень')
   })
 })

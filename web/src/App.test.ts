@@ -8,6 +8,8 @@ vi.mock('vue-router', () => ({
   RouterView: { template: '<div class="router-view-stub" />' },
   RouterLink: { template: '<a><slot /></a>' },
   useRoute: () => ({ path: '/profile' }),
+  // the choose-a-level window mounted in AppNav goes to the course after a choice
+  useRouter: () => ({ push: () => {} }),
 }))
 
 beforeEach(() => {

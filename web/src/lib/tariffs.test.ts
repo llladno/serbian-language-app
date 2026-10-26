@@ -59,7 +59,7 @@ describe('rub and perMonth', () => {
 })
 
 // What the server quotes the learner: the level at the first-purchase price.
-const QUOTE = { levelPrice: 249, yearPrice: 1000 }
+const QUOTE = { levelPrice: 249 }
 
 describe('offerForPhase', () => {
   it('offers the level itself when it is the next one to open', () => {
@@ -69,13 +69,20 @@ describe('offerForPhase', () => {
   })
 
   it('quotes whatever the server priced the level at (the regular price after a first purchase)', () => {
-    expect(offerForPhase(course(), '4', { levelPrice: 299, yearPrice: 1000 })).toMatchObject({ kind: 'level', price: 299 })
+    expect(offerForPhase(course(), '4', { levelPrice: 299 })).toMatchObject({ kind: 'level', price: 299 })
   })
 
-  it('offers the year for a later level, because levels open in order', () => {
+  // «Уровень» is a credit the learner spends on any closed level, so a later level is offered it too.
+  it('offers the level for a later one as well, because the learner chooses which to open', () => {
     const o = offerForPhase(course(), '5', QUOTE)
-    expect(o).toMatchObject({ kind: 'year', price: 1000 })
-    expect(o?.kind === 'year' && o.first.id).toBe('4')
+    expect(o).toMatchObject({ kind: 'level', price: 249 })
+    expect(o?.level.id).toBe('5')
+  })
+
+  it('offers nothing for a closed level that is not for sale yet (all its lessons are "скоро")', () => {
+    const c = course()
+    for (const l of c.lessons) if (['60', '61'].includes(l.id)) l.planned = true
+    expect(offerForPhase(c, '5', QUOTE)).toBeNull()
   })
 
   it('offers nothing for a level that is already open, or that does not exist', () => {
@@ -128,20 +135,42 @@ describe('the year against twelve months of levels', () => {
   })
 })
 
-describe('offerForPhase while the monthly limit holds the next level back', () => {
+// «Уровень» is always the first thing offered. While the monthly limit holds a level back it is still
+// offered, with the date it can be bought.
+describe('offerForPhase while the monthly limit holds a level back', () => {
   const FROM = '2026-11-12T10:00:00Z'
 
-  it('answers the next level with the year, and says it is because of the limit', () => {
-    const o = offerForPhase(course(), '4', { ...QUOTE, levelFrom: FROM })
-    expect(o).toMatchObject({ kind: 'year', why: 'cooldown', from: FROM, price: 1000 })
+  it('still offers the level, and carries the date it can be bought', () => {
+    expect(offerForPhase(course(), '4', { ...QUOTE, levelFrom: FROM })).toEqual({
+      kind: 'level', level: expect.objectContaining({ id: '4' }), price: 249, from: FROM,
+    })
   })
 
-  it('still answers a later level with the year, for the usual reason', () => {
-    expect(offerForPhase(course(), '5', { ...QUOTE, levelFrom: FROM })).toMatchObject({ kind: 'year', why: 'order' })
+  it('does the same for a later level: the limit holds back every level, not only the next', () => {
+    expect(offerForPhase(course(), '5', { ...QUOTE, levelFrom: FROM })).toMatchObject({ kind: 'level', from: FROM })
   })
 
-  it('offers the level as before when nothing holds the learner back', () => {
-    expect(offerForPhase(course(), '4', { ...QUOTE, levelFrom: null })).toMatchObject({ kind: 'level', price: 249 })
+  it('has no date when nothing holds the learner back', () => {
+    const o = offerForPhase(course(), '4', { ...QUOTE, levelFrom: null })
+    expect(o).toMatchObject({ kind: 'level', price: 249 })
+    expect(o && 'from' in o).toBe(false)
+  })
+})
+
+// A paid level that has not been spent yet: another cannot be bought, so the way forward is to choose.
+describe('offerForPhase while a paid level waits to be spent', () => {
+  it('points at the paid level instead of selling another one', () => {
+    expect(offerForPhase(course(), '4', { ...QUOTE, hasCredit: true })).toMatchObject({ kind: 'credit' })
+    expect(offerForPhase(course(), '5', { ...QUOTE, hasCredit: true })).toMatchObject({ kind: 'credit' })
+  })
+
+  it('still has nothing to say about a level that is open', () => {
+    expect(offerForPhase(course(), '3', { ...QUOTE, hasCredit: true })).toBeNull()
+  })
+
+  it('goes before the monthly limit, which the waiting level itself started', () => {
+    const FROM = '2026-11-12T10:00:00Z'
+    expect(offerForPhase(course(), '4', { ...QUOTE, hasCredit: true, levelFrom: FROM })).toMatchObject({ kind: 'credit' })
   })
 })
 

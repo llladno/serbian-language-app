@@ -4,6 +4,7 @@ import { setActivePinia, createPinia } from 'pinia'
 import CourseView from './CourseView.vue'
 import { api, ApiError } from '../api'
 import { useUnlockModal } from '../lib/unlockModal'
+import { useLevelChoiceModal } from '../lib/levelChoiceModal'
 import { useSessionStore } from '../stores/session'
 import { enableTariffs, sessionUser, tariffsInfo } from '../test/tariffsFixture'
 import { useCourseStore } from '../stores/course'
@@ -73,7 +74,7 @@ describe('CourseView: levels for sale', () => {
     const w = mountView()
     await flushPromises()
     await w.find('[data-test="locked-16"]').trigger('click')
-    expect(w.find('[data-test="unlock-missing"]').text()).toContain('Не хватает 130')
+    expect(w.find('[data-test="unlock-missing"]').text()).toContain('130')
     expect(w.find('[data-test="unlock-buy"]').exists()).toBe(false)
   })
 
@@ -85,21 +86,22 @@ describe('CourseView: levels for sale', () => {
     await w.find('[data-test="locked-16"]').trigger('click')
     await flushPromises()
     const pay = w.find('[data-test="unlock-pay"]')
-    expect(pay.text()).toContain('Открыть сразу за 249')
+    expect(pay.text()).toContain('Хочу уровень')
+    expect(pay.text()).toContain('249')
     expect(pay.attributes('href')).toBe('/tariffs')
     expect(w.find('[data-test="unlock-order"]').exists()).toBe(false)
     // earning is still on offer, next to paying
     expect(w.find('[data-test="unlock-quests"]').attributes('href')).toBe('/quests')
   })
 
-  it('says what comes with paying: зёрнышки for a level, more of them for the year', async () => {
+  it('says what comes with paying: зёрнышки as a gift', async () => {
     vi.spyOn(api, 'tariffs').mockResolvedValue(tariffsInfo())
     const w = mountView()
     enableTariffs()
     await flushPromises()
     await w.find('[data-test="locked-16"]').trigger('click')
     await flushPromises()
-    expect(w.find('[data-test="unlock-bonus"]').text().replace(/\s+/g, ' ')).toContain('И ещё 1 000')
+    expect(w.find('[data-test="unlock-bonus"]').text().replace(/\s+/g, ' ')).toContain('1 000')
   })
 
   it('names the discount where the first purchase is offered', async () => {
@@ -109,12 +111,62 @@ describe('CourseView: levels for sale', () => {
     await flushPromises()
     await w.find('[data-test="locked-16"]').trigger('click')
     await flushPromises()
-    const text = w.find('[data-test="unlock-discount"]').text().replace(/\s+/g, ' ')
-    expect(text).toContain('Скидка 17% на первую покупку')
-    expect(text).toContain('249 ₽ вместо 299 ₽')
+    // the regular price struck through inside the button, no line of its own
+    const was = w.find('[data-test="unlock-was"]')
+    expect(was.element.tagName).toBe('S')
+    expect(was.text().replace(/\s+/g, ' ')).toContain('299')
+    expect(w.find('[data-test="unlock-pay"]').text()).toContain('249')
   })
 
-  it('answers the next level with the year, and the date, while the monthly limit holds a level back', async () => {
+  // The words of this window are those of the banner and the channel: «вы», warm, a little adventure.
+  it('speaks to the learner as «вы» when short of зёрнышки, never «ты»', async () => {
+    vi.spyOn(api, 'tariffs').mockResolvedValue(tariffsInfo())
+    const w = mountView()
+    enableTariffs()
+    await flushPromises()
+    await w.find('[data-test="locked-16"]').trigger('click')
+    await flushPromises()
+    const said = w.find('[data-test="unlock-modal"]').text().replace(/\s+/g, ' ')
+    expect(said).not.toMatch(/(^|[^а-яё])(ты|тебя|тебе|твой|твоя|твои|попробуй)([^а-яё]|$)/i)
+    expect(said).toContain('Hvala lepo')
+    expect(w.find('[data-test="unlock-thanks"] img').exists()).toBe(true) // the pixel heart
+  })
+
+  // The button to pay is gold, the colour of the button that collects a reward.
+  it('the button that offers payment is the gold one of the quests screen', async () => {
+    vi.spyOn(api, 'tariffs').mockResolvedValue(tariffsInfo())
+    const w = mountView()
+    enableTariffs()
+    await flushPromises()
+    await w.find('[data-test="locked-16"]').trigger('click')
+    await flushPromises()
+    expect(w.find('[data-test="unlock-pay"]').classes()).toContain('btn-seed')
+    expect(w.find('[data-test="unlock-pay"]').classes()).not.toContain('btn-primary')
+    // earning stays a quiet link, not a second button
+    const quests = w.find('[data-test="unlock-quests"]')
+    expect(quests.classes()).toContain('quiet-link')
+    expect(quests.classes()).not.toContain('btn')
+  })
+
+  // «Поменьше»: the owner found the window wordy (2026-10-26). A hook, one button and a few small words.
+  it('stays short when it sells: a few lines, not a page', async () => {
+    vi.spyOn(api, 'tariffs').mockResolvedValue(tariffsInfo())
+    const w = mountView()
+    enableTariffs()
+    await flushPromises()
+    await w.find('[data-test="locked-16"]').trigger('click')
+    await flushPromises()
+    const said = w.find('[data-test="unlock-modal"]').text().replace(/\s+/g, ' ').trim()
+    expect(said.length, said).toBeLessThanOrEqual(200)
+    // what is left: the need, the want, the button
+    expect(w.find('[data-test="unlock-missing"]').text()).toContain('130')
+    expect(w.find('[data-test="unlock-bonus"]').text()).toMatch(/подарок/)
+    for (const gone of ['unlock-choose-note', 'unlock-discount', 'unlock-cooldown']) {
+      expect(w.find(`[data-test="${gone}"]`).exists(), gone).toBe(false)
+    }
+  })
+
+  it('still leads with the level while the monthly limit holds one back: with its date, not pressable', async () => {
     const from = new Date(Date.now() + 9 * 86_400_000).toISOString()
     const info = tariffsInfo({ has_paid_level: true, level: { price: 299, regular_price: 299, available_from: from, next: null } })
     vi.spyOn(api, 'tariffs').mockResolvedValue(info)
@@ -123,10 +175,92 @@ describe('CourseView: levels for sale', () => {
     await flushPromises()
     await w.find('[data-test="locked-16"]').trigger('click')
     await flushPromises()
-    expect(w.find('[data-test="unlock-cooldown"]').text()).toContain('раз в месяц')
-    expect(w.find('[data-test="unlock-pay"]').text()).toContain('Все уровни')
-    expect(w.find('[data-test="unlock-saving"]').text()).toContain('Выгода 72%')
+    expect(w.find('[data-test="unlock-cooldown"]').text()).toMatch(/можно взять с/)
+    // no hook to open at once while the level cannot be bought
+    expect(w.find('[data-test="unlock-bonus"]').exists()).toBe(false)
+    // the gold button is the level, not payable before its date
+    const pay = w.find('[data-test="unlock-pay"]')
+    expect(pay.classes()).toContain('btn-seed')
+    expect(pay.text()).toContain('299')
+    expect(pay.attributes('disabled')).toBeDefined()
     expect(w.find('[data-test="unlock-order"]').exists()).toBe(false)
+  })
+
+  // The owner took the year out of this window altogether (2026-10-26): it sells «Уровень» and nothing else.
+  it('never mentions the year, with or without the monthly limit', async () => {
+    for (const limited of [false, true]) {
+      const from = new Date(Date.now() + 9 * 86_400_000).toISOString()
+      const info = limited
+        ? tariffsInfo({ has_paid_level: true, level: { price: 299, regular_price: 299, available_from: from, next: null } })
+        : tariffsInfo()
+      vi.spyOn(api, 'tariffs').mockResolvedValue(info)
+      useUnlockModal().closeModal()
+      const w = mountView()
+      enableTariffs(info)
+      await flushPromises()
+      await w.find('[data-test="locked-16"]').trigger('click')
+      await flushPromises()
+      const said = w.find('[data-test="unlock-modal"]').text().replace(/\s+/g, ' ')
+      expect(said, limited ? 'with the limit' : 'without it').not.toMatch(/год|все уровни|выгода/i)
+      expect(w.find('[data-test="unlock-year"]').exists()).toBe(false)
+      expect(w.find('[data-test="unlock-saving"]').exists()).toBe(false)
+      w.unmount()
+    }
+  })
+
+  it('has a picture of the swallow at the top, whether or not the learner can afford the level', async () => {
+    vi.spyOn(api, 'wallet').mockResolvedValue(wallet(500))
+    const w = mountView()
+    await flushPromises()
+    await w.find('[data-test="price-2"]').trigger('click')
+    expect(w.find('[data-test="unlock-enough"]').exists()).toBe(true)
+    expect(w.find('[data-test="unlock-scene"]').exists()).toBe(true)
+
+    vi.spyOn(api, 'wallet').mockResolvedValue(wallet(100))
+    const w2 = mountView()
+    await flushPromises()
+    await w2.find('[data-test="locked-16"]').trigger('click')
+    expect(w2.find('[data-test="unlock-missing"]').exists()).toBe(true)
+    expect(w2.find('[data-test="unlock-scene"]').exists()).toBe(true)
+  })
+
+  // The admin's «Воронка тарифов»: a showing is counted when the payment is on offer, not when the window opens.
+  it('reports a showing when the payment is offered, and a press on the gold button', async () => {
+    const spy = vi.spyOn(api, 'trackTariffEvent').mockResolvedValue(undefined)
+    vi.spyOn(api, 'tariffs').mockResolvedValue(tariffsInfo())
+    const w = mountView()
+    enableTariffs()
+    await flushPromises()
+    await w.find('[data-test="locked-16"]').trigger('click')
+    await flushPromises()
+    expect(spy.mock.calls.filter((c) => c[1] === 'unlock_modal' && c[0] === 'view')).toHaveLength(1)
+    await w.find('[data-test="unlock-pay"]').trigger('click')
+    expect(spy).toHaveBeenLastCalledWith('click', 'unlock_modal')
+  })
+
+  it('reports no showing when the learner can afford the level, or when a paid level only waits to be chosen', async () => {
+    const spy = vi.spyOn(api, 'trackTariffEvent').mockResolvedValue(undefined)
+    vi.spyOn(api, 'wallet').mockResolvedValue(wallet(500))
+    const w = mountView()
+    await flushPromises()
+    await w.find('[data-test="price-2"]').trigger('click')
+    expect(w.find('[data-test="unlock-enough"]').exists()).toBe(true)
+    expect(spy).not.toHaveBeenCalled()
+  })
+
+  it('reports a showing every time the window is opened again on an offer', async () => {
+    const spy = vi.spyOn(api, 'trackTariffEvent').mockResolvedValue(undefined)
+    vi.spyOn(api, 'tariffs').mockResolvedValue(tariffsInfo())
+    const w = mountView()
+    enableTariffs()
+    await flushPromises()
+    for (let i = 0; i < 2; i++) {
+      await w.find('[data-test="locked-16"]').trigger('click')
+      await flushPromises()
+      useUnlockModal().closeModal()
+      await flushPromises()
+    }
+    expect(spy.mock.calls.filter((c) => c[0] === 'view')).toHaveLength(2)
   })
 
   // The gate: the same screen, the same shortfall, and no way to pay for an
@@ -144,29 +278,53 @@ describe('CourseView: levels for sale', () => {
     expect(tariffs).not.toHaveBeenCalled()
   })
 
-  it('a level that is not the next one is answered with the year, and says why', async () => {
-    const three: Course = {
-      title: 'Курс',
-      phases: [
-        { id: '1', title: 'Уровень 1', lessons: ['00'], locked: false },
-        { id: '2', title: 'Уровень 2', lessons: ['16'], locked: true, price: 230, price_effective: 230 },
-        { id: '3', title: 'Уровень 3', lessons: ['30'], locked: true, price: 375, price_effective: 375 },
-      ],
-      lessons: ['00', '16', '30'].map((id) => ({ id, title: id, subtitle: '', planned: false, status: 'not_started' as const })),
-    }
-    vi.spyOn(api, 'course').mockResolvedValue(three)
-    vi.spyOn(api, 'shop').mockResolvedValue({
-      items: [PRODUCT, { ...PRODUCT, id: 8, ref: '3', title: 'Уровень 3', price: 375, price_effective: 375 }],
-    })
+  // «Уровень» is a credit for any closed level, so a later level is sold the same way as the next one.
+  const threeLevels = (): Course => ({
+    title: 'Курс',
+    phases: [
+      { id: '1', title: 'Уровень 1', lessons: ['00'], locked: false },
+      { id: '2', title: 'Уровень 2', lessons: ['16'], locked: true, price: 230, price_effective: 230 },
+      { id: '3', title: 'Уровень 3', lessons: ['30'], locked: true, price: 375, price_effective: 375 },
+    ],
+    lessons: ['00', '16', '30'].map((id) => ({ id, title: id, subtitle: '', planned: false, status: 'not_started' as const })),
+  })
+  const threeShop = () => ({
+    items: [PRODUCT, { ...PRODUCT, id: 8, ref: '3', title: 'Уровень 3', price: 375, price_effective: 375 }],
+  })
+
+  it('a level that is not the next one is offered the same paid level, and the order is not mentioned', async () => {
+    vi.spyOn(api, 'course').mockResolvedValue(threeLevels())
+    vi.spyOn(api, 'shop').mockResolvedValue(threeShop())
     vi.spyOn(api, 'tariffs').mockResolvedValue(tariffsInfo())
     const w = mountView()
     enableTariffs()
     await flushPromises()
     await w.find('[data-test="locked-30"]').trigger('click')
     await flushPromises()
-    expect(w.find('[data-test="unlock-pay"]').text()).toContain('Все уровни')
-    expect(w.find('[data-test="unlock-pay"]').text()).toContain('1\u00a0000')
-    expect(w.find('[data-test="unlock-order"]').text()).toContain('Уровень 2')
+    expect(w.find('[data-test="unlock-pay"]').text()).toContain('Хочу уровень')
+    expect(w.find('[data-test="unlock-pay"]').text()).not.toContain('Хочу все уровни')
+    expect(w.find('[data-test="unlock-order"]').exists()).toBe(false)
+    expect(w.find('[data-test="unlock-bonus"]').exists()).toBe(true)
+  })
+
+  it('while a paid level waits to be spent it points at it instead of selling another', async () => {
+    vi.spyOn(api, 'course').mockResolvedValue(threeLevels())
+    vi.spyOn(api, 'shop').mockResolvedValue(threeShop())
+    const info = tariffsInfo({ has_paid_level: true, level: { price: 299, regular_price: 299, next: null, choices: [{ id: '2', title: 'Уровень 2', lessons: 5 }], credits: [7] } })
+    vi.spyOn(api, 'tariffs').mockResolvedValue(info)
+    const w = mountView()
+    enableTariffs(info)
+    await flushPromises()
+    await w.find('[data-test="locked-30"]').trigger('click')
+    await flushPromises()
+    expect(w.find('[data-test="unlock-pay"]').exists()).toBe(false)
+    expect(w.find('[data-test="unlock-bonus"]').exists()).toBe(false)
+    expect(w.find('[data-test="unlock-credit"]').text()).toMatch(/оплачен/i)
+    expect(w.find('[data-test="unlock-credit-choose"]').classes()).toContain('btn-seed')
+    await w.find('[data-test="unlock-credit-choose"]').trigger('click')
+    expect(useUnlockModal().phaseId.value).toBeNull() // this window gives way to the choice window
+    expect(useLevelChoiceModal().open.value).toBe(true)
+    useLevelChoiceModal().closeModal()
   })
 
   it('offers to buy when the balance is enough, then reloads the course and closes', async () => {
@@ -198,7 +356,7 @@ describe('CourseView: levels for sale', () => {
     await w.find('[data-test="price-2"]').trigger('click')
     await w.find('[data-test="unlock-buy"]').trigger('click')
     await flushPromises()
-    expect(w.find('[data-test="unlock-missing"]').text()).toContain('Не хватает 180')
+    expect(w.find('[data-test="unlock-missing"]').text()).toContain('180')
   })
 
   it('shows an error and keeps the modal open when the purchase fails', async () => {
@@ -322,6 +480,30 @@ describe('CourseView: folding levels', () => {
     await flushPromises()
     await w.get('[data-test="toggle-2"]').trigger('click')
     expect(w.get('[data-test="price-2"]').text()).toContain('230')
+  })
+})
+
+describe('CourseView: lesson numbers', () => {
+  // Lesson ids are internal (`13b`, `15`: they keep progress and rewards attached to the same lesson
+  // while short lessons are cut in). The learner sees the place in the level, counted from 1.
+  it('numbers the lessons of each level 1, 2, 3… and never shows an id', async () => {
+    const ids1 = ['00', '01', '01b', '14']
+    const ids2 = ['06', '06b', '13', '13b', '15']
+    vi.spyOn(api, 'course').mockResolvedValue({
+      title: 'Курс',
+      phases: [
+        { id: '1', title: 'Уровень 1', lessons: ids1, locked: false },
+        { id: '1b', title: 'Уровень 2', lessons: ids2, locked: false },
+      ],
+      lessons: [...ids1, ...ids2].map((id) => ({ id, title: `Урок ${id}`, subtitle: '', planned: false, status: 'not_started' as LessonStatus })),
+    })
+    const w = mountView()
+    await flushPromises()
+    const badge = (id: string) => w.find(`[data-test="number-${id}"]`).text()
+    expect(ids1.map(badge)).toEqual(['1', '2', '3', '4'])
+    expect(ids2.map(badge)).toEqual(['1', '2', '3', '4', '5'])
+    // The link still goes by the id.
+    expect(w.findAll('a').some((a) => a.attributes('href') === '/lesson/13b')).toBe(true)
   })
 })
 

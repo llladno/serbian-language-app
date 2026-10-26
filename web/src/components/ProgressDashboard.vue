@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted } from 'vue'
+import { RotateCcw } from 'lucide-vue-next'
 import { useCourseStore } from '../stores/course'
 import type { Progress, Vocab } from '../types'
 import ProgressRing from './ProgressRing.vue'
@@ -105,18 +106,25 @@ const dueTotal = computed(() => props.progress.srs.due_today + props.progress.sr
       </div>
     </div>
 
-    <div v-if="progress.weak_exercises.length" class="card p-5">
-      <div class="mb-3 flex items-center justify-between gap-3">
-        <p class="font-bold">Стоит повторить</p>
-        <RouterLink to="/mistakes" class="btn btn-primary shrink-0 px-4 py-2 text-sm">Исправить ошибки</RouterLink>
+    <!-- «Повторить задания»: the exercises already answered, worst first (the batch is picked on the server).
+         «Повторить слова» above is the SRS review of words, a different thing. -->
+    <RouterLink
+      to="/repeat"
+      class="card group block overflow-hidden p-5 transition hover:-translate-y-0.5"
+      data-test="repeat-card"
+      style="background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 10%, var(--card)), var(--card) 65%)"
+    >
+      <div class="flex items-center gap-4">
+        <span class="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-[var(--accent-soft)] text-[var(--accent)]">
+          <RotateCcw :size="26" :stroke-width="2.25" />
+        </span>
+        <div class="min-w-0 flex-1">
+          <p class="text-lg font-extrabold">Повторить задания</p>
+          <p class="text-sm text-[var(--muted)]">15 заданий: ошибки, опечатки и сложные темы</p>
+        </div>
+        <span class="text-2xl text-[var(--accent)] transition-transform group-hover:translate-x-1">→</span>
       </div>
-      <ul class="space-y-1.5 text-sm">
-        <li v-for="w in progress.weak_exercises" :key="w.exercise_id" class="flex gap-2">
-          <span class="shrink-0 font-mono text-[var(--bad)]">{{ w.wrong }}/{{ w.total }}</span>
-          <span class="text-[var(--muted)]">{{ show(w.prompt) || w.exercise_id }}</span>
-        </li>
-      </ul>
-    </div>
+    </RouterLink>
 
     <div
       v-if="totalDone === 0 && progress.srs.reviewed_today === 0"

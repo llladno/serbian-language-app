@@ -5,6 +5,7 @@ import { api } from '../../api'
 import { useWrongGoesToEnd } from '../../lib/lessonRules'
 import { useScript } from '../../lib/useScript'
 import type { CheckResult, LessonAttempt } from '../../types'
+import HintButton from '../HintButton.vue'
 import SerbianKeys from '../SerbianKeys.vue'
 import BottomBar from '../BottomBar.vue'
 
@@ -14,6 +15,7 @@ const props = defineProps<{
   prompt: string
   forms: string[]
   meta?: string
+  hint?: string
   prior?: LessonAttempt
 }>()
 
@@ -70,6 +72,7 @@ function retry() {
       <p>
         <span class="serbian text-xl font-semibold">{{ show(prompt) }}</span>
         <span v-if="meta" class="ml-2 rounded bg-[var(--bg-soft)] px-1.5 py-0.5 text-xs text-[var(--muted)]">{{ show(meta) }}</span>
+        <HintButton v-if="hint && !fromPrior && !result" :text="show(hint)" class="ml-1.5 align-middle" />
       </p>
     </div>
 
@@ -94,11 +97,13 @@ function retry() {
           class="field min-w-0 flex-1 serbian"
           :style="
             result?.forms?.[i]
-              ? { borderColor: result.forms[i].ok ? 'var(--good)' : 'var(--bad)' }
+              ? { borderColor: result.forms[i].ok ? 'var(--good)' : result.partial ? 'var(--warning)' : 'var(--bad)' }
               : {}
           "
         />
-        <span v-if="result?.forms?.[i]" class="w-4">{{ result.forms[i].ok ? '✓' : '✗' }}</span>
+        <span v-if="result?.forms?.[i]" class="w-4" :class="{ 'text-[var(--warning)]': result.partial && !result.forms[i].ok }">{{
+          result.forms[i].ok ? '✓' : '✗'
+        }}</span>
       </label>
 
       <SerbianKeys v-if="!result" class="col-span-full justify-center" />
@@ -110,12 +115,16 @@ function retry() {
     </BottomBar>
 
     <div v-if="result" class="mx-auto mt-4 max-w-sm text-sm pop">
+      <p v-if="result.partial" class="mb-1 font-semibold text-[var(--warning)]">
+        Почти! Одна форма не та — засчитано, но запомни её
+      </p>
       <p v-for="(r, i) in result.forms" :key="'t' + i" v-show="r.ok && r.typo" class="text-[var(--warning)]">
         {{ show(forms[i]) }}: засчитано, но пишется <span class="serbian font-semibold">{{ show(r.expected) }}</span>
       </p>
       <p v-for="(r, i) in result.forms" :key="i" v-show="!r.ok" class="text-[var(--muted)]">
         {{ show(forms[i]) }} → <span class="serbian font-semibold text-[var(--fg)]">{{ show(r.expected) }}</span>
       </p>
+      <p v-if="result.explain && (!result.ok || result.partial)" class="mt-2 text-[var(--muted)]">{{ show(result.explain) }}</p>
     </div>
   </div>
 </template>

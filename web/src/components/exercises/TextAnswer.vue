@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { RefreshCw } from 'lucide-vue-next'
 import { api } from '../../api'
 import { useWrongGoesToEnd } from '../../lib/lessonRules'
@@ -13,6 +13,7 @@ import HintButton from '../HintButton.vue'
 import PhraseSpeak from '../PhraseSpeak.vue'
 import PromptSpeak from '../PromptSpeak.vue'
 import { fillSentence } from '../../lib/phraseAudio'
+import SuccessCheck from '../SuccessCheck.vue'
 
 const props = defineProps<{
   lesson: string
@@ -21,6 +22,8 @@ const props = defineProps<{
   prompt: string
   audio?: string
   explain?: string
+  // What kind of text is wanted (see Exercise.shape): the «?» says so in words.
+  shape?: 'word' | 'phrase' | 'blank' | 'sentence'
   prior?: LessonAttempt
   // A dictation for someone who cannot listen: the sentence arrives as text
   // and is translated into Russian instead of being written down. Everything
@@ -46,6 +49,25 @@ const { show } = useScript()
 function startingAnswer() {
   return props.type === 'fix_error' && !/[А-Яа-яЁё]/.test(props.prompt) ? props.prompt : ''
 }
+// The «?» next to the prompt: first what kind of answer is wanted (a word, a phrase, the missing word or
+// the whole sentence: people lost points over exactly this), then the exercise's own hint if it has one.
+const formatLine = computed(() => {
+  if (props.text) return 'Напиши перевод на русский.'
+  switch (props.shape) {
+    case 'blank':
+      return 'Впиши только пропущенное слово. Можно и всё предложение: это тоже засчитается.'
+    case 'word':
+      return 'Напиши одно слово.'
+    case 'phrase':
+      return 'Напиши фразу целиком, не одно слово.'
+    case 'sentence':
+      return 'Перепиши предложение целиком, исправив ошибку, а не одно слово.'
+    default:
+      return ''
+  }
+})
+const helpText = computed(() => [formatLine.value, props.explain].filter(Boolean).join(' '))
+
 const answer = ref(props.prior?.answer ?? startingAnswer())
 const result = ref<CheckResult | null>(null)
 const fromPrior = ref(!!props.prior)
@@ -58,16 +80,28 @@ const showRetry = computed(
 )
 const pending = ref(false)
 
+// The answer was only a piece of the right one (just the corrected word, the first words). It is a slip
+// of format, not of knowledge, so nothing is graded: the learner is told and finishes it, for free.
+const tooShort = ref(false)
+watch(answer, () => {
+  tooShort.value = false
+})
+
 async function submit() {
   if (pending.value || !answer.value.trim()) return
   pending.value = true
   try {
-    result.value = await api.check(props.lesson, props.exerciseId, {
+    const res = await api.check(props.lesson, props.exerciseId, {
       answer: answer.value,
       ...(props.text ? { ru: true } : {}),
     })
+    if (res.format === 'too_short') {
+      tooShort.value = true
+      return
+    }
+    result.value = res
     fromPrior.value = false
-    emit('graded', !!result.value.ok, result.value, answer.value)
+    emit('graded', !!res.ok, res, answer.value)
   } finally {
     pending.value = false
   }
@@ -109,9 +143,9 @@ function retry() {
     </div>
     <div v-else-if="type === 'listen'" class="mb-5 flex flex-col items-center gap-3 px-8">
       <SpeakButton :src="audio" :size="52" />
-      <span class="flex items-center gap-1.5 text-sm text-[var(--muted)]">
+      <span class="flex flex-wrap items-center justify-center gap-1.5 text-sm text-[var(--muted)]">
         {{ show(prompt) || 'Напиши, что слышишь' }}
-        <HintButton v-if="explain && !fromPrior && !result" :text="show(explain)" />
+        <HintButton v-if="helpText && !fromPrior && !result" :text="show(helpText)" />
       </span>
       <button
         v-if="!fromPrior && !result"
@@ -125,13 +159,13 @@ function retry() {
     </div>
     <div v-else class="mb-5 px-8 text-center">
       <p v-if="type === 'fix_error'" class="mb-1.5 text-[10px] uppercase tracking-widest text-[var(--accent)]">
-        найди и исправь ошибку
+        найди и исправь ошибку — перепиши предложение целиком
       </p>
       <p class="flex flex-wrap items-center justify-center gap-1.5 whitespace-pre-wrap text-xl font-medium">
         <GlossedText v-if="glossPrompt" :text="prompt" />
         <template v-else>{{ show(prompt) }}</template>
         <PromptSpeak :prompt="prompt" />
-        <HintButton v-if="explain && !fromPrior && !result" :text="explain" />
+        <HintButton v-if="helpText && !fromPrior && !result" :text="helpText" />
       </p>
     </div>
 
@@ -157,6 +191,10 @@ function retry() {
       />
       <SerbianKeys v-if="!text" class="mt-1.5 justify-center" />
     </form>
+    <p v-if="tooShort" class="mt-3 text-sm text-[var(--warning)]" data-test="too-short">
+      <template v-if="type === 'fix_error'">Это только часть. Перепиши предложение целиком, исправив ошибку.</template>
+      <template v-else>Это только часть ответа. Напиши фразу целиком.</template>
+    </p>
     <BottomBar v-if="!fromPrior && !result">
       <button class="btn btn-primary w-full" :disabled="pending || !answer.trim()" @click="submit">
         Проверить
@@ -168,14 +206,18 @@ function retry() {
         class="mb-1 flex items-center justify-center gap-1.5 font-semibold"
         :class="result.ok ? 'text-[var(--good)]' : 'text-[var(--bad)]'"
       >
-        <span>{{ result.ok ? '✓' : '✗' }}</span>
+        <SuccessCheck v-if="result.ok" />
+        <span v-else>✗</span>
         <span>{{ result.ok ? 'Верно' : result.near_miss ? 'Почти — опечатка?' : 'Не совсем' }}</span>
       </p>
-      <p v-if="result.ok && result.typo && result.expected" class="mb-1 text-sm text-[var(--warning)]">
-        Засчитано, но проверь написание: <span class="font-semibold" :class="{ serbian: !text }">{{ show(result.expected) }}</span>
-      </p>
-      <p v-if="result.diff?.length && !result.ok" class="mb-1">
-        <span v-for="(c, i) in result.diff" :key="i" :class="c.ok ? '' : 'chunk-wrong'">{{ show(c.text)
+      <div v-if="result.ok && result.typo && result.expected" class="mb-1 text-sm text-[var(--warning)]" data-test="typo-note">
+        <p>Засчитано, но проверь написание.</p>
+        <p>Вы написали: <span class="font-semibold" :class="{ serbian: !text }">{{ show(answer.trim()) }}</span></p>
+        <p>Правильно: <span class="font-semibold" :class="{ serbian: !text }">{{ show(result.expected) }}</span></p>
+      </div>
+      <p v-if="result.diff?.length && !result.ok" class="mb-1" data-test="wrote">
+        <span class="text-sm">Вы написали: </span
+        ><span v-for="(c, i) in result.diff" :key="i" :class="c.ok ? '' : 'chunk-wrong'">{{ show(c.text)
         }}{{ i < result.diff.length - 1 ? ' ' : '' }}</span>
       </p>
       <p v-if="!result.ok && result.expected" class="text-sm">

@@ -91,13 +91,15 @@ export interface Exercise {
   forms?: string[]
   meta?: string
   audio?: string
-  text?: string // listen, audio off: the Serbian sentence to translate
+  text?: string // listen / listen-choice, audio off: the Serbian sentence shown instead of the clip
   options?: string[]
   bank?: string[]
   left?: string[]
   right?: string[]
   explain?: string
   hint?: string // 💡 nudge shown before answering (never contains the answer)
+  // What kind of text is typed: one word, a phrase, only the missing word, or the whole fixed sentence.
+  shape?: 'word' | 'phrase' | 'blank' | 'sentence'
 }
 
 export interface ExerciseBlock {
@@ -114,10 +116,14 @@ export interface MistakeItem {
   exercise: Exercise
 }
 
-export interface MistakesResponse {
-  // Every exercise currently marked as a mistake, not only this batch.
+export interface RepeatResponse {
+  // The exercises of today's «Повторить» batch that are still waiting.
   total: number
   items: MistakeItem[]
+  // A running year or a level paid for in rubles: no daily limit, every press is a new batch.
+  unlimited: boolean
+  // How many the batch had when it started and how many are left.
+  session: { size: number; remaining: number }
 }
 
 export interface Chunk {
@@ -140,6 +146,8 @@ export interface CheckResult {
   forms?: FormResult[]
   match?: Record<string, boolean>
   near_miss?: boolean
+  format?: 'too_short' // only a piece of the right answer: nothing is graded or recorded, the learner finishes it
+  say?: string // listen-choice: the Serbian sentence that was played, revealed after the answer
   partial?: boolean // ok, but one slot (conjugate / match) was wrong — shown yellow
   typo?: boolean // accepted despite a spelling slip; `expected` is the right spelling
   line?: string
@@ -453,9 +461,25 @@ export interface TariffsInfo {
     available_from?: string
     // In-app currency (зёрнышки) credited once when a level is paid for.
     bonus?: number
+    // The first level a paid level could open (the first of `choices`), or null.
     next: { id: string; title: string } | null
+    // The levels a paid level can open, in course order: closed for this learner and on
+    // sale. The learner picks one after paying.
+    choices?: LevelChoice[]
+    // Paid level orders not yet spent on a level (oldest first). While there is one,
+    // another level cannot be bought.
+    credits?: number[]
   }
   year: { price: number; old_price: number; bonus?: number; until?: string }
+}
+
+// A level a paid level can open. `after` names the level before it in the course when that
+// one is still to be opened too ("better after ..."): the levels build on each other.
+export interface LevelChoice {
+  id: string
+  title: string
+  lessons: number
+  after?: string
 }
 
 export type TariffCode = 'level' | 'year'
@@ -469,6 +493,18 @@ export interface Order {
   // came with it.
   phase_title?: string
   bonus?: number
+  // A paid level order whose level has not been chosen yet.
+  choose?: boolean
+}
+
+// What the stand-in cash desk page shows (PAYMENTS_DEV, local development only).
+export interface DevOrder {
+  id: number
+  tariff: TariffCode
+  title: string
+  // whole rubles
+  amount: number
+  status: 'pending' | 'succeeded' | 'canceled'
 }
 
 // The one-time feedback survey. Option codes are shared with the server.
