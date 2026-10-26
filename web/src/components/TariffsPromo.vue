@@ -21,7 +21,7 @@
 // The price and the зёрнышки bonus are the server's (stores/tariffs.ts); nothing
 // here is a number typed in. The profile loads the quote together with the rest
 // of the page, so the advert appears with it instead of pushing it down later.
-import { computed, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useTariffsStore } from '../stores/tariffs'
 import { useWalletStore } from '../stores/wallet'
 import { grouped, rub } from '../lib/tariffs'
@@ -43,7 +43,28 @@ const hello = 'Ćao! 👋 Рады, что вы учите сербский с �
 // the learner back from buying it (the one-a-month limit only bites after a paid
 // level, which already hides the advert, but the server has the last word).
 const nextLevel = computed(() => tariffs.info?.level.next ?? null)
-const show = computed(() => tariffs.ready && !tariffs.hasTariff && !!nextLevel.value && !tariffs.levelFrom)
+// The cross closes the banner for good on this device (the admin's «Воронка тарифов» counts who pressed it).
+const DISMISS_KEY = 'srpski.promo.dismissed'
+function readDismissed(): boolean {
+  try {
+    return localStorage.getItem(DISMISS_KEY) === '1'
+  } catch {
+    return false
+  }
+}
+const dismissed = ref(readDismissed())
+function dismiss() {
+  dismissed.value = true
+  try {
+    localStorage.setItem(DISMISS_KEY, '1')
+  } catch {
+    /* it just comes back on the next visit */
+  }
+  trackTariff('dismiss', 'profile_banner')
+}
+const show = computed(
+  () => !dismissed.value && tariffs.ready && !tariffs.hasTariff && !!nextLevel.value && !tariffs.levelFrom,
+)
 
 // The admin's «Воронка тарифов» counts the showings: once each time the banner appears, not on every re-render.
 watch(show, (shown) => shown && trackTariff('view', 'profile_banner'), { immediate: true })
@@ -52,7 +73,12 @@ watch(show, (shown) => shown && trackTariff('view', 'profile_banner'), { immedia
 <template>
   <section v-if="show" class="promo card" data-test="tariffs-promo">
     <img class="scene" :src="scene" alt="" aria-hidden="true" />
-    <p class="hook-pill">{{ hello }}</p>
+    <div class="topbar">
+      <p class="hook-pill">{{ hello }}</p>
+      <button type="button" class="close" aria-label="Закрыть" title="Закрыть" data-test="promo-close" @click="dismiss">
+        <span aria-hidden="true">×</span>
+      </button>
+    </div>
     <div class="glass">
       <p class="hook">{{ hello }}</p>
       <p class="title" data-test="promo-title">
@@ -253,11 +279,34 @@ watch(show, (shown) => shown && trackTariff('view', 'profile_banner'), { immedia
   line-height: 1.3;
   color: var(--muted);
 }
-.hook-pill {
+.topbar {
   position: absolute;
   top: 0.75rem;
   left: 0.75rem;
-  max-width: calc(100% - 1.5rem);
+  right: 0.75rem;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.close {
+  flex: none;
+  margin-left: auto;
+  display: grid;
+  place-items: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  font-size: 1.25rem;
+  line-height: 1;
+  border-radius: 999px;
+  color: var(--fg);
+  background: color-mix(in srgb, var(--card) 72%, transparent);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  border: 1px solid color-mix(in srgb, var(--fg) 10%, transparent);
+}
+.hook-pill {
+  min-width: 0;
   padding: 0.35rem 0.75rem;
   border-radius: 14px;
   font-size: 0.8rem;

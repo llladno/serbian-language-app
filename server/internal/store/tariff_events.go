@@ -5,11 +5,13 @@ import (
 	"time"
 )
 
-// The places that sell the paid tariffs, and what is logged about each: a showing (view) and a press on the way
-// to the tariffs (click). The admin's «Воронка тарифов» counts the rows (migration 032).
+// The places that sell the paid tariffs, and what is logged about each: a showing (view), a press on the way
+// to the tariffs (click) and the banner being closed (dismiss). The admin's «Воронка тарифов» counts the rows (migration 032).
 const (
 	TariffEventView  = "view"
 	TariffEventClick = "click"
+	// TariffEventDismiss is a learner closing the banner with its cross (only the profile banner has one).
+	TariffEventDismiss = "dismiss"
 
 	// TariffSourceProfileBanner is the banner at the top of the profile.
 	TariffSourceProfileBanner = "profile_banner"
@@ -26,7 +28,7 @@ const tariffEventDedupe = 30 * time.Second
 // ValidTariffEvent reports whether kind and source are ones the app reports.
 func ValidTariffEvent(kind, source string) bool {
 	switch kind {
-	case TariffEventView, TariffEventClick:
+	case TariffEventView, TariffEventClick, TariffEventDismiss:
 	default:
 		return false
 	}

@@ -21,6 +21,19 @@ const day = 86_400_000
 beforeEach(() => setActivePinia(createPinia()))
 
 describe('TariffsPromo', () => {
+  it('closes with the cross, reports it, and stays closed on this device', async () => {
+    localStorage.removeItem('srpski.promo.dismissed')
+    enableTariffs()
+    const track = vi.spyOn(api, 'trackTariffEvent').mockResolvedValue(undefined)
+    const w = mountPromo()
+    await w.find('[data-test="promo-close"]').trigger('click')
+    expect(w.find('[data-test="tariffs-promo"]').exists()).toBe(false)
+    expect(track).toHaveBeenCalledWith('dismiss', 'profile_banner')
+    expect(localStorage.getItem('srpski.promo.dismissed')).toBe('1')
+    expect(mountPromo().find('[data-test="tariffs-promo"]').exists()).toBe(false)
+    localStorage.removeItem('srpski.promo.dismissed')
+  })
+
   it('has one button, and it says what the learner gets', () => {
     enableTariffs()
     const w = mountPromo()

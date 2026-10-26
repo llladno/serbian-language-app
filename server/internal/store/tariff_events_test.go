@@ -25,6 +25,7 @@ func TestATariffEventIsRecordedWithItsKindSourceAndTime(t *testing.T) {
 		{TariffEventClick, TariffSourceProfileBanner},
 		{TariffEventView, TariffSourceRepeatLimit},
 		{TariffEventView, TariffSourceUnlockModal},
+		{TariffEventDismiss, TariffSourceProfileBanner},
 	} {
 		recorded, err := s.RecordTariffEvent(uid, c.kind, c.source, day0)
 		if err != nil || !recorded {
@@ -36,6 +37,9 @@ func TestATariffEventIsRecordedWithItsKindSourceAndTime(t *testing.T) {
 	}
 	if got := eventCount(t, s, "kind = 'click' AND source = 'profile_banner'"); got != "1" {
 		t.Errorf("banner clicks = %s, want 1", got)
+	}
+	if got := eventCount(t, s, "kind = 'dismiss' AND source = 'profile_banner'"); got != "1" {
+		t.Errorf("banner dismissals = %s, want 1", got)
 	}
 	at, _ := s.DebugQuery("SELECT created_at FROM tariff_events WHERE source = 'repeat_limit'")
 	if len(at) != 1 || at[0] != day0.UTC().Format(time.RFC3339) {
