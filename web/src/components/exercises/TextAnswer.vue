@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { RefreshCw } from 'lucide-vue-next'
 import { api } from '../../api'
 import { useWrongGoesToEnd } from '../../lib/lessonRules'
@@ -13,6 +13,7 @@ import HintButton from '../HintButton.vue'
 import PhraseSpeak from '../PhraseSpeak.vue'
 import PromptSpeak from '../PromptSpeak.vue'
 import { fillSentence } from '../../lib/phraseAudio'
+import { speakClip } from '../../lib/sound'
 import SuccessCheck from '../SuccessCheck.vue'
 
 const props = defineProps<{
@@ -69,6 +70,12 @@ const formatLine = computed(() => {
 const helpText = computed(() => [formatLine.value, props.explain].filter(Boolean).join(' '))
 
 const answer = ref(props.prior?.answer ?? startingAnswer())
+
+// A dictation starts by itself, so the learner does not have to find the speaker first (an already answered one
+// shown again, and the text-only mode, stay silent). The speaker stays for hearing it again.
+onMounted(() => {
+  if (props.type === 'listen' && props.audio && !props.text && !props.prior) speakClip(props.audio)
+})
 const result = ref<CheckResult | null>(null)
 const fromPrior = ref(!!props.prior)
 

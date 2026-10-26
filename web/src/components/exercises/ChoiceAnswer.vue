@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { RefreshCw } from 'lucide-vue-next'
 import { api } from '../../api'
 import { useWrongGoesToEnd } from '../../lib/lessonRules'
 import { useScript } from '../../lib/useScript'
+import { speakClip } from '../../lib/sound'
 import type { CheckResult, LessonAttempt } from '../../types'
 import HintButton from '../HintButton.vue'
 import PhraseSpeak from '../PhraseSpeak.vue'
@@ -43,6 +44,11 @@ const showRetry = computed(
   () => (fromPrior.value || !!result.value) && !(wrongGoesToEnd.value && result.value && !result.value.ok),
 )
 const pending = ref(false)
+
+// «Послушай и выбери» starts the clip by itself; the speaker stays for hearing it again.
+onMounted(() => {
+  if (props.audio && !props.text && !props.prior) speakClip(props.audio)
+})
 
 async function choose(opt: string) {
   if (pending.value || result.value || fromPrior.value) return

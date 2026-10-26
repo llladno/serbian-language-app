@@ -282,6 +282,20 @@ describe('TextAnswer reads the right sentence out after an answer', () => {
     _setPhraseIndex([phraseKey('Zdravo!')])
     vi.spyOn(api, 'check').mockResolvedValue({ ok: true, expected: 'Zdravo!' })
     await answerWith({ type: 'listen', audio: 'x.mp3' }, 'Zdravo!')
+    // only the dictation's own clip, started when the exercise appeared; nothing after the answer
+    expect(speakClip).toHaveBeenCalledTimes(1)
+    expect(speakClip).toHaveBeenCalledWith('x.mp3')
+  })
+
+  it('plays a dictation by itself when it appears', () => {
+    mount(TextAnswer, { props: { ...props, type: 'listen', audio: 'x.mp3' } })
+    expect(speakClip).toHaveBeenCalledTimes(1)
+    expect(speakClip).toHaveBeenCalledWith('x.mp3')
+  })
+
+  it('does not play a dictation that is only being looked at, or one read as text', () => {
+    mount(TextAnswer, { props: { ...props, type: 'listen', audio: 'x.mp3', prior: { answer: 'a', correct: true } } })
+    mount(TextAnswer, { props: { ...props, type: 'listen', audio: 'x.mp3', text: 'Zdravo!' } })
     expect(speakClip).not.toHaveBeenCalled()
   })
 

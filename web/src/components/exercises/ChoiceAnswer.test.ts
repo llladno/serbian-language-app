@@ -110,6 +110,16 @@ describe('ChoiceAnswer reads the right phrase out after an answer', () => {
     mount(ChoiceAnswer, { props })
     expect(speakClip).not.toHaveBeenCalled()
   })
+
+  it('a listen-and-choose plays its clip by itself, but not when read as text or only looked at', () => {
+    mount(ChoiceAnswer, { props: { ...props, audio: 'x.mp3' } })
+    expect(speakClip).toHaveBeenCalledTimes(1)
+    expect(speakClip).toHaveBeenCalledWith('x.mp3')
+    vi.mocked(speakClip).mockClear()
+    mount(ChoiceAnswer, { props: { ...props, audio: 'x.mp3', text: 'Hvala' } })
+    mount(ChoiceAnswer, { props: { ...props, audio: 'x.mp3', prior: { answer: 'Hvala', correct: true } } })
+    expect(speakClip).not.toHaveBeenCalled()
+  })
 })
 
 // «Послушай и выбери»: a choice that comes with a clip (`audio`) instead of
