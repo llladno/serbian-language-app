@@ -961,6 +961,74 @@ func TestMigration030Level2Paywall(t *testing.T) {
 		}
 	})
 
+	// Levels 4 and 5 of the old numbering are Levels 5 and 6 now: the ids of the phases did not change, so what a
+	// learner paid for stays theirs under the new names, and only the prices for the ones who did not buy move.
+	t.Run("a level bought before stays bought, under its new number and price", func(t *testing.T) {
+		s := seedOld(t)
+		for _, e := range []struct{ user, phase string }{
+			{"usr_old4", "4"}, // paid 230 for «Уровень 4», it is «Уровень 5» now
+			{"usr_old5", "5"}, // paid 375 for «Уровень 5», it is «Уровень 6» now
+			{"usr_both", "4"}, {"usr_both", "5"},
+		} {
+			mustExec(t, s, `INSERT INTO user_entitlements (user_id, kind, ref, qty, updated_at) VALUES (?, 'phase_unlock', ?, 1, 'x')`, e.user, e.phase)
+			mustExec(t, s, `INSERT INTO lesson_progress (user_id, lesson, status) VALUES (?, ?, 'done')`, e.user, map[string]string{"4": "42", "5": "60"}[e.phase])
+		}
+		if err := s.runMigrations(); err != nil {
+			t.Fatalf("run migrations: %v", err)
+		}
+		has := func(user, phase string) bool {
+			return count(t, s, `SELECT COUNT(*) FROM user_entitlements WHERE user_id = ? AND kind = 'phase_unlock' AND ref = ?`, user, phase) == 1
+		}
+		for _, want := range []struct{ user, phase string }{{"usr_old4", "4"}, {"usr_old5", "5"}, {"usr_both", "4"}, {"usr_both", "5"}} {
+			if !has(want.user, want.phase) {
+				t.Errorf("%s lost the level with id %s that they had bought", want.user, want.phase)
+			}
+		}
+		// the buyers were not given anything else
+		if has("usr_old5", "4") || has("usr_old4", "5") {
+			t.Error("a purchase of one level opened the other")
+		}
+		var title string
+		var price int
+		if err := s.db.QueryRow(`SELECT title, price FROM products WHERE kind = 'phase_unlock' AND ref = '5'`).Scan(&title, &price); err != nil {
+			t.Fatal(err)
+		}
+		if title != "Уровень 6 — Жизнь на сербском" || price != 480 {
+			t.Errorf("old level 5 is %q at %d, want «Уровень 6» at 480", title, price)
+		}
+	})
+
+	// "Started" means any trace of the learner in a lesson, not only the progress row: the answers they gave and the
+	// steps they went through count too, so nobody who began a level loses it to the new prices.
+	t.Run("a level started only by answering or by a step stays open too", func(t *testing.T) {
+		s := seedOld(t)
+		mustExec(t, s, `INSERT INTO lesson_step_progress (user_id, lesson, step, status) VALUES ('usr_step', '09', '1', 'in_progress')`)
+		mustExec(t, s, `INSERT INTO attempts (user_id, exercise_id, lesson, block, answer, correct, attempted_at)
+			VALUES ('usr_ans', '18.1.1', '18', 1, 'x', 0, '2026-10-20T10:00:00Z')`)
+		mustExec(t, s, `INSERT INTO attempts (user_id, exercise_id, lesson, block, answer, correct, attempted_at)
+			VALUES ('usr_ans2', '33.2.1', '33', 2, 'x', 1, '2026-10-20T10:00:00Z')`)
+		mustExec(t, s, `INSERT INTO attempts (user_id, exercise_id, lesson, block, answer, correct, attempted_at)
+			VALUES ('usr_free', '03.1.1', '03', 1, 'x', 1, '2026-10-20T10:00:00Z')`)
+		if err := s.runMigrations(); err != nil {
+			t.Fatalf("run migrations: %v", err)
+		}
+		has := func(user, phase string) bool {
+			return count(t, s, `SELECT COUNT(*) FROM user_entitlements WHERE user_id = ? AND kind = 'phase_unlock' AND ref = ?`, user, phase) == 1
+		}
+		if !has("usr_step", "1b") {
+			t.Error("a learner who only went through a step of Level 2 lost it")
+		}
+		if !has("usr_ans", "2") {
+			t.Error("a learner who only answered in Level 3 lost it")
+		}
+		if !has("usr_ans2", "3") {
+			t.Error("a learner who only answered in Level 4 lost it")
+		}
+		if has("usr_free", "1b") || has("usr_free", "2") {
+			t.Error("a learner who only worked in the free Level 1 was given a paid level")
+		}
+	})
+
 	t.Run("an unseeded database gets nothing", func(t *testing.T) {
 		s := openStoreAtVersion(t, 29)
 		mustExec(t, s, `INSERT INTO lesson_progress (user_id, lesson, status) VALUES ('usr_a', '08', 'in_progress')`)

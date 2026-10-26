@@ -170,19 +170,32 @@ SELECT 'lesson_completed', 1, '13b', 'Урок 13b', '', 2, 1, 100, '2026-10-22T
 	WHERE EXISTS (SELECT 1 FROM economy_settings WHERE key = 'economy_lessons_seeded')
 	  AND NOT EXISTS (SELECT 1 FROM quests WHERE kind = 'lesson_completed' AND param = '13b');
 
--- Learners who have started a level that used to be free keep it.
+-- Learners who have started a level that used to be free keep it. "Started" is any trace of the learner in a lesson of
+-- the level: the progress row (written the moment a lesson is opened), a step they went through, an answer they gave.
 INSERT INTO user_entitlements (user_id, kind, ref, qty, updated_at)
-SELECT DISTINCT user_id, 'phase_unlock', '1b', 1, '2026-10-22T00:00:00Z' FROM lesson_progress
+SELECT DISTINCT user_id, 'phase_unlock', '1b', 1, '2026-10-22T00:00:00Z' FROM (
+	SELECT user_id, lesson FROM lesson_progress
+	UNION SELECT user_id, lesson FROM lesson_step_progress
+	UNION SELECT user_id, lesson FROM attempts
+) AS started
 	WHERE lesson IN ('06', '06b', '06c', '07', '07b', '08', '08b', '08c', '08d', '09', '09b', '10', '10b', '10c', '10d', '11', '11b', '12', '12b', '12c', '13', '13b', '15')
 	  AND EXISTS (SELECT 1 FROM economy_settings WHERE key = 'economy_seeded')
 ON CONFLICT (user_id, kind, ref) DO NOTHING;
 INSERT INTO user_entitlements (user_id, kind, ref, qty, updated_at)
-SELECT DISTINCT user_id, 'phase_unlock', '2', 1, '2026-10-22T00:00:00Z' FROM lesson_progress
+SELECT DISTINCT user_id, 'phase_unlock', '2', 1, '2026-10-22T00:00:00Z' FROM (
+	SELECT user_id, lesson FROM lesson_progress
+	UNION SELECT user_id, lesson FROM lesson_step_progress
+	UNION SELECT user_id, lesson FROM attempts
+) AS started
 	WHERE lesson IN ('16', '17', '18', '19', '20', '21', '22', '23', '24', '25', '26', '27', '28', '29')
 	  AND EXISTS (SELECT 1 FROM economy_settings WHERE key = 'economy_seeded')
 ON CONFLICT (user_id, kind, ref) DO NOTHING;
 INSERT INTO user_entitlements (user_id, kind, ref, qty, updated_at)
-SELECT DISTINCT user_id, 'phase_unlock', '3', 1, '2026-10-22T00:00:00Z' FROM lesson_progress
+SELECT DISTINCT user_id, 'phase_unlock', '3', 1, '2026-10-22T00:00:00Z' FROM (
+	SELECT user_id, lesson FROM lesson_progress
+	UNION SELECT user_id, lesson FROM lesson_step_progress
+	UNION SELECT user_id, lesson FROM attempts
+) AS started
 	WHERE lesson IN ('30', '31', '32', '33', '34', '35', '36', '37', '38', '39', '40', '41')
 	  AND EXISTS (SELECT 1 FROM economy_settings WHERE key = 'economy_seeded')
 ON CONFLICT (user_id, kind, ref) DO NOTHING;
