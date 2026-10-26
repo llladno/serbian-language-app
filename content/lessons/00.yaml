@@ -5,26 +5,137 @@ script: latin   # teaches the letters themselves: stays Latin whatever script th
 teaches: []
 
 steps:
-  - id: "00.1"
+  - id: "00.11"
     kind: teach
-    title: "Два писма"
-    md: "00/1-pisma.md"
+    title: "Два письма"
+    md: "00/11-dva-pisma.md"
 
-  - id: "00.2"
+  - id: "00.12"
     kind: practice
-    title: "Исто слово, два писма"
-    also_ok: ["auto", "banka", "telefon", "sport"]
+    title: "Запомним: Два письма"
     exercises:
-      - id: "00.2.1"
+      - id: "00.12.1"
         type: choice
-        prompt: "«Машина» — по-сербски это слово, узнаваемое сразу:"
-        options: ["auto", "banka", "telefon"]
+        prompt: "Сколько алфавитов у сербского языка?"
+        options: ["Два", "Один", "Три"]
+        answer: "Два"
+
+  - id: "00.13"
+    kind: teach
+    title: "Почти все буквы — как в русском"
+    md: "00/13-kak-v-russkom.md"
+
+  - id: "00.14"
+    kind: practice
+    title: "Запомним: Почти все буквы — как в русском"
+    also_ok: ["auto", "park", "telefon"]
+    exercises:
+      - id: "00.14.1"
+        type: choice
+        prompt: "«Машина» — слово, которое узнаётся сразу:"
+        options: ["auto", "park", "telefon"]
         answer: "auto"
-      - id: "00.2.2"
+
+  - id: "00.15"
+    kind: teach
+    title: "Ловушки: c и j"
+    md: "00/15-c-j.md"
+
+  - id: "00.16"
+    kind: practice
+    title: "Запомним: Ловушки: c и j"
+    exercises:
+      - id: "00.16.1"
+        type: choice
+        prompt: "Латинская «j» читается как —"
+        options: ["й", "дж", "ж"]
+        answer: "й"
+
+  - id: "00.17"
+    kind: teach
+    title: "Ловушки: h и e"
+    md: "00/17-h-e.md"
+
+  - id: "00.18"
+    kind: practice
+    title: "Запомним: Ловушки: h и e"
+    exercises:
+      - id: "00.18.1"
+        type: choice
+        prompt: "Как читается «ne» (нет)?"
+        options: ["нэ", "нье", "не"]
+        answer: "нэ"
+
+  - id: "00.19"
+    kind: practice
+    title: "Послушай и выбери"
+    also_ok: ["auto", "park", "telefon", "sport", "ne", "levo"]
+    exercises:
+      - id: "00.19.1"
+        type: choice
+        say: "auto"
+        prompt: "Послушай и выбери перевод."
+        options: ["машина", "парк", "телефон"]
+        answer: "машина"
+      - id: "00.19.2"
+        type: choice
+        say: "park"
+        prompt: "Послушай и выбери перевод."
+        options: ["парк", "машина", "спорт"]
+        answer: "парк"
+      - id: "00.19.3"
+        type: choice
+        say: "levo"
+        prompt: "Послушай и выбери перевод."
+        options: ["налево", "направо", "нет"]
+        answer: "налево"
+
+  - id: "00.20"
+    kind: practice
+    title: "Соедини"
+    also_ok: ["auto", "park", "telefon", "sport"]
+    exercises:
+      - id: "00.20.1"
         type: match
         prompt: "Соедини одно и то же слово в двух алфавитах"
         pairs:
           - ["auto", "ауто"]
-          - ["banka", "банка"]
+          - ["park", "парк"]
           - ["telefon", "телефон"]
           - ["sport", "спорт"]
+
+  - id: "00.21"
+    kind: practice
+    title: "Какая буква?"
+    also_ok: ["c", "j", "h", "k", "z", "i", "lj", "g"]
+    exercises:
+      - id: "00.21.1"
+        type: choice
+        prompt: "Звук «ц» пишется латинской буквой —"
+        options: ["c", "k", "z"]
+        answer: "c"
+      - id: "00.21.2"
+        type: choice
+        prompt: "Звук «й» пишется латинской буквой —"
+        options: ["j", "i", "lj"]
+        answer: "j"
+      - id: "00.21.3"
+        type: choice
+        prompt: "Звук «х» пишется латинской буквой —"
+        options: ["h", "g", "k"]
+        answer: "h"
+
+  - id: "00.22"
+    kind: practice
+    title: "Напиши"
+    also_ok: ["park", "telefon"]
+    exercises:
+      - id: "00.22.1"
+        hint: "Четыре буквы, как в русском слове, только латиницей."
+        type: fill_blank
+        prompt: "«Парк» по-сербски — ___"
+        accept: ["park"]
+      - id: "00.22.2"
+        type: translate
+        prompt: "Как по-сербски «телефон»?"
+        accept: ["telefon"]

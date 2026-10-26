@@ -1,0 +1,124 @@
+lesson: "04c"
+title: "Повторение: знакомство (Ponavljanje)"
+subtitle: "имя, приятно, откуда я, где живу"
+teaches: []
+
+steps:
+  - id: "04c.1"
+    kind: practice
+    title: "Послушай и выбери"
+    also_ok: ["rusije", "srbije"]
+    exercises:
+      - id: "04c.1.1"
+        type: choice
+        say: "Kako se zovete?"
+        prompt: "Послушай и выбери перевод."
+        options: ["Как вас зовут?", "Как тебя зовут?", "Как у вас дела?"]
+        answer: "Как вас зовут?"
+      - id: "04c.1.2"
+        type: choice
+        say: "Mi smo iz Rusije."
+        prompt: "Послушай и выбери перевод."
+        options: ["Мы из России.", "Они из России.", "Вы из России?"]
+        answer: "Мы из России."
+      - id: "04c.1.3"
+        type: choice
+        say: "On nije iz Srbije."
+        prompt: "Послушай и выбери перевод."
+        options: ["Он не из Сербии.", "Он из Сербии.", "Они не из Сербии."]
+        answer: "Он не из Сербии."
+
+  - id: "04c.2"
+    kind: practice
+    title: "Соедини"
+    also_ok: ["rusije"]
+    exercises:
+      - id: "04c.2.1"
+        type: match
+        prompt: "Соедини фразу и перевод"
+        pairs:
+          - ["Zovem se Ana", "Меня зовут Ана"]
+          - ["Drago mi je", "Приятно познакомиться"]
+          - ["Takođe", "Взаимно"]
+          - ["Odakle ste?", "Откуда вы?"]
+          - ["Ja sam iz Rusije", "Я из России"]
+          - ["Živim u Novom Sadu", "Живу в Нови-Саде"]
+
+  - id: "04c.3"
+    kind: practice
+    title: "Диктант"
+    also_ok: ["srbije"]
+    exercises:
+      - id: "04c.3.1"
+        type: listen
+        say: "Ja sam iz Srbije."
+        prompt: "Запиши, что слышишь."
+        accept: ["Ja sam iz Srbije."]
+        ru: ["Я из Сербии."]
+      - id: "04c.3.2"
+        hint: "Всего три слова; «mi» и «je» звучат слитно («мие»), но пишутся раздельно."
+        type: listen
+        say: "Drago mi je."
+        prompt: "Запиши, что слышишь."
+        accept: ["Drago mi je."]
+        ru: ["Приятно познакомиться", "Очень приятно", "Приятно", "Мне приятно", "Рад познакомиться", "Рада познакомиться"]
+        explain: "На слух «mi je» сливается почти в одно слово, но пишутся раздельно: «mi» и «je»."
+
+  - id: "04c.4"
+    kind: practice
+    title: "Собери"
+    exercises:
+      - id: "04c.4.1"
+        type: word_bank
+        prompt: "Собери вопрос: «откуда вы?»"
+        bank: ["Odakle", "ste", "si"]
+        accept: ["Odakle ste?"]
+
+  - id: "04c.5"
+    kind: practice
+    title: "Переведи"
+    also_ok: ["rusije"]
+    exercises:
+      - id: "04c.5.1"
+        type: translate
+        prompt: "Меня зовут Ана."
+        accept: ["Zovem se Ana.", "Ja sam Ana."]
+      - id: "04c.5.2"
+        type: translate
+        prompt: "Мы из России."
+        accept: ["Mi smo iz Rusije.", "Iz Rusije smo."]
+
+  - id: "04c.6"
+    kind: dialogue
+    title: "Новая соседка"
+    scene: "Ты знакомишься с новой соседкой на лестнице."
+    voice: f
+    also_ok: ["rusije"]
+    turns:
+      - who: npc
+        sr: "Dobar dan! Kako se zovete?"
+        ru: "Добрый день! Как вас зовут?"
+
+      - who: me
+        sr: "Zovem se Ana. Drago mi je."
+        ru: "Меня зовут Ана. Приятно познакомиться."
+        exercise:
+          id: "04c.6.1"
+          type: choice
+          prompt: "Назови имя и скажи, что тебе приятно"
+          options: ["Zovem se Ana. Drago mi je.", "Ja sam Ana. Hvala lepo.", "Zovem se Ana. Doviđenja."]
+          answer: "Zovem se Ana. Drago mi je."
+
+      - who: npc
+        sr: "Takođe. Odakle ste?"
+        ru: "Взаимно. Откуда вы?"
+
+      - who: me
+        sr: "Ja sam iz Rusije."
+        ru: "Я из России."
+        exercise:
+          id: "04c.6.2"
+          type: choice
+          prompt: "Скажи, что ты из России"
+          options: ["Ja sam iz Rusije.", "Ja nisam iz Rusije.", "Iz Rusije si."]
+          answer: "Ja sam iz Rusije."

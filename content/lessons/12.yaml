@@ -1,101 +1,186 @@
 lesson: "12"
-title: "Количество и оплата (Količina i plaćanje)"
-subtitle: "сколько, ещё что-нибудь, оплата"
-teaches: [sir, litar, deka]
+title: "Сколько и что ещё (Količina)"
+subtitle: "кило, литр, штуки; ещё что-нибудь, это всё"
+teaches: [kilo, pola-kile, sir, litar, komad, pakovanje, deka, jos-nesto, to-je-sve, nesto, nista]
 
 steps:
-  - id: "12.1"
+  - id: "12.11"
     kind: teach
-    title: "Сколько"
-    md: "12/1-koliko.md"
+    title: "Кило и полкило"
+    md: "12/11-kilo.md"
 
-  - id: "12.2"
+  - id: "12.12"
     kind: practice
-    title: "Мера"
+    title: "Запомним: Кило и полкило"
+    also_ok: ["sira"]
     exercises:
-      - id: "12.2.1"
+      - id: "12.12.1"
         type: choice
-        prompt: "«полкило сыра» —"
-        options: ["pola kile sira", "pola kilo sir", "pola kile sir"]
-        answer: "pola kile sira"
-      - id: "12.2.2"
+        prompt: "«Полкило сыра» —"
+        options: ["Pola kile sira.", "Kilo sira.", "Treba mi sir."]
+        answer: "Pola kile sira."
+
+  - id: "12.13"
+    kind: teach
+    title: "Литр"
+    md: "12/13-litar.md"
+
+  - id: "12.14"
+    kind: practice
+    title: "Запомним: Литр"
+    also_ok: ["mleka", "sira"]
+    exercises:
+      - id: "12.14.1"
         type: choice
-        prompt: "«два куска» —"
-        options: ["dva komada", "dve komada", "dva komad"]
-        answer: "dva komada"
-      - id: "12.2.3"
+        prompt: "«Литр молока» —"
+        options: ["Litar mleka.", "Kilo sira.", "Treba mi mleko."]
+        answer: "Litar mleka."
+
+  - id: "12.15"
+    kind: teach
+    title: "Штуки и граммы"
+    md: "12/15-komad.md"
+
+  - id: "12.16"
+    kind: practice
+    title: "Запомним: Штуки и граммы"
+    also_ok: ["komada", "sira"]
+    exercises:
+      - id: "12.16.1"
+        type: choice
+        prompt: "«Две штуки, пожалуйста» —"
+        options: ["Dva komada, molim.", "Jedno pakovanje.", "Kilo sira."]
+        answer: "Dva komada, molim."
+
+  - id: "12.17"
+    kind: teach
+    title: "Ещё что-нибудь?"
+    md: "12/17-jos-nesto.md"
+
+  - id: "12.18"
+    kind: practice
+    title: "Запомним: Ещё что-нибудь?"
+    exercises:
+      - id: "12.18.1"
+        type: choice
+        prompt: "Продавец: «Još nešto?» Тебе больше ничего не нужно —"
+        options: ["To je sve, hvala.", "Još ovo.", "Dajte mi hleb."]
+        answer: "To je sve, hvala."
+
+  - id: "12.19"
+    kind: practice
+    title: "Вспомним"
+    exercises:
+      - id: "12.19.1"
+        type: choice
+        prompt: "«Дайте мне молоко» —"
+        options: ["Dajte mi mleko.", "Treba mi mleko.", "Samo gledam."]
+        answer: "Dajte mi mleko."
+      - id: "12.19.2"
+        type: choice
+        prompt: "«Мне нужен хлеб» —"
+        options: ["Treba mi hleb.", "Dajte mi vodu.", "Da li imate jaja?"]
+        answer: "Treba mi hleb."
+
+  - id: "12.20"
+    kind: practice
+    title: "Послушай и выбери"
+    also_ok: ["sira", "mleka"]
+    exercises:
+      - id: "12.20.1"
+        type: choice
+        say: "Kilo sira, molim."
+        prompt: "Послушай и выбери перевод."
+        options: ["Кило сыра, пожалуйста.", "Полкило сыра, пожалуйста.", "Литр молока, пожалуйста."]
+        answer: "Кило сыра, пожалуйста."
+      - id: "12.20.2"
+        type: choice
+        say: "Litar mleka."
+        prompt: "Послушай и выбери перевод."
+        options: ["Литр молока.", "Кило сыра.", "Полкило сыра."]
+        answer: "Литр молока."
+      - id: "12.20.3"
+        type: choice
+        say: "Još nešto?"
+        prompt: "Послушай и выбери перевод."
+        options: ["Ещё что-нибудь?", "Это всё?", "Сколько с меня?"]
+        answer: "Ещё что-нибудь?"
+      - id: "12.20.4"
+        type: choice
+        say: "To je sve, hvala."
+        prompt: "Послушай и выбери перевод."
+        options: ["Это всё, спасибо.", "Ещё вот это.", "Ничего, спасибо."]
+        answer: "Это всё, спасибо."
+
+  - id: "12.21"
+    kind: practice
+    title: "Что скажешь?"
+    also_ok: ["sira", "mleka", "komada"]
+    exercises:
+      - id: "12.21.1"
+        type: choice
+        prompt: "«Литр молока» —"
+        options: ["Litar mleka.", "Kilo sira.", "Pola kile sira."]
+        answer: "Litar mleka."
+      - id: "12.21.2"
+        type: choice
+        prompt: "«Это всё» —"
+        options: ["To je sve.", "Još nešto?", "Ništa."]
+        answer: "To je sve."
+      - id: "12.21.3"
+        type: choice
+        prompt: "«Ещё вот это» —"
+        options: ["Još ovo.", "To je sve.", "Još nešto?"]
+        answer: "Još ovo."
+
+  - id: "12.22"
+    kind: practice
+    title: "Соедини"
+    exercises:
+      - id: "12.22.1"
         type: match
-        prompt: "Соедини"
+        prompt: "Соедини слово и перевод"
         pairs:
           - ["kilo", "килограмм"]
           - ["pola kile", "полкило"]
+          - ["litar", "литр"]
           - ["komad", "штука"]
           - ["pakovanje", "упаковка"]
-      - id: "12.2.4"
-        type: fill_blank
-        prompt: "«литр молока» → litar ___."
-        accept: ["mleka"]
-      - id: "12.2.5"
-        type: word_bank
-        prompt: "Собери: «дайте мне кило»"
-        bank: ["Dajte", "mi", "kilo"]
-        accept: ["Dajte mi kilo."]
+          - ["deka", "10 граммов"]
 
-  - id: "12.3"
-    kind: teach
-    title: "Ещё что-нибудь"
-    md: "12/3-jos-nesto.md"
-
-  - id: "12.4"
+  - id: "12.23"
     kind: practice
-    title: "Заканчиваем"
+    title: "Собери"
+    also_ok: ["sira"]
     exercises:
-      - id: "12.4.1"
-        type: choice
-        prompt: "Продавец: «Još nešto?» Тебе больше ничего не нужно —"
-        options: ["To je sve, hvala.", "Još ovo.", "Koliko košta?"]
-        answer: "To je sve, hvala."
-      - id: "12.4.2"
-        type: choice
-        prompt: "«Больше ничего» —"
-        options: ["Ništa, hvala.", "Još nešto.", "Da li imate?"]
-        answer: "Ništa, hvala."
-      - id: "12.4.3"
-        type: fill_blank
-        prompt: "«Это всё» → To je ___."
-        accept: ["sve"]
-      - id: "12.4.4"
+      - id: "12.23.1"
+        type: word_bank
+        prompt: "Собери: «кило сыра, пожалуйста»"
+        bank: ["Kilo", "sira", "sir", "molim"]
+        accept: ["Kilo sira, molim."]
+      - id: "12.23.2"
         type: word_bank
         prompt: "Собери: «это всё, спасибо»"
         bank: ["To", "je", "sve", "hvala"]
         accept: ["To je sve, hvala."]
 
-  - id: "12.5"
-    kind: teach
-    title: "Оплата"
-    md: "12/5-placanje.md"
-
-  - id: "12.6"
+  - id: "12.24"
     kind: practice
-    title: "Плачу"
+    title: "Напиши"
     exercises:
-      - id: "12.6.1"
-        type: choice
-        prompt: "Продавец: «Kešom ili karticom?» Ты платишь картой —"
-        options: ["Karticom.", "Kešom.", "Kusur."]
-        answer: "Karticom."
-      - id: "12.6.2"
-        type: choice
-        prompt: "«У вас есть мелочь?» —"
-        options: ["Imate li sitno?", "Koliko sitno?", "Sitno je."]
-        answer: "Imate li sitno?"
-      - id: "12.6.3"
-        hint: "«Сколько с меня?» = «сколько я должен?». Нужен глагол «должен» для «я» (корень dug-)."
+      - id: "12.24.1"
         type: fill_blank
-        prompt: "«Сколько с меня?» → Koliko ___?"
-        accept: ["dugujem"]
-      - id: "12.6.4"
-        type: word_bank
-        prompt: "Собери: «чек, пожалуйста»"
-        bank: ["Račun", "molim"]
-        accept: ["Račun, molim."]
+        prompt: "«Это всё» → To je ___."
+        accept: ["sve"]
+      - id: "12.24.2"
+        type: fill_blank
+        prompt: "«Ещё что-нибудь?» → Još ___?"
+        accept: ["nešto"]
+      - id: "12.24.3"
+        type: translate
+        prompt: "Это всё, спасибо."
+        accept: ["To je sve, hvala."]
+      - id: "12.24.4"
+        type: translate
+        prompt: "Ещё что-нибудь?"
+        accept: ["Još nešto?"]

@@ -1,0 +1,110 @@
+id: "09"
+start: 11
+title: "Цена (Cena)"
+subtitle: "сколько стоит, почём, сколько с меня"
+teaches: [kostati, koliko, kafa, posto, sve-zajedno, koliko-dugujem, pare, novac]
+steps:
+  - slide:
+      name: koliko-kosta
+      title: "Сколько стоит?"
+      md: |
+        `Koliko košta?` [ко́лико ко́шта?] *(колико кошта — сколько стоит?)*
+
+        `kafa` [ка́фа] *(кафа — кофе)*
+
+        `Koliko košta kafa?` [ко́лико ко́шта ка́фа?] *(сколько стоит кофе?)*
+
+        Ответ — просто цена: `Sto dvadeset dinara.` [сто двадэ́сэт ди́нара.] *(120 динаров)*
+      check:
+        prompt: "«Сколько стоит кофе?» —"
+        options: ["Koliko košta kafa?", "Imaš li brata?", "Kako si?"]
+        answer: "Koliko košta kafa?"
+  - slide:
+      name: posto
+      title: "Почём?"
+      md: |
+        На рынке и в пекарне часто говорят короче:
+
+        `Pošto je?` [по́што е?] *(пошто је — «почём?»)*
+
+        `Pošto je kafa?` [по́што е ка́фа?] *(«почём кофе?»)*
+
+        > «Почём» и по-русски разговорное слово, и `pošto je` тоже говорят в разговоре, на рынке и в пекарне. Вежливее и универсальнее — `Koliko košta?`.
+      check:
+        prompt: "«Почём?» (в разговоре) —"
+        options: ["Pošto je?", "Kako si?", "Ovo je kafa."]
+        answer: "Pošto je?"
+  - slide:
+      name: sve-zajedno
+      title: "Сколько всего? Сколько с меня?"
+      md: |
+        Набрал несколько вещей: `Koliko je sve zajedno?` [ко́лико е свэ за́едно?] *(колико је све заједно — сколько всё вместе?)*
+
+        Пора платить: `Koliko dugujem?` [ко́лико ду́гуем?] *(колико дугујем — сколько с меня?)*
+
+        > `dugujem` — буквально «я должен».
+      check:
+        prompt: "«Сколько с меня?» —"
+        options: ["Koliko dugujem?", "Koliko košta?", "Pošto je?"]
+        answer: "Koliko dugujem?"
+  - slide:
+      name: pare
+      title: "Деньги"
+      md: |
+        `pare` [па́рэ] *(паре — деньги)*: так говорят в разговоре, на рынке, в магазине.
+
+        `novac` [но́вац] *(новац — деньги)*: то же самое, но так пишут и говорят в банке, в документах, в новостях.
+
+        `Nemam para.` [нэ́мам па́ра.] *(у меня нет денег)*
+
+        > После `nemam` слово `pare` меняется: `para`. Запоминай фразой.
+      check:
+        prompt: "Слово «деньги» в разговоре —"
+        options: ["pare", "dinar", "kafa"]
+        answer: "pare"
+        also_ok: ["para"]
+  - practice:
+      title: "Вспомним"
+      ex:
+        - {type: choice, prompt: "«120 динаров» —", options: ["sto dvadeset dinara", "sto dvanaest dinara", "dvesta dinara"], answer: "sto dvadeset dinara"}
+        - {type: choice, prompt: "«5 динаров» —", options: ["pet dinara", "pet dinar", "petsto dinara"], answer: "pet dinara"}
+  - practice:
+      title: "Послушай и выбери"
+      also_ok: ["para"]
+      ex:
+        - {type: choice, say: "Koliko košta kafa?", options: ["Сколько стоит кофе?", "Сколько с меня?", "У вас есть кофе?"], answer: "Сколько стоит кофе?"}
+        - {type: choice, say: "Pošto je kafa?", options: ["Почём кофе? (в разговоре)", "Сколько с меня?", "У вас есть кофе?"], answer: "Почём кофе? (в разговоре)"}
+        - {type: choice, say: "Koliko dugujem?", options: ["Сколько с меня?", "Сколько всё вместе?", "Сколько стоит?"], answer: "Сколько с меня?"}
+        - {type: choice, say: "Nemam para.", options: ["У меня нет денег.", "У меня есть деньги.", "Сколько стоит?"], answer: "У меня нет денег."}
+  - practice:
+      title: "Что скажешь?"
+      also_ok: ["para"]
+      ex:
+        - {type: choice, prompt: "Спроси, сколько стоит кофе —", options: ["Koliko košta kafa?", "Koliko dugujem?", "Nemam para."], answer: "Koliko košta kafa?"}
+        - {type: choice, prompt: "Скажи, что у тебя нет денег —", options: ["Nemam para.", "Koliko dugujem?", "Pošto je?"], answer: "Nemam para."}
+        - {type: choice, prompt: "Продавец отвечает на «Koliko košta kafa?» —", options: ["Sto dvadeset dinara.", "Ovo je kafa.", "Hvala."], answer: "Sto dvadeset dinara."}
+  - practice:
+      title: "Соедини"
+      also_ok: ["para"]
+      ex:
+        - type: match
+          prompt: "Соедини фразу и перевод"
+          pairs:
+            - ["Koliko košta?", "Сколько стоит?"]
+            - ["Pošto je?", "Почём? (в разговоре)"]
+            - ["Koliko je sve zajedno?", "Сколько всё вместе?"]
+            - ["Koliko dugujem?", "Сколько с меня?"]
+            - ["pare", "деньги"]
+            - ["Nemam para.", "У меня нет денег"]
+  - practice:
+      title: "Собери"
+      ex:
+        - {type: word_bank, prompt: "Собери: «сколько стоит кофе?»", bank: ["Koliko", "košta", "kafa", "dugujem"], accept: ["Koliko košta kafa?"]}
+        - {type: word_bank, prompt: "Собери: «почём кофе?» (в разговоре)", bank: ["Pošto", "je", "kafa", "košta"], accept: ["Pošto je kafa?"]}
+  - practice:
+      title: "Напиши"
+      ex:
+        - {type: fill_blank, prompt: "«Сколько с меня?» → Koliko ___?", accept: ["dugujem"]}
+        - {type: fill_blank, prompt: "«Сколько стоит?» → Koliko ___?", accept: ["košta"]}
+        - {type: translate, prompt: "Сколько стоит кофе?", accept: ["Koliko košta kafa?", "Pošto je kafa?"]}
+        - {type: translate, prompt: "Сколько с меня?", accept: ["Koliko dugujem?"]}

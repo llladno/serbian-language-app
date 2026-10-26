@@ -1,0 +1,113 @@
+id: "06c"
+title: "У меня есть (Imam)"
+subtitle: "у меня есть, у меня нет, у тебя есть?"
+teaches: [imati, imam]
+steps:
+  - slide:
+      name: imam-nemam
+      title: "У меня есть / нет"
+      md: |
+        `imam` [и́мам] *(имам — у меня есть)* и `nemam` [нэ́мам] *(немам — у меня нет)*.
+
+        `Imam brata.` [и́мам бра́та.] *(у меня есть брат)*
+
+        `Nemam brata.` [нэ́мам бра́та.] *(у меня нет брата)*
+
+        > После `imam` и `nemam` слово чуть меняется: `brat` → `brata`. Почему так, разберём позже. Пока запоминай фразу целиком.
+      check:
+        prompt: "«У меня есть брат» —"
+        options: ["Imam brata.", "Nemam brata.", "Ja sam brat."]
+        answer: "Imam brata."
+        also_ok: ["brata"]
+  - slide:
+      name: sestru
+      title: "Сестра"
+      md: |
+        С сестрой так же, только окончание другое. Запоминай готовыми фразами:
+
+        `Imam sestru.` [и́мам сэ́стру.] *(у меня есть сестра)*
+
+        `Nemam sestre.` [нэ́мам сэ́стрэ.] *(у меня нет сестры)*
+      check:
+        prompt: "«У меня нет сестры» —"
+        options: ["Nemam sestre.", "Imam sestru.", "Nemam brata."]
+        answer: "Nemam sestre."
+        also_ok: ["sestre", "sestru", "brata"]
+  - slide:
+      name: imas-li
+      title: "У тебя есть?"
+      md: |
+        Спросить: `Imaš li brata?` [и́маш ли бра́та?] *(имаш ли брата — у тебя есть брат?)*
+
+        Ответить: `Da, imam.` [да, и́мам.] *(да, есть)* или `Ne, nemam.` [нэ, нэ́мам.] *(нет, у меня нет)*
+
+        > `li` делает фразу вопросом и стоит сразу после глагола: `Imaš li…?`
+      check:
+        prompt: "«У тебя есть брат?» —"
+        options: ["Imaš li brata?", "Imam li brata?", "Imaš brata li?"]
+        answer: "Imaš li brata?"
+        also_ok: ["brata"]
+  - slide:
+      name: deca
+      title: "Сын, дочь, дети"
+      md: |
+        Про детей — три готовые фразы:
+
+        `Imam sina.` [и́мам си́на.] *(у меня есть сын)*
+
+        `Imam ćerku.` [и́мам чэ́рку.] *(у меня есть дочь)*
+
+        `Imam decu.` [и́мам дэ́цу.] *(у меня есть дети)*
+      check:
+        prompt: "«У меня есть дочь» —"
+        options: ["Imam ćerku.", "Imam sina.", "Imam decu."]
+        answer: "Imam ćerku."
+        also_ok: ["ćerku", "sina", "decu"]
+  - practice:
+      title: "Вспомним"
+      also_ok: ["brata"]
+      ex:
+        - {type: choice, prompt: "Слово «сын» по-сербски —", options: ["sin", "brat", "muž"], answer: "sin"}
+        - {type: choice, prompt: "«Это сестра» —", options: ["Ovo je sestra.", "Ovo je brat.", "Ovo je žena."], answer: "Ovo je sestra."}
+  - practice:
+      title: "Послушай и выбери"
+      also_ok: ["brata", "sestre", "decu"]
+      ex:
+        - {type: choice, say: "Imam brata.", options: ["У меня есть брат.", "У меня нет брата.", "У меня есть сестра."], answer: "У меня есть брат."}
+        - {type: choice, say: "Nemam sestre.", options: ["У меня нет сестры.", "У меня есть сестра.", "У меня нет брата."], answer: "У меня нет сестры."}
+        - {type: choice, say: "Imaš li brata?", options: ["У тебя есть брат?", "У меня есть брат.", "У тебя есть сестра?"], answer: "У тебя есть брат?"}
+        - {type: choice, say: "Imam decu.", options: ["У меня есть дети.", "У меня есть сын.", "У меня нет детей."], answer: "У меня есть дети."}
+  - practice:
+      title: "Что скажешь?"
+      also_ok: ["brata", "sestre", "sestru"]
+      ex:
+        - {type: choice, prompt: "«У меня есть сестра» —", options: ["Imam sestru.", "Nemam sestre.", "Imam brata."], answer: "Imam sestru."}
+        - {type: choice, prompt: "«У меня нет брата» —", options: ["Nemam brata.", "Imam brata.", "Imaš li brata?"], answer: "Nemam brata."}
+        - {type: choice, prompt: "Тебя спросили: «Imaš li sestru?» У тебя есть сестра. Отвечаешь —", options: ["Da, imam.", "Ne, nemam.", "Da, imaš."], answer: "Da, imam."}
+  - practice:
+      title: "Соедини"
+      also_ok: ["brata", "sestre", "sestru", "ćerku"]
+      ex:
+        - type: match
+          prompt: "Соедини фразу и перевод"
+          pairs:
+            - ["Imam brata", "У меня есть брат"]
+            - ["Nemam brata", "У меня нет брата"]
+            - ["Imam sestru", "У меня есть сестра"]
+            - ["Nemam sestre", "У меня нет сестры"]
+            - ["Imaš li brata?", "У тебя есть брат?"]
+            - ["Imam ćerku", "У меня есть дочь"]
+  - practice:
+      title: "Собери"
+      also_ok: ["brata", "sestre", "sina", "decu"]
+      ex:
+        - {type: word_bank, prompt: "Собери: «у меня нет брата»", bank: ["Nemam", "brata", "Imam", "brat"], accept: ["Nemam brata."]}
+        - {type: word_bank, prompt: "Собери: «у тебя есть брат?»", bank: ["Imaš", "li", "brata", "brat"], accept: ["Imaš li brata?"]}
+        - {type: word_bank, prompt: "Собери: «у меня есть сын»", bank: ["Imam", "sina", "sin", "decu"], accept: ["Imam sina."]}
+  - practice:
+      title: "Напиши"
+      also_ok: ["sestru", "brata"]
+      ex:
+        - {type: fill_blank, prompt: "«У меня есть сестра» → ___ sestru.", accept: ["Imam"]}
+        - {type: fill_blank, prompt: "— Imaš li brata? — Da, ___.", accept: ["imam"]}
+        - {type: fill_blank, prompt: "— Imaš li sestru? — Ne, ___.", accept: ["nemam"]}

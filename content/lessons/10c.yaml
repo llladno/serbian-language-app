@@ -1,0 +1,146 @@
+lesson: "10c"
+title: "Телефон (Telefon)"
+subtitle: "номер телефона, напиши мне"
+teaches: [koji, broj-telefona, javiti-se, poruka]
+
+steps:
+  - id: "10c.1"
+    kind: teach
+    title: "Номер телефона"
+    md: "10c/1-broj-telefona.md"
+
+  - id: "10c.2"
+    kind: practice
+    title: "Запомним: Номер телефона"
+    exercises:
+      - id: "10c.2.1"
+        type: choice
+        prompt: "«Какой у тебя номер телефона?» —"
+        options: ["Koji je tvoj broj telefona?", "Koliko imaš godina?", "Koliko je sati?"]
+        answer: "Koji je tvoj broj telefona?"
+
+  - id: "10c.3"
+    kind: teach
+    title: "Номер по цифрам"
+    md: "10c/3-cifre.md"
+
+  - id: "10c.4"
+    kind: practice
+    title: "Запомним: Номер по цифрам"
+    exercises:
+      - id: "10c.4.1"
+        type: choice
+        prompt: "«0 6 4» —"
+        options: ["nula šest četiri", "šest nula četiri", "nula četiri šest"]
+        answer: "nula šest četiri"
+
+  - id: "10c.5"
+    kind: teach
+    title: "Напиши или позвони"
+    md: "10c/5-javi-mi-se.md"
+
+  - id: "10c.6"
+    kind: practice
+    title: "Запомним: Напиши или позвони"
+    also_ok: ["koji"]
+    exercises:
+      - id: "10c.6.1"
+        type: choice
+        prompt: "«Напиши или позвони мне» —"
+        options: ["Javi mi se.", "Ovo je poruka.", "Koji je broj?"]
+        answer: "Javi mi se."
+
+  - id: "10c.7"
+    kind: practice
+    title: "Послушай и выбери"
+    exercises:
+      - id: "10c.7.1"
+        type: choice
+        say: "Koji je tvoj broj telefona?"
+        prompt: "Послушай и выбери перевод."
+        options: ["Какой у тебя номер телефона?", "Сколько тебе лет?", "Который час?"]
+        answer: "Какой у тебя номер телефона?"
+      - id: "10c.7.2"
+        type: choice
+        say: "Moj broj je nula šest četiri."
+        prompt: "Послушай и выбери перевод."
+        options: ["Мой номер: ноль шесть четыре.", "Мой номер: шесть ноль четыре.", "Мне шестьдесят четыре года."]
+        answer: "Мой номер: ноль шесть четыре."
+      - id: "10c.7.3"
+        type: choice
+        say: "Javi mi se."
+        prompt: "Послушай и выбери перевод."
+        options: ["Напиши или позвони мне.", "Спасибо.", "До свидания."]
+        answer: "Напиши или позвони мне."
+      - id: "10c.7.4"
+        type: choice
+        say: "Ovo je poruka."
+        prompt: "Послушай и выбери перевод."
+        options: ["Это сообщение.", "Это номер.", "Это телефон."]
+        answer: "Это сообщение."
+
+  - id: "10c.8"
+    kind: practice
+    title: "Что скажешь?"
+    exercises:
+      - id: "10c.8.1"
+        type: choice
+        prompt: "Спроси номер телефона —"
+        options: ["Koji je tvoj broj telefona?", "Javi mi se.", "Koliko je sati?"]
+        answer: "Koji je tvoj broj telefona?"
+      - id: "10c.8.2"
+        type: choice
+        prompt: "Прощаясь, попроси написать или позвонить —"
+        options: ["Javi mi se.", "Koji je tvoj broj?", "Laku noć."]
+        answer: "Javi mi se."
+
+  - id: "10c.9"
+    kind: practice
+    title: "Соедини"
+    exercises:
+      - id: "10c.9.1"
+        type: match
+        prompt: "Соедини фразу и перевод"
+        pairs:
+          - ["broj telefona", "номер телефона"]
+          - ["Javi mi se.", "Напиши или позвони мне."]
+          - ["poruka", "сообщение"]
+          - ["koji", "какой"]
+          - ["nula", "ноль"]
+          - ["Koji je tvoj broj?", "Какой у тебя номер?"]
+
+  - id: "10c.10"
+    kind: practice
+    title: "Собери"
+    exercises:
+      - id: "10c.10.1"
+        type: word_bank
+        prompt: "Собери: «напиши или позвони мне»"
+        bank: ["Javi", "mi", "se", "poruka"]
+        accept: ["Javi mi se."]
+      - id: "10c.10.2"
+        type: word_bank
+        prompt: "Собери: «какой у тебя номер телефона?»"
+        bank: ["Koji", "je", "tvoj", "broj", "telefona"]
+        accept: ["Koji je tvoj broj telefona?"]
+
+  - id: "10c.11"
+    kind: practice
+    title: "Напиши"
+    exercises:
+      - id: "10c.11.1"
+        type: fill_blank
+        prompt: "«Какой у тебя номер?» → Koji je tvoj ___ telefona?"
+        accept: ["broj"]
+      - id: "10c.11.2"
+        type: fill_blank
+        prompt: "«Мой номер: ноль шесть четыре» → Moj broj je ___ šest četiri."
+        accept: ["nula"]
+      - id: "10c.11.3"
+        type: translate
+        prompt: "Напиши или позвони мне."
+        accept: ["Javi mi se."]
+      - id: "10c.11.4"
+        type: translate
+        prompt: "Какой у тебя номер телефона?"
+        accept: ["Koji je tvoj broj telefona?"]

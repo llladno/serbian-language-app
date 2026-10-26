@@ -45,6 +45,8 @@ def phrase_tests() -> int:
         {"type": "choice", "prompt": "Входя, спрашиваешь —", "options": ["Dobar dan!", "Prijatno.", "Ko je poslednji?"], "answer": "Ko je poslednji?"}),
         ["Ko je poslednji?"])
     f += check("listen has no phrase clip", exercise_phrases({"type": "listen", "say": "Odakle si?", "accept": ["Odakle si?"]}), [])
+    f += check("listen-choice has no phrase clip", exercise_phrases(
+        {"type": "choice", "say": "Dobro jutro.", "prompt": "Послушай и выбери перевод.", "options": ["Доброе утро.", "Добрый вечер."], "answer": "Доброе утро."}), [])
     f += check("word_bank chips not voiced", exercise_phrases({"type": "word_bank", "prompt": "Собери", "bank": ["Govoriš", "srpski"], "accept": ["Govoriš srpski?"]}), ["Govoriš srpski?"])
     return f
 

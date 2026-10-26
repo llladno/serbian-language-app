@@ -1,0 +1,174 @@
+lesson: "10d"
+title: "Повторение: цена, возраст, время, телефон (Ponavljanje)"
+subtitle: "всё, что про числа в жизни, вместе"
+teaches: []
+
+steps:
+  - id: "10d.1"
+    kind: practice
+    title: "Послушай и выбери"
+    exercises:
+      - id: "10d.1.1"
+        type: choice
+        say: "Pola osam."
+        prompt: "Послушай и выбери перевод."
+        options: ["Половина восьмого (7:30).", "Половина девятого (8:30).", "Восемь часов (8:00)."]
+        answer: "Половина восьмого (7:30)."
+      - id: "10d.1.2"
+        type: choice
+        say: "Imam trideset godina."
+        prompt: "Послушай и выбери перевод."
+        options: ["Мне тридцать лет.", "Мне тринадцать лет.", "У меня есть тридцать динаров."]
+        answer: "Мне тридцать лет."
+      - id: "10d.1.3"
+        type: choice
+        say: "Koliko košta kafa?"
+        prompt: "Послушай и выбери перевод."
+        options: ["Сколько стоит кофе?", "Сколько тебе лет?", "Который час?"]
+        answer: "Сколько стоит кофе?"
+      - id: "10d.1.4"
+        type: choice
+        say: "Javi mi se."
+        prompt: "Послушай и выбери перевод."
+        options: ["Напиши или позвони мне.", "Сколько с меня?", "Во сколько?"]
+        answer: "Напиши или позвони мне."
+
+  - id: "10d.2"
+    kind: reading
+    title: "Марко рассказывает"
+    md: "10d/2-moj-dan.md"
+    exercises:
+      - id: "10d.2.1"
+        type: choice
+        prompt: "Сколько лет Марко?"
+        options: ["Тридцать", "Двадцать пять", "Тридцать пять"]
+        answer: "Тридцать"
+      - id: "10d.2.2"
+        type: choice
+        prompt: "Когда Марко учит сербский?"
+        options: ["Днём, в пять часов", "Утром, в семь часов", "Вечером, в девять часов"]
+        answer: "Днём, в пять часов"
+
+  - id: "10d.3"
+    kind: practice
+    title: "Соедини"
+    exercises:
+      - id: "10d.3.1"
+        type: match
+        prompt: "Соедини фразу и перевод"
+        pairs:
+          - ["Koliko je sati?", "Который час?"]
+          - ["Pola tri", "половина третьего"]
+          - ["Imam pet godina", "Мне пять лет"]
+          - ["Koji je tvoj broj?", "Какой у тебя номер?"]
+          - ["Koliko dugujem?", "Сколько с меня?"]
+          - ["Petnaest do tri", "без пятнадцати три"]
+
+  - id: "10d.4"
+    kind: practice
+    title: "Диктант"
+    exercises:
+      - id: "10d.4.1"
+        type: listen
+        say: "Koliko je sati?"
+        prompt: "Запиши, что слышишь."
+        accept: ["Koliko je sati?"]
+        ru: ["Который час?"]
+      - id: "10d.4.2"
+        type: listen
+        say: "Imam dvadeset jednu godinu."
+        prompt: "Запиши, что слышишь."
+        accept: ["Imam dvadeset jednu godinu."]
+        ru: ["Мне двадцать один год."]
+      - id: "10d.4.3"
+        type: listen
+        say: "Sto dvadeset dinara."
+        prompt: "Запиши, что слышишь."
+        accept: ["Sto dvadeset dinara."]
+        ru: ["Сто двадцать динаров."]
+      - id: "10d.4.4"
+        type: listen
+        say: "Moj broj je nula šest četiri."
+        prompt: "Запиши, что слышишь."
+        accept: ["Moj broj je nula šest četiri."]
+        ru: ["Мой номер: ноль шесть четыре."]
+
+  - id: "10d.5"
+    kind: practice
+    title: "Собери"
+    exercises:
+      - id: "10d.5.1"
+        type: word_bank
+        prompt: "Собери: «мне двадцать пять лет»"
+        bank: ["Imam", "dvadeset", "pet", "godina", "godine"]
+        accept: ["Imam dvadeset pet godina."]
+      - id: "10d.5.2"
+        type: word_bank
+        prompt: "Собери: «в полдень»"
+        bank: ["U", "podne", "ponoć", "sati"]
+        accept: ["U podne."]
+
+  - id: "10d.6"
+    kind: practice
+    title: "Переведи"
+    exercises:
+      - id: "10d.6.1"
+        type: translate
+        prompt: "Мне сорок лет."
+        accept: ["Imam četrdeset godina."]
+      - id: "10d.6.2"
+        type: translate
+        prompt: "Без пятнадцати три."
+        accept: ["Petnaest do tri."]
+      - id: "10d.6.3"
+        type: translate
+        prompt: "Сколько стоит кофе?"
+        accept: ["Koliko košta kafa?", "Pošto je kafa?"]
+
+  - id: "10d.7"
+    kind: dialogue
+    title: "Новый знакомый"
+    scene: "В кафе тебя знакомят с новым человеком. Вы разговорились и хотите остаться на связи."
+    voice: m
+    turns:
+      - who: npc
+        sr: "Zdravo! Ja sam Nikola. Koliko imaš godina?"
+        ru: "Привет! Я Никола. Сколько тебе лет?"
+
+      - who: me
+        sr: "Imam trideset godina."
+        ru: "Мне тридцать лет."
+        exercise:
+          id: "10d.7.1"
+          type: choice
+          prompt: "Скажи, что тебе тридцать лет"
+          options: ["Imam trideset godina.", "Imam trideset godine.", "Imam trinaest godina."]
+          answer: "Imam trideset godina."
+
+      - who: npc
+        sr: "Dobro! Koji je tvoj broj telefona?"
+        ru: "Хорошо! Какой у тебя номер телефона?"
+
+      - who: me
+        sr: "Moj broj je nula šest četiri…"
+        ru: "Мой номер: ноль шесть четыре…"
+        exercise:
+          id: "10d.7.2"
+          type: choice
+          prompt: "Начни называть свой номер"
+          options: ["Moj broj je nula šest četiri…", "Moj broj je trideset godina.", "Moj broj je pola tri."]
+          answer: "Moj broj je nula šest četiri…"
+
+      - who: npc
+        sr: "Hvala! Vidimo se."
+        ru: "Спасибо! Увидимся."
+
+      - who: me
+        sr: "Može. Javi mi se."
+        ru: "Хорошо. Напиши или позвони мне."
+        exercise:
+          id: "10d.7.3"
+          type: choice
+          prompt: "Согласись и попроси написать или позвонить"
+          options: ["Može. Javi mi se.", "Može. Koliko košta?", "Može. Laku noć."]
+          answer: "Može. Javi mi se."

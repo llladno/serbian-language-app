@@ -1,0 +1,113 @@
+id: "10"
+start: 11
+title: "Который час (Koliko je sati?)"
+subtitle: "часы, во сколько, утро и вечер"
+teaches: [sat, koliko-je-sati, tacno, podne, ponoc, u-koliko-sati, sutra, ujutru, popodne, uvece]
+steps:
+  - slide:
+      name: koliko-je-sati
+      title: "Который час?"
+      md: |
+        `Koliko je sati?` [ко́лико е са́ти?] *(колико је сати — который час?)*
+
+        Отвечай числом и словом `sat` [сат] *(сат — час)*:
+
+        `Jedan sat.` [е́дан сат.] *(один час)* · `Dva sata.` [два са́та.] *(два часа)* · `Pet sati.` [пэт са́ти.] *(пять часов)*
+
+        > Как с динарами: после 1 — `sat`, после 2–4 — `sata`, дальше — `sati`.
+      check:
+        prompt: "«Который час?» —"
+        options: ["Koliko je sati?", "Koliko košta?", "Koliko imaš godina?"]
+        answer: "Koliko je sati?"
+  - slide:
+      name: tacno-podne
+      title: "Ровно, полдень, полночь"
+      md: |
+        `tačno` [та́чно] *(тачно — ровно)*: `Tačno pet sati.` [та́чно пэт са́ти.] *(ровно пять часов)*
+
+        `podne` [по́днэ] *(подне — полдень)* и `ponoć` [по́ноч] *(поноћ — полночь)*.
+      check:
+        prompt: "«Полдень» —"
+        options: ["podne", "ponoć", "tačno"]
+        answer: "podne"
+  - slide:
+      name: u-koliko-sati
+      title: "Во сколько?"
+      md: |
+        `U koliko sati?` [у ко́лико са́ти?] *(у колико сати — во сколько?)*
+
+        Ответ — `u` и время: `U sedam.` [у сэ́дам.] *(в семь)* · `U podne.` [у по́днэ.] *(в полдень)*
+
+        `sutra` [су́тра] *(сутра — завтра)*: `Sutra u sedam.` [су́тра у сэ́дам.] *(завтра в семь)*
+
+        > Не путай: `sutra` — это «завтра», а не «утро». Утро — `jutro` (как в `dobro jutro`).
+      check:
+        prompt: "«Во сколько?» —"
+        options: ["U koliko sati?", "Koliko je sati?", "Koliko košta?"]
+        answer: "U koliko sati?"
+  - slide:
+      name: ujutru
+      title: "Утром, днём, вечером"
+      md: |
+        `ujutru` [у́ютру] *(ујутру — утром)*, `popodne` [попо́днэ] *(поподне — днём, после обеда)*, `uveče` [у́вэчэ] *(увече — вечером)*.
+
+        `U sedam ujutru.` [у сэ́дам у́ютру.] *(в семь утра)*
+
+        `U pet popodne.` [у пэт попо́днэ.] *(в пять дня)*
+
+        `U osam uveče.` [у о́сам у́вэчэ.] *(в восемь вечера)*
+      check:
+        prompt: "«В восемь вечера» —"
+        options: ["U osam uveče.", "U osam ujutru.", "U osam popodne."]
+        answer: "U osam uveče."
+  - slide:
+      name: od-do
+      title: "С … до …"
+      md: |
+        `od` [од] *(од — с, от)* и `do` [до] *(до)* показывают промежуток:
+
+        `Od osam do pet.` [од о́сам до пэт.] *(с восьми до пяти)*
+
+        `Radim od devet do pet.` [ра́дим од дэ́вэт до пэт.] *(я работаю с девяти до пяти)*
+      check:
+        prompt: "«С восьми до пяти» —"
+        options: ["Od osam do pet.", "Od pet do osam.", "U osam ujutru."]
+        answer: "Od osam do pet."
+  - practice:
+      title: "Послушай и выбери"
+      ex:
+        - {type: choice, say: "Koliko je sati?", options: ["Который час?", "Во сколько?", "Сколько стоит?"], answer: "Который час?"}
+        - {type: choice, say: "Tri sata.", options: ["Три часа.", "Тридцать часов.", "Пять часов."], answer: "Три часа."}
+        - {type: choice, say: "U sedam ujutru.", options: ["В семь утра.", "В семь вечера.", "В восемь утра."], answer: "В семь утра."}
+        - {type: choice, say: "Tačno podne.", options: ["Ровно полдень.", "Ровно полночь.", "Ровно пять часов."], answer: "Ровно полдень."}
+        - {type: choice, say: "Sutra u sedam.", options: ["Завтра в семь.", "Утром в семь.", "Сегодня в семь."], answer: "Завтра в семь."}
+  - practice:
+      title: "Что скажешь?"
+      ex:
+        - {type: choice, prompt: "«Ровно пять часов» —", options: ["Tačno pet sati.", "Tačno podne.", "Tačno ponoć."], answer: "Tačno pet sati."}
+        - {type: choice, prompt: "«Два часа» —", options: ["Dva sata.", "Dva sati.", "Dva sat."], answer: "Dva sata."}
+        - {type: choice, prompt: "«В полночь» —", options: ["U ponoć.", "U podne.", "U osam."], answer: "U ponoć."}
+  - practice:
+      title: "Соедини"
+      ex:
+        - type: match
+          prompt: "Соедини слово и перевод"
+          pairs:
+            - ["Koliko je sati?", "Который час?"]
+            - ["U koliko sati?", "Во сколько?"]
+            - ["podne", "полдень"]
+            - ["ponoć", "полночь"]
+            - ["ujutru", "утром"]
+            - ["uveče", "вечером"]
+  - practice:
+      title: "Собери"
+      ex:
+        - {type: word_bank, prompt: "Собери: «во сколько?»", bank: ["U", "koliko", "sati", "je"], accept: ["U koliko sati?"]}
+        - {type: word_bank, prompt: "Собери: «в семь утра»", bank: ["U", "sedam", "ujutru", "uveče"], accept: ["U sedam ujutru."]}
+  - practice:
+      title: "Напиши"
+      ex:
+        - {type: fill_blank, prompt: "«Который час?» → Koliko je ___?", accept: ["sati"]}
+        - {type: fill_blank, prompt: "«В полдень» → U ___.", accept: ["podne"]}
+        - {type: translate, prompt: "Который час?", accept: ["Koliko je sati?"]}
+        - {type: translate, prompt: "В пять дня.", accept: ["U pet popodne."]}

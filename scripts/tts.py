@@ -85,7 +85,8 @@ def sr_lat_to_cyr(s: str) -> str:
 
 
 def listen_entries() -> list[dict]:
-    """Collect {id, cyrillic} rows for every `type: listen` exercise with a
+    """Collect {id, cyrillic} rows for every `type: listen` exercise (and every
+    `type: choice` with a `say:` — «послушай и выбери») with a
     `say:` field, so they get an audio clip keyed by exercise id (01-E-1.mp3
     for the legacy model, 01.8.1.mp3 for the manifest model). `say` is authored
     in Latin (like the rest of the content) and transliterated to Cyrillic so
@@ -93,7 +94,7 @@ def listen_entries() -> list[dict]:
     out, seen = [], set()
 
     def add(ex):
-        if ex.get("type") == "listen" and ex.get("say") and ex.get("id") not in seen:
+        if ex.get("type") in ("listen", "choice") and ex.get("say") and ex.get("id") not in seen:
             seen.add(ex["id"])
             out.append({"id": ex["id"], "cyrillic": sr_lat_to_cyr(ex["say"])})
 

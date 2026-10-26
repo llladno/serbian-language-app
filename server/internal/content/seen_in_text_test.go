@@ -104,6 +104,12 @@ func TestDictationAndConjugationSeenInText(t *testing.T) {
 					switch e.Type {
 					case "listen":
 						check(id, s.ID, e.ID, "dictation", e.Say, alsoOK)
+					case "choice":
+						// «Послушай и выбери»: the clip is a sentence the learner has to
+						// recognise, so it too may only use words already shown in text.
+						if e.Say != "" {
+							check(id, s.ID, e.ID, "listened phrase", e.Say, alsoOK)
+						}
 					case "conjugate":
 						for _, f := range e.Forms {
 							check(id, s.ID, e.ID, "conjugation label", f, alsoOK)

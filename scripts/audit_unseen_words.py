@@ -70,6 +70,8 @@ def classified(e: dict):
         out += [("CONJ", a) for a in flat(e.get("accept"))]
         out += [("CONJ", f) for f in e.get("forms") or []]
     elif t == "choice":
+        if e.get("say"):   # «послушай и выбери»: фраза, которую ученик слышит
+            out.append(("LISTEN", e["say"]))
         ans = e.get("answer")
         for o in e.get("options") or []:
             out.append(("ANSWER" if o == ans else "OPTION", o))

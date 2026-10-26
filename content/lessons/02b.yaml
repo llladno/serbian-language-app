@@ -1,0 +1,135 @@
+lesson: "02b"
+title: "Вечер и до свидания (Veče i doviđenja)"
+subtitle: "добрый вечер, спокойной ночи, до свидания, всего доброго"
+teaches: [dobro-vece, laku-noc, dovidjenja, prijatno]
+
+steps:
+  - id: "02b.1"
+    kind: teach
+    title: "Dobro veče"
+    md: "02b/1-dobro-vece.md"
+
+  - id: "02b.2"
+    kind: practice
+    title: "Запомним: dobro veče"
+    exercises:
+      - id: "02b.2.1"
+        type: choice
+        prompt: "Девять вечера. Заходишь в кафе и говоришь —"
+        options: ["Dobro jutro", "Dobro veče", "Dobar dan"]
+        answer: "Dobro veče"
+
+  - id: "02b.3"
+    kind: teach
+    title: "Laku noć"
+    md: "02b/3-laku-noc.md"
+
+  - id: "02b.4"
+    kind: practice
+    title: "Запомним: laku noć"
+    exercises:
+      - id: "02b.4.1"
+        type: choice
+        prompt: "Ложишься спать и желаешь другу —"
+        options: ["Laku noć", "Dobro veče", "Dobro jutro"]
+        answer: "Laku noć"
+
+  - id: "02b.5"
+    kind: teach
+    title: "Doviđenja"
+    md: "02b/5-dovidjenja.md"
+
+  - id: "02b.6"
+    kind: practice
+    title: "Запомним: doviđenja"
+    exercises:
+      - id: "02b.6.1"
+        type: choice
+        prompt: "«До свидания» по-сербски —"
+        options: ["Doviđenja", "Dobar dan", "Laku noć"]
+        answer: "Doviđenja"
+
+  - id: "02b.7"
+    kind: teach
+    title: "Prijatno"
+    md: "02b/7-prijatno.md"
+
+  - id: "02b.8"
+    kind: practice
+    title: "Запомним: prijatno"
+    exercises:
+      - id: "02b.8.1"
+        type: choice
+        prompt: "Выходишь из пекарни, тебе говорят «Prijatno!». Отвечаешь —"
+        options: ["Prijatno!", "Dobro jutro!", "Dobar dan!"]
+        answer: "Prijatno!"
+
+  - id: "02b.9"
+    kind: practice
+    title: "Послушай и выбери"
+    exercises:
+      - id: "02b.9.1"
+        type: choice
+        say: "Dobro veče."
+        prompt: "Послушай и выбери перевод."
+        options: ["Добрый вечер.", "Доброе утро.", "Спокойной ночи."]
+        answer: "Добрый вечер."
+      - id: "02b.9.2"
+        type: choice
+        say: "Laku noć."
+        prompt: "Послушай и выбери перевод."
+        options: ["Спокойной ночи.", "Добрый вечер.", "До свидания."]
+        answer: "Спокойной ночи."
+      - id: "02b.9.3"
+        type: choice
+        say: "Doviđenja."
+        prompt: "Послушай и выбери перевод."
+        options: ["До свидания.", "Спокойной ночи.", "Добрый вечер."]
+        answer: "До свидания."
+      - id: "02b.9.4"
+        type: choice
+        say: "Prijatno."
+        prompt: "Послушай и выбери перевод."
+        options: ["Всего доброго.", "Спокойной ночи.", "Добрый вечер."]
+        answer: "Всего доброго."
+
+  - id: "02b.10"
+    kind: practice
+    title: "Соедини"
+    exercises:
+      - id: "02b.10.1"
+        type: match
+        prompt: "Соедини фразу и перевод"
+        pairs:
+          - ["Dobro veče", "Добрый вечер"]
+          - ["Laku noć", "Спокойной ночи"]
+          - ["Doviđenja", "До свидания"]
+          - ["Prijatno", "Всего доброго"]
+
+  - id: "02b.11"
+    kind: practice
+    title: "Собери"
+    exercises:
+      - id: "02b.11.1"
+        type: word_bank
+        prompt: "Собери: «спокойной ночи»"
+        bank: ["Laku", "noć", "veče"]
+        accept: ["Laku noć."]
+      - id: "02b.11.2"
+        type: word_bank
+        prompt: "Собери: «добрый вечер»"
+        bank: ["Dobro", "veče", "jutro"]
+        accept: ["Dobro veče."]
+
+  - id: "02b.12"
+    kind: practice
+    title: "Напиши"
+    exercises:
+      - id: "02b.12.1"
+        type: fill_blank
+        prompt: "Перед сном другу: «Laku ___!»"
+        accept: ["noć"]
+      - id: "02b.12.2"
+        type: translate
+        prompt: "До свидания!"
+        accept: ["Doviđenja!"]

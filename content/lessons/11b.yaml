@@ -1,0 +1,190 @@
+lesson: "11b"
+title: "В магазине (U prodavnici)"
+subtitle: "слушаю вас, мне нужно, дайте, у вас есть, я смотрю"
+teaches: [recite, treba-mi, dajte-mi, hleb, mleko, jaja, voda, samo-gledam, gledati]
+
+steps:
+  - id: "11b.1"
+    kind: teach
+    title: "Слушаю вас"
+    md: "11b/1-recite.md"
+
+  - id: "11b.2"
+    kind: practice
+    title: "Запомним: Слушаю вас"
+    exercises:
+      - id: "11b.2.1"
+        type: choice
+        prompt: "«Recite?» — это…"
+        options: ["Слушаю вас?", "Спасибо.", "До свидания."]
+        answer: "Слушаю вас?"
+
+  - id: "11b.3"
+    kind: teach
+    title: "Мне нужно"
+    md: "11b/3-treba-mi.md"
+
+  - id: "11b.4"
+    kind: practice
+    title: "Запомним: Мне нужно"
+    exercises:
+      - id: "11b.4.1"
+        type: choice
+        prompt: "«Мне нужен хлеб» —"
+        options: ["Treba mi hleb.", "Treba mi mleko.", "Imam hleb."]
+        answer: "Treba mi hleb."
+
+  - id: "11b.5"
+    kind: teach
+    title: "Дайте мне"
+    md: "11b/5-dajte-mi.md"
+
+  - id: "11b.6"
+    kind: practice
+    title: "Запомним: Дайте мне"
+    also_ok: ["vodu"]
+    exercises:
+      - id: "11b.6.1"
+        type: choice
+        prompt: "«Дайте мне воду» —"
+        options: ["Dajte mi vodu.", "Dajte mi hleb.", "Treba mi mleko."]
+        answer: "Dajte mi vodu."
+
+  - id: "11b.7"
+    kind: teach
+    title: "У вас есть?"
+    md: "11b/7-imate-li.md"
+
+  - id: "11b.8"
+    kind: practice
+    title: "Запомним: У вас есть?"
+    exercises:
+      - id: "11b.8.1"
+        type: choice
+        prompt: "«У вас есть яйца?» —"
+        options: ["Da li imate jaja?", "Dajte mi jaja.", "Treba mi mleko."]
+        answer: "Da li imate jaja?"
+
+  - id: "11b.9"
+    kind: teach
+    title: "Я просто смотрю"
+    md: "11b/9-samo-gledam.md"
+
+  - id: "11b.10"
+    kind: practice
+    title: "Запомним: Я просто смотрю"
+    exercises:
+      - id: "11b.10.1"
+        type: choice
+        prompt: "«Я просто смотрю» —"
+        options: ["Samo gledam.", "Treba mi hleb.", "Izvolite?"]
+        answer: "Samo gledam."
+
+  - id: "11b.11"
+    kind: practice
+    title: "Послушай и выбери"
+    also_ok: ["imamo", "nemamo"]
+    exercises:
+      - id: "11b.11.1"
+        type: choice
+        say: "Treba mi hleb."
+        prompt: "Послушай и выбери перевод."
+        options: ["Мне нужен хлеб.", "Дайте мне хлеб.", "У вас есть хлеб?"]
+        answer: "Мне нужен хлеб."
+      - id: "11b.11.2"
+        type: choice
+        say: "Dajte mi mleko."
+        prompt: "Послушай и выбери перевод."
+        options: ["Дайте мне молоко.", "Мне нужно молоко.", "Я просто смотрю."]
+        answer: "Дайте мне молоко."
+      - id: "11b.11.3"
+        type: choice
+        say: "Da li imate jaja?"
+        prompt: "Послушай и выбери перевод."
+        options: ["У вас есть яйца?", "Дайте мне яйца.", "Мне нужны яйца."]
+        answer: "У вас есть яйца?"
+      - id: "11b.11.4"
+        type: choice
+        say: "Samo gledam, hvala."
+        prompt: "Послушай и выбери перевод."
+        options: ["Я просто смотрю, спасибо.", "Мне нужен хлеб, спасибо.", "Слушаю вас."]
+        answer: "Я просто смотрю, спасибо."
+
+  - id: "11b.12"
+    kind: practice
+    title: "Что скажешь?"
+    also_ok: ["vodu"]
+    exercises:
+      - id: "11b.12.1"
+        type: choice
+        prompt: "Продавец: «Izvolite?» Тебе нужен хлеб —"
+        options: ["Treba mi hleb.", "Samo gledam.", "Doviđenja."]
+        answer: "Treba mi hleb."
+      - id: "11b.12.2"
+        type: choice
+        prompt: "Тебе нужна вода —"
+        options: ["Dajte mi vodu.", "Treba mi hleb.", "Samo gledam."]
+        answer: "Dajte mi vodu."
+      - id: "11b.12.3"
+        type: choice
+        prompt: "Тебе предлагают помочь, а ты просто смотришь —"
+        options: ["Samo gledam, hvala.", "Treba mi hleb.", "Dajte mi vodu."]
+        answer: "Samo gledam, hvala."
+      - id: "11b.12.4"
+        type: choice
+        prompt: "Ты хочешь узнать, есть ли молоко —"
+        options: ["Da li imate mleko?", "Dajte mi mleko.", "Samo gledam."]
+        answer: "Da li imate mleko?"
+
+  - id: "11b.13"
+    kind: practice
+    title: "Соедини"
+    also_ok: ["vodu"]
+    exercises:
+      - id: "11b.13.1"
+        type: match
+        prompt: "Соедини фразу и перевод"
+        pairs:
+          - ["Recite?", "Слушаю вас?"]
+          - ["Treba mi hleb", "Мне нужен хлеб"]
+          - ["Dajte mi mleko", "Дайте мне молоко"]
+          - ["Da li imate jaja?", "У вас есть яйца?"]
+          - ["Samo gledam", "Я просто смотрю"]
+          - ["Dajte mi vodu", "Дайте мне воду"]
+
+  - id: "11b.14"
+    kind: practice
+    title: "Собери"
+    also_ok: ["vodu"]
+    exercises:
+      - id: "11b.14.1"
+        type: word_bank
+        prompt: "Собери: «мне нужно молоко»"
+        bank: ["Treba", "mi", "mleko", "hleb"]
+        accept: ["Treba mi mleko."]
+      - id: "11b.14.2"
+        type: word_bank
+        prompt: "Собери: «дайте мне воду»"
+        bank: ["Dajte", "mi", "vodu", "voda"]
+        accept: ["Dajte mi vodu."]
+
+  - id: "11b.15"
+    kind: practice
+    title: "Напиши"
+    exercises:
+      - id: "11b.15.1"
+        type: fill_blank
+        prompt: "«Мне нужен хлеб» → Treba ___ hleb."
+        accept: ["mi"]
+      - id: "11b.15.2"
+        type: fill_blank
+        prompt: "«У вас есть яйца?» → Da li ___ jaja?"
+        accept: ["imate"]
+      - id: "11b.15.3"
+        type: translate
+        prompt: "Мне нужен хлеб."
+        accept: ["Treba mi hleb."]
+      - id: "11b.15.4"
+        type: translate
+        prompt: "Я просто смотрю."
+        accept: ["Samo gledam.", "Samo gledam, hvala."]

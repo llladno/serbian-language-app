@@ -1,68 +1,155 @@
 lesson: "11"
-title: "В магазин (U prodavnicu)"
-subtitle: "магазин, первые слова"
-teaches: [mleko, jaja, voda, samo-gledam]
+title: "Магазины (Prodavnice)"
+subtitle: "где что купить: магазин, пекарня, рынок, аптека"
+teaches: [prodavnica, samoposluga, roba, pekara, mesara, piljara, pijaca, apoteka, trafika]
 
 steps:
-  - id: "11.1"
+  - id: "11.11"
     kind: teach
-    title: "Куда идёшь"
-    md: "11/1-gde-kupujem.md"
+    title: "Магазин"
+    md: "11/11-prodavnica.md"
 
-  - id: "11.2"
+  - id: "11.12"
     kind: practice
-    title: "Какой магазин"
+    title: "Запомним: Магазин"
     exercises:
-      - id: "11.2.1"
+      - id: "11.12.1"
+        type: choice
+        prompt: "Слово «магазин» (общее) —"
+        options: ["prodavnica", "porodica", "zemlja"]
+        answer: "prodavnica"
+
+  - id: "11.13"
+    kind: teach
+    title: "Пекарня, мясная, овощи"
+    md: "11/13-pekara.md"
+
+  - id: "11.14"
+    kind: practice
+    title: "Запомним: Пекарня, мясная, овощи"
+    exercises:
+      - id: "11.14.1"
+        type: choice
+        prompt: "Пекарня —"
+        options: ["pekara", "mesara", "piljara"]
+        answer: "pekara"
+
+  - id: "11.15"
+    kind: teach
+    title: "Рынок, аптека, киоск"
+    md: "11/15-pijaca.md"
+
+  - id: "11.16"
+    kind: practice
+    title: "Запомним: Рынок, аптека, киоск"
+    exercises:
+      - id: "11.16.1"
+        type: choice
+        prompt: "Аптека —"
+        options: ["apoteka", "trafika", "pijaca"]
+        answer: "apoteka"
+
+  - id: "11.17"
+    kind: practice
+    title: "Послушай и выбери"
+    exercises:
+      - id: "11.17.1"
+        type: choice
+        say: "Ovo je pekara."
+        prompt: "Послушай и выбери перевод."
+        options: ["Это пекарня.", "Это аптека.", "Это рынок."]
+        answer: "Это пекарня."
+      - id: "11.17.2"
+        type: choice
+        say: "Ovo je apoteka."
+        prompt: "Послушай и выбери перевод."
+        options: ["Это аптека.", "Это пекарня.", "Это киоск."]
+        answer: "Это аптека."
+      - id: "11.17.3"
+        type: choice
+        say: "Ovo je pijaca."
+        prompt: "Послушай и выбери перевод."
+        options: ["Это рынок.", "Это магазин.", "Это мясная лавка."]
+        answer: "Это рынок."
+      - id: "11.17.4"
+        type: choice
+        say: "Ovo je samoposluga."
+        prompt: "Послушай и выбери перевод."
+        options: ["Это магазин самообслуживания.", "Это пекарня.", "Это склад."]
+        answer: "Это магазин самообслуживания."
+
+  - id: "11.18"
+    kind: practice
+    title: "Где купить?"
+    exercises:
+      - id: "11.18.1"
         type: choice
         prompt: "Где купить хлеб?"
         options: ["pekara", "apoteka", "trafika"]
         answer: "pekara"
-      - id: "11.2.2"
+      - id: "11.18.2"
+        type: choice
+        prompt: "Где купить мясо?"
+        options: ["mesara", "pekara", "piljara"]
+        answer: "mesara"
+      - id: "11.18.3"
         type: choice
         prompt: "Где купить лекарство?"
         options: ["apoteka", "pijaca", "mesara"]
         answer: "apoteka"
-      - id: "11.2.3"
+      - id: "11.18.4"
+        type: choice
+        prompt: "Где купить овощи и фрукты?"
+        options: ["piljara", "pekara", "apoteka"]
+        answer: "piljara"
+
+  - id: "11.19"
+    kind: practice
+    title: "Соедини"
+    exercises:
+      - id: "11.19.1"
         type: match
-        prompt: "Соедини"
+        prompt: "Соедини слово и перевод"
         pairs:
           - ["pekara", "пекарня"]
+          - ["mesara", "мясная лавка"]
+          - ["piljara", "овощи и фрукты"]
           - ["pijaca", "рынок"]
           - ["apoteka", "аптека"]
-          - ["mesara", "мясная лавка"]
-      - id: "11.2.4"
-        hint: "Две части, как в русском «само-обслуживание»: samo + posluga. Пишется слитно, оканчивается на -a."
-        type: fill_blank
-        prompt: "Магазин самообслуживания — ___"
-        accept: ["samoposluga"]
+          - ["trafika", "киоск"]
 
-  - id: "11.3"
-    kind: teach
-    title: "Заходишь"
-    md: "11/3-ulazim.md"
-
-  - id: "11.4"
+  - id: "11.20"
     kind: practice
-    title: "Первые слова"
+    title: "Собери"
     exercises:
-      - id: "11.4.1"
-        type: choice
-        prompt: "«Мне нужен хлеб» —"
-        options: ["Treba mi hleb.", "Treba hleb mi.", "Mi treba hleb."]
-        answer: "Treba mi hleb."
-      - id: "11.4.2"
-        type: choice
-        prompt: "Продавец: «Recite?» Ты отвечаешь —"
-        options: ["Treba mi hleb.", "Hvala, doviđenja.", "Laku noć."]
-        answer: "Treba mi hleb."
-      - id: "11.4.3"
-        hint: "Вопрос к «вы»: глагол «иметь», основа «има-», для «вы» окончание -te."
-        type: fill_blank
-        prompt: "«У вас есть молоко?» → Da li ___ mleko?"
-        accept: ["imate"]
-      - id: "11.4.4"
+      - id: "11.20.1"
         type: word_bank
-        prompt: "Собери: «мне нужно молоко»"
-        bank: ["Treba", "mi", "mleko"]
-        accept: ["Treba mi mleko."]
+        prompt: "Собери: «это пекарня»"
+        bank: ["Ovo", "je", "pekara", "apoteka"]
+        accept: ["Ovo je pekara."]
+      - id: "11.20.2"
+        type: word_bank
+        prompt: "Собери: «это рынок»"
+        bank: ["Ovo", "je", "pijaca", "trafika"]
+        accept: ["Ovo je pijaca."]
+
+  - id: "11.21"
+    kind: practice
+    title: "Напиши"
+    exercises:
+      - id: "11.21.1"
+        type: fill_blank
+        prompt: "«Это аптека» → Ovo je ___."
+        accept: ["apoteka"]
+      - id: "11.21.2"
+        type: fill_blank
+        prompt: "«Это магазин самообслуживания» → Ovo je ___."
+        accept: ["samoposluga"]
+      - id: "11.21.3"
+        type: translate
+        prompt: "Это магазин."
+        accept: ["Ovo je prodavnica.", "To je prodavnica."]
+      - id: "11.21.4"
+        type: translate
+        prompt: "Это рынок."
+        accept: ["Ovo je pijaca.", "To je pijaca."]

@@ -1,96 +1,156 @@
 lesson: "06"
 title: "Семья (Porodica)"
-subtitle: "семья, imam / nemam"
-teaches:
-  [
-    porodica, mama, tata, brat, sestra, muz, zena, sin, cerka, dete,
-    roditelji, baba, deda, imam,
-  ]
+subtitle: "мама, папа, брат, сестра, бабушка, дедушка"
+teaches: [porodica, mama, tata, brat, sestra, baba, deda]
 
 steps:
-  - id: "06.1"
+  - id: "06.11"
+    kind: teach
+    title: "Мама и папа"
+    md: "06/11-mama-tata.md"
+
+  - id: "06.12"
+    kind: practice
+    title: "Запомним: Мама и папа"
+    exercises:
+      - id: "06.12.1"
+        type: choice
+        prompt: "«Это папа» —"
+        options: ["Ovo je tata.", "Ovo je mama.", "Ja sam tata."]
+        answer: "Ovo je tata."
+
+  - id: "06.13"
+    kind: teach
+    title: "Брат и сестра"
+    md: "06/13-brat-sestra.md"
+
+  - id: "06.14"
+    kind: practice
+    title: "Запомним: Брат и сестра"
+    exercises:
+      - id: "06.14.1"
+        type: choice
+        prompt: "Слово «сестра» по-сербски —"
+        options: ["sestra", "brat", "mama"]
+        answer: "sestra"
+
+  - id: "06.15"
+    kind: teach
+    title: "Бабушка и дедушка"
+    md: "06/15-baba-deda.md"
+
+  - id: "06.16"
+    kind: practice
+    title: "Запомним: Бабушка и дедушка"
+    exercises:
+      - id: "06.16.1"
+        type: choice
+        prompt: "Слово «дедушка» по-сербски —"
+        options: ["deda", "baba", "tata"]
+        answer: "deda"
+
+  - id: "06.17"
     kind: teach
     title: "Семья"
-    md: "06/1-porodica.md"
+    md: "06/17-porodica.md"
 
-  - id: "06.2"
+  - id: "06.18"
     kind: practice
-    title: "Кто есть кто"
-    also_ok: ["deca"]
+    title: "Запомним: Семья"
     exercises:
-      - id: "06.2.1"
+      - id: "06.18.1"
         type: choice
-        prompt: "«Бабушка» —"
-        options: ["baba", "deda", "dete"]
-        answer: "baba"
-      - id: "06.2.2"
+        prompt: "Слово «семья» по-сербски —"
+        options: ["porodica", "zemlja", "sestra"]
+        answer: "porodica"
+
+  - id: "06.19"
+    kind: practice
+    title: "Послушай и выбери"
+    exercises:
+      - id: "06.19.1"
         type: choice
-        prompt: "«Родители» —"
-        options: ["roditelji", "deca", "porodica"]
-        answer: "roditelji"
-      - id: "06.2.3"
+        say: "Ovo je mama."
+        prompt: "Послушай и выбери перевод."
+        options: ["Это мама.", "Это папа.", "Это сестра."]
+        answer: "Это мама."
+      - id: "06.19.2"
+        type: choice
+        say: "Ovo je brat."
+        prompt: "Послушай и выбери перевод."
+        options: ["Это брат.", "Это сестра.", "Это дедушка."]
+        answer: "Это брат."
+      - id: "06.19.3"
+        type: choice
+        say: "Baba i deda."
+        prompt: "Послушай и выбери перевод."
+        options: ["Бабушка и дедушка.", "Мама и папа.", "Брат и сестра."]
+        answer: "Бабушка и дедушка."
+      - id: "06.19.4"
+        type: choice
+        say: "Ovo je porodica."
+        prompt: "Послушай и выбери перевод."
+        options: ["Это семья.", "Это страна.", "Это мама."]
+        answer: "Это семья."
+
+  - id: "06.20"
+    kind: practice
+    title: "Что скажешь?"
+    exercises:
+      - id: "06.20.1"
+        type: choice
+        prompt: "«Это бабушка» —"
+        options: ["Ovo je baba.", "Ovo je deda.", "Ovo je mama."]
+        answer: "Ovo je baba."
+      - id: "06.20.2"
+        type: choice
+        prompt: "«Брат и сестра» —"
+        options: ["Brat i sestra.", "Mama i tata.", "Baba i deda."]
+        answer: "Brat i sestra."
+
+  - id: "06.21"
+    kind: practice
+    title: "Соедини"
+    exercises:
+      - id: "06.21.1"
         type: match
-        prompt: "Соедини"
+        prompt: "Соедини слово и перевод"
         pairs:
           - ["mama", "мама"]
           - ["tata", "папа"]
           - ["brat", "брат"]
           - ["sestra", "сестра"]
-      - id: "06.2.4"
-        type: match
-        prompt: "Соедини"
-        pairs:
-          - ["muž", "муж"]
-          - ["žena", "жена"]
-          - ["sin", "сын"]
-          - ["ćerka", "дочь"]
+          - ["baba", "бабушка"]
+          - ["deda", "дедушка"]
 
-  - id: "06.3"
-    kind: teach
-    title: "У меня есть / нет"
-    md: "06/3-imam.md"
-
-  - id: "06.4"
+  - id: "06.22"
     kind: practice
-    title: "imam / nemam"
-    also_ok: ["brata", "sestru", "sina", "ženu"]
+    title: "Собери"
     exercises:
-      - id: "06.4.1"
-        type: choice
-        prompt: "«У меня есть брат» —"
-        options: ["Imam brata.", "Imam brat.", "Nemam brata."]
-        answer: "Imam brata."
-      - id: "06.4.2"
-        type: choice
-        prompt: "«У меня нет сестры» —"
-        options: ["Nemam sestru.", "Nemam sestra.", "Imam sestru."]
-        answer: "Nemam sestru."
-      - id: "06.4.3"
-        hint: "После «imam» — винительный падеж: у слов мужского рода (живое существо) в конце добавляется -a."
-        type: fill_blank
-        prompt: "У меня есть сын: «Imam ___.»"
-        accept: ["sina"]
-        explain: "«sin» в винительном падеже — «sina»: «Imam sina»."
-      - id: "06.4.4"
+      - id: "06.22.1"
         type: word_bank
-        prompt: "Собери: «у меня есть жена»"
-        bank: ["Imam", "ženu"]
-        accept: ["Imam ženu."]
-      - id: "06.4.5"
-        hint: "После «imam» — винительный падеж: у слов мужского рода (живое существо) в конце добавляется -a."
-        type: fix_error
-        prompt: "Imam brat."
-        accept: ["Imam brata."]
-      - id: "06.4.6"
-        hint: "Основа «има-»; окончания: -m, -š, без окончания, -mo, -te, -ju."
-        type: conjugate
-        prompt: "imati — иметь"
-        forms: ["ja", "ti", "on/ona/ono", "mi", "vi", "oni/one/ona"]
-        accept:
-          - ["imam"]
-          - ["imaš"]
-          - ["ima"]
-          - ["imamo"]
-          - ["imate"]
-          - ["imaju"]
-        meta: "nemati — так же, + nemam/nemaš/nema…"
+        prompt: "Собери: «это мама»"
+        bank: ["Ovo", "je", "mama", "tata"]
+        accept: ["Ovo je mama."]
+      - id: "06.22.2"
+        type: word_bank
+        prompt: "Собери: «бабушка и дедушка»"
+        bank: ["Baba", "i", "deda", "brat"]
+        accept: ["Baba i deda."]
+
+  - id: "06.23"
+    kind: practice
+    title: "Напиши"
+    exercises:
+      - id: "06.23.1"
+        type: fill_blank
+        prompt: "«Это брат» → Ovo je ___."
+        accept: ["brat"]
+      - id: "06.23.2"
+        type: translate
+        prompt: "Это сестра."
+        accept: ["Ovo je sestra.", "To je sestra."]
+      - id: "06.23.3"
+        type: translate
+        prompt: "Мама и папа."
+        accept: ["Mama i tata."]

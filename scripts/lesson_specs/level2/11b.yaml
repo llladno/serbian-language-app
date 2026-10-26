@@ -1,0 +1,111 @@
+id: "11b"
+title: "В магазине (U prodavnici)"
+subtitle: "слушаю вас, мне нужно, дайте, у вас есть, я смотрю"
+teaches: [recite, treba-mi, dajte-mi, hleb, mleko, jaja, voda, samo-gledam, gledati]
+steps:
+  - slide:
+      name: recite
+      title: "Слушаю вас"
+      md: |
+        Заходишь: `Dobar dan!` Продавец отвечает вопросом:
+
+        `Izvolite?` [изво́литэ?] *(изволите — слушаю вас?)* или `Recite?` [рэ́цитэ?] *(реците — говорите?)*
+      check:
+        prompt: "«Recite?» — это…"
+        options: ["Слушаю вас?", "Спасибо.", "До свидания."]
+        answer: "Слушаю вас?"
+  - slide:
+      name: treba-mi
+      title: "Мне нужно"
+      md: |
+        `Treba mi hleb.` [трэ́ба ми хлэб.] *(треба ми хлеб — мне нужен хлеб)*
+
+        `hleb` [хлэб] *(хлеб)*. С любым товаром: `Treba mi mleko.` [трэ́ба ми млэ́ко.] *(мне нужно молоко)*, `mleko` [млэ́ко] *(млеко — молоко)*.
+      check:
+        prompt: "«Мне нужен хлеб» —"
+        options: ["Treba mi hleb.", "Treba mi mleko.", "Imam hleb."]
+        answer: "Treba mi hleb."
+  - slide:
+      name: dajte-mi
+      title: "Дайте мне"
+      md: |
+        `Dajte mi mleko.` [да́йтэ ми млэ́ко.] *(дајте ми млеко — дайте мне молоко)*
+
+        `Dajte mi vodu.` [да́йтэ ми во́ду.] *(дайте мне воду)*, `voda` [во́да] *(вода)*. После `Dajte mi` слово `voda` меняется: `vodu`. Запоминай фразой.
+
+        `Dajte mi kafu.` [да́йтэ ми ка́фу.] *(дайте мне кофе)*: `kafa` меняется так же, `kafu`.
+
+        `Dajte mi jaja, molim.` [да́йтэ ми я́я, мо́лим.] *(дайте мне яйца, пожалуйста)*, `jaja` [я́я] *(јаја — яйца)*.
+      check:
+        prompt: "«Дайте мне воду» —"
+        options: ["Dajte mi vodu.", "Dajte mi hleb.", "Treba mi mleko."]
+        answer: "Dajte mi vodu."
+        also_ok: ["vodu"]
+  - slide:
+      name: imate-li
+      title: "У вас есть?"
+      md: |
+        `Da li imate jaja?` [да ли и́матэ я́я?] *(да ли имате јаја — у вас есть яйца?)*
+
+        Продавец ответит: `Imamo.` [и́мамо.] *(имамо — есть)* или `Nemamo.` [нэ́мамо.] *(немамо — нет)*.
+
+        > Вопрос можно начать с `da li`, как здесь, а можно с глагола: `Imate li jaja?` Смысл один.
+      check:
+        prompt: "«У вас есть яйца?» —"
+        options: ["Da li imate jaja?", "Dajte mi jaja.", "Treba mi mleko."]
+        answer: "Da li imate jaja?"
+  - slide:
+      name: samo-gledam
+      title: "Я просто смотрю"
+      md: |
+        `Samo gledam, hvala.` [са́мо глэ́дам, хва́ла.] *(само гледам — я просто смотрю, спасибо)*
+
+        `gledati` [глэ́дати] *(гледати — смотреть)*.
+
+        `samo` [са́мо] *(само — просто, только)*.
+      check:
+        prompt: "«Я просто смотрю» —"
+        options: ["Samo gledam.", "Treba mi hleb.", "Izvolite?"]
+        answer: "Samo gledam."
+  - practice:
+      title: "Послушай и выбери"
+      also_ok: ["imamo", "nemamo"]
+      ex:
+        - {type: choice, say: "Treba mi hleb.", options: ["Мне нужен хлеб.", "Дайте мне хлеб.", "У вас есть хлеб?"], answer: "Мне нужен хлеб."}
+        - {type: choice, say: "Dajte mi mleko.", options: ["Дайте мне молоко.", "Мне нужно молоко.", "Я просто смотрю."], answer: "Дайте мне молоко."}
+        - {type: choice, say: "Da li imate jaja?", options: ["У вас есть яйца?", "Дайте мне яйца.", "Мне нужны яйца."], answer: "У вас есть яйца?"}
+        - {type: choice, say: "Samo gledam, hvala.", options: ["Я просто смотрю, спасибо.", "Мне нужен хлеб, спасибо.", "Слушаю вас."], answer: "Я просто смотрю, спасибо."}
+  - practice:
+      title: "Что скажешь?"
+      also_ok: ["vodu"]
+      ex:
+        - {type: choice, prompt: "Продавец: «Izvolite?» Тебе нужен хлеб —", options: ["Treba mi hleb.", "Samo gledam.", "Doviđenja."], answer: "Treba mi hleb."}
+        - {type: choice, prompt: "Тебе нужна вода —", options: ["Dajte mi vodu.", "Treba mi hleb.", "Samo gledam."], answer: "Dajte mi vodu."}
+        - {type: choice, prompt: "Тебе предлагают помочь, а ты просто смотришь —", options: ["Samo gledam, hvala.", "Treba mi hleb.", "Dajte mi vodu."], answer: "Samo gledam, hvala."}
+        - {type: choice, prompt: "Ты хочешь узнать, есть ли молоко —", options: ["Da li imate mleko?", "Dajte mi mleko.", "Samo gledam."], answer: "Da li imate mleko?"}
+  - practice:
+      title: "Соедини"
+      also_ok: ["vodu"]
+      ex:
+        - type: match
+          prompt: "Соедини фразу и перевод"
+          pairs:
+            - ["Recite?", "Слушаю вас?"]
+            - ["Treba mi hleb", "Мне нужен хлеб"]
+            - ["Dajte mi mleko", "Дайте мне молоко"]
+            - ["Da li imate jaja?", "У вас есть яйца?"]
+            - ["Samo gledam", "Я просто смотрю"]
+            - ["Dajte mi vodu", "Дайте мне воду"]
+  - practice:
+      title: "Собери"
+      also_ok: ["vodu"]
+      ex:
+        - {type: word_bank, prompt: "Собери: «мне нужно молоко»", bank: ["Treba", "mi", "mleko", "hleb"], accept: ["Treba mi mleko."]}
+        - {type: word_bank, prompt: "Собери: «дайте мне воду»", bank: ["Dajte", "mi", "vodu", "voda"], accept: ["Dajte mi vodu."]}
+  - practice:
+      title: "Напиши"
+      ex:
+        - {type: fill_blank, prompt: "«Мне нужен хлеб» → Treba ___ hleb.", accept: ["mi"]}
+        - {type: fill_blank, prompt: "«У вас есть яйца?» → Da li ___ jaja?", accept: ["imate"]}
+        - {type: translate, prompt: "Мне нужен хлеб.", accept: ["Treba mi hleb."]}
+        - {type: translate, prompt: "Я просто смотрю.", accept: ["Samo gledam.", "Samo gledam, hvala."]}

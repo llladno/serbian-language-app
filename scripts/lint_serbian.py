@@ -239,6 +239,8 @@ def exercise_items(ex: dict, loc: str):
     must = []
     if t == "choice":
         must += [ex.get("answer")]
+        if ex.get("say"):   # «послушай и выбери»: сербская фраза озвучки
+            must.append(ex["say"])
     elif t in ("translate", "fix_error", "fill_blank", "word_bank", "conjugate"):
         must += list(flat(ex.get("accept")))
     elif t == "listen":

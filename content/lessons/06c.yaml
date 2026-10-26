@@ -1,0 +1,191 @@
+lesson: "06c"
+title: "У меня есть (Imam)"
+subtitle: "у меня есть, у меня нет, у тебя есть?"
+teaches: [imati, imam]
+
+steps:
+  - id: "06c.1"
+    kind: teach
+    title: "У меня есть / нет"
+    md: "06c/1-imam-nemam.md"
+
+  - id: "06c.2"
+    kind: practice
+    title: "Запомним: У меня есть / нет"
+    also_ok: ["brata"]
+    exercises:
+      - id: "06c.2.1"
+        type: choice
+        prompt: "«У меня есть брат» —"
+        options: ["Imam brata.", "Nemam brata.", "Ja sam brat."]
+        answer: "Imam brata."
+
+  - id: "06c.3"
+    kind: teach
+    title: "Сестра"
+    md: "06c/3-sestru.md"
+
+  - id: "06c.4"
+    kind: practice
+    title: "Запомним: Сестра"
+    also_ok: ["sestre", "sestru", "brata"]
+    exercises:
+      - id: "06c.4.1"
+        type: choice
+        prompt: "«У меня нет сестры» —"
+        options: ["Nemam sestre.", "Imam sestru.", "Nemam brata."]
+        answer: "Nemam sestre."
+
+  - id: "06c.5"
+    kind: teach
+    title: "У тебя есть?"
+    md: "06c/5-imas-li.md"
+
+  - id: "06c.6"
+    kind: practice
+    title: "Запомним: У тебя есть?"
+    also_ok: ["brata"]
+    exercises:
+      - id: "06c.6.1"
+        type: choice
+        prompt: "«У тебя есть брат?» —"
+        options: ["Imaš li brata?", "Imam li brata?", "Imaš brata li?"]
+        answer: "Imaš li brata?"
+
+  - id: "06c.7"
+    kind: teach
+    title: "Сын, дочь, дети"
+    md: "06c/7-deca.md"
+
+  - id: "06c.8"
+    kind: practice
+    title: "Запомним: Сын, дочь, дети"
+    also_ok: ["ćerku", "sina", "decu"]
+    exercises:
+      - id: "06c.8.1"
+        type: choice
+        prompt: "«У меня есть дочь» —"
+        options: ["Imam ćerku.", "Imam sina.", "Imam decu."]
+        answer: "Imam ćerku."
+
+  - id: "06c.9"
+    kind: practice
+    title: "Вспомним"
+    also_ok: ["brata"]
+    exercises:
+      - id: "06c.9.1"
+        type: choice
+        prompt: "Слово «сын» по-сербски —"
+        options: ["sin", "brat", "muž"]
+        answer: "sin"
+      - id: "06c.9.2"
+        type: choice
+        prompt: "«Это сестра» —"
+        options: ["Ovo je sestra.", "Ovo je brat.", "Ovo je žena."]
+        answer: "Ovo je sestra."
+
+  - id: "06c.10"
+    kind: practice
+    title: "Послушай и выбери"
+    also_ok: ["brata", "sestre", "decu"]
+    exercises:
+      - id: "06c.10.1"
+        type: choice
+        say: "Imam brata."
+        prompt: "Послушай и выбери перевод."
+        options: ["У меня есть брат.", "У меня нет брата.", "У меня есть сестра."]
+        answer: "У меня есть брат."
+      - id: "06c.10.2"
+        type: choice
+        say: "Nemam sestre."
+        prompt: "Послушай и выбери перевод."
+        options: ["У меня нет сестры.", "У меня есть сестра.", "У меня нет брата."]
+        answer: "У меня нет сестры."
+      - id: "06c.10.3"
+        type: choice
+        say: "Imaš li brata?"
+        prompt: "Послушай и выбери перевод."
+        options: ["У тебя есть брат?", "У меня есть брат.", "У тебя есть сестра?"]
+        answer: "У тебя есть брат?"
+      - id: "06c.10.4"
+        type: choice
+        say: "Imam decu."
+        prompt: "Послушай и выбери перевод."
+        options: ["У меня есть дети.", "У меня есть сын.", "У меня нет детей."]
+        answer: "У меня есть дети."
+
+  - id: "06c.11"
+    kind: practice
+    title: "Что скажешь?"
+    also_ok: ["brata", "sestre", "sestru"]
+    exercises:
+      - id: "06c.11.1"
+        type: choice
+        prompt: "«У меня есть сестра» —"
+        options: ["Imam sestru.", "Nemam sestre.", "Imam brata."]
+        answer: "Imam sestru."
+      - id: "06c.11.2"
+        type: choice
+        prompt: "«У меня нет брата» —"
+        options: ["Nemam brata.", "Imam brata.", "Imaš li brata?"]
+        answer: "Nemam brata."
+      - id: "06c.11.3"
+        type: choice
+        prompt: "Тебя спросили: «Imaš li sestru?» У тебя есть сестра. Отвечаешь —"
+        options: ["Da, imam.", "Ne, nemam.", "Da, imaš."]
+        answer: "Da, imam."
+
+  - id: "06c.12"
+    kind: practice
+    title: "Соедини"
+    also_ok: ["brata", "sestre", "sestru", "ćerku"]
+    exercises:
+      - id: "06c.12.1"
+        type: match
+        prompt: "Соедини фразу и перевод"
+        pairs:
+          - ["Imam brata", "У меня есть брат"]
+          - ["Nemam brata", "У меня нет брата"]
+          - ["Imam sestru", "У меня есть сестра"]
+          - ["Nemam sestre", "У меня нет сестры"]
+          - ["Imaš li brata?", "У тебя есть брат?"]
+          - ["Imam ćerku", "У меня есть дочь"]
+
+  - id: "06c.13"
+    kind: practice
+    title: "Собери"
+    also_ok: ["brata", "sestre", "sina", "decu"]
+    exercises:
+      - id: "06c.13.1"
+        type: word_bank
+        prompt: "Собери: «у меня нет брата»"
+        bank: ["Nemam", "brata", "Imam", "brat"]
+        accept: ["Nemam brata."]
+      - id: "06c.13.2"
+        type: word_bank
+        prompt: "Собери: «у тебя есть брат?»"
+        bank: ["Imaš", "li", "brata", "brat"]
+        accept: ["Imaš li brata?"]
+      - id: "06c.13.3"
+        type: word_bank
+        prompt: "Собери: «у меня есть сын»"
+        bank: ["Imam", "sina", "sin", "decu"]
+        accept: ["Imam sina."]
+
+  - id: "06c.14"
+    kind: practice
+    title: "Напиши"
+    also_ok: ["sestru", "brata"]
+    exercises:
+      - id: "06c.14.1"
+        type: fill_blank
+        prompt: "«У меня есть сестра» → ___ sestru."
+        accept: ["Imam"]
+      - id: "06c.14.2"
+        type: fill_blank
+        prompt: "— Imaš li brata? — Da, ___."
+        accept: ["imam"]
+      - id: "06c.14.3"
+        type: fill_blank
+        prompt: "— Imaš li sestru? — Ne, ___."
+        accept: ["nemam"]

@@ -1,0 +1,187 @@
+lesson: "12b"
+title: "Оплата (Plaćanje)"
+subtitle: "наличные или карта, мелочь, чек, пакет, скидки"
+teaches: [kartica, kes, svejedno, sitno-04, kusur, racun-04, kesa-05, akcija]
+
+steps:
+  - id: "12b.1"
+    kind: teach
+    title: "Наличными или картой?"
+    md: "12b/1-kesom-karticom.md"
+
+  - id: "12b.2"
+    kind: practice
+    title: "Запомним: Наличными или картой?"
+    also_ok: ["karticom", "kešom"]
+    exercises:
+      - id: "12b.2.1"
+        type: choice
+        prompt: "Ты платишь картой —"
+        options: ["Karticom.", "Kešom.", "Hvala."]
+        answer: "Karticom."
+
+  - id: "12b.3"
+    kind: teach
+    title: "Можно картой?"
+    md: "12b/3-moze-karticom.md"
+
+  - id: "12b.4"
+    kind: practice
+    title: "Запомним: Можно картой?"
+    also_ok: ["karticom"]
+    exercises:
+      - id: "12b.4.1"
+        type: choice
+        prompt: "«Можно картой?» —"
+        options: ["Može karticom?", "Karticom.", "Svejedno."]
+        answer: "Može karticom?"
+
+  - id: "12b.5"
+    kind: teach
+    title: "Мелочь и сдача"
+    md: "12b/5-sitno.md"
+
+  - id: "12b.6"
+    kind: practice
+    title: "Запомним: Мелочь и сдача"
+    exercises:
+      - id: "12b.6.1"
+        type: choice
+        prompt: "Слово «сдача» —"
+        options: ["kusur", "sitno", "kartica"]
+        answer: "kusur"
+
+  - id: "12b.7"
+    kind: teach
+    title: "Чек и пакет"
+    md: "12b/7-racun-kesa.md"
+
+  - id: "12b.8"
+    kind: practice
+    title: "Запомним: Чек и пакет"
+    exercises:
+      - id: "12b.8.1"
+        type: choice
+        prompt: "Слово «чек» —"
+        options: ["račun", "kusur", "kesa"]
+        answer: "račun"
+
+  - id: "12b.9"
+    kind: teach
+    title: "Скидки"
+    md: "12b/9-akcija.md"
+
+  - id: "12b.10"
+    kind: practice
+    title: "Запомним: Скидки"
+    also_ok: ["popust", "sniženje"]
+    exercises:
+      - id: "12b.10.1"
+        type: choice
+        prompt: "«Сегодня скидки» —"
+        options: ["Danas je akcija.", "Danas sam umoran.", "Danas je pekara."]
+        answer: "Danas je akcija."
+
+  - id: "12b.11"
+    kind: practice
+    title: "Послушай и выбери"
+    also_ok: ["karticom", "kešom"]
+    exercises:
+      - id: "12b.11.1"
+        type: choice
+        say: "Kešom ili karticom?"
+        prompt: "Послушай и выбери перевод."
+        options: ["Наличными или картой?", "Мелочь есть?", "Чек нужен?"]
+        answer: "Наличными или картой?"
+      - id: "12b.11.2"
+        type: choice
+        say: "Imate li sitno?"
+        prompt: "Послушай и выбери перевод."
+        options: ["У вас есть мелочь?", "У вас есть чек?", "Наличными или картой?"]
+        answer: "У вас есть мелочь?"
+      - id: "12b.11.3"
+        type: choice
+        say: "Izvolite račun."
+        prompt: "Послушай и выбери перевод."
+        options: ["Вот ваш чек.", "Вот ваша сдача.", "Вот ваш пакет."]
+        answer: "Вот ваш чек."
+      - id: "12b.11.4"
+        type: choice
+        say: "Danas je akcija."
+        prompt: "Послушай и выбери перевод."
+        options: ["Сегодня скидки.", "Сегодня закрыто.", "Сегодня дорого."]
+        answer: "Сегодня скидки."
+
+  - id: "12b.12"
+    kind: practice
+    title: "Что скажешь?"
+    also_ok: ["karticom", "kešom"]
+    exercises:
+      - id: "12b.12.1"
+        type: choice
+        prompt: "Ты платишь наличными —"
+        options: ["Kešom.", "Karticom.", "Svejedno."]
+        answer: "Kešom."
+      - id: "12b.12.2"
+        type: choice
+        prompt: "Тебе нужен чек —"
+        options: ["Račun, molim.", "Kesa?", "Izvolite račun."]
+        answer: "Račun, molim."
+      - id: "12b.12.3"
+        type: choice
+        prompt: "Продавец: «Kesa?» Пакет не нужен —"
+        options: ["Ne treba, hvala.", "Evo, tačno.", "Svejedno."]
+        answer: "Ne treba, hvala."
+
+  - id: "12b.13"
+    kind: practice
+    title: "Соедини"
+    also_ok: ["karticom", "kešom"]
+    exercises:
+      - id: "12b.13.1"
+        type: match
+        prompt: "Соедини слово и перевод"
+        pairs:
+          - ["Karticom", "картой"]
+          - ["Kešom", "наличными"]
+          - ["sitno", "мелочь"]
+          - ["kusur", "сдача"]
+          - ["račun", "чек"]
+          - ["kesa", "пакет"]
+
+  - id: "12b.14"
+    kind: practice
+    title: "Собери"
+    exercises:
+      - id: "12b.14.1"
+        type: word_bank
+        prompt: "Собери: «чек, пожалуйста»"
+        bank: ["Račun", "molim", "kusur", "hvala"]
+        accept: ["Račun, molim."]
+      - id: "12b.14.2"
+        type: word_bank
+        prompt: "Собери: «вот, ровно»"
+        bank: ["Evo", "tačno", "kusur"]
+        accept: ["Evo, tačno."]
+
+  - id: "12b.15"
+    kind: practice
+    title: "Напиши"
+    also_ok: ["karticom", "kešom"]
+    exercises:
+      - id: "12b.15.1"
+        type: fill_blank
+        prompt: "«Наличными или картой?» → Kešom ___ karticom?"
+        accept: ["ili"]
+      - id: "12b.15.2"
+        type: fill_blank
+        prompt: "«У вас есть мелочь?» → Imate li ___?"
+        accept: ["sitno"]
+      - id: "12b.15.3"
+        type: translate
+        prompt: "Чек, пожалуйста."
+        accept: ["Račun, molim."]
+      - id: "12b.15.4"
+        type: translate
+        prompt: "Не нужно, спасибо."
+        accept: ["Ne treba, hvala."]

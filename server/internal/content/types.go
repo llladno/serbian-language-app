@@ -101,9 +101,9 @@ type Exercise struct {
 	// answer (see validateHint).
 	Hint  string
 	Meta  string   // conjugate: подпись (напр. "тип I")
-	Say   string   // listen: текст для синтеза речи (клиенту не отдаётся)
+	Say   string   // listen, choice: текст для синтеза речи (клиенту не отдаётся до ответа)
 	RU    []string // listen: допустимые русские переводы say — для тех, кто не может слушать
-	Audio string   // listen: имя файла под content/audio/ (когда файл есть)
+	Audio string   // listen, choice with Say: имя файла под content/audio/ (когда файл есть)
 
 	Accept      []string   // auto types except conjugate: принимаемые ответы
 	Forms       []string   // conjugate: подписи форм (ja/ti/on…)

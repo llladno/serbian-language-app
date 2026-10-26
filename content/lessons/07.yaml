@@ -1,120 +1,177 @@
 lesson: "07"
 title: "Мой, твой (Moj, tvoj)"
-subtitle: "притяжательные, текст, проверка"
+subtitle: "мой, твой, его, её: по роду того, о чём говоришь"
 teaches: [moj, tvoj, njegov]
 
 steps:
-  - id: "07.1"
+  - id: "07.11"
     kind: teach
-    title: "Мой, твой, его"
-    md: "07/1-moj-tvoj.md"
+    title: "Мой, моя"
+    md: "07/11-moj-moja.md"
 
-  - id: "07.2"
+  - id: "07.12"
     kind: practice
-    title: "Мой / твой"
+    title: "Запомним: Мой, моя"
+    exercises:
+      - id: "07.12.1"
+        type: choice
+        prompt: "«Мой папа» —"
+        options: ["moj tata", "moja tata", "moj mama"]
+        answer: "moj tata"
+
+  - id: "07.13"
+    kind: teach
+    title: "Моё"
+    md: "07/13-moje.md"
+
+  - id: "07.14"
+    kind: practice
+    title: "Запомним: Моё"
+    exercises:
+      - id: "07.14.1"
+        type: choice
+        prompt: "«Мой ребёнок» —"
+        options: ["moje dete", "moj dete", "moja dete"]
+        answer: "moje dete"
+
+  - id: "07.15"
+    kind: teach
+    title: "Твой, твоя, твоё"
+    md: "07/15-tvoj.md"
+
+  - id: "07.16"
+    kind: practice
+    title: "Запомним: Твой, твоя, твоё"
+    exercises:
+      - id: "07.16.1"
+        type: choice
+        prompt: "«Твоя сестра» —"
+        options: ["tvoja sestra", "tvoj sestra", "tvoje sestra"]
+        answer: "tvoja sestra"
+
+  - id: "07.17"
+    kind: teach
+    title: "Его, её"
+    md: "07/17-njegov-njen.md"
+
+  - id: "07.18"
+    kind: practice
+    title: "Запомним: Его, её"
     also_ok: ["njena"]
     exercises:
-      - id: "07.2.1"
+      - id: "07.18.1"
         type: choice
-        prompt: "«Моя сестра» —"
-        options: ["moja sestra", "moj sestra", "moje sestra"]
-        answer: "moja sestra"
-      - id: "07.2.2"
+        prompt: "«Её сестра» —"
+        options: ["njena sestra", "njegova sestra", "njen sestra"]
+        answer: "njena sestra"
+
+  - id: "07.19"
+    kind: practice
+    title: "Послушай и выбери"
+    also_ok: ["njena"]
+    exercises:
+      - id: "07.19.1"
         type: choice
-        prompt: "«Твой брат» —"
-        options: ["tvoj brat", "tvoja brat", "tvoje brat"]
-        answer: "tvoj brat"
-      - id: "07.2.3"
-        type: fill_blank
-        prompt: "«Моё дитя» → ___ dete"
-        accept: ["moje"]
-      - id: "07.2.4"
+        say: "Ovo je moj tata."
+        prompt: "Послушай и выбери перевод."
+        options: ["Это мой папа.", "Это моя мама.", "Это мой брат."]
+        answer: "Это мой папа."
+      - id: "07.19.2"
+        type: choice
+        say: "Ovo je moja mama."
+        prompt: "Послушай и выбери перевод."
+        options: ["Это моя мама.", "Это твоя мама.", "Это её мама."]
+        answer: "Это моя мама."
+      - id: "07.19.3"
+        type: choice
+        say: "Ovo je tvoja sestra."
+        prompt: "Послушай и выбери перевод."
+        options: ["Это твоя сестра.", "Это моя сестра.", "Это его сестра."]
+        answer: "Это твоя сестра."
+      - id: "07.19.4"
+        type: choice
+        say: "Ovo je njegov brat."
+        prompt: "Послушай и выбери перевод."
+        options: ["Это его брат.", "Это её брат.", "Это мой брат."]
+        answer: "Это его брат."
+
+  - id: "07.20"
+    kind: practice
+    title: "Выбери форму"
+    also_ok: ["njena"]
+    exercises:
+      - id: "07.20.1"
+        type: choice
+        prompt: "«Мой дедушка» —"
+        options: ["moj deda", "moja deda", "moje deda"]
+        answer: "moj deda"
+      - id: "07.20.2"
+        type: choice
+        prompt: "«Его мама» —"
+        options: ["njegova mama", "njegov mama", "njen mama"]
+        answer: "njegova mama"
+      - id: "07.20.3"
+        type: choice
+        prompt: "«Её брат» —"
+        options: ["njen brat", "njegov brat", "njena brat"]
+        answer: "njen brat"
+
+  - id: "07.21"
+    kind: practice
+    title: "Соедини"
+    also_ok: ["njena"]
+    exercises:
+      - id: "07.21.1"
+        type: match
+        prompt: "Соедини фразу и перевод"
+        pairs:
+          - ["moj brat", "мой брат"]
+          - ["moja sestra", "моя сестра"]
+          - ["moje dete", "мой ребёнок"]
+          - ["tvoj tata", "твой папа"]
+          - ["njegova mama", "его мама"]
+          - ["njena baba", "её бабушка"]
+
+  - id: "07.22"
+    kind: practice
+    title: "Собери"
+    exercises:
+      - id: "07.22.1"
         type: word_bank
-        prompt: "Собери: «это мой папа»"
-        bank: ["Ovo", "je", "moj", "tata"]
-        accept: ["Ovo je moj tata."]
-      - id: "07.2.5"
-        hint: "«Мама» — женского рода: «мой» меняется на женскую форму (добавь -a)."
+        prompt: "Собери: «это моя сестра»"
+        bank: ["Ovo", "je", "moja", "moj", "sestra"]
+        accept: ["Ovo je moja sestra."]
+      - id: "07.22.2"
+        type: word_bank
+        prompt: "Собери: «это твой брат»"
+        bank: ["Ovo", "je", "tvoj", "tvoja", "brat"]
+        accept: ["Ovo je tvoj brat."]
+
+  - id: "07.23"
+    kind: practice
+    title: "Напиши"
+    exercises:
+      - id: "07.23.1"
+        type: fill_blank
+        prompt: "«Моя мама» → ___ mama."
+        accept: ["moja"]
+      - id: "07.23.2"
+        type: fill_blank
+        prompt: "«Твой ребёнок» → ___ dete."
+        accept: ["tvoje"]
+      - id: "07.23.3"
         type: fix_error
         prompt: "Moj mama."
         accept: ["Moja mama."]
-        explain: "«mama» женского рода — притяжательное тоже женского рода: «moja», не «moj»."
-      - id: "07.2.6"
+      - id: "07.23.4"
         type: fix_error
         prompt: "Tvoja brat."
         accept: ["Tvoj brat."]
-
-  - id: "07.3"
-    kind: reading
-    title: "Моя семья"
-    md: "07/3-citanje.md"
-    also_ok: ["radi", "brata", "sestru"]
-    exercises:
-      - id: "07.3.1"
-        type: choice
-        prompt: "Есть ли у автора брат?"
-        options: ["Nema brata.", "Ima brata.", "Ima sestru."]
-        answer: "Nema brata."
-      - id: "07.3.2"
-        type: choice
-        prompt: "Кем работает папа?"
-        options: ["Radi kao lekar.", "Radi kao konobar.", "Radi kao programer."]
-        answer: "Radi kao lekar."
-
-  - id: "07.4"
-    kind: practice
-    title: "Диктант"
-    mixed: true
-    also_ok: ["mamu", "tatu", "sestru"]
-    exercises:
-      - id: "07.4.1"
-        type: listen
-        prompt: "Запиши, что слышишь."
-        say: "Imam mamu i tatu."
-        accept: ["Imam mamu i tatu."]
-        ru: ["У меня есть мама и папа", "У меня мама и папа", "У меня есть мать и отец", "У меня есть мама и отец"]
-      - id: "07.4.2"
-        type: listen
-        prompt: "Запиши, что слышишь."
-        say: "Ovo je moj brat."
-        accept: ["Ovo je moj brat."]
-        ru: ["Это мой брат", "Вот мой брат"]
-      - id: "07.4.3"
-        type: listen
-        prompt: "Запиши, что слышишь."
-        say: "Nemam sestru."
-        accept: ["Nemam sestru."]
-        ru: ["У меня нет сестры", "Нет сестры", "У меня нету сестры"]
-
-  - id: "07.5"
-    kind: checkpoint
-    title: "Проверка"
-    also_ok: ["sestru", "brata"]
-    exercises:
-      - id: "07.5.1"
-        type: choice
-        prompt: "«Моя мама» —"
-        options: ["moja mama", "moj mama", "moje mama"]
-        answer: "moja mama"
-      - id: "07.5.2"
-        type: match
-        prompt: "Соедини"
-        pairs:
-          - ["brat", "брат"]
-          - ["ćerka", "дочь"]
-          - ["roditelji", "родители"]
-          - ["deda", "дедушка"]
-      - id: "07.5.3"
-        hint: "После «imam» — винительный падеж: у слов на -a окончание -a меняется на -u."
-        type: fill_blank
-        prompt: "У меня есть сестра: «Imam ___.»"
-        accept: ["sestru"]
-      - id: "07.5.4"
-        type: word_bank
-        prompt: "Собери: «у меня нет брата»"
-        bank: ["Nemam", "brata"]
-        accept: ["Nemam brata."]
-      - id: "07.5.5"
+      - id: "07.23.5"
         type: translate
         prompt: "Это мой папа."
-        accept: ["Ovo je moj tata."]
+        accept: ["Ovo je moj tata.", "To je moj tata."]
+      - id: "07.23.6"
+        type: translate
+        prompt: "Это твоя мама."
+        accept: ["Ovo je tvoja mama.", "To je tvoja mama."]

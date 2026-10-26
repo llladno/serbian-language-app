@@ -1,0 +1,103 @@
+id: "08b"
+title: "Числа 11–100 (Brojevi do sto)"
+subtitle: "11–19, десятки, составные числа"
+teaches: [jedanaest, dvanaest, petnaest, dvadeset, trideset, cetrdeset, pedeset, sto-num]
+steps:
+  - slide:
+      name: naest
+      title: "11–19"
+      md: |
+        С 11 до 19 число и `-naest` *(-наест, как русское «-надцать»)*:
+
+        `jedanaest` [едана́эст] *(11)* · `dvanaest` [двана́эст] *(12)* · `trinaest` [трина́эст] *(13)* · `četrnaest` [чэтрна́эст] *(14)* · `petnaest` [пэтна́эст] *(15)*
+
+        Дальше так же: `šesnaest` [шэсна́эст] *(16)*, `sedamnaest` [сэдамна́эст] *(17)*, `osamnaest` [осамна́эст] *(18)*, `devetnaest` [дэвэтна́эст] *(19)*.
+      check:
+        prompt: "«13» —"
+        options: ["trinaest", "četrnaest", "tri"]
+        answer: "trinaest"
+  - slide:
+      name: desetke-1
+      title: "20, 30, 40, 50"
+      md: |
+        Десятки — число и `-deset` *(-десет, «десять»)*:
+
+        `dvadeset` [двадэ́сэт] *(20)* · `trideset` [три́дэсэт] *(30)* · `četrdeset` [чэ́трдэсэт] *(40)* · `pedeset` [пэ́дэсэт] *(50)*
+
+        > Пятьдесят — `pedeset`, а не «petdeset».
+      check:
+        prompt: "«30» —"
+        options: ["trideset", "trinaest", "tri"]
+        answer: "trideset"
+  - slide:
+      name: desetke-2
+      title: "60, 70, 80, 90, 100"
+      md: |
+        `šezdeset` [шэ́здэсэт] *(60)* · `sedamdeset` [сэ́дамдэсэт] *(70)* · `osamdeset` [о́самдэсэт] *(80)* · `devedeset` [дэ́вэдэсэт] *(90)*
+
+        И круглое число: `sto` [сто] *(сто — 100)*.
+
+        > Шестьдесят — `šezdeset`, девяносто — `devedeset`: корень чуть меняется.
+      check:
+        prompt: "«60» —"
+        options: ["šezdeset", "šest", "sedamdeset"]
+        answer: "šezdeset"
+        also_ok: ["šezdeset", "sedamdeset"]
+  - slide:
+      name: sostavnye
+      title: "21, 35, 58"
+      md: |
+        Составные числа — десяток, потом единицы:
+
+        `dvadeset jedan` [двадэ́сэт е́дан] *(21)*
+
+        `trideset pet` [три́дэсэт пэт] *(35)*
+
+        `pedeset osam` [пэ́дэсэт о́сам] *(58)*
+
+        > Иногда слышно и с `i`: `dvadeset i jedan` — тоже верно.
+      check:
+        prompt: "«35» —"
+        options: ["trideset pet", "pedeset tri", "tri pet"]
+        answer: "trideset pet"
+        also_ok: ["pedeset"]
+  - practice:
+      title: "Послушай и выбери"
+      also_ok: ["petnaest"]
+      ex:
+        - {type: choice, say: "Petnaest.", options: ["Пятнадцать.", "Пятьдесят.", "Пять."], answer: "Пятнадцать."}
+        - {type: choice, say: "Trideset.", options: ["Тридцать.", "Тринадцать.", "Три."], answer: "Тридцать."}
+        - {type: choice, say: "Četrdeset.", options: ["Сорок.", "Четырнадцать.", "Сто."], answer: "Сорок."}
+        - {type: choice, say: "Dvadeset pet.", options: ["Двадцать пять.", "Двадцать.", "Пятьдесят."], answer: "Двадцать пять."}
+  - practice:
+      title: "Узнай число"
+      also_ok: ["trinaest", "šezdeset", "sedamdeset", "osamdeset", "sedamnaest"]
+      ex:
+        - {type: choice, prompt: "«13» —", options: ["trinaest", "trideset", "tri"], answer: "trinaest"}
+        - {type: choice, prompt: "«50» —", options: ["pedeset", "petnaest", "šezdeset"], answer: "pedeset"}
+        - {type: choice, prompt: "«70» —", options: ["sedamdeset", "sedamnaest", "osamdeset"], answer: "sedamdeset"}
+  - practice:
+      title: "Соедини"
+      also_ok: ["devedeset"]
+      ex:
+        - type: match
+          prompt: "Соедини слово и цифру"
+          pairs:
+            - ["petnaest", "пятнадцать (15)"]
+            - ["dvadeset", "двадцать (20)"]
+            - ["trideset", "тридцать (30)"]
+            - ["četrdeset", "сорок (40)"]
+            - ["devedeset", "девяносто (90)"]
+            - ["sto", "сто (100)"]
+  - practice:
+      title: "Собери"
+      ex:
+        - {type: word_bank, prompt: "Собери число 35", bank: ["trideset", "pet", "petnaest", "tri", "i"], accept: ["trideset pet", "trideset i pet"]}
+        - {type: word_bank, prompt: "Собери число 21", bank: ["dvadeset", "jedan", "dva", "i"], accept: ["dvadeset jedan", "dvadeset i jedan"]}
+  - practice:
+      title: "Напиши"
+      ex:
+        - {type: fill_blank, prompt: "Запиши словом: 40 → ___", accept: ["četrdeset"]}
+        - {type: fill_blank, prompt: "Запиши словом: 15 → ___", accept: ["petnaest"]}
+        - {type: translate, prompt: "Двадцать восемь.", accept: ["Dvadeset osam.", "Dvadeset i osam."]}
+        - {type: translate, prompt: "Пятьдесят три.", accept: ["Pedeset tri.", "Pedeset i tri."]}

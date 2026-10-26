@@ -1,0 +1,165 @@
+lesson: "13b"
+title: "Очередь и часы работы (Red, radno vreme)"
+subtitle: "кто последний, я за вами, открыто и закрыто"
+teaches: [red-queue, ko-je-poslednji, vreme, radno-vreme, otvoreno-zatvoreno]
+
+steps:
+  - id: "13b.1"
+    kind: teach
+    title: "Очередь"
+    md: "13b/1-red.md"
+
+  - id: "13b.2"
+    kind: practice
+    title: "Запомним: Очередь"
+    exercises:
+      - id: "13b.2.1"
+        type: choice
+        prompt: "«Кто последний?» —"
+        options: ["Ko je poslednji?", "Koliko je sati?", "Koliko košta?"]
+        answer: "Ko je poslednji?"
+
+  - id: "13b.3"
+    kind: teach
+    title: "Я за вами"
+    md: "13b/3-za-vama.md"
+
+  - id: "13b.4"
+    kind: practice
+    title: "Запомним: Я за вами"
+    exercises:
+      - id: "13b.4.1"
+        type: choice
+        prompt: "«Я за вами» —"
+        options: ["Ja sam za vama.", "Ja sam iz Rusije.", "Ko je poslednji?"]
+        answer: "Ja sam za vama."
+
+  - id: "13b.5"
+    kind: teach
+    title: "Часы работы"
+    md: "13b/5-radno-vreme.md"
+
+  - id: "13b.6"
+    kind: practice
+    title: "Запомним: Часы работы"
+    exercises:
+      - id: "13b.6.1"
+        type: choice
+        prompt: "«Часы работы» —"
+        options: ["radno vreme", "red", "račun"]
+        answer: "radno vreme"
+
+  - id: "13b.7"
+    kind: teach
+    title: "Открыто, закрыто"
+    md: "13b/7-otvoreno.md"
+
+  - id: "13b.8"
+    kind: practice
+    title: "Запомним: Открыто, закрыто"
+    exercises:
+      - id: "13b.8.1"
+        type: choice
+        prompt: "«Закрыто» —"
+        options: ["zatvoreno", "otvoreno", "pokvareno"]
+        answer: "zatvoreno"
+
+  - id: "13b.9"
+    kind: practice
+    title: "Послушай и выбери"
+    exercises:
+      - id: "13b.9.1"
+        type: choice
+        say: "Ko je poslednji?"
+        prompt: "Послушай и выбери перевод."
+        options: ["Кто последний?", "Кто вы?", "Который час?"]
+        answer: "Кто последний?"
+      - id: "13b.9.2"
+        type: choice
+        say: "Ja sam za vama."
+        prompt: "Послушай и выбери перевод."
+        options: ["Я за вами.", "Я последний.", "Я из России."]
+        answer: "Я за вами."
+      - id: "13b.9.3"
+        type: choice
+        say: "Do koliko radite?"
+        prompt: "Послушай и выбери перевод."
+        options: ["До скольки вы работаете?", "Во сколько вы открываетесь?", "Сколько стоит?"]
+        answer: "До скольки вы работаете?"
+      - id: "13b.9.4"
+        type: choice
+        say: "Zatvoreno je."
+        prompt: "Послушай и выбери перевод."
+        options: ["Закрыто.", "Открыто.", "Испорчено."]
+        answer: "Закрыто."
+
+  - id: "13b.10"
+    kind: practice
+    title: "Что скажешь?"
+    exercises:
+      - id: "13b.10.1"
+        type: choice
+        prompt: "Ты встаёшь в очередь —"
+        options: ["Ko je poslednji?", "Do koliko radite?", "Ja sam za vama."]
+        answer: "Ko je poslednji?"
+      - id: "13b.10.2"
+        type: choice
+        prompt: "Ты пришёл после женщины в очереди —"
+        options: ["Ja sam za vama.", "Ko je poslednji?", "Zatvoreno je."]
+        answer: "Ja sam za vama."
+      - id: "13b.10.3"
+        type: choice
+        prompt: "Ты хочешь узнать, до скольки работает магазин —"
+        options: ["Do koliko radite?", "Radno vreme.", "Ko je poslednji?"]
+        answer: "Do koliko radite?"
+
+  - id: "13b.11"
+    kind: practice
+    title: "Соедини"
+    exercises:
+      - id: "13b.11.1"
+        type: match
+        prompt: "Соедини фразу и перевод"
+        pairs:
+          - ["red", "очередь"]
+          - ["radno vreme", "часы работы"]
+          - ["otvoreno", "открыто"]
+          - ["zatvoreno", "закрыто"]
+          - ["Ko je poslednji?", "Кто последний?"]
+          - ["Ja sam za vama.", "Я за вами."]
+
+  - id: "13b.12"
+    kind: practice
+    title: "Собери"
+    exercises:
+      - id: "13b.12.1"
+        type: word_bank
+        prompt: "Собери: «кто последний?»"
+        bank: ["Ko", "je", "poslednji", "red"]
+        accept: ["Ko je poslednji?"]
+      - id: "13b.12.2"
+        type: word_bank
+        prompt: "Собери: «до скольки вы работаете?»"
+        bank: ["Do", "koliko", "radite", "radim"]
+        accept: ["Do koliko radite?"]
+
+  - id: "13b.13"
+    kind: practice
+    title: "Напиши"
+    exercises:
+      - id: "13b.13.1"
+        type: fill_blank
+        prompt: "«Кто последний?» → Ko je ___?"
+        accept: ["poslednji"]
+      - id: "13b.13.2"
+        type: fill_blank
+        prompt: "«Я за вами» → Ja sam ___ vama."
+        accept: ["za"]
+      - id: "13b.13.3"
+        type: translate
+        prompt: "Закрыто."
+        accept: ["Zatvoreno je.", "Zatvoreno."]
+      - id: "13b.13.4"
+        type: translate
+        prompt: "Кто последний?"
+        accept: ["Ko je poslednji?"]

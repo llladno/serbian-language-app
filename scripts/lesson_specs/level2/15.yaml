@@ -1,0 +1,90 @@
+id: "15"
+start: 11
+title: "Проверка уровня 2 (Provera)"
+subtitle: "семья, числа, цена, время, магазин"
+teaches: []
+steps:
+  - practice:
+      title: "Послушай и выбери"
+      mixed: true
+      ex:
+        - {type: choice, say: "Imam brata i sestru.", options: ["У меня есть брат и сестра.", "У меня нет брата.", "Это мой брат."], answer: "У меня есть брат и сестра."}
+        - {type: choice, say: "Dvesta pedeset dinara.", options: ["Двести пятьдесят динаров.", "Двести пятнадцать динаров.", "Триста пятьдесят динаров."], answer: "Двести пятьдесят динаров."}
+        - {type: choice, say: "Pola osam.", options: ["Половина восьмого (7:30).", "Без пятнадцати восемь (7:45).", "Восемь часов (8:00)."], answer: "Половина восьмого (7:30)."}
+        - {type: choice, say: "Mogu li da vratim?", options: ["Могу вернуть?", "Могу поменять?", "Можно картой?"], answer: "Могу вернуть?"}
+  - reading:
+      name: pekara
+      title: "В пекарне очередь"
+      text: |
+        Ovo je pekara. Ovde je red.
+        — Ko je poslednji? — Ja sam.
+        — Izvolite? — Treba mi hleb. Imate li mleko?
+        — Imamo. Još nešto? — To je sve. Koliko dugujem?
+        — Sto deset dinara. Kešom ili karticom?
+        — Kešom. Evo, tačno.
+        — Hvala, prijatno!
+
+        ---
+
+        Это пекарня. Здесь очередь.
+        — Кто последний? — Я.
+        — Слушаю вас? — Мне нужен хлеб. У вас есть молоко?
+        — Есть. Ещё что-нибудь? — Это всё. Сколько с меня?
+        — Сто десять динаров. Наличными или картой?
+        — Наличными. Вот, ровно.
+        — Спасибо, всего доброго!
+      ex:
+        - {type: choice, prompt: "Сколько стоят хлеб и молоко?", options: ["Сто десять динаров", "Сто динаров", "Двести десять динаров"], answer: "Сто десять динаров"}
+        - {type: choice, prompt: "Чем платит покупатель?", options: ["Наличными, без сдачи", "Картой", "Он ничего не платит"], answer: "Наличными, без сдачи"}
+  - practice:
+      kind: checkpoint
+      title: "Большая проверка"
+      ex:
+        - {type: choice, prompt: "«Мой папа» —", options: ["moj tata", "moja tata", "moje tata"], answer: "moj tata"}
+        - {type: choice, prompt: "«У меня нет сестры» —", options: ["Nemam sestre.", "Imam sestru.", "Nemam brata."], answer: "Nemam sestre."}
+        - {type: match, prompt: "Соедини число и слово", pairs: [["sedam", "семь"], ["petnaest", "пятнадцать"], ["trideset", "тридцать"], ["dvesta", "двести"]]}
+        - {type: choice, prompt: "«Мне 22 года» —", options: ["Imam dvadeset dve godine.", "Imam dvadeset dve godina.", "Imam dvadeset dve godinu."], answer: "Imam dvadeset dve godine."}
+        - {type: choice, prompt: "2:30 —", options: ["pola tri", "pola dva", "tri i petnaest"], answer: "pola tri"}
+        - {type: match, prompt: "Соедини магазин и перевод", pairs: [["pekara", "пекарня"], ["apoteka", "аптека"], ["pijaca", "рынок"], ["prodavnica", "магазин"]]}
+        - {type: word_bank, prompt: "Собери: «сколько стоит кофе?»", bank: ["Koliko", "košta", "kafa", "dugujem"], accept: ["Koliko košta kafa?"]}
+        - {type: fill_blank, prompt: "«Это всё» → To je ___.", accept: ["sve"]}
+        - {type: fill_blank, prompt: "«Наличными или картой?» → Kešom ___ karticom?", accept: ["ili"]}
+        - {type: translate, prompt: "Мне нужен хлеб.", accept: ["Treba mi hleb."]}
+        - {type: translate, prompt: "Сколько с меня?", accept: ["Koliko dugujem?"]}
+        - {type: translate, prompt: "Какой у тебя номер телефона?", accept: ["Koji je tvoj broj telefona?"]}
+  - dialogue:
+      title: "Первый день"
+      scene: "Ты только приехал и снял квартиру. Хозяин, Марко, встречает тебя у подъезда, чтобы отдать ключи."
+      voice: m
+      turns:
+        - {who: npc, sr: "Dobar dan! Vi ste iz Rusije?", ru: "Добрый день! Вы из России?"}
+        - who: me
+          sr: "Dobar dan. Da, ja sam iz Rusije."
+          ru: "Добрый день. Да, я из России."
+          ex: {type: choice, prompt: "Поздоровайся и подтверди, что ты из России", options: ["Dobar dan. Da, ja sam iz Rusije.", "Dobro veče. Da, ja sam iz Rusije.", "Dobar dan. Ne, ja sam iz Rusije."], answer: "Dobar dan. Da, ja sam iz Rusije."}
+        - {who: npc, sr: "Drago mi je. Ja sam Marko.", ru: "Приятно познакомиться. Я Марко."}
+        - who: me
+          sr: "Drago mi je takođe."
+          ru: "Мне тоже приятно."
+          ex: {type: choice, prompt: "Ответь вежливо", options: ["Drago mi je takođe.", "Nema na čemu.", "Ne žalim se."], answer: "Drago mi je takođe."}
+        - {who: npc, sr: "Evo, ovo je za vas.", ru: "Вот, это вам."}
+        - who: me
+          sr: "Hvala. Koliko dugujem?"
+          ru: "Спасибо. Сколько с меня?"
+          ex: {type: translate, prompt: "Поблагодари и спроси, сколько с тебя", accept: ["Hvala. Koliko dugujem?", "Hvala, koliko dugujem?", "Koliko dugujem?"], hint: "Сначала «спасибо», потом вопрос из урока про цену: нужное слово там кончалось на -ujem.", explain: "«Koliko dugujem?» — «сколько я должен»: так спрашивают и в кафе, и при оплате жилья."}
+        - {who: npc, sr: "Pet hiljada dinara.", ru: "Пять тысяч динаров."}
+        - who: me
+          sr: "Može karticom?"
+          ru: "Можно картой?"
+          ex: {type: choice, prompt: "Спроси, можно ли картой", options: ["Može karticom?", "Može kešom?", "Koliko je sati?"], answer: "Može karticom?"}
+        - {who: npc, sr: "Ne, samo keš.", ru: "Нет, только наличные."}
+        - who: me
+          sr: "Dobro. Izvolite."
+          ru: "Хорошо. Вот, пожалуйста."
+          ex: {type: choice, prompt: "Согласись и протяни деньги", options: ["Dobro. Izvolite.", "Dobro. Molim?", "Dobro. Doviđenja."], answer: "Dobro. Izvolite.", explain: "«Izvolite» — «пожалуйста, вот»: так протягивают деньги или вещь (и ещё «слушаю вас» — когда спрашивают). «Molim?» — «что, простите?», а «doviđenja» — «до свидания»: здесь они не подходят."}
+        - {who: npc, sr: "Hvala. Vidimo se sutra u pet?", ru: "Спасибо. Увидимся завтра в пять?"}
+        - who: me
+          sr: "Da, sutra u pet. Doviđenja!"
+          ru: "Да, завтра в пять. До свидания!"
+          ex: {type: fill_blank, prompt: "Da, sutra ___ pet. Doviđenja!", accept: ["u"], explain: "Время — с предлогом «u»: u pet, u osam, u podne."}
+        - {who: npc, sr: "Prijatno!", ru: "Всего доброго!"}

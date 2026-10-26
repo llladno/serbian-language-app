@@ -1,98 +1,124 @@
 lesson: "15"
-title: "Проверка 1б (Provera 1b)"
-subtitle: "в магазине, ролёвки"
+title: "Проверка уровня 2 (Provera)"
+subtitle: "семья, числа, цена, время, магазин"
 teaches: []
 
 steps:
-  - id: "15.1"
+  - id: "15.11"
     kind: practice
-    title: "В магазине"
+    title: "Послушай и выбери"
     mixed: true
     exercises:
-      - id: "15.1.1"
+      - id: "15.11.1"
         type: choice
-        prompt: "«Мне нужен хлеб» —"
-        options: ["Treba mi hleb.", "Mi hleb treba.", "Treba hleb."]
-        answer: "Treba mi hleb."
-      - id: "15.1.2"
-        type: match
-        prompt: "Соедини"
-        pairs:
-          - ["pekara", "пекарня"]
-          - ["kesa", "пакет"]
-          - ["račun", "чек"]
-          - ["kusur", "сдача"]
-      - id: "15.1.3"
-        type: fill_blank
-        prompt: "«Это всё» → To je ___."
-        accept: ["sve"]
-      - id: "15.1.4"
-        type: word_bank
-        prompt: "Собери: «сколько с меня?»"
-        bank: ["Koliko", "dugujem"]
-        accept: ["Koliko dugujem?"]
-      - id: "15.1.5"
-        hint: "«Картой» — karticom (творительный); «можно» — глагол на m-."
-        type: translate
-        prompt: "Картой можно?"
-        accept: ["Može karticom?", "Karticom, može?"]
-        explain: "«karticom» — через k: «kartica» (карта) в творительном падеже."
+        say: "Imam brata i sestru."
+        prompt: "Послушай и выбери перевод."
+        options: ["У меня есть брат и сестра.", "У меня нет брата.", "Это мой брат."]
+        answer: "У меня есть брат и сестра."
+      - id: "15.11.2"
+        type: choice
+        say: "Dvesta pedeset dinara."
+        prompt: "Послушай и выбери перевод."
+        options: ["Двести пятьдесят динаров.", "Двести пятнадцать динаров.", "Триста пятьдесят динаров."]
+        answer: "Двести пятьдесят динаров."
+      - id: "15.11.3"
+        type: choice
+        say: "Pola osam."
+        prompt: "Послушай и выбери перевод."
+        options: ["Половина восьмого (7:30).", "Без пятнадцати восемь (7:45).", "Восемь часов (8:00)."]
+        answer: "Половина восьмого (7:30)."
+      - id: "15.11.4"
+        type: choice
+        say: "Mogu li da vratim?"
+        prompt: "Послушай и выбери перевод."
+        options: ["Могу вернуть?", "Могу поменять?", "Можно картой?"]
+        answer: "Могу вернуть?"
 
-  - id: "15.2"
+  - id: "15.12"
+    kind: reading
+    title: "В пекарне очередь"
+    md: "15/12-pekara.md"
+    exercises:
+      - id: "15.12.1"
+        type: choice
+        prompt: "Сколько стоят хлеб и молоко?"
+        options: ["Сто десять динаров", "Сто динаров", "Двести десять динаров"]
+        answer: "Сто десять динаров"
+      - id: "15.12.2"
+        type: choice
+        prompt: "Чем платит покупатель?"
+        options: ["Наличными, без сдачи", "Картой", "Он ничего не платит"]
+        answer: "Наличными, без сдачи"
+
+  - id: "15.13"
     kind: checkpoint
     title: "Большая проверка"
-    also_ok: ["brata"]
     exercises:
-      - id: "15.2.1"
+      - id: "15.13.1"
         type: choice
-        prompt: "Выходишь из кафе, тебе говорят «Prijatno!». Отвечаешь —"
-        options: ["Prijatno!", "Dobro jutro!", "Molim?"]
-        answer: "Prijatno!"
-      - id: "15.2.2"
+        prompt: "«Мой папа» —"
+        options: ["moj tata", "moja tata", "moje tata"]
+        answer: "moj tata"
+      - id: "15.13.2"
         type: choice
-        prompt: "«У меня нет брата» —"
-        options: ["Nemam brata.", "Nemam brat.", "Imam brata."]
-        answer: "Nemam brata."
-      - id: "15.2.3"
+        prompt: "«У меня нет сестры» —"
+        options: ["Nemam sestre.", "Imam sestru.", "Nemam brata."]
+        answer: "Nemam sestre."
+      - id: "15.13.3"
         type: match
-        prompt: "Соедини"
+        prompt: "Соедини число и слово"
         pairs:
           - ["sedam", "семь"]
+          - ["petnaest", "пятнадцать"]
           - ["trideset", "тридцать"]
-          - ["sto", "сто"]
-          - ["dvanaest", "двенадцать"]
-      - id: "15.2.4"
+          - ["dvesta", "двести"]
+      - id: "15.13.4"
+        type: choice
+        prompt: "«Мне 22 года» —"
+        options: ["Imam dvadeset dve godine.", "Imam dvadeset dve godina.", "Imam dvadeset dve godinu."]
+        answer: "Imam dvadeset dve godine."
+      - id: "15.13.5"
+        type: choice
+        prompt: "2:30 —"
+        options: ["pola tri", "pola dva", "tri i petnaest"]
+        answer: "pola tri"
+      - id: "15.13.6"
         type: match
-        prompt: "Соедини"
+        prompt: "Соедини магазин и перевод"
         pairs:
           - ["pekara", "пекарня"]
           - ["apoteka", "аптека"]
           - ["pijaca", "рынок"]
           - ["prodavnica", "магазин"]
-      - id: "15.2.5"
-        type: fill_blank
-        prompt: "«Работаю программистом» → Radim ___ programer."
-        accept: ["kao"]
-        explain: "«radim kao + профессия» — «работаю кем-то», «kao» здесь обязателен."
-      - id: "15.2.6"
+      - id: "15.13.7"
         type: word_bank
         prompt: "Собери: «сколько стоит кофе?»"
-        bank: ["Koliko", "košta", "kafa"]
+        bank: ["Koliko", "košta", "kafa", "dugujem"]
         accept: ["Koliko košta kafa?"]
-      - id: "15.2.7"
-        hint: "«До свидания» — одно слово, в нём буква đ."
+      - id: "15.13.8"
+        type: fill_blank
+        prompt: "«Это всё» → To je ___."
+        accept: ["sve"]
+      - id: "15.13.9"
+        type: fill_blank
+        prompt: "«Наличными или картой?» → Kešom ___ karticom?"
+        accept: ["ili"]
+      - id: "15.13.10"
         type: translate
-        prompt: "Спасибо, до свидания!"
-        accept: ["Hvala, doviđenja!"]
-        explain: "Нужны оба слова: «Hvala» и «doviđenja» — не забудь первое."
-      - id: "15.2.8"
+        prompt: "Мне нужен хлеб."
+        accept: ["Treba mi hleb."]
+      - id: "15.13.11"
         type: translate
         prompt: "Сколько с меня?"
         accept: ["Koliko dugujem?"]
+      - id: "15.13.12"
+        type: translate
+        prompt: "Какой у тебя номер телефона?"
+        accept: ["Koji je tvoj broj telefona?"]
 
-  - id: "15.4"
+  - id: "15.14"
     kind: dialogue
-    title: "Први дан"
+    title: "Первый день"
     scene: "Ты только приехал и снял квартиру. Хозяин, Марко, встречает тебя у подъезда, чтобы отдать ключи."
     voice: m
     turns:
@@ -104,13 +130,10 @@ steps:
         sr: "Dobar dan. Da, ja sam iz Rusije."
         ru: "Добрый день. Да, я из России."
         exercise:
-          id: "15.4.1"
+          id: "15.14.1"
           type: choice
           prompt: "Поздоровайся и подтверди, что ты из России"
-          options:
-            - "Dobar dan. Da, ja sam iz Rusije."
-            - "Dobro veče. Da, ja sam iz Rusije."
-            - "Dobar dan. Ne, ja sam iz Rusije."
+          options: ["Dobar dan. Da, ja sam iz Rusije.", "Dobro veče. Da, ja sam iz Rusije.", "Dobar dan. Ne, ja sam iz Rusije."]
           answer: "Dobar dan. Da, ja sam iz Rusije."
 
       - who: npc
@@ -121,13 +144,10 @@ steps:
         sr: "Drago mi je takođe."
         ru: "Мне тоже приятно."
         exercise:
-          id: "15.4.2"
+          id: "15.14.2"
           type: choice
           prompt: "Ответь вежливо"
-          options:
-            - "Drago mi je takođe."
-            - "Nema na čemu."
-            - "Ne žalim se."
+          options: ["Drago mi je takođe.", "Nema na čemu.", "Ne žalim se."]
           answer: "Drago mi je takođe."
 
       - who: npc
@@ -138,27 +158,25 @@ steps:
         sr: "Hvala. Koliko dugujem?"
         ru: "Спасибо. Сколько с меня?"
         exercise:
-          id: "15.4.3"
+          id: "15.14.3"
+          hint: "Сначала «спасибо», потом вопрос из урока про цену: нужное слово там кончалось на -ujem."
           type: translate
           prompt: "Поблагодари и спроси, сколько с тебя"
           accept: ["Hvala. Koliko dugujem?", "Hvala, koliko dugujem?", "Koliko dugujem?"]
           explain: "«Koliko dugujem?» — «сколько я должен»: так спрашивают и в кафе, и при оплате жилья."
 
       - who: npc
-        sr: "Trideset hiljada dinara."
-        ru: "Тридцать тысяч динаров."
+        sr: "Pet hiljada dinara."
+        ru: "Пять тысяч динаров."
 
       - who: me
         sr: "Može karticom?"
         ru: "Можно картой?"
         exercise:
-          id: "15.4.4"
+          id: "15.14.4"
           type: choice
           prompt: "Спроси, можно ли картой"
-          options:
-            - "Može karticom?"
-            - "Može kešom?"
-            - "Koliko je sati?"
+          options: ["Može karticom?", "Može kešom?", "Koliko je sati?"]
           answer: "Može karticom?"
 
       - who: npc
@@ -169,13 +187,10 @@ steps:
         sr: "Dobro. Izvolite."
         ru: "Хорошо. Вот, пожалуйста."
         exercise:
-          id: "15.4.5"
+          id: "15.14.5"
           type: choice
           prompt: "Согласись и протяни деньги"
-          options:
-            - "Dobro. Izvolite."
-            - "Dobro. Molim?"
-            - "Dobro. Doviđenja."
+          options: ["Dobro. Izvolite.", "Dobro. Molim?", "Dobro. Doviđenja."]
           answer: "Dobro. Izvolite."
           explain: "«Izvolite» — «пожалуйста, вот»: так протягивают деньги или вещь (и ещё «слушаю вас» — когда спрашивают). «Molim?» — «что, простите?», а «doviđenja» — «до свидания»: здесь они не подходят."
 
@@ -187,7 +202,7 @@ steps:
         sr: "Da, sutra u pet. Doviđenja!"
         ru: "Да, завтра в пять. До свидания!"
         exercise:
-          id: "15.4.6"
+          id: "15.14.6"
           type: fill_blank
           prompt: "Da, sutra ___ pet. Doviđenja!"
           accept: ["u"]

@@ -1,0 +1,111 @@
+id: "08c"
+title: "Сотни и тысячи (Stotine i hiljade)"
+subtitle: "сто, двести, тысяча, динары"
+teaches: [dvesta, trista, dinar, hiljadu]
+steps:
+  - slide:
+      name: stotine
+      title: "100–900"
+      md: |
+        `sto` [сто] *(100)* · `dvesta` [двэ́ста] *(200)* · `trista` [три́ста] *(300)*
+
+        Дальше — число и `sto`: `četiristo` [чэ́тиристо] *(400)*, `petsto` [пэ́тсто] *(500)*, `šesto` [шэ́сто] *(600)*, `sedamsto` [сэ́дамсто] *(700)*, `osamsto` [о́самсто] *(800)*, `devetsto` [дэ́вэтсто] *(900)*.
+      check:
+        prompt: "«200» —"
+        options: ["dvesta", "dvadeset", "trista"]
+        answer: "dvesta"
+        also_ok: ["trista"]
+  - slide:
+      name: sostavnye-sotni
+      title: "120, 350"
+      md: |
+        Сотню и остальное называют по порядку:
+
+        `sto dvadeset` [сто двадэ́сэт] *(120)*
+
+        `trista pedeset` [три́ста пэ́дэсэт] *(350)*
+
+        `dvesta pet` [двэ́ста пэт] *(205)*
+      check:
+        prompt: "«350» —"
+        options: ["trista pedeset", "trideset pet", "trista petnaest"]
+        answer: "trista pedeset"
+        also_ok: ["trista", "petnaest"]
+  - slide:
+      name: dinar
+      title: "Динар"
+      md: |
+        Деньги Сербии — `dinar` [ди́нар] *(динар)*.
+
+        `jedan dinar` [е́дан ди́нар] *(1 динар)*
+
+        `dva dinara` [два ди́нара] *(2 динара)*
+
+        `pet dinara` [пэт ди́нара] *(5 динаров)*
+
+        `sto dinara` [сто ди́нара] *(100 динаров)*
+
+        > Только после «один» остаётся `dinar`. После остальных чисел — `dinara`.
+      check:
+        prompt: "«5 динаров» —"
+        options: ["pet dinara", "pet dinar", "sto dinara"]
+        answer: "pet dinara"
+  - slide:
+      name: hiljada
+      title: "Тысяча"
+      md: |
+        `hiljadu` [хи́ляду] *(хиљаду — тысяча)*. В цене это обычно готовые фразы:
+
+        `hiljadu dinara` [хи́ляду ди́нара] *(1000 динаров)*
+
+        `dve hiljade dinara` [двэ хи́лядэ ди́нара] *(2000 динаров)*
+
+        `pet hiljada dinara` [пэт хи́ляда ди́нара] *(5000 динаров)*
+
+        > Цифрами тысячи отделяют точкой: `1.250`.
+      check:
+        prompt: "«1000 динаров» —"
+        options: ["hiljadu dinara", "sto dinara", "dve hiljade dinara"]
+        answer: "hiljadu dinara"
+        also_ok: ["hiljade", "hiljada"]
+  - practice:
+      title: "Послушай и выбери"
+      also_ok: ["petsto", "hiljade", "hiljada"]
+      ex:
+        - {type: choice, say: "Dvesta.", options: ["Двести.", "Двадцать.", "Триста."], answer: "Двести."}
+        - {type: choice, say: "Petsto.", options: ["Пятьсот.", "Пятьдесят.", "Пятнадцать."], answer: "Пятьсот."}
+        - {type: choice, say: "Sto dvadeset dinara.", options: ["Сто двадцать динаров.", "Сто двенадцать динаров.", "Двести динаров."], answer: "Сто двадцать динаров."}
+        - {type: choice, say: "Hiljadu dinara.", options: ["Тысяча динаров.", "Сто динаров.", "Две тысячи динаров."], answer: "Тысяча динаров."}
+  - practice:
+      title: "Узнай число"
+      also_ok: ["osamsto", "petsto", "četiristo", "hiljade", "hiljada"]
+      ex:
+        - {type: choice, prompt: "«800» —", options: ["osamsto", "osamdeset", "sedamsto"], answer: "osamsto"}
+        - {type: choice, prompt: "«400» —", options: ["četiristo", "četrdeset", "trista"], answer: "četiristo"}
+        - {type: choice, prompt: "«2000 динаров» —", options: ["dve hiljade dinara", "hiljadu dinara", "dvesta dinara"], answer: "dve hiljade dinara"}
+  - practice:
+      title: "Соедини"
+      also_ok: ["hiljade", "hiljada", "sedamsto", "četiristo"]
+      ex:
+        - type: match
+          prompt: "Соедини число и цифру"
+          pairs:
+            - ["sto", "сто (100)"]
+            - ["dvesta", "двести (200)"]
+            - ["trista", "триста (300)"]
+            - ["četiristo", "четыреста (400)"]
+            - ["sedamsto", "семьсот (700)"]
+            - ["hiljadu", "тысяча (1000)"]
+  - practice:
+      title: "Собери"
+      also_ok: ["hiljada", "hiljade"]
+      ex:
+        - {type: word_bank, prompt: "Собери: «сто двадцать динаров»", bank: ["Sto", "dvadeset", "dinara", "dinar"], accept: ["Sto dvadeset dinara."]}
+        - {type: word_bank, prompt: "Собери: «пять тысяч динаров»", bank: ["Pet", "hiljada", "hiljadu", "dinara"], accept: ["Pet hiljada dinara."]}
+  - practice:
+      title: "Напиши"
+      ex:
+        - {type: fill_blank, prompt: "Запиши словом: 300 → ___", accept: ["trista"]}
+        - {type: fill_blank, prompt: "«1 динар» → jedan ___", accept: ["dinar"]}
+        - {type: translate, prompt: "Двести динаров.", accept: ["Dvesta dinara."]}
+        - {type: translate, prompt: "Триста пятьдесят динаров.", accept: ["Trista pedeset dinara."]}

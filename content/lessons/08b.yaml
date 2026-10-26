@@ -1,0 +1,170 @@
+lesson: "08b"
+title: "Числа 11–100 (Brojevi do sto)"
+subtitle: "11–19, десятки, составные числа"
+teaches: [jedanaest, dvanaest, petnaest, dvadeset, trideset, cetrdeset, pedeset, sto-num]
+
+steps:
+  - id: "08b.1"
+    kind: teach
+    title: "11–19"
+    md: "08b/1-naest.md"
+
+  - id: "08b.2"
+    kind: practice
+    title: "Запомним: 11–19"
+    exercises:
+      - id: "08b.2.1"
+        type: choice
+        prompt: "«13» —"
+        options: ["trinaest", "četrnaest", "tri"]
+        answer: "trinaest"
+
+  - id: "08b.3"
+    kind: teach
+    title: "20, 30, 40, 50"
+    md: "08b/3-desetke-1.md"
+
+  - id: "08b.4"
+    kind: practice
+    title: "Запомним: 20, 30, 40, 50"
+    exercises:
+      - id: "08b.4.1"
+        type: choice
+        prompt: "«30» —"
+        options: ["trideset", "trinaest", "tri"]
+        answer: "trideset"
+
+  - id: "08b.5"
+    kind: teach
+    title: "60, 70, 80, 90, 100"
+    md: "08b/5-desetke-2.md"
+
+  - id: "08b.6"
+    kind: practice
+    title: "Запомним: 60, 70, 80, 90, 100"
+    also_ok: ["šezdeset", "sedamdeset"]
+    exercises:
+      - id: "08b.6.1"
+        type: choice
+        prompt: "«60» —"
+        options: ["šezdeset", "šest", "sedamdeset"]
+        answer: "šezdeset"
+
+  - id: "08b.7"
+    kind: teach
+    title: "21, 35, 58"
+    md: "08b/7-sostavnye.md"
+
+  - id: "08b.8"
+    kind: practice
+    title: "Запомним: 21, 35, 58"
+    also_ok: ["pedeset"]
+    exercises:
+      - id: "08b.8.1"
+        type: choice
+        prompt: "«35» —"
+        options: ["trideset pet", "pedeset tri", "tri pet"]
+        answer: "trideset pet"
+
+  - id: "08b.9"
+    kind: practice
+    title: "Послушай и выбери"
+    also_ok: ["petnaest"]
+    exercises:
+      - id: "08b.9.1"
+        type: choice
+        say: "Petnaest."
+        prompt: "Послушай и выбери перевод."
+        options: ["Пятнадцать.", "Пятьдесят.", "Пять."]
+        answer: "Пятнадцать."
+      - id: "08b.9.2"
+        type: choice
+        say: "Trideset."
+        prompt: "Послушай и выбери перевод."
+        options: ["Тридцать.", "Тринадцать.", "Три."]
+        answer: "Тридцать."
+      - id: "08b.9.3"
+        type: choice
+        say: "Četrdeset."
+        prompt: "Послушай и выбери перевод."
+        options: ["Сорок.", "Четырнадцать.", "Сто."]
+        answer: "Сорок."
+      - id: "08b.9.4"
+        type: choice
+        say: "Dvadeset pet."
+        prompt: "Послушай и выбери перевод."
+        options: ["Двадцать пять.", "Двадцать.", "Пятьдесят."]
+        answer: "Двадцать пять."
+
+  - id: "08b.10"
+    kind: practice
+    title: "Узнай число"
+    also_ok: ["trinaest", "šezdeset", "sedamdeset", "osamdeset", "sedamnaest"]
+    exercises:
+      - id: "08b.10.1"
+        type: choice
+        prompt: "«13» —"
+        options: ["trinaest", "trideset", "tri"]
+        answer: "trinaest"
+      - id: "08b.10.2"
+        type: choice
+        prompt: "«50» —"
+        options: ["pedeset", "petnaest", "šezdeset"]
+        answer: "pedeset"
+      - id: "08b.10.3"
+        type: choice
+        prompt: "«70» —"
+        options: ["sedamdeset", "sedamnaest", "osamdeset"]
+        answer: "sedamdeset"
+
+  - id: "08b.11"
+    kind: practice
+    title: "Соедини"
+    also_ok: ["devedeset"]
+    exercises:
+      - id: "08b.11.1"
+        type: match
+        prompt: "Соедини слово и цифру"
+        pairs:
+          - ["petnaest", "пятнадцать (15)"]
+          - ["dvadeset", "двадцать (20)"]
+          - ["trideset", "тридцать (30)"]
+          - ["četrdeset", "сорок (40)"]
+          - ["devedeset", "девяносто (90)"]
+          - ["sto", "сто (100)"]
+
+  - id: "08b.12"
+    kind: practice
+    title: "Собери"
+    exercises:
+      - id: "08b.12.1"
+        type: word_bank
+        prompt: "Собери число 35"
+        bank: ["trideset", "pet", "petnaest", "tri", "i"]
+        accept: ["trideset pet", "trideset i pet"]
+      - id: "08b.12.2"
+        type: word_bank
+        prompt: "Собери число 21"
+        bank: ["dvadeset", "jedan", "dva", "i"]
+        accept: ["dvadeset jedan", "dvadeset i jedan"]
+
+  - id: "08b.13"
+    kind: practice
+    title: "Напиши"
+    exercises:
+      - id: "08b.13.1"
+        type: fill_blank
+        prompt: "Запиши словом: 40 → ___"
+        accept: ["četrdeset"]
+      - id: "08b.13.2"
+        type: fill_blank
+        prompt: "Запиши словом: 15 → ___"
+        accept: ["petnaest"]
+      - id: "08b.13.3"
+        type: translate
+        prompt: "Двадцать восемь."
+        accept: ["Dvadeset osam.", "Dvadeset i osam."]
+      - id: "08b.13.4"
+        type: translate
+        prompt: "Пятьдесят три."
+        accept: ["Pedeset tri.", "Pedeset i tri."]

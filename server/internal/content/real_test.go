@@ -75,17 +75,22 @@ func TestRealContentLoads(t *testing.T) {
 	if len(c.FalseFriends) < 50 {
 		t.Errorf("false friends = %d, want >= 50", len(c.FalseFriends))
 	}
-	if len(c.Phases) != 5 {
-		t.Errorf("phases = %d, want 5", len(c.Phases))
+	// 5 before level 1 was split in two (the new level 2 is phase "1b").
+	if len(c.Phases) != 6 {
+		t.Errorf("phases = %d, want 6", len(c.Phases))
 	}
-	if len(c.Lessons) != 78 {
-		t.Errorf("lessons = %d, want 78", len(c.Lessons))
+	// 78 before level 1 was re-cut into short lessons (it had 16 lessons, now 17
+	// in level 1 and 23 in level 2).
+	if len(c.Lessons) != 102 {
+		t.Errorf("lessons = %d, want 102", len(c.Lessons))
 	}
 
-	// "00".."59" are the fully authored lessons of levels 1-4.
+	// The lessons of every level but the last are fully authored (level 5, the last, is checked on its own below). Ids follow the
+	// course map, not a number range: level 1 is being re-cut into short lessons
+	// with ids like "01b", "02b", "02c".
 	var authored []string
-	for i := 0; i <= 59; i++ {
-		authored = append(authored, fmt.Sprintf("%02d", i))
+	for _, ph := range c.Phases[:len(c.Phases)-1] {
+		authored = append(authored, ph.Lessons...)
 	}
 	// Lessons whose first step is a reading (the opening half of a
 	// "Провера" review lesson), so they don't have to start with "teach".
@@ -116,6 +121,9 @@ func TestRealContentLoads(t *testing.T) {
 		}
 		for _, b := range c.Exercises[id] {
 			for _, e := range b.Exercises {
+				if e.Type == "choice" && e.Say != "" && e.Audio != e.ID+".mp3" {
+					t.Errorf("lesson %s: listen-choice %s has no audio (run scripts/tts.py)", id, e.ID)
+				}
 				if e.Type != "listen" {
 					continue
 				}
@@ -131,17 +139,20 @@ func TestRealContentLoads(t *testing.T) {
 	}
 	// 17 before the self-graded "free" exercises were removed: four checkpoints
 	// (15.3, 29.4, 36.4, 41.5) held nothing else, so they went with them; lessons 48, 58 and 59 add three more.
-	if kindTotals["checkpoint"] != 16 {
-		t.Errorf("checkpoint steps across 00-59 = %d, want 16", kindTotals["checkpoint"])
+	// Level 1 was then re-cut: its checkpoints moved into the repeat lessons, and
+	// the one check lesson (14) has a single closing checkpoint. Level 2 was re-cut
+	// the same way, so only its check lesson (15) keeps one: 11 in all.
+	if kindTotals["checkpoint"] != 11 {
+		t.Errorf("checkpoint steps across the authored levels = %d, want 11", kindTotals["checkpoint"])
 	}
-	if kindTotals["reading"] != 40 {
-		t.Errorf("reading steps across 00-59 = %d, want 40", kindTotals["reading"])
+	if kindTotals["reading"] != 41 {
+		t.Errorf("reading steps across the authored levels = %d, want 41", kindTotals["reading"])
 	}
-	if kindTotals["dialogue"] != 37 {
-		t.Errorf("dialogue steps across 00-59 = %d, want 37", kindTotals["dialogue"])
+	if kindTotals["dialogue"] != 42 {
+		t.Errorf("dialogue steps across the authored levels = %d, want 42", kindTotals["dialogue"])
 	}
-	if listen != 119 {
-		t.Errorf("listen exercises across 00-59 = %d, want 119", listen)
+	if listen != 128 {
+		t.Errorf("listen exercises across the authored levels = %d, want 128", listen)
 	}
 
 	if c.Lessons["00"].Planned {

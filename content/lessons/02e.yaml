@@ -1,0 +1,132 @@
+lesson: "02e"
+title: "Повторение: как дела (Ponavljanje)"
+subtitle: "ты и вы, ответы, увидимся"
+teaches: []
+
+steps:
+  - id: "02e.1"
+    kind: practice
+    title: "Послушай и выбери"
+    exercises:
+      - id: "02e.1.1"
+        type: choice
+        say: "Kako ide?"
+        prompt: "Послушай и выбери перевод."
+        options: ["Как оно?", "Как дела? (вам)", "Увидимся."]
+        answer: "Как оно?"
+      - id: "02e.1.2"
+        type: choice
+        say: "Može."
+        prompt: "Послушай и выбери перевод."
+        options: ["Нормально.", "Хорошо, спасибо.", "До свидания."]
+        answer: "Нормально."
+      - id: "02e.1.3"
+        type: choice
+        say: "Čujemo se."
+        prompt: "Послушай и выбери перевод."
+        options: ["Созвонимся.", "Увидимся.", "Спокойной ночи."]
+        answer: "Созвонимся."
+
+  - id: "02e.2"
+    kind: practice
+    title: "Что скажешь?"
+    exercises:
+      - id: "02e.2.1"
+        type: choice
+        prompt: "Соседу, который старше тебя, говоришь —"
+        options: ["Kako ste?", "Kako si?", "Ćao!"]
+        answer: "Kako ste?"
+      - id: "02e.2.2"
+        type: choice
+        prompt: "Другу, с которым завтра увидишься —"
+        options: ["Vidimo se.", "Laku noć.", "Kako ste?"]
+        answer: "Vidimo se."
+
+  - id: "02e.3"
+    kind: practice
+    title: "Соедини"
+    exercises:
+      - id: "02e.3.1"
+        type: match
+        prompt: "Соедини фразу и перевод"
+        pairs:
+          - ["Dobar dan", "Добрый день"]
+          - ["Kako ste?", "Как дела? (вы)"]
+          - ["Kako si?", "Как дела? (ты)"]
+          - ["Dobro, hvala", "Хорошо, спасибо"]
+          - ["Ne žalim se", "Не жалуюсь"]
+          - ["Doviđenja", "До свидания"]
+
+  - id: "02e.4"
+    kind: practice
+    title: "Диктант"
+    exercises:
+      - id: "02e.4.1"
+        type: listen
+        say: "Kako ste?"
+        prompt: "Запиши, что слышишь."
+        accept: ["Kako ste?", "Kako ste"]
+        ru: ["Как дела?", "Как у вас дела?", "Как поживаете?", "Как вы?"]
+      - id: "02e.4.2"
+        type: listen
+        say: "Ne žalim se."
+        prompt: "Запиши, что слышишь."
+        accept: ["Ne žalim se.", "Ne žalim se"]
+        ru: ["Не жалуюсь."]
+
+  - id: "02e.5"
+    kind: practice
+    title: "Собери"
+    exercises:
+      - id: "02e.5.1"
+        type: word_bank
+        prompt: "Собери ответ: «хорошо, спасибо, а вы?»"
+        bank: ["Dobro", "hvala", "A", "vi", "ti"]
+        accept: ["Dobro, hvala. A vi?"]
+
+  - id: "02e.6"
+    kind: practice
+    title: "Переведи"
+    exercises:
+      - id: "02e.6.1"
+        type: translate
+        prompt: "Привет! Как дела? (другу)"
+        accept: ["Zdravo! Kako si?", "Ćao! Kako si?", "Zdravo! Kako ide?", "Ćao! Kako ide?"]
+      - id: "02e.6.2"
+        type: translate
+        prompt: "Добрый день! Как у вас дела?"
+        accept: ["Dobar dan! Kako ste?"]
+
+  - id: "02e.7"
+    kind: dialogue
+    title: "Встретил знакомого"
+    scene: "Ты встретил соседа, который старше тебя. Вы на «вы»."
+    voice: m
+    turns:
+      - who: npc
+        sr: "Dobar dan! Kako ste?"
+        ru: "Добрый день! Как у вас дела?"
+
+      - who: me
+        sr: "Dobro, hvala. A vi?"
+        ru: "Хорошо, спасибо. А у вас?"
+        exercise:
+          id: "02e.7.1"
+          type: choice
+          prompt: "Ответь, что всё хорошо, и спроси в ответ"
+          options: ["Dobro, hvala. A vi?", "Dobro, hvala. A ti?", "Dobro jutro. A vi?"]
+          answer: "Dobro, hvala. A vi?"
+
+      - who: npc
+        sr: "Može. Čujemo se!"
+        ru: "Нормально. Созвонимся!"
+
+      - who: me
+        sr: "Čujemo se. Doviđenja!"
+        ru: "Созвонимся. До свидания!"
+        exercise:
+          id: "02e.7.2"
+          type: choice
+          prompt: "Согласись созвониться и попрощайся"
+          options: ["Čujemo se. Doviđenja!", "Dobro jutro. Doviđenja!", "Čujemo se. Dobro jutro!"]
+          answer: "Čujemo se. Doviđenja!"

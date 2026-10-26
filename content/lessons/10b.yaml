@@ -1,0 +1,155 @@
+lesson: "10b"
+title: "Не ровно (Pola, i, do)"
+subtitle: "половина, и столько-то минут, без стольких-то"
+teaches: [pola-sata]
+
+steps:
+  - id: "10b.1"
+    kind: teach
+    title: "Половина"
+    md: "10b/1-pola.md"
+
+  - id: "10b.2"
+    kind: practice
+    title: "Запомним: Половина"
+    also_ok: ["pola"]
+    exercises:
+      - id: "10b.2.1"
+        type: choice
+        prompt: "2:30 —"
+        options: ["pola tri", "pola dva", "tri i trideset"]
+        answer: "pola tri"
+
+  - id: "10b.3"
+    kind: teach
+    title: "Час и минуты"
+    md: "10b/3-i-minuta.md"
+
+  - id: "10b.4"
+    kind: practice
+    title: "Запомним: Час и минуты"
+    exercises:
+      - id: "10b.4.1"
+        type: choice
+        prompt: "3:15 —"
+        options: ["tri i petnaest", "petnaest do tri", "pola tri"]
+        answer: "tri i petnaest"
+
+  - id: "10b.5"
+    kind: teach
+    title: "Без скольки"
+    md: "10b/5-do.md"
+
+  - id: "10b.6"
+    kind: practice
+    title: "Запомним: Без скольки"
+    exercises:
+      - id: "10b.6.1"
+        type: choice
+        prompt: "2:45 —"
+        options: ["petnaest do tri", "tri i petnaest", "pola tri"]
+        answer: "petnaest do tri"
+
+  - id: "10b.7"
+    kind: practice
+    title: "Послушай и выбери"
+    exercises:
+      - id: "10b.7.1"
+        type: choice
+        say: "Pola tri."
+        prompt: "Послушай и выбери перевод."
+        options: ["Половина третьего (2:30).", "Половина второго (1:30).", "Три часа (3:00)."]
+        answer: "Половина третьего (2:30)."
+      - id: "10b.7.2"
+        type: choice
+        say: "Tri i petnaest."
+        prompt: "Послушай и выбери перевод."
+        options: ["Три часа пятнадцать минут (3:15).", "Без пятнадцати три (2:45).", "Половина третьего (2:30)."]
+        answer: "Три часа пятнадцать минут (3:15)."
+      - id: "10b.7.3"
+        type: choice
+        say: "Petnaest do tri."
+        prompt: "Послушай и выбери перевод."
+        options: ["Без пятнадцати три (2:45).", "Три часа пятнадцать минут (3:15).", "Пятнадцать часов."]
+        answer: "Без пятнадцати три (2:45)."
+      - id: "10b.7.4"
+        type: choice
+        say: "Deset do osam."
+        prompt: "Послушай и выбери перевод."
+        options: ["Без десяти восемь (7:50).", "Восемь часов десять минут (8:10).", "Половина восьмого (7:30)."]
+        answer: "Без десяти восемь (7:50)."
+
+  - id: "10b.8"
+    kind: practice
+    title: "Какое время?"
+    exercises:
+      - id: "10b.8.1"
+        type: choice
+        prompt: "7:30 —"
+        options: ["pola osam", "pola sedam", "osam i trideset"]
+        answer: "pola osam"
+      - id: "10b.8.2"
+        type: choice
+        prompt: "8:20 —"
+        options: ["osam i dvadeset", "dvadeset do osam", "pola osam"]
+        answer: "osam i dvadeset"
+      - id: "10b.8.3"
+        type: choice
+        prompt: "7:50 —"
+        options: ["deset do osam", "osam i deset", "pola osam"]
+        answer: "deset do osam"
+
+  - id: "10b.9"
+    kind: practice
+    title: "Соедини"
+    exercises:
+      - id: "10b.9.1"
+        type: match
+        prompt: "Соедини время и запись"
+        pairs:
+          - ["pola tri", "половина третьего (2:30)"]
+          - ["pola osam", "половина восьмого (7:30)"]
+          - ["tri i petnaest", "три часа пятнадцать минут (3:15)"]
+          - ["osam i dvadeset", "восемь часов двадцать минут (8:20)"]
+          - ["petnaest do tri", "без пятнадцати три (2:45)"]
+          - ["deset do osam", "без десяти восемь (7:50)"]
+
+  - id: "10b.10"
+    kind: practice
+    title: "Собери"
+    exercises:
+      - id: "10b.10.1"
+        type: word_bank
+        prompt: "Собери: «половина восьмого»"
+        bank: ["Pola", "osam", "sedam", "i"]
+        accept: ["Pola osam."]
+      - id: "10b.10.2"
+        type: word_bank
+        prompt: "Собери: «без десяти восемь»"
+        bank: ["Deset", "do", "osam", "i"]
+        accept: ["Deset do osam."]
+
+  - id: "10b.11"
+    kind: practice
+    title: "Напиши"
+    exercises:
+      - id: "10b.11.1"
+        type: fill_blank
+        prompt: "2:30 → ___ tri."
+        accept: ["Pola"]
+      - id: "10b.11.2"
+        type: fill_blank
+        prompt: "3:15 → Tri ___ petnaest."
+        accept: ["i"]
+      - id: "10b.11.3"
+        type: fill_blank
+        prompt: "2:45 → Petnaest ___ tri."
+        accept: ["do"]
+      - id: "10b.11.4"
+        type: translate
+        prompt: "Половина третьего."
+        accept: ["Pola tri."]
+      - id: "10b.11.5"
+        type: translate
+        prompt: "Без пятнадцати три."
+        accept: ["Petnaest do tri."]

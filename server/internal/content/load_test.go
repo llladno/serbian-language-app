@@ -43,7 +43,7 @@ func TestLoadValidFixture(t *testing.T) {
 	if len(c.Exercises["01"]) != 1 {
 		t.Fatalf("blocks: %d", len(c.Exercises["01"]))
 	}
-	if got := c.Exercises["01"][0].Exercises; len(got) != 4 {
+	if got := c.Exercises["01"][0].Exercises; len(got) != 5 {
 		t.Fatalf("exercises: %d", len(got))
 	}
 	conj := c.Exercises["01"][0].Exercises[2]
@@ -166,6 +166,40 @@ func TestLoadRejectsListenWithoutRussian(t *testing.T) {
 	_, err := Load(dir)
 	if err == nil || !strings.Contains(err.Error(), "needs ru") {
 		t.Fatalf("want a 'needs ru' error, got %v", err)
+	}
+}
+
+// A choice with `say` is the recognition-level listening task: a clip plays,
+// the text stays hidden, and the learner picks the Russian meaning.
+func TestLoadListenChoice(t *testing.T) {
+	dir := t.TempDir()
+	tree := baseTree()
+	tree["exercises/01.yaml"] = "lesson: \"01\"\nblocks:\n  - id: D\n    title: D\n    exercises:\n      - id: \"01-D-1\"\n        type: choice\n        say: \"Dobar dan.\"\n        prompt: \"Послушай и выбери перевод.\"\n        options: [\"Добрый день.\", \"До свидания.\"]\n        answer: \"Добрый день.\"\n"
+	tree["audio/01-D-1.mp3"] = "x"
+	writeTree(t, dir, tree)
+	c, err := Load(dir)
+	if err != nil {
+		t.Fatalf("Load: %v", err)
+	}
+	ex := c.Exercises["01"][0].Exercises[0]
+	if ex.Type != "choice" || ex.Say != "Dobar dan." {
+		t.Errorf("exercise = %+v", ex)
+	}
+	if ex.Audio != "01-D-1.mp3" {
+		t.Errorf("audio = %q, want 01-D-1.mp3", ex.Audio)
+	}
+}
+
+// With the text hidden the answer has to be the meaning, not the sentence
+// itself: audio=off shows the sentence, and it must not give the answer away.
+func TestLoadRejectsListenChoiceWithSerbianAnswer(t *testing.T) {
+	dir := t.TempDir()
+	tree := baseTree()
+	tree["exercises/01.yaml"] = "lesson: \"01\"\nblocks:\n  - id: D\n    title: D\n    exercises:\n      - id: \"01-D-1\"\n        type: choice\n        say: \"Dobar dan.\"\n        options: [\"Dobar dan.\", \"Doviđenja.\"]\n        answer: \"Dobar dan.\"\n"
+	writeTree(t, dir, tree)
+	_, err := Load(dir)
+	if err == nil || !strings.Contains(err.Error(), "01-D-1") || !strings.Contains(err.Error(), "Russian") {
+		t.Fatalf("want an error about a non-Russian answer, got %v", err)
 	}
 }
 

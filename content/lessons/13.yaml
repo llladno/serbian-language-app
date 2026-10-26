@@ -1,218 +1,172 @@
 lesson: "13"
-title: "Возврат товара (Reklamacija)"
-subtitle: "возврат, очередь, текст, диалог, проверка"
-teaches: []
+title: "Что-то не так (Reklamacija)"
+subtitle: "испорчено, вернуть, поменять, чек"
+teaches: [pokvareno, svez, rok-trajanja, moci, vratiti, zameniti]
 
 steps:
-  - id: "13.1"
+  - id: "13.11"
     kind: teach
-    title: "Что-то не так"
-    md: "13/1-reklamacija.md"
+    title: "Испорчено или свежее"
+    md: "13/11-pokvareno.md"
 
-  - id: "13.2"
+  - id: "13.12"
     kind: practice
-    title: "Возврат"
-    also_ok: ["mogu"]
+    title: "Запомним: Испорчено или свежее"
+    also_ok: ["sveže"]
     exercises:
-      - id: "13.2.1"
+      - id: "13.12.1"
         type: choice
         prompt: "«Это испорчено» —"
-        options: ["Ovo je pokvareno.", "Ovo je sveže.", "Ovo je otvoreno."]
+        options: ["Ovo je pokvareno.", "Ovo je sveže.", "Ovo je pekara."]
         answer: "Ovo je pokvareno."
-      - id: "13.2.2"
+
+  - id: "13.13"
+    kind: teach
+    title: "Вернуть"
+    md: "13/13-vratiti.md"
+
+  - id: "13.14"
+    kind: practice
+    title: "Запомним: Вернуть"
+    exercises:
+      - id: "13.14.1"
         type: choice
         prompt: "«Могу вернуть?» —"
-        options: ["Mogu li da vratim?", "Mogu li da zamenim?", "Mogu li da tražim?"]
+        options: ["Mogu li da vratim?", "Ovo je pokvareno.", "Treba mi hleb."]
         answer: "Mogu li da vratim?"
-      - id: "13.2.3"
-        hint: "Слово с этикетки: «годности/действия». Оно в родительном падеже («чего?»), окончание -nja."
-        type: fill_blank
-        prompt: "«Где написан срок годности?» → Gde piše rok ___?"
-        accept: ["trajanja"]
-        explain: "«rok trajanja» — буквально «срок длительности», это и есть «срок годности»."
-      - id: "13.2.4"
-        type: word_bank
-        prompt: "Собери: «могу поменять?»"
-        bank: ["Mogu", "li", "da", "zamenim"]
-        accept: ["Mogu li da zamenim?"]
 
-  - id: "13.3"
+  - id: "13.15"
     kind: teach
-    title: "Очередь и часы"
-    md: "13/3-red.md"
+    title: "Поменять"
+    md: "13/15-zameniti.md"
 
-  - id: "13.4"
+  - id: "13.16"
     kind: practice
-    title: "В очереди"
+    title: "Запомним: Поменять"
+    also_ok: ["vratim"]
     exercises:
-      - id: "13.4.1"
+      - id: "13.16.1"
         type: choice
-        prompt: "Входя в очередь, спрашиваешь —"
-        options: ["Ko je poslednji?", "Dobar dan!", "Prijatno."]
-        answer: "Ko je poslednji?"
-      - id: "13.4.2"
-        type: choice
-        prompt: "«Открыто или закрыто?» —"
-        options: ["Otvoreno ili zatvoreno?", "Radno vreme?", "Koliko košta?"]
-        answer: "Otvoreno ili zatvoreno?"
-      - id: "13.4.3"
-        type: match
-        prompt: "Соедини"
-        pairs:
-          - ["red", "очередь"]
-          - ["otvoreno", "открыто"]
-          - ["zatvoreno", "закрыто"]
-          - ["radno vreme", "часы работы"]
-      - id: "13.4.4"
-        type: fill_blank
-        prompt: "«Я за вами» → Ja sam ___ vama."
-        accept: ["za"]
+        prompt: "«Могу поменять?» —"
+        options: ["Mogu li da zamenim?", "Mogu li da vratim?", "Samo gledam."]
+        answer: "Mogu li da zamenim?"
 
-  - id: "13.5"
-    kind: reading
-    title: "В пекарне очередь"
-    md: "13/5-citanje.md"
-    exercises:
-      - id: "13.5.1"
-        type: choice
-        prompt: "Чем платит покупатель?"
-        options: ["Kešom.", "Karticom.", "Sitno."]
-        answer: "Kešom."
-      - id: "13.5.2"
-        type: choice
-        prompt: "Сколько всего?"
-        options: ["Sto deset dinara.", "Sto dinara.", "Deset dinara."]
-        answer: "Sto deset dinara."
+  - id: "13.17"
+    kind: teach
+    title: "Чек"
+    md: "13/17-racun.md"
 
-  - id: "13.6"
+  - id: "13.18"
     kind: practice
-    title: "Диктант"
-    mixed: true
+    title: "Запомним: Чек"
     exercises:
-      - id: "13.6.1"
-        type: listen
-        prompt: "Запиши, что слышишь."
-        say: "Treba mi hleb."
-        accept: ["Treba mi hleb."]
-        ru: ["Мне нужен хлеб", "Мне нужно хлеба", "Мне нужен хлебушек"]
-      - id: "13.6.2"
-        hint: "Два слова: «сколько» и «я должен». Второе начинается на dug-."
-        type: listen
-        prompt: "Запиши, что слышишь."
-        say: "Koliko dugujem?"
-        accept: ["Koliko dugujem?"]
-        ru: ["Сколько я должен?", "Сколько я должна?", "Сколько с меня?", "Сколько с меня причитается?"]
-      - id: "13.6.3"
-        type: listen
-        prompt: "Запиши, что слышишь."
-        say: "To je sve, hvala."
-        accept: ["To je sve, hvala."]
-        ru: ["Это всё, спасибо", "Всё, спасибо", "Это всё, благодарю", "Это все, спасибо"]
-
-  - id: "13.7"
-    kind: checkpoint
-    title: "Проверка"
-    exercises:
-      - id: "13.7.1"
+      - id: "13.18.1"
         type: choice
-        prompt: "Где купить хлеб?"
-        options: ["pekara", "apoteka", "pijaca"]
-        answer: "pekara"
-      - id: "13.7.2"
+        prompt: "«У вас есть чек?» —"
+        options: ["Imate li račun?", "Imate li sitno?", "Da li imate jaja?"]
+        answer: "Imate li račun?"
+
+  - id: "13.19"
+    kind: practice
+    title: "Послушай и выбери"
+    also_ok: ["vratim", "zamenim"]
+    exercises:
+      - id: "13.19.1"
+        type: choice
+        say: "Ovo je pokvareno."
+        prompt: "Послушай и выбери перевод."
+        options: ["Это испорчено.", "Это свежее.", "Это дорого."]
+        answer: "Это испорчено."
+      - id: "13.19.2"
+        type: choice
+        say: "Mogu li da vratim?"
+        prompt: "Послушай и выбери перевод."
+        options: ["Могу вернуть?", "Могу поменять?", "Можно картой?"]
+        answer: "Могу вернуть?"
+      - id: "13.19.3"
+        type: choice
+        say: "Mogu li da zamenim?"
+        prompt: "Послушай и выбери перевод."
+        options: ["Могу поменять?", "Могу вернуть?", "Можно чек?"]
+        answer: "Могу поменять?"
+      - id: "13.19.4"
+        type: choice
+        say: "Imate li račun?"
+        prompt: "Послушай и выбери перевод."
+        options: ["У вас есть чек?", "У вас есть мелочь?", "У вас есть пакет?"]
+        answer: "У вас есть чек?"
+
+  - id: "13.20"
+    kind: practice
+    title: "Что скажешь?"
+    also_ok: ["vratim", "zamenim"]
+    exercises:
+      - id: "13.20.1"
+        type: choice
+        prompt: "Молоко испортилось. Ты говоришь —"
+        options: ["Ovo je pokvareno.", "Ovo je sveže.", "Samo gledam."]
+        answer: "Ovo je pokvareno."
+      - id: "13.20.2"
+        type: choice
+        prompt: "Ты хочешь вернуть товар —"
+        options: ["Mogu li da vratim?", "Mogu li da zamenim?", "Kešom ili karticom?"]
+        answer: "Mogu li da vratim?"
+      - id: "13.20.3"
+        type: choice
+        prompt: "Ты хочешь обменять товар —"
+        options: ["Mogu li da zamenim?", "Mogu li da vratim?", "Imate li račun?"]
+        answer: "Mogu li da zamenim?"
+
+  - id: "13.21"
+    kind: practice
+    title: "Соедини"
+    also_ok: ["sveže"]
+    exercises:
+      - id: "13.21.1"
         type: match
-        prompt: "Соедини"
+        prompt: "Соедини слово и перевод"
         pairs:
-          - ["prodavnica", "магазин"]
-          - ["kesa", "пакет"]
-          - ["kusur", "сдача"]
+          - ["pokvareno", "испорчено"]
+          - ["sveže", "свежее"]
+          - ["rok trajanja", "срок годности"]
+          - ["vratiti", "вернуть"]
+          - ["zameniti", "поменять"]
           - ["račun", "чек"]
-      - id: "13.7.3"
-        hint: "Вопрос к «вы»: глагол «иметь», основа «има-», для «вы» окончание -te."
-        type: fill_blank
-        prompt: "«У вас есть молоко?» → Da li ___ mleko?"
-        accept: ["imate"]
-      - id: "13.7.4"
+
+  - id: "13.22"
+    kind: practice
+    title: "Собери"
+    also_ok: ["vratim", "zamenim"]
+    exercises:
+      - id: "13.22.1"
         type: word_bank
-        prompt: "Собери: «дайте мне полкило сыра»"
-        bank: ["Dajte", "mi", "pola", "kile", "sira"]
-        accept: ["Dajte mi pola kile sira."]
-      - id: "13.7.5"
-        hint: "После «pola» (пол-) слова стоят в родительном: у kilo -o меняется на -e, а «сыр» получает -a в конце."
+        prompt: "Собери: «могу вернуть?»"
+        bank: ["Mogu", "li", "da", "vratim", "zamenim"]
+        accept: ["Mogu li da vratim?"]
+      - id: "13.22.2"
+        type: word_bank
+        prompt: "Собери: «у вас есть чек?»"
+        bank: ["Imate", "li", "račun", "sitno"]
+        accept: ["Imate li račun?"]
+
+  - id: "13.23"
+    kind: practice
+    title: "Напиши"
+    also_ok: ["zamenim", "sveže"]
+    exercises:
+      - id: "13.23.1"
+        type: fill_blank
+        prompt: "«Это испорчено» → Ovo je ___."
+        accept: ["pokvareno"]
+      - id: "13.23.2"
+        type: fill_blank
+        prompt: "«Могу поменять?» → Mogu li da ___?"
+        accept: ["zamenim"]
+      - id: "13.23.3"
         type: translate
-        prompt: "Дайте мне полкило сыра."
-        accept: ["Dajte mi pola kile sira."]
-
-  - id: "13.8"
-    kind: dialogue
-    title: "У пекари"
-    scene: "Ты зашёл в пекару за хлебом. За прилавком — продавщица."
-    voice: f
-    turns:
-      - who: npc
-        sr: "Dobar dan, izvolite?"
-        ru: "Добрый день, слушаю вас?"
-
-      - who: me
-        sr: "Dobar dan. Treba mi hleb."
-        ru: "Добрый день. Мне нужен хлеб."
-        exercise:
-          id: "13.8.1"
-          type: choice
-          prompt: "Поздоровайся и скажи, что тебе нужен хлеб"
-          options:
-            - "Dobar dan. Treba mi hleb."
-            - "Dobar dan. Treba mi kafa."
-            - "Laku noć. Treba mi hleb."
-          answer: "Dobar dan. Treba mi hleb."
-          explain: "«Dobar dan» — дневное приветствие, а «laku noć» — пожелание на ночь: в пекару утром оно прозвучит странно."
-
-      - who: npc
-        sr: "Imamo svež hleb. Koliko komada?"
-        ru: "У нас свежий хлеб. Сколько штук?"
-
-      - who: me
-        sr: "Dva komada, molim."
-        ru: "Две штуки, пожалуйста."
-        exercise:
-          id: "13.8.2"
-          hint: "Komad — мужского рода, поэтому число мужское: «два», а не «две»."
-          type: fill_blank
-          prompt: "«Две штуки, пожалуйста» → ___ komada, molim."
-          accept: ["Dva"]
-          explain: "«komad» — счётное слово: dva komada, tri komada."
-
-      - who: npc
-        sr: "Još nešto?"
-        ru: "Ещё что-нибудь?"
-
-      - who: me
-        sr: "To je sve. Koliko košta?"
-        ru: "Это всё. Сколько стоит?"
-        exercise:
-          id: "13.8.3"
-          type: choice
-          prompt: "Скажи, что это всё, и спроси цену"
-          options:
-            - "To je sve. Koliko košta?"
-            - "To je sve. Koliko je sati?"
-            - "Još nešto? Koliko košta?"
-          answer: "To je sve. Koliko košta?"
-          explain: "«Koliko je sati?» — «который час?»: это про время, а не про цену."
-
-      - who: npc
-        sr: "Sto dvadeset dinara."
-        ru: "Сто двадцать динаров."
-
-      - who: me
-        sr: "Može karticom?"
-        ru: "Можно картой?"
-        exercise:
-          id: "13.8.4"
-          hint: "«Картой» — karticom (творительный). Вопрос строится с глаголом «можно»."
-          type: translate
-          prompt: "Спроси, можно ли картой"
-          accept: ["Može karticom?", "Da li može karticom?", "Mogu karticom?", "Može li karticom?", "Mogu li karticom?", "Da li mogu karticom?"]
-
-      - who: npc
-        sr: "Može. Izvolite račun. Prijatno!"
-        ru: "Можно. Вот чек. Всего доброго!"
+        prompt: "Это испорчено."
+        accept: ["Ovo je pokvareno.", "To je pokvareno."]
+      - id: "13.23.4"
+        type: translate
+        prompt: "Могу вернуть?"
+        accept: ["Mogu li da vratim?"]

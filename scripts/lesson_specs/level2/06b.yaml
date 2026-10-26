@@ -1,0 +1,96 @@
+id: "06b"
+title: "Муж, жена, дети (Muž, žena, deca)"
+subtitle: "муж, жена, сын, дочь, ребёнок, родители"
+teaches: [muz, zena, sin, cerka, dete, deca, roditelji]
+steps:
+  - slide:
+      name: muz-zena
+      title: "Муж и жена"
+      md: |
+        `muž` [муж] *(муж)* и `žena` [жэ́на] *(жена)*.
+
+        `Ovo je muž.` [о́во е муж.] *(это муж)*
+
+        `Ovo je žena.` [о́во е жэ́на.] *(это жена)*
+
+        > `žena` — и «жена», и просто «женщина». Понятно по ситуации.
+      check:
+        prompt: "Слово «муж» по-сербски —"
+        options: ["muž", "žena", "mama"]
+        answer: "muž"
+  - slide:
+      name: sin-cerka
+      title: "Сын и дочь"
+      md: |
+        `sin` [син] *(сын)* и `ćerka` [чэ́рка] *(дочь)*.
+
+        `Sin i ćerka.` [син и чэ́рка.] *(сын и дочь)*
+      check:
+        prompt: "Слово «дочь» по-сербски —"
+        options: ["ćerka", "sin", "sestra"]
+        answer: "ćerka"
+  - slide:
+      name: dete-deca
+      title: "Ребёнок и дети"
+      md: |
+        `dete` [дэ́тэ] *(ребёнок)*. Один ребёнок — `dete`, много детей — `deca` [дэ́ца] *(дети)*.
+
+        `Ovo je dete.` [о́во е дэ́тэ.] *(это ребёнок)*
+
+        `Ovo su deca.` [о́во су дэ́ца.] *(это дети)*
+      check:
+        prompt: "«Это дети» —"
+        options: ["Ovo su deca.", "Ovo je dete.", "Ovo je sin."]
+        answer: "Ovo su deca."
+  - slide:
+      name: roditelji
+      title: "Родители"
+      md: |
+        `roditelji` [роди́тэли] *(родитељи — родители)*.
+
+        `Mama i tata su roditelji.` [ма́ма и та́та су роди́тэли.] *(мама и папа — родители)*
+      check:
+        prompt: "Слово «родители» по-сербски —"
+        options: ["roditelji", "porodica", "deca"]
+        answer: "roditelji"
+  - practice:
+      title: "Вспомним"
+      ex:
+        - {type: choice, prompt: "Слово «бабушка» по-сербски —", options: ["baba", "deda", "sestra"], answer: "baba"}
+        - {type: choice, prompt: "«Это брат» —", options: ["Ovo je brat.", "Ovo je sestra.", "Ovo je tata."], answer: "Ovo je brat."}
+  - practice:
+      title: "Послушай и выбери"
+      ex:
+        - {type: choice, say: "Ovo je muž.", options: ["Это муж.", "Это сын.", "Это папа."], answer: "Это муж."}
+        - {type: choice, say: "Ovo je ćerka.", options: ["Это дочь.", "Это жена.", "Это сестра."], answer: "Это дочь."}
+        - {type: choice, say: "Ovo su deca.", options: ["Это дети.", "Это ребёнок.", "Это родители."], answer: "Это дети."}
+        - {type: choice, say: "Mama i tata su roditelji.", options: ["Мама и папа — родители.", "Мама и папа — это семья.", "Бабушка и дедушка — родители."], answer: "Мама и папа — родители."}
+  - practice:
+      title: "Что скажешь?"
+      ex:
+        - {type: choice, prompt: "«Муж и жена» —", options: ["Muž i žena.", "Sin i ćerka.", "Brat i sestra."], answer: "Muž i žena."}
+        - {type: choice, prompt: "«Это сын» —", options: ["Ovo je sin.", "Ovo je ćerka.", "Ovo je muž."], answer: "Ovo je sin."}
+  - practice:
+      title: "Соедини"
+      ex:
+        - type: match
+          prompt: "Соедини слово и перевод"
+          pairs:
+            - ["muž", "муж"]
+            - ["žena", "жена"]
+            - ["sin", "сын"]
+            - ["ćerka", "дочь"]
+            - ["dete", "ребёнок"]
+            - ["roditelji", "родители"]
+  - practice:
+      title: "Собери"
+      ex:
+        - {type: word_bank, prompt: "Собери: «это дети»", bank: ["Ovo", "su", "deca", "dete"], accept: ["Ovo su deca."]}
+        - {type: word_bank, prompt: "Собери: «муж и жена»", bank: ["Muž", "i", "žena", "sin"], accept: ["Muž i žena."]}
+  - practice:
+      title: "Напиши"
+      ex:
+        - {type: fill_blank, prompt: "«Это дочь» → Ovo je ___.", accept: ["ćerka"]}
+        - {type: fill_blank, prompt: "«Мама и папа — родители» → Mama i tata su ___.", accept: ["roditelji"]}
+        - {type: translate, prompt: "Это сын.", accept: ["Ovo je sin.", "To je sin."]}
+        - {type: translate, prompt: "Это дети.", accept: ["Ovo su deca.", "To su deca."]}

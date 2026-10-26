@@ -1,0 +1,81 @@
+id: "08"
+start: 11
+title: "Числа 0–10 (Brojevi)"
+subtitle: "от нуля до десяти"
+teaches: [nula, jedan, dva, tri, cetiri, pet, sest, sedam, osam, devet, deset]
+steps:
+  - slide:
+      name: nula-tri
+      title: "0, 1, 2, 3"
+      md: |
+        `nula` [ну́ла] *(нула — 0)*, `jedan` [е́дан] *(један — 1)*, `dva` [два] *(два — 2)*, `tri` [три] *(три — 3)*.
+
+        `Jedan, dva, tri.` [е́дан, два, три.] *(раз, два, три)*
+
+        > «Один» и «два» меняются по роду: `jedan / jedna / jedno`, `dva / dve`. Пока запоминай `jedan` и `dva`, остальные формы встретятся с вещами.
+      check:
+        prompt: "«3» —"
+        options: ["tri", "dva", "jedan"]
+        answer: "tri"
+  - slide:
+      name: cetiri-sest
+      title: "4, 5, 6"
+      md: |
+        `četiri` [чэти́ри] *(четири — 4)*, `pet` [пэт] *(пет — 5)*, `šest` [шэст] *(шест — 6)*.
+
+        `Četiri, pet, šest.` [чэти́ри, пэт, шэст.] *(четыре, пять, шесть)*
+      check:
+        prompt: "«5» —"
+        options: ["pet", "šest", "četiri"]
+        answer: "pet"
+  - slide:
+      name: sedam-deset
+      title: "7, 8, 9, 10"
+      md: |
+        `sedam` [сэ́дам] *(седам — 7)*, `osam` [о́сам] *(осам — 8)*, `devet` [дэ́вэт] *(девет — 9)*, `deset` [дэ́сэт] *(десет — 10)*.
+
+        `Sedam, osam, devet, deset.` [сэ́дам, о́сам, дэ́вэт, дэ́сэт.] *(семь, восемь, девять, десять)*
+
+        > `tri`, `pet`, `deset` и `devet` похожи на русские «три», «пять», «десять», «девять».
+      check:
+        prompt: "«9» —"
+        options: ["devet", "deset", "osam"]
+        answer: "devet"
+  - practice:
+      title: "Послушай и выбери"
+      ex:
+        - {type: choice, say: "Dva.", options: ["Два.", "Три.", "Четыре."], answer: "Два."}
+        - {type: choice, say: "Pet.", options: ["Пять.", "Шесть.", "Девять."], answer: "Пять."}
+        - {type: choice, say: "Sedam.", options: ["Семь.", "Восемь.", "Шесть."], answer: "Семь."}
+        - {type: choice, say: "Deset.", options: ["Десять.", "Девять.", "Ноль."], answer: "Десять."}
+  - practice:
+      title: "Узнай число"
+      ex:
+        - {type: choice, prompt: "«7» —", options: ["sedam", "šest", "osam"], answer: "sedam"}
+        - {type: choice, prompt: "«4» —", options: ["četiri", "tri", "pet"], answer: "četiri"}
+        - {type: choice, prompt: "«10» —", options: ["deset", "devet", "nula"], answer: "deset"}
+        - {type: choice, prompt: "«0» —", options: ["nula", "jedan", "deset"], answer: "nula"}
+  - practice:
+      title: "Соедини"
+      ex:
+        - type: match
+          prompt: "Соедини слово и цифру"
+          pairs:
+            - ["nula", "ноль (0)"]
+            - ["tri", "три (3)"]
+            - ["pet", "пять (5)"]
+            - ["šest", "шесть (6)"]
+            - ["osam", "восемь (8)"]
+            - ["deset", "десять (10)"]
+  - practice:
+      title: "Собери"
+      ex:
+        - {type: word_bank, prompt: "Собери: «раз, два, три»", bank: ["Jedan", "dva", "tri", "četiri"], accept: ["Jedan, dva, tri."]}
+        - {type: word_bank, prompt: "Собери: «четыре, пять, шесть»", bank: ["Četiri", "pet", "šest", "sedam"], accept: ["Četiri, pet, šest."]}
+  - practice:
+      title: "Напиши"
+      ex:
+        - {type: fill_blank, prompt: "Запиши словом: 6 → ___", accept: ["šest"]}
+        - {type: fill_blank, prompt: "Запиши словом: 8 → ___", accept: ["osam"]}
+        - {type: fill_blank, prompt: "Запиши словом: 0 → ___", accept: ["nula"]}
+        - {type: fill_blank, prompt: "Запиши словом: 9 → ___", accept: ["devet"]}

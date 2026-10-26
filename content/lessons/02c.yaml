@@ -1,0 +1,119 @@
+lesson: "02c"
+title: "Повторение: приветствия (Ponavljanje)"
+subtitle: "восемь фраз вместе: поздороваться и попрощаться"
+teaches: []
+
+steps:
+  - id: "02c.1"
+    kind: practice
+    title: "Послушай и выбери"
+    exercises:
+      - id: "02c.1.1"
+        type: choice
+        say: "Laku noć."
+        prompt: "Послушай и выбери перевод."
+        options: ["Спокойной ночи.", "Добрый вечер.", "До свидания."]
+        answer: "Спокойной ночи."
+      - id: "02c.1.2"
+        type: choice
+        say: "Prijatno."
+        prompt: "Послушай и выбери перевод."
+        options: ["Всего доброго.", "Добрый день.", "Доброе утро."]
+        answer: "Всего доброго."
+
+  - id: "02c.2"
+    kind: practice
+    title: "Что скажешь?"
+    exercises:
+      - id: "02c.2.1"
+        type: choice
+        prompt: "Поздний вечер, заходишь в кафе. Говоришь —"
+        options: ["Dobro veče", "Dobro jutro", "Doviđenja"]
+        answer: "Dobro veče"
+
+  - id: "02c.3"
+    kind: practice
+    title: "Соедини"
+    exercises:
+      - id: "02c.3.1"
+        type: match
+        prompt: "Соедини фразу и перевод"
+        pairs:
+          - ["Ćao", "Привет / пока"]
+          - ["Dobar dan", "Добрый день"]
+          - ["Dobro veče", "Добрый вечер"]
+          - ["Laku noć", "Спокойной ночи"]
+          - ["Doviđenja", "До свидания"]
+          - ["Prijatno", "Всего доброго"]
+
+  - id: "02c.4"
+    kind: practice
+    title: "Диктант"
+    exercises:
+      - id: "02c.4.1"
+        type: listen
+        say: "Dobro jutro."
+        accept: ["Dobro jutro.", "Dobro jutro"]
+        ru: ["Доброе утро."]
+      - id: "02c.4.2"
+        type: listen
+        say: "Doviđenja."
+        accept: ["Doviđenja.", "Doviđenja"]
+        ru: ["До свидания."]
+
+  - id: "02c.5"
+    kind: practice
+    title: "Собери"
+    exercises:
+      - id: "02c.5.1"
+        type: word_bank
+        prompt: "Собери: «спокойной ночи»"
+        bank: ["Laku", "noć", "jutro"]
+        accept: ["Laku noć."]
+
+  - id: "02c.6"
+    kind: practice
+    title: "Переведи"
+    exercises:
+      - id: "02c.6.1"
+        type: translate
+        prompt: "Привет!"
+        accept: ["Zdravo!", "Ćao!"]
+      - id: "02c.6.2"
+        type: translate
+        prompt: "Добрый вечер!"
+        accept: ["Dobro veče!"]
+
+  - id: "02c.7"
+    kind: dialogue
+    title: "В кафе"
+    scene: "Вечер. Ты выпил кофе и выходишь из кафе. Официантка говорит тебе вслед."
+    voice: f
+    turns:
+      - who: npc
+        sr: "Doviđenja!"
+        ru: "До свидания!"
+
+      - who: me
+        sr: "Doviđenja!"
+        ru: "До свидания!"
+        exercise:
+          id: "02c.7.1"
+          type: choice
+          prompt: "Попрощайся в ответ"
+          options: ["Doviđenja!", "Dobro jutro!", "Dobar dan!"]
+          answer: "Doviđenja!"
+
+      - who: npc
+        sr: "Prijatno!"
+        ru: "Всего доброго!"
+
+      - who: me
+        sr: "Prijatno!"
+        ru: "Всего доброго!"
+        exercise:
+          id: "02c.7.2"
+          type: choice
+          prompt: "Тебе пожелали «Prijatno!». Ответь тем же"
+          options: ["Prijatno!", "Dobar dan!", "Dobro jutro!"]
+          answer: "Prijatno!"

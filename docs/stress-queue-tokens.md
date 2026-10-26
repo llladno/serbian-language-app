@@ -10,22 +10,23 @@
 |---|---|---|---|
 | `aerodrom` | 1 | 3 (rising) | 2 |
 | `alergičan` | 3 | 2 (rising) | 3 |
-| `apoteka` | 2 | 3 (rising) | 5 |
+| `apoteka` | 2 | 3 (rising) | 6 |
 | `autobus` | 2 | 3 (rising) | 11 |
 | `bicikl` | 1 | 2 (rising) | 2 |
 | `decembar` | 2 | 1 (rising) | 2 |
 | `devedeset` | 1 | 3 (rising) | 1 |
+| `devetnaest` | 3 | 2 (rising) | 1 |
 | `direktno` | 2 | 1 (rising) | 1 |
 | `doručak` | 2 | 1 (rising) | 2 |
 | `doručkovati` | 2 | 1 (rising) | 3 |
-| `doviđenja` | 2 | 3 (rising) | 3 |
-| `dvadeset` | 2 | 1 (rising) | 8 |
+| `doviđenja` | 2 | 3 (rising) | 2 |
+| `dvadeset` | 2 | 1 (rising) | 13 |
 | `dvanaest` | 2 | 1 (rising) | 2 |
 | `glavobolja` | 3 | 2 (rising) | 2 |
 | `iskustvo` | 1 | 2 (rising) | 4 |
 | `jedanaest` | 3 | 2 (rising) | 3 |
 | `kirija` | 2 | 1 (rising) | 5 |
-| `koliko` | 1 | 2 (rising) | 26 |
+| `koliko` | 1 | 2 (rising) | 23 |
 | `kupovati` | 1 | 2 (rising) | 2 |
 | `lubenica` | 1 | 2 (rising) | 1 |
 | `minuta` | 1 | 2 (rising) | 8 |
@@ -35,10 +36,11 @@
 | `odvojeno` | 2 | 1 (rising) | 1 |
 | `oktobar` | 2 | 1 (rising) | 2 |
 | `osamdeset` | 1 | 3 (rising) | 1 |
+| `osamnaest` | 3 | 2 (rising) | 1 |
 | `osećati` | 2 | 1 (rising) | 2 |
-| `otvoreno` | 2 | 1 (rising) | 2 |
+| `otvoreno` | 2 | 1 (rising) | 3 |
 | `pedeset` | 1 | 2 (rising) | 4 |
-| `petnaest` | 2 | 1 (rising) | 7 |
+| `petnaest` | 2 | 1 (rising) | 6 |
 | `pijaca` | 2 | 1 (rising) | 3 |
 | `pomoći` | 1 | 2 (rising) | 3 |
 | `ponekad` | 2 | 1 (rising) | 3 |
@@ -51,13 +53,14 @@
 | `prizemlje` | 2 | 1 (rising) | 3 |
 | `proleće` | 2 | 1 (rising) | 4 |
 | `putovati` | 1 | 2 (rising) | 2 |
-| `razumeti` | 3 | 2 (rising) | 2 |
+| `razumeti` | 3 | 2 (rising) | 3 |
 | `rečenica` | 1 | 2 (rising) | 1 |
 | `samoposluga` | 1 | 3 (rising) | 2 |
 | `sastanak` | 2 | 1 (rising) | 2 |
 | `sedamdeset` | 1 | 3 (rising) | 1 |
+| `sedamnaest` | 3 | 2 (rising) | 1 |
 | `septembar` | 2 | 1 (rising) | 2 |
-| `sniženje` | 1 | 2 (rising) | 1 |
+| `sniženje` | 1 | 2 (rising) | 2 |
 | `stanovati` | 1 | 2 (rising) | 2 |
 | `subota` | 2 | 1 (rising) | 3 |
 | `sudopera` | 2 | 1 (rising) | 2 |
@@ -67,15 +70,15 @@
 | `tuširati` | 1 | 2 (rising) | 1 |
 | `utorak` | 2 | 1 (rising) | 4 |
 | `visoko` | 1 | 2 (rising) | 2 |
-| `četiri` | 2 | 1 (rising) | 3 |
-| `četrdeset` | 1 | 3 (rising) | 3 |
+| `četiri` | 2 | 1 (rising) | 5 |
+| `četrdeset` | 1 | 3 (rising) | 4 |
 | `četrnaest` | 3 | 2 (rising) | 1 |
 | `četvrtak` | 1 | 2 (rising) | 2 |
 | `šargarepa` | 1 | 3 (rising) | 1 |
 | `šesnaest` | 2 | 1 (rising) | 1 |
 | `šezdeset` | 1 | 2 (rising) | 1 |
 
-Всего: 66.
+Всего: 69.
 
 ## Курс совпал с Wiktionary, но ударение восходящее и не на первом слоге
 
@@ -120,7 +123,7 @@
 | `polako` | 2 | 2 (rising) | 2 |
 | `ponedeljak` | 2 | 2 (rising) | 3 |
 | `ponoviti` | 2 | 2 (rising) | 2 |
-| `popodne` | 2 | 2 (rising) | 4 |
+| `popodne` | 2 | 2 (rising) | 5 |
 | `poručiti` | 2 | 2 (rising) | 1 |
 | `potpisati` | 2 | 2 (rising) | 2 |
 | `preseliti` | 2 | 2 (rising) | 2 |
@@ -131,9 +134,10 @@
 | `rezervacija` | 3 | 3 (rising) | 2 |
 | `salata` | 2 | 2 (rising) | 2 |
 | `studirati` | 2 | 2 (rising) | 2 |
-| `svejedno` | 2 | 2 (rising) | 1 |
+| `svejedno` | 2 | 2 (rising) | 2 |
 | `tableta` | 2 | 2 (rising) | 2 |
 | `takođe` | 2 | 2 (rising) | 2 |
+| `telefon` | 2 | 2 (rising) | 1 |
 | `temperatura` | 4 | 4 (rising) | 2 |
 | `toalet` | 2 | 2 (rising) | 2 |
 | `zaboraviti` | 2 | 2 (rising) | 2 |
@@ -145,4 +149,4 @@
 | `završiti` | 2 | 2 (rising) | 2 |
 | `čokolada` | 3 | 3 (rising) | 2 |
 
-Всего: 59.
+Всего: 60.

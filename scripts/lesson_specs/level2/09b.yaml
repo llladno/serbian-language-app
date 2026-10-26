@@ -1,0 +1,106 @@
+id: "09b"
+title: "Сколько тебе лет (Godine)"
+subtitle: "возраст: godina, godine, godinu"
+teaches: [koliko-godina, godina]
+steps:
+  - slide:
+      name: koliko-imas
+      title: "Сколько тебе лет?"
+      md: |
+        `Koliko imaš godina?` [ко́лико и́маш го́дина?] *(колико имаш година — сколько тебе лет?)*
+
+        Буквально: «сколько имеешь лет». `godina` [го́дина] *(година — год)*.
+      check:
+        prompt: "«Сколько тебе лет?» —"
+        options: ["Koliko imaš godina?", "Koliko imaš brata?", "Koliko košta?"]
+        answer: "Koliko imaš godina?"
+        also_ok: ["brata"]
+  - slide:
+      name: godina
+      title: "Мне тридцать лет"
+      md: |
+        Ответ — `Imam`, число и `godina`:
+
+        `Imam trideset godina.` [и́мам три́дэсэт го́дина.] *(мне тридцать лет)*
+
+        `Imam pet godina.` [и́мам пэт го́дина.] *(мне пять лет)*
+
+        > Так будет с большинством чисел: 5–20, 25–30, 35–40…
+      check:
+        prompt: "«Мне 40 лет» —"
+        options: ["Imam četrdeset godina.", "Imam četrdeset godine.", "Imam četrdeset godinu."]
+        answer: "Imam četrdeset godina."
+        also_ok: ["godine", "godinu"]
+  - slide:
+      name: godinu
+      title: "Двадцать один год"
+      md: |
+        Если число кончается на 1 (кроме 11) — `godinu` [го́дину]:
+
+        `Imam dvadeset jednu godinu.` [и́мам двадэ́сэт е́дну го́дину.] *(мне двадцать один год)*
+
+        > `jednu` — «один» в женском роде: `godina` женского рода.
+      check:
+        prompt: "«Мне 21 год» —"
+        options: ["Imam dvadeset jednu godinu.", "Imam dvadeset jednu godina.", "Imam dvadeset jedan godina."]
+        answer: "Imam dvadeset jednu godinu."
+        also_ok: ["godinu", "godine"]
+  - slide:
+      name: godine
+      title: "Два, три, четыре года"
+      md: |
+        Если число кончается на 2, 3, 4 (кроме 12–14) — `godine` [го́динэ]:
+
+        `Imam dvadeset dve godine.` [и́мам двадэ́сэт двэ го́динэ.] *(мне двадцать два года)*
+
+        `Imam tri godine.` [и́мам три го́динэ.] *(мне три года)*
+
+        | Число | Слово |
+        |---|---|
+        | 1, 21, 31… | **godinu** |
+        | 2–4, 22–24… | **godine** |
+        | 5–20, 25–30… | **godina** |
+      check:
+        prompt: "«Мне 3 года» —"
+        options: ["Imam tri godine.", "Imam tri godina.", "Imam tri godinu."]
+        answer: "Imam tri godine."
+        also_ok: ["godine", "godinu"]
+  - practice:
+      title: "Послушай и выбери"
+      also_ok: ["godinu", "godine"]
+      ex:
+        - {type: choice, say: "Koliko imaš godina?", options: ["Сколько тебе лет?", "Сколько стоит?", "Который час?"], answer: "Сколько тебе лет?"}
+        - {type: choice, say: "Imam trideset godina.", options: ["Мне тридцать лет.", "Мне тринадцать лет.", "Мне три года."], answer: "Мне тридцать лет."}
+        - {type: choice, say: "Imam dvadeset jednu godinu.", options: ["Мне двадцать один год.", "Мне двадцать два года.", "Мне одиннадцать лет."], answer: "Мне двадцать один год."}
+        - {type: choice, say: "Imam tri godine.", options: ["Мне три года.", "Мне тридцать лет.", "Мне пять лет."], answer: "Мне три года."}
+  - practice:
+      title: "Выбери форму"
+      also_ok: ["godinu", "godine"]
+      ex:
+        - {type: choice, prompt: "«Мне 35 лет» —", options: ["Imam trideset pet godina.", "Imam trideset pet godine.", "Imam trideset pet godinu."], answer: "Imam trideset pet godina."}
+        - {type: choice, prompt: "«Мне 41 год» —", options: ["Imam četrdeset jednu godinu.", "Imam četrdeset jednu godina.", "Imam četrdeset jednu godine."], answer: "Imam četrdeset jednu godinu."}
+        - {type: choice, prompt: "«Мне 22 года» —", options: ["Imam dvadeset dve godine.", "Imam dvadeset dve godina.", "Imam dvadeset dve godinu."], answer: "Imam dvadeset dve godine."}
+  - practice:
+      title: "Соедини"
+      also_ok: ["godinu", "godine"]
+      ex:
+        - type: match
+          prompt: "Соедини фразу и перевод"
+          pairs:
+            - ["Imam pet godina", "Мне пять лет"]
+            - ["Imam dvadeset jednu godinu", "Мне двадцать один год"]
+            - ["Imam trideset dve godine", "Мне тридцать два года"]
+            - ["Imam četrdeset godina", "Мне сорок лет"]
+            - ["Imam tri godine", "Мне три года"]
+            - ["Koliko imaš godina?", "Сколько тебе лет?"]
+  - practice:
+      title: "Собери"
+      also_ok: ["godinu", "godine"]
+      ex:
+        - {type: word_bank, prompt: "Собери: «мне сорок лет»", bank: ["Imam", "četrdeset", "godina", "godine", "godinu"], accept: ["Imam četrdeset godina."]}
+        - {type: word_bank, prompt: "Собери: «мне двадцать два года»", bank: ["Imam", "dvadeset", "dve", "godine", "godina"], accept: ["Imam dvadeset dve godine."]}
+  - practice:
+      title: "Напиши"
+      ex:
+        - {type: fill_blank, prompt: "«Сколько тебе лет?» → Koliko ___ godina?", accept: ["imaš"]}
+        - {type: fill_blank, prompt: "«Мне тридцать лет» → ___ trideset godina.", accept: ["Imam"]}

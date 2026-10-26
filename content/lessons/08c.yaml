@@ -1,0 +1,172 @@
+lesson: "08c"
+title: "Сотни и тысячи (Stotine i hiljade)"
+subtitle: "сто, двести, тысяча, динары"
+teaches: [dvesta, trista, dinar, hiljadu]
+
+steps:
+  - id: "08c.1"
+    kind: teach
+    title: "100–900"
+    md: "08c/1-stotine.md"
+
+  - id: "08c.2"
+    kind: practice
+    title: "Запомним: 100–900"
+    also_ok: ["trista"]
+    exercises:
+      - id: "08c.2.1"
+        type: choice
+        prompt: "«200» —"
+        options: ["dvesta", "dvadeset", "trista"]
+        answer: "dvesta"
+
+  - id: "08c.3"
+    kind: teach
+    title: "120, 350"
+    md: "08c/3-sostavnye-sotni.md"
+
+  - id: "08c.4"
+    kind: practice
+    title: "Запомним: 120, 350"
+    also_ok: ["trista", "petnaest"]
+    exercises:
+      - id: "08c.4.1"
+        type: choice
+        prompt: "«350» —"
+        options: ["trista pedeset", "trideset pet", "trista petnaest"]
+        answer: "trista pedeset"
+
+  - id: "08c.5"
+    kind: teach
+    title: "Динар"
+    md: "08c/5-dinar.md"
+
+  - id: "08c.6"
+    kind: practice
+    title: "Запомним: Динар"
+    exercises:
+      - id: "08c.6.1"
+        type: choice
+        prompt: "«5 динаров» —"
+        options: ["pet dinara", "pet dinar", "sto dinara"]
+        answer: "pet dinara"
+
+  - id: "08c.7"
+    kind: teach
+    title: "Тысяча"
+    md: "08c/7-hiljada.md"
+
+  - id: "08c.8"
+    kind: practice
+    title: "Запомним: Тысяча"
+    also_ok: ["hiljade", "hiljada"]
+    exercises:
+      - id: "08c.8.1"
+        type: choice
+        prompt: "«1000 динаров» —"
+        options: ["hiljadu dinara", "sto dinara", "dve hiljade dinara"]
+        answer: "hiljadu dinara"
+
+  - id: "08c.9"
+    kind: practice
+    title: "Послушай и выбери"
+    also_ok: ["petsto", "hiljade", "hiljada"]
+    exercises:
+      - id: "08c.9.1"
+        type: choice
+        say: "Dvesta."
+        prompt: "Послушай и выбери перевод."
+        options: ["Двести.", "Двадцать.", "Триста."]
+        answer: "Двести."
+      - id: "08c.9.2"
+        type: choice
+        say: "Petsto."
+        prompt: "Послушай и выбери перевод."
+        options: ["Пятьсот.", "Пятьдесят.", "Пятнадцать."]
+        answer: "Пятьсот."
+      - id: "08c.9.3"
+        type: choice
+        say: "Sto dvadeset dinara."
+        prompt: "Послушай и выбери перевод."
+        options: ["Сто двадцать динаров.", "Сто двенадцать динаров.", "Двести динаров."]
+        answer: "Сто двадцать динаров."
+      - id: "08c.9.4"
+        type: choice
+        say: "Hiljadu dinara."
+        prompt: "Послушай и выбери перевод."
+        options: ["Тысяча динаров.", "Сто динаров.", "Две тысячи динаров."]
+        answer: "Тысяча динаров."
+
+  - id: "08c.10"
+    kind: practice
+    title: "Узнай число"
+    also_ok: ["osamsto", "petsto", "četiristo", "hiljade", "hiljada"]
+    exercises:
+      - id: "08c.10.1"
+        type: choice
+        prompt: "«800» —"
+        options: ["osamsto", "osamdeset", "sedamsto"]
+        answer: "osamsto"
+      - id: "08c.10.2"
+        type: choice
+        prompt: "«400» —"
+        options: ["četiristo", "četrdeset", "trista"]
+        answer: "četiristo"
+      - id: "08c.10.3"
+        type: choice
+        prompt: "«2000 динаров» —"
+        options: ["dve hiljade dinara", "hiljadu dinara", "dvesta dinara"]
+        answer: "dve hiljade dinara"
+
+  - id: "08c.11"
+    kind: practice
+    title: "Соедини"
+    also_ok: ["hiljade", "hiljada", "sedamsto", "četiristo"]
+    exercises:
+      - id: "08c.11.1"
+        type: match
+        prompt: "Соедини число и цифру"
+        pairs:
+          - ["sto", "сто (100)"]
+          - ["dvesta", "двести (200)"]
+          - ["trista", "триста (300)"]
+          - ["četiristo", "четыреста (400)"]
+          - ["sedamsto", "семьсот (700)"]
+          - ["hiljadu", "тысяча (1000)"]
+
+  - id: "08c.12"
+    kind: practice
+    title: "Собери"
+    also_ok: ["hiljada", "hiljade"]
+    exercises:
+      - id: "08c.12.1"
+        type: word_bank
+        prompt: "Собери: «сто двадцать динаров»"
+        bank: ["Sto", "dvadeset", "dinara", "dinar"]
+        accept: ["Sto dvadeset dinara."]
+      - id: "08c.12.2"
+        type: word_bank
+        prompt: "Собери: «пять тысяч динаров»"
+        bank: ["Pet", "hiljada", "hiljadu", "dinara"]
+        accept: ["Pet hiljada dinara."]
+
+  - id: "08c.13"
+    kind: practice
+    title: "Напиши"
+    exercises:
+      - id: "08c.13.1"
+        type: fill_blank
+        prompt: "Запиши словом: 300 → ___"
+        accept: ["trista"]
+      - id: "08c.13.2"
+        type: fill_blank
+        prompt: "«1 динар» → jedan ___"
+        accept: ["dinar"]
+      - id: "08c.13.3"
+        type: translate
+        prompt: "Двести динаров."
+        accept: ["Dvesta dinara."]
+      - id: "08c.13.4"
+        type: translate
+        prompt: "Триста пятьдесят динаров."
+        accept: ["Trista pedeset dinara."]

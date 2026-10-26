@@ -1,73 +1,129 @@
 lesson: "02"
 title: "Привет! (Zdravo!)"
-subtitle: "приветствия, как дела, ты/вы"
-teaches:
-  [
-    zdravo, cao, dobar-dan, dobro-jutro, dobro-vece, laku-noc, dovidjenja,
-    prijatno, vidimo-se, cujemo-se, kako-si, kako-ide, dobro-hvala, moze,
-    ne-zalim-se,
-  ]
+subtitle: "четыре способа поздороваться"
+teaches: [zdravo, cao, dobar-dan, dobro-jutro]
 
 steps:
-  - id: "02.1"
+  - id: "02.11"
     kind: teach
-    title: "Здороваемся"
-    md: "02/1-pozdravi.md"
+    title: "Zdravo"
+    md: "02/1-zdravo.md"
 
-  - id: "02.2"
+  - id: "02.12"
     kind: practice
-    title: "Узнай приветствие"
-    also_ok: ["molim"]
+    title: "Запомним: zdravo"
     exercises:
-      - id: "02.2.1"
+      - id: "02.12.1"
+        type: choice
+        prompt: "Что значит «Zdravo»?"
+        options: ["Привет", "Спасибо", "Извините"]
+        answer: "Привет"
+
+  - id: "02.13"
+    kind: teach
+    title: "Ćao"
+    md: "02/3-cao.md"
+
+  - id: "02.14"
+    kind: practice
+    title: "Запомним: ćao"
+    exercises:
+      - id: "02.14.1"
+        type: choice
+        prompt: "Что значит «Ćao»?"
+        options: ["Привет и пока", "Только «пока»", "Спасибо"]
+        answer: "Привет и пока"
+
+  - id: "02.15"
+    kind: teach
+    title: "Dobar dan"
+    md: "02/5-dobar-dan.md"
+
+  - id: "02.16"
+    kind: practice
+    title: "Запомним: dobar dan"
+    exercises:
+      - id: "02.16.1"
         type: choice
         prompt: "«Добрый день» по-сербски —"
-        options: ["Dobar dan", "Dobro veče", "Laku noć"]
+        options: ["Dobar dan", "Zdravo", "Ćao"]
         answer: "Dobar dan"
-      - id: "02.2.2"
+
+  - id: "02.17"
+    kind: teach
+    title: "Dobro jutro"
+    md: "02/7-dobro-jutro.md"
+
+  - id: "02.18"
+    kind: practice
+    title: "Запомним: dobro jutro"
+    exercises:
+      - id: "02.18.1"
         type: choice
-        prompt: "Выходишь из пекары, тебе говорят «Prijatno!». Отвечаешь —"
-        options: ["Prijatno!", "Dobro jutro!", "Molim?"]
-        answer: "Prijatno!"
-      - id: "02.2.3"
+        prompt: "Утро. Заходишь в пекарню и говоришь —"
+        options: ["Dobar dan", "Dobro jutro", "Ćao"]
+        answer: "Dobro jutro"
+
+  - id: "02.19"
+    kind: practice
+    title: "Послушай и выбери"
+    exercises:
+      - id: "02.19.1"
+        type: choice
+        say: "Dobar dan."
+        prompt: "Послушай и выбери перевод."
+        options: ["Добрый день.", "Доброе утро.", "Привет."]
+        answer: "Добрый день."
+      - id: "02.19.2"
+        type: choice
+        say: "Ćao."
+        prompt: "Послушай и выбери перевод."
+        options: ["Привет / пока.", "Добрый день.", "Доброе утро."]
+        answer: "Привет / пока."
+      - id: "02.19.3"
+        type: choice
+        say: "Dobro jutro."
+        prompt: "Послушай и выбери перевод."
+        options: ["Доброе утро.", "Добрый день.", "Привет / пока."]
+        answer: "Доброе утро."
+
+  - id: "02.20"
+    kind: practice
+    title: "Соедини"
+    exercises:
+      - id: "02.20.1"
         type: match
         prompt: "Соедини приветствие и перевод"
         pairs:
-          - ["Dobro jutro", "Доброе утро"]
-          - ["Laku noć", "Спокойной ночи"]
-          - ["Doviđenja", "До свидания"]
+          - ["Zdravo", "Привет"]
           - ["Ćao", "Привет / пока"]
-      - id: "02.2.4"
-        type: fill_blank
-        prompt: "Утро, заходишь в пекару: «___ jutro!»"
-        accept: ["Dobro", "dobro"]
+          - ["Dobar dan", "Добрый день"]
+          - ["Dobro jutro", "Доброе утро"]
 
-  - id: "02.3"
-    kind: teach
-    title: "«Как дела» и ты/вы"
-    md: "02/3-ti-vi.md"
-
-  - id: "02.4"
+  - id: "02.21"
     kind: practice
-    title: "Как дела"
+    title: "Собери"
     exercises:
-      - id: "02.4.1"
-        type: choice
-        prompt: "Незнакомому человеку старше тебя говоришь —"
-        options: ["Kako ste?", "Kako si?", "Kako ide?"]
-        answer: "Kako ste?"
-      - id: "02.4.2"
-        type: choice
-        prompt: "«Kako si?» — «___»"
-        options: ["Dobro, hvala.", "Zdravo!", "Doviđenja!"]
-        answer: "Dobro, hvala."
-      - id: "02.4.3"
-        type: fill_blank
-        prompt: "Другу: «Kako ___?»"
-        accept: ["si", "ide"]
-      - id: "02.4.4"
-        hint: "Глагол «žalim» возвратный: к нему нужно маленькое слово se, и оно стоит ПОСЛЕ глагола."
+      - id: "02.21.1"
         type: word_bank
-        prompt: "Собери ответ: «нормально, не жалуюсь»"
-        bank: ["Može", "ne", "žalim", "se"]
-        accept: ["Može, ne žalim se.", "Ne žalim se."]
+        prompt: "Собери: «доброе утро»"
+        bank: ["Dobro", "jutro", "dan"]
+        accept: ["Dobro jutro."]
+      - id: "02.21.2"
+        type: word_bank
+        prompt: "Собери: «добрый день»"
+        bank: ["Dobar", "dan", "jutro"]
+        accept: ["Dobar dan."]
+
+  - id: "02.22"
+    kind: practice
+    title: "Напиши"
+    exercises:
+      - id: "02.22.1"
+        type: fill_blank
+        prompt: "Утро, заходишь в пекарню: «___ jutro!»"
+        accept: ["Dobro", "dobro"]
+      - id: "02.22.2"
+        type: translate
+        prompt: "Добрый день!"
+        accept: ["Dobar dan!"]

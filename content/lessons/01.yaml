@@ -1,110 +1,149 @@
 lesson: "01"
 title: "Особые звуки (Specifični glasovi)"
-subtitle: "особые буквы č ć š ž đ dž lj nj, проверка"
+subtitle: "буквы с галочками: š ž č lj nj ć đ dž"
 script: latin   # teaches the letters themselves: stays Latin whatever script the learner reads in
 teaches: [cokolada, cevapi, sesir, zaba, djak, dzem, ljubav, konj]
 
 steps:
-  - id: "01.1"
+  - id: "01.11"
     kind: teach
-    title: "Особые буквы"
-    md: "01/1-slova.md"
+    title: "Ш и Ж — как в русском"
+    md: "01/11-sh-zh.md"
 
-  - id: "01.2"
+  - id: "01.12"
     kind: practice
-    title: "Читаем и слышим"
+    title: "Запомним: Ш и Ж — как в русском"
+    also_ok: ["auto"]
     exercises:
-      - id: "01.2.1"
+      - id: "01.12.1"
         type: choice
-        prompt: "«Шоколад» по-сербски —"
-        options: ["čokolada", "ćevapi", "konj"]
-        answer: "čokolada"
-      - id: "01.2.2"
+        prompt: "Слово, которое значит «шляпа», —"
+        options: ["šešir", "žaba", "auto"]
+        answer: "šešir"
+
+  - id: "01.13"
+    kind: teach
+    title: "Ч, ЛЬ, НЬ"
+    md: "01/13-ch-lj-nj.md"
+
+  - id: "01.14"
+    kind: practice
+    title: "Запомним: Ч, ЛЬ, НЬ"
+    exercises:
+      - id: "01.14.1"
         type: choice
-        prompt: "Слово, которое значит «школьник», —"
-        options: ["đak", "žaba", "konj"]
-        answer: "đak"
-      - id: "01.2.3"
+        prompt: "«Лошадь» по-сербски —"
+        options: ["konj", "ljubav", "čokolada"]
+        answer: "konj"
+
+  - id: "01.15"
+    kind: teach
+    title: "Ć — мягче, чем Č"
+    md: "01/15-c-soft.md"
+
+  - id: "01.16"
+    kind: practice
+    title: "Запомним: Ć — мягче, чем Č"
+    exercises:
+      - id: "01.16.1"
+        type: choice
+        prompt: "Какое слово начинается с мягкого «ć»?"
+        options: ["ćevapi", "čokolada", "šešir"]
+        answer: "ćevapi"
+
+  - id: "01.17"
+    kind: teach
+    title: "Đ и DŽ"
+    md: "01/17-dj-dz.md"
+
+  - id: "01.18"
+    kind: practice
+    title: "Запомним: Đ и DŽ"
+    exercises:
+      - id: "01.18.1"
+        type: choice
+        prompt: "Слово, которое значит «варенье», —"
+        options: ["džem", "đak", "žaba"]
+        answer: "džem"
+
+  - id: "01.19"
+    kind: practice
+    title: "Послушай и выбери"
+    exercises:
+      - id: "01.19.1"
+        type: choice
+        say: "šešir"
+        prompt: "Послушай и выбери перевод."
+        options: ["шляпа", "лягушка", "лошадь"]
+        answer: "шляпа"
+      - id: "01.19.2"
+        type: choice
+        say: "čokolada"
+        prompt: "Послушай и выбери перевод."
+        options: ["шоколад", "чевапи", "любовь"]
+        answer: "шоколад"
+      - id: "01.19.3"
+        type: choice
+        say: "ćevapi"
+        prompt: "Послушай и выбери перевод."
+        options: ["чевапи", "шоколад", "школьник"]
+        answer: "чевапи"
+      - id: "01.19.4"
+        type: choice
+        say: "džem"
+        prompt: "Послушай и выбери перевод."
+        options: ["варенье", "школьник", "шляпа"]
+        answer: "варенье"
+
+  - id: "01.20"
+    kind: practice
+    title: "Соедини"
+    exercises:
+      - id: "01.20.1"
         type: match
         prompt: "Соедини слово и перевод"
         pairs:
-          - ["čokolada", "шоколад"]
-          - ["ćevapi", "чевапи"]
           - ["šešir", "шляпа"]
           - ["žaba", "лягушка"]
+          - ["čokolada", "шоколад"]
+          - ["ljubav", "любовь"]
+          - ["konj", "лошадь"]
           - ["đak", "школьник"]
-          - ["džem", "варенье"]
-      - id: "01.2.4"
+
+  - id: "01.21"
+    kind: practice
+    title: "Какая буква?"
+    also_ok: ["š", "ž", "č", "ć", "đ", "lj", "nj", "dž"]
+    exercises:
+      - id: "01.21.1"
+        type: choice
+        prompt: "Слово «лягушка»: ___aba. Нужна буква —"
+        options: ["ž", "š", "č"]
+        answer: "ž"
+      - id: "01.21.2"
+        type: choice
+        prompt: "Слово «любовь»: ___ubav. Нужны буквы —"
+        options: ["lj", "nj", "dž"]
+        answer: "lj"
+
+  - id: "01.22"
+    kind: practice
+    title: "Напиши"
+    exercises:
+      - id: "01.22.1"
         hint: "4 буквы; последние две — nj («нь» одним звуком)."
         type: fill_blank
         prompt: "Лошадь по-сербски — ___"
         accept: ["konj"]
-      - id: "01.2.5"
+      - id: "01.22.2"
         hint: "В начале lj («ль»), в конце -av, как в слове «слава»."
         type: fill_blank
         prompt: "Любовь по-сербски — ___"
         accept: ["ljubav"]
         explain: "«ljubav» — окончание -av, а не -ov, как в русском «любовь»."
-      - id: "01.2.6"
-        type: listen
-        prompt: "Запиши, что слышишь."
-        say: "konj"
-        accept: ["konj"]
-        ru: ["конь", "лошадь"]
-      - id: "01.2.7"
-        hint: "Первая буква — č («ч»), не ć. Слово из списка урока: шоколад."
-        type: listen
-        prompt: "Запиши, что слышишь."
-        say: "čokolada"
-        accept: ["čokolada"]
-        ru: ["шоколад"]
-      - id: "01.2.8"
-        type: listen
-        prompt: "Запиши, что слышишь."
-        say: "ljubav"
-        accept: ["ljubav"]
-        ru: ["любовь"]
-      - id: "01.2.9"
-        hint: "Звук «дж» пишется двумя буквами d + ž (dž) — не đ и не dj. Всего 4 буквы."
-        type: translate
-        prompt: "Как по-сербски «варенье»?"
-        accept: ["džem"]
-        explain: "«džem» — через «dž», а не «đ»: похожие на слух, но разные буквы."
-      - id: "01.2.10"
-        hint: "Начинается с š («ш» с галочкой), всего 5 букв. Слово было в списке урока."
+      - id: "01.22.3"
+        hint: "Начинается с š («ш» с галочкой), всего 5 букв. Слово было на слайде."
         type: translate
         prompt: "Как по-сербски «шляпа»?"
         accept: ["šešir"]
         explain: "«šešir» — обе буквы š, ш-е-ш-и-р."
-
-  - id: "01.3"
-    kind: checkpoint
-    title: "Проверка"
-    exercises:
-      - id: "01.3.1"
-        type: choice
-        prompt: "«Лягушка» по-сербски —"
-        options: ["žaba", "šešir", "konj"]
-        answer: "žaba"
-      - id: "01.3.2"
-        type: match
-        prompt: "Соедини"
-        pairs:
-          - ["šešir", "шляпа"]
-          - ["đak", "школьник"]
-          - ["ljubav", "любовь"]
-          - ["konj", "лошадь"]
-      - id: "01.3.3"
-        type: fill_blank
-        prompt: "Шоколад по-сербски — ___"
-        accept: ["čokolada"]
-      - id: "01.3.4"
-        type: listen
-        prompt: "Запиши, что слышишь."
-        say: "žaba"
-        accept: ["žaba"]
-        ru: ["лягушка", "жаба"]
-      - id: "01.3.5"
-        type: translate
-        prompt: "Как по-сербски «школьник»?"
-        accept: ["đak"]

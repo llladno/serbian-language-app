@@ -1,0 +1,78 @@
+id: "10d"
+title: "Повторение: цена, возраст, время, телефон (Ponavljanje)"
+subtitle: "всё, что про числа в жизни, вместе"
+teaches: []
+steps:
+  - practice:
+      title: "Послушай и выбери"
+      ex:
+        - {type: choice, say: "Pola osam.", options: ["Половина восьмого (7:30).", "Половина девятого (8:30).", "Восемь часов (8:00)."], answer: "Половина восьмого (7:30)."}
+        - {type: choice, say: "Imam trideset godina.", options: ["Мне тридцать лет.", "Мне тринадцать лет.", "У меня есть тридцать динаров."], answer: "Мне тридцать лет."}
+        - {type: choice, say: "Koliko košta kafa?", options: ["Сколько стоит кофе?", "Сколько тебе лет?", "Который час?"], answer: "Сколько стоит кофе?"}
+        - {type: choice, say: "Javi mi se.", options: ["Напиши или позвони мне.", "Сколько с меня?", "Во сколько?"], answer: "Напиши или позвони мне."}
+  - reading:
+      name: moj-dan
+      title: "Марко рассказывает"
+      text: |
+        Zdravo! Ja sam Marko. Imam trideset godina. Radim od devet do pet. Popodne, u pet, učim srpski. Uveče sam umoran.
+        Moj broj telefona je nula šest četiri, jedan dva tri, četiri pet šest.
+        Javi mi se!
+
+        ---
+
+        Привет! Я Марко. Мне тридцать лет. Работаю с девяти до пяти. После обеда, в пять, учу сербский. Вечером я устал.
+        Мой номер телефона: ноль шесть четыре, один два три, четыре пять шесть.
+        Напиши или позвони мне!
+      ex:
+        - {type: choice, prompt: "Сколько лет Марко?", options: ["Тридцать", "Двадцать пять", "Тридцать пять"], answer: "Тридцать"}
+        - {type: choice, prompt: "Когда Марко учит сербский?", options: ["Днём, в пять часов", "Утром, в семь часов", "Вечером, в девять часов"], answer: "Днём, в пять часов"}
+  - practice:
+      title: "Соедини"
+      ex:
+        - type: match
+          prompt: "Соедини фразу и перевод"
+          pairs:
+            - ["Koliko je sati?", "Который час?"]
+            - ["Pola tri", "половина третьего"]
+            - ["Imam pet godina", "Мне пять лет"]
+            - ["Koji je tvoj broj?", "Какой у тебя номер?"]
+            - ["Koliko dugujem?", "Сколько с меня?"]
+            - ["Petnaest do tri", "без пятнадцати три"]
+  - practice:
+      title: "Диктант"
+      ex:
+        - {type: listen, say: "Koliko je sati?", prompt: "Запиши, что слышишь.", accept: ["Koliko je sati?"], ru: ["Который час?"]}
+        - {type: listen, say: "Imam dvadeset jednu godinu.", prompt: "Запиши, что слышишь.", accept: ["Imam dvadeset jednu godinu."], ru: ["Мне двадцать один год."]}
+        - {type: listen, say: "Sto dvadeset dinara.", prompt: "Запиши, что слышишь.", accept: ["Sto dvadeset dinara."], ru: ["Сто двадцать динаров."]}
+        - {type: listen, say: "Moj broj je nula šest četiri.", prompt: "Запиши, что слышишь.", accept: ["Moj broj je nula šest četiri."], ru: ["Мой номер: ноль шесть четыре."]}
+  - practice:
+      title: "Собери"
+      ex:
+        - {type: word_bank, prompt: "Собери: «мне двадцать пять лет»", bank: ["Imam", "dvadeset", "pet", "godina", "godine"], accept: ["Imam dvadeset pet godina."]}
+        - {type: word_bank, prompt: "Собери: «в полдень»", bank: ["U", "podne", "ponoć", "sati"], accept: ["U podne."]}
+  - practice:
+      title: "Переведи"
+      ex:
+        - {type: translate, prompt: "Мне сорок лет.", accept: ["Imam četrdeset godina."]}
+        - {type: translate, prompt: "Без пятнадцати три.", accept: ["Petnaest do tri."]}
+        - {type: translate, prompt: "Сколько стоит кофе?", accept: ["Koliko košta kafa?", "Pošto je kafa?"]}
+  - dialogue:
+      title: "Новый знакомый"
+      scene: "В кафе тебя знакомят с новым человеком. Вы разговорились и хотите остаться на связи."
+      voice: m
+      turns:
+        - {who: npc, sr: "Zdravo! Ja sam Nikola. Koliko imaš godina?", ru: "Привет! Я Никола. Сколько тебе лет?"}
+        - who: me
+          sr: "Imam trideset godina."
+          ru: "Мне тридцать лет."
+          ex: {type: choice, prompt: "Скажи, что тебе тридцать лет", options: ["Imam trideset godina.", "Imam trideset godine.", "Imam trinaest godina."], answer: "Imam trideset godina."}
+        - {who: npc, sr: "Dobro! Koji je tvoj broj telefona?", ru: "Хорошо! Какой у тебя номер телефона?"}
+        - who: me
+          sr: "Moj broj je nula šest četiri…"
+          ru: "Мой номер: ноль шесть четыре…"
+          ex: {type: choice, prompt: "Начни называть свой номер", options: ["Moj broj je nula šest četiri…", "Moj broj je trideset godina.", "Moj broj je pola tri."], answer: "Moj broj je nula šest četiri…"}
+        - {who: npc, sr: "Hvala! Vidimo se.", ru: "Спасибо! Увидимся."}
+        - who: me
+          sr: "Može. Javi mi se."
+          ru: "Хорошо. Напиши или позвони мне."
+          ex: {type: choice, prompt: "Согласись и попроси написать или позвонить", options: ["Može. Javi mi se.", "Može. Koliko košta?", "Može. Laku noć."], answer: "Može. Javi mi se."}

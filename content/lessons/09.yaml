@@ -1,76 +1,184 @@
 lesson: "09"
-title: "Цена и возраст (Cena i godine)"
-subtitle: "цена, возраст"
-teaches: []
+title: "Цена (Cena)"
+subtitle: "сколько стоит, почём, сколько с меня"
+teaches: [kostati, koliko, kafa, posto, sve-zajedno, koliko-dugujem, pare, novac]
 
 steps:
-  - id: "09.1"
+  - id: "09.11"
     kind: teach
-    title: "Цена"
-    md: "09/1-cena.md"
+    title: "Сколько стоит?"
+    md: "09/11-koliko-kosta.md"
 
-  - id: "09.2"
+  - id: "09.12"
     kind: practice
-    title: "Спроси цену"
+    title: "Запомним: Сколько стоит?"
     exercises:
-      - id: "09.2.1"
+      - id: "09.12.1"
         type: choice
-        prompt: "«Сколько стоит?» —"
-        options: ["Koliko košta?", "Koliko dugujem?", "Pošto je?"]
-        answer: "Koliko košta?"
-      - id: "09.2.2"
+        prompt: "«Сколько стоит кофе?» —"
+        options: ["Koliko košta kafa?", "Imaš li brata?", "Kako si?"]
+        answer: "Koliko košta kafa?"
+
+  - id: "09.13"
+    kind: teach
+    title: "Почём?"
+    md: "09/13-posto.md"
+
+  - id: "09.14"
+    kind: practice
+    title: "Запомним: Почём?"
+    exercises:
+      - id: "09.14.1"
         type: choice
-        prompt: "«Сколько всё вместе?» —"
-        options: ["Koliko sve zajedno?", "Koliko košta?", "Koliko imaš godina?"]
-        answer: "Koliko sve zajedno?"
-      - id: "09.2.3"
-        hint: "«Сколько с меня?» = «сколько я должен?». Нужен глагол «должен» для «я» (корень dug-)."
+        prompt: "«Почём?» (в разговоре) —"
+        options: ["Pošto je?", "Kako si?", "Ovo je kafa."]
+        answer: "Pošto je?"
+
+  - id: "09.15"
+    kind: teach
+    title: "Сколько всего? Сколько с меня?"
+    md: "09/15-sve-zajedno.md"
+
+  - id: "09.16"
+    kind: practice
+    title: "Запомним: Сколько всего? Сколько с меня?"
+    exercises:
+      - id: "09.16.1"
+        type: choice
+        prompt: "«Сколько с меня?» —"
+        options: ["Koliko dugujem?", "Koliko košta?", "Pošto je?"]
+        answer: "Koliko dugujem?"
+
+  - id: "09.17"
+    kind: teach
+    title: "Деньги"
+    md: "09/17-pare.md"
+
+  - id: "09.18"
+    kind: practice
+    title: "Запомним: Деньги"
+    also_ok: ["para"]
+    exercises:
+      - id: "09.18.1"
+        type: choice
+        prompt: "Слово «деньги» в разговоре —"
+        options: ["pare", "dinar", "kafa"]
+        answer: "pare"
+
+  - id: "09.19"
+    kind: practice
+    title: "Вспомним"
+    exercises:
+      - id: "09.19.1"
+        type: choice
+        prompt: "«120 динаров» —"
+        options: ["sto dvadeset dinara", "sto dvanaest dinara", "dvesta dinara"]
+        answer: "sto dvadeset dinara"
+      - id: "09.19.2"
+        type: choice
+        prompt: "«5 динаров» —"
+        options: ["pet dinara", "pet dinar", "petsto dinara"]
+        answer: "pet dinara"
+
+  - id: "09.20"
+    kind: practice
+    title: "Послушай и выбери"
+    also_ok: ["para"]
+    exercises:
+      - id: "09.20.1"
+        type: choice
+        say: "Koliko košta kafa?"
+        prompt: "Послушай и выбери перевод."
+        options: ["Сколько стоит кофе?", "Сколько с меня?", "У вас есть кофе?"]
+        answer: "Сколько стоит кофе?"
+      - id: "09.20.2"
+        type: choice
+        say: "Pošto je kafa?"
+        prompt: "Послушай и выбери перевод."
+        options: ["Почём кофе? (в разговоре)", "Сколько с меня?", "У вас есть кофе?"]
+        answer: "Почём кофе? (в разговоре)"
+      - id: "09.20.3"
+        type: choice
+        say: "Koliko dugujem?"
+        prompt: "Послушай и выбери перевод."
+        options: ["Сколько с меня?", "Сколько всё вместе?", "Сколько стоит?"]
+        answer: "Сколько с меня?"
+      - id: "09.20.4"
+        type: choice
+        say: "Nemam para."
+        prompt: "Послушай и выбери перевод."
+        options: ["У меня нет денег.", "У меня есть деньги.", "Сколько стоит?"]
+        answer: "У меня нет денег."
+
+  - id: "09.21"
+    kind: practice
+    title: "Что скажешь?"
+    also_ok: ["para"]
+    exercises:
+      - id: "09.21.1"
+        type: choice
+        prompt: "Спроси, сколько стоит кофе —"
+        options: ["Koliko košta kafa?", "Koliko dugujem?", "Nemam para."]
+        answer: "Koliko košta kafa?"
+      - id: "09.21.2"
+        type: choice
+        prompt: "Скажи, что у тебя нет денег —"
+        options: ["Nemam para.", "Koliko dugujem?", "Pošto je?"]
+        answer: "Nemam para."
+      - id: "09.21.3"
+        type: choice
+        prompt: "Продавец отвечает на «Koliko košta kafa?» —"
+        options: ["Sto dvadeset dinara.", "Ovo je kafa.", "Hvala."]
+        answer: "Sto dvadeset dinara."
+
+  - id: "09.22"
+    kind: practice
+    title: "Соедини"
+    also_ok: ["para"]
+    exercises:
+      - id: "09.22.1"
+        type: match
+        prompt: "Соедини фразу и перевод"
+        pairs:
+          - ["Koliko košta?", "Сколько стоит?"]
+          - ["Pošto je?", "Почём? (в разговоре)"]
+          - ["Koliko je sve zajedno?", "Сколько всё вместе?"]
+          - ["Koliko dugujem?", "Сколько с меня?"]
+          - ["pare", "деньги"]
+          - ["Nemam para.", "У меня нет денег"]
+
+  - id: "09.23"
+    kind: practice
+    title: "Собери"
+    exercises:
+      - id: "09.23.1"
+        type: word_bank
+        prompt: "Собери: «сколько стоит кофе?»"
+        bank: ["Koliko", "košta", "kafa", "dugujem"]
+        accept: ["Koliko košta kafa?"]
+      - id: "09.23.2"
+        type: word_bank
+        prompt: "Собери: «почём кофе?» (в разговоре)"
+        bank: ["Pošto", "je", "kafa", "košta"]
+        accept: ["Pošto je kafa?"]
+
+  - id: "09.24"
+    kind: practice
+    title: "Напиши"
+    exercises:
+      - id: "09.24.1"
         type: fill_blank
         prompt: "«Сколько с меня?» → Koliko ___?"
         accept: ["dugujem"]
-        explain: "«dugujem» — «я должен» (от «dug» — долг): «Koliko dugujem?»."
-      - id: "09.2.4"
-        type: word_bank
-        prompt: "Собери: «сколько стоит кофе?»"
-        bank: ["Koliko", "košta", "kafa"]
-        accept: ["Koliko košta kafa?"]
-
-  - id: "09.3"
-    kind: teach
-    title: "Возраст"
-    md: "09/3-godine.md"
-
-  - id: "09.4"
-    kind: practice
-    title: "Сколько лет"
-    exercises:
-      - id: "09.4.1"
-        type: choice
-        prompt: "«Мне 30 лет» —"
-        options: ["Imam trideset godina.", "Imam trideset godine.", "Imam trideset godinu."]
-        answer: "Imam trideset godina."
-      - id: "09.4.2"
-        type: choice
-        prompt: "«Сколько тебе лет?» —"
-        options: ["Koliko imaš godina?", "Koliko imaš godine?", "Koliko si godina?"]
-        answer: "Koliko imaš godina?"
-      - id: "09.4.3"
-        hint: "После 2, 3, 4 слово на -a меняется на -e, как в «dve kafe»."
+      - id: "09.24.2"
         type: fill_blank
-        prompt: "«Мне 22 года» → Imam dvadeset dve ___."
-        accept: ["godine"]
-      - id: "09.4.4"
-        type: word_bank
-        prompt: "Собери: «мне сорок лет»"
-        bank: ["Imam", "četrdeset", "godina"]
-        accept: ["Imam četrdeset godina."]
-      - id: "09.4.5"
-        hint: "30 — больше четырёх, поэтому нужна форма с окончанием -a, а не -u."
-        type: fix_error
-        prompt: "Imam trideset godinu."
-        accept: ["Imam trideset godina."]
-        explain: "После «trideset» — родительный множественный «godina», не «godinu»/«godine» (как после 2,3,4)."
-      - id: "09.4.6"
-        type: fix_error
-        prompt: "Imam dvadeset dve godina."
-        accept: ["Imam dvadeset dve godine."]
+        prompt: "«Сколько стоит?» → Koliko ___?"
+        accept: ["košta"]
+      - id: "09.24.3"
+        type: translate
+        prompt: "Сколько стоит кофе?"
+        accept: ["Koliko košta kafa?", "Pošto je kafa?"]
+      - id: "09.24.4"
+        type: translate
+        prompt: "Сколько с меня?"
+        accept: ["Koliko dugujem?"]

@@ -1,112 +1,170 @@
 lesson: "03"
 title: "Пожалуйста, спасибо (Molim, hvala)"
-subtitle: "вежливые слова, текст, диктант, проверка"
-teaches:
-  [
-    molim, molim-vas, hvala, nema-na-cemu, izvini, oprosti, izvolite,
-    nema-problema, drago-mi-je, takodje,
-  ]
+subtitle: "спасибо, не за что, извините, пожалуйста"
+teaches: [molim, molim-vas, hvala, nema-na-cemu, izvini, oprosti, izvolite, nema-problema]
 
 steps:
-  - id: "03.1"
+  - id: "03.11"
     kind: teach
-    title: "Вежливые слова"
-    md: "03/1-vezljivost.md"
+    title: "Hvala — спасибо"
+    md: "03/11-hvala.md"
 
-  - id: "03.2"
+  - id: "03.12"
     kind: practice
-    title: "Спасибо, извините"
+    title: "Запомним: Hvala — спасибо"
     exercises:
-      - id: "03.2.1"
+      - id: "03.12.1"
+        type: choice
+        prompt: "«Большое спасибо» по-сербски —"
+        options: ["Hvala lepo", "Hvala", "Doviđenja"]
+        answer: "Hvala lepo"
+
+  - id: "03.13"
+    kind: teach
+    title: "Не за что"
+    md: "03/13-nema-na-cemu.md"
+
+  - id: "03.14"
+    kind: practice
+    title: "Запомним: Не за что"
+    exercises:
+      - id: "03.14.1"
         type: choice
         prompt: "Тебе сказали «Hvala». Отвечаешь —"
-        options: ["Nema na čemu.", "Molim vas.", "Prijatno."]
+        options: ["Nema na čemu.", "Doviđenja.", "Hvala lepo."]
         answer: "Nema na čemu."
-      - id: "03.2.2"
+
+  - id: "03.15"
+    kind: teach
+    title: "Molim — пожалуйста"
+    md: "03/15-molim.md"
+
+  - id: "03.16"
+    kind: practice
+    title: "Запомним: Molim — пожалуйста"
+    exercises:
+      - id: "03.16.1"
+        type: choice
+        prompt: "Ты не расслышал и переспрашиваешь —"
+        options: ["Molim?", "Hvala.", "Doviđenja."]
+        answer: "Molim?"
+
+  - id: "03.17"
+    kind: teach
+    title: "Izvinite — извините"
+    md: "03/17-izvinite.md"
+
+  - id: "03.18"
+    kind: practice
+    title: "Запомним: Izvinite — извините"
+    exercises:
+      - id: "03.18.1"
+        hint: "С незнакомым говорят на «вы»: форма на -te."
+        type: choice
+        prompt: "Привлекаешь внимание незнакомого человека —"
+        options: ["Izvinite.", "Izvini.", "Nema problema."]
+        answer: "Izvinite."
+
+  - id: "03.19"
+    kind: teach
+    title: "Izvolite"
+    md: "03/19-izvolite.md"
+
+  - id: "03.20"
+    kind: practice
+    title: "Запомним: Izvolite"
+    exercises:
+      - id: "03.20.1"
+        type: choice
+        prompt: "Продавец говорит тебе «Izvolite». Что это значит?"
+        options: ["Слушаю вас", "До свидания", "Спасибо"]
+        answer: "Слушаю вас"
+
+  - id: "03.21"
+    kind: practice
+    title: "Послушай и выбери"
+    exercises:
+      - id: "03.21.1"
+        type: choice
+        say: "Hvala lepo."
+        prompt: "Послушай и выбери перевод."
+        options: ["Большое спасибо.", "Не за что.", "Извините."]
+        answer: "Большое спасибо."
+      - id: "03.21.2"
+        type: choice
+        say: "Nema na čemu."
+        prompt: "Послушай и выбери перевод."
+        options: ["Не за что.", "Большое спасибо.", "Слушаю вас."]
+        answer: "Не за что."
+      - id: "03.21.3"
+        type: choice
+        say: "Izvinite."
+        prompt: "Послушай и выбери перевод."
+        options: ["Извините.", "Не за что.", "Слушаю вас."]
+        answer: "Извините."
+      - id: "03.21.4"
+        type: choice
+        say: "Izvolite."
+        prompt: "Послушай и выбери перевод."
+        options: ["Слушаю вас.", "Извините.", "До свидания."]
+        answer: "Слушаю вас."
+
+  - id: "03.22"
+    kind: practice
+    title: "Что скажешь?"
+    exercises:
+      - id: "03.22.1"
+        type: choice
+        prompt: "«Hvala lepo!» — «___»"
+        options: ["Nema na čemu.", "Izvolite.", "Molim vas."]
+        answer: "Nema na čemu."
+      - id: "03.22.2"
+        type: choice
+        prompt: "Тебе передали сдачу. Говоришь —"
+        options: ["Hvala.", "Izvinite.", "Doviđenja."]
+        answer: "Hvala."
+
+  - id: "03.23"
+    kind: practice
+    title: "Соедини"
+    exercises:
+      - id: "03.23.1"
+        type: match
+        prompt: "Соедини фразу и перевод"
+        pairs:
+          - ["Hvala", "Спасибо"]
+          - ["Nema na čemu", "Не за что"]
+          - ["Nema problema", "Без проблем"]
+          - ["Molim vas", "Пожалуйста (просьба)"]
+          - ["Izvinite", "Извините"]
+          - ["Izvolite", "Слушаю вас"]
+
+  - id: "03.24"
+    kind: practice
+    title: "Собери"
+    exercises:
+      - id: "03.24.1"
         type: word_bank
         prompt: "Собери просьбу: «извините, пожалуйста»"
         bank: ["Izvinite", "molim", "vas"]
         accept: ["Izvinite, molim vas."]
-      - id: "03.2.3"
+      - id: "03.24.2"
         type: word_bank
         prompt: "Собери: «без проблем»"
         bank: ["Nema", "problema"]
         accept: ["Nema problema."]
 
-  - id: "03.3"
-    kind: reading
-    title: "Встретил знакомого"
-    md: "03/3-citanje.md"
-    exercises:
-      - id: "03.3.1"
-        type: choice
-        prompt: "Как Марко отвечает на «Kako si?»"
-        options: ["Dobro, hvala.", "Laku noć.", "Odakle si?"]
-        answer: "Dobro, hvala."
-      - id: "03.3.2"
-        type: choice
-        prompt: "Чем заканчивается разговор?"
-        options: ["Ćao, prijatno!", "Dobro jutro!", "Molim?"]
-        answer: "Ćao, prijatno!"
-
-  - id: "03.4"
+  - id: "03.25"
     kind: practice
-    title: "Диктант"
-    mixed: true
+    title: "Напиши"
     exercises:
-      - id: "03.4.1"
-        hint: "Первое слово — dobar (не dobro): оно мужского рода, потому что «dan» мужского рода."
-        type: listen
-        prompt: "Запиши, что слышишь."
-        say: "Dobar dan, kako ste?"
-        accept: ["Dobar dan, kako ste?"]
-        ru: ["Добрый день, как вы?", "Добрый день, как поживаете?", "Добрый день, как у вас дела?", "Добрый день, как дела?", "Здравствуйте, как вы?", "Здравствуйте, как поживаете?", "Здравствуйте, как у вас дела?", "Здравствуйте, как дела?"]
-      - id: "03.4.2"
-        hint: "Всего три слова; «mi» и «je» звучат слитно («мие»), но пишутся раздельно."
-        type: listen
-        prompt: "Запиши, что слышишь."
-        say: "Drago mi je."
-        accept: ["Drago mi je."]
-        ru: ["Приятно познакомиться", "Очень приятно", "Приятно", "Мне приятно", "Рад познакомиться", "Рада познакомиться"]
-        explain: "На слух «mi je» сливается почти в одно слово, но пишутся раздельно: «mi» и «je»."
-      - id: "03.4.3"
-        type: listen
-        prompt: "Запиши, что слышишь."
-        say: "Hvala, prijatno!"
-        accept: ["Hvala, prijatno!"]
-        ru: ["Спасибо, приятного аппетита", "Спасибо, приятного вечера", "Спасибо, всего хорошего", "Спасибо, всего доброго"]
-
-  - id: "03.5"
-    kind: checkpoint
-    title: "Проверка"
-    exercises:
-      - id: "03.5.1"
-        type: choice
-        prompt: "«Спасибо большое» —"
-        options: ["Hvala lepo!", "Laku noć!", "Kako ide?"]
-        answer: "Hvala lepo!"
-      - id: "03.5.2"
-        type: match
-        prompt: "Соедини"
-        pairs:
-          - ["Zdravo", "Привет"]
-          - ["Doviđenja", "До свидания"]
-          - ["Izvinite", "Извините"]
-          - ["Nema na čemu", "Не за что"]
-      - id: "03.5.3"
-        hint: "Начинается на ve-; внутри буква č («ч»), не ć."
+      - id: "03.25.1"
+        hint: "Начинается с č («ч»), всего 4 буквы."
         type: fill_blank
-        prompt: "Вечер: «Dobro ___!»"
-        accept: ["veče"]
-        explain: "«veče» — через č. «veće» (через ć) — другое слово, «совет/собрание»."
-      - id: "03.5.4"
-        type: word_bank
-        prompt: "Собери приветствие: «добрый вечер»"
-        bank: ["Dobro", "veče"]
-        accept: ["Dobro veče."]
-      - id: "03.5.5"
-        hint: "Второе слово — не «doviđenja», а слово из урока 02 (его говорят, уходя из магазина или кафе)."
+        prompt: "«Hvala!» — «Nema na ___.»"
+        accept: ["čemu"]
+      - id: "03.25.2"
+        hint: "Два слова: hvala и ещё одно, оно было на слайде."
         type: translate
-        prompt: "Спасибо, всего доброго!"
-        accept: ["Hvala, prijatno!"]
-        explain: "«prijatno» — «всего доброго», отдельное слово от «doviđenja» (до свидания)."
+        prompt: "Большое спасибо!"
+        accept: ["Hvala lepo!"]

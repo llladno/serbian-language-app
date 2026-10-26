@@ -1,0 +1,91 @@
+id: "11"
+start: 11
+title: "Магазины (Prodavnice)"
+subtitle: "где что купить: магазин, пекарня, рынок, аптека"
+teaches: [prodavnica, samoposluga, roba, pekara, mesara, piljara, pijaca, apoteka, trafika]
+steps:
+  - slide:
+      name: prodavnica
+      title: "Магазин"
+      md: |
+        `prodavnica` [прода́вница] *(продавница — магазин)*: общее слово.
+
+        `Ovo je prodavnica.` [о́во е прода́вница.] *(это магазин)*
+
+        `samoposluga` [са́мопослуга] *(самопослуга — магазин самообслуживания)*: так называют супермаркет.
+
+        `roba` [ро́ба] *(роба — товар)*.
+
+        > Не путай: `magacin` [мага́цин] — это **склад**, а не магазин.
+      check:
+        prompt: "Слово «магазин» (общее) —"
+        options: ["prodavnica", "porodica", "zemlja"]
+        answer: "prodavnica"
+  - slide:
+      name: pekara
+      title: "Пекарня, мясная, овощи"
+      md: |
+        `pekara` [пэ́кара] *(пекара — пекарня: хлеб, выпечка)*
+
+        `mesara` [мэ́сара] *(месара — мясная лавка)*
+
+        `piljara` [пи́ляра] *(пиљара — овощи и фрукты)*
+
+        `Ovo je pekara.` [о́во е пэ́кара.] *(это пекарня)*
+      check:
+        prompt: "Пекарня —"
+        options: ["pekara", "mesara", "piljara"]
+        answer: "pekara"
+  - slide:
+      name: pijaca
+      title: "Рынок, аптека, киоск"
+      md: |
+        `pijaca` [пия́ца] *(пијаца — рынок)*
+
+        `apoteka` [апо́тэка] *(апотека — аптека)*
+
+        `trafika` [тра́фика] *(трафика — киоск: вода, газеты, сигареты, проездной)*
+
+        `Ovo je apoteka.` [о́во е апо́тэка.] *(это аптека)*
+      check:
+        prompt: "Аптека —"
+        options: ["apoteka", "trafika", "pijaca"]
+        answer: "apoteka"
+  - practice:
+      title: "Послушай и выбери"
+      ex:
+        - {type: choice, say: "Ovo je pekara.", options: ["Это пекарня.", "Это аптека.", "Это рынок."], answer: "Это пекарня."}
+        - {type: choice, say: "Ovo je apoteka.", options: ["Это аптека.", "Это пекарня.", "Это киоск."], answer: "Это аптека."}
+        - {type: choice, say: "Ovo je pijaca.", options: ["Это рынок.", "Это магазин.", "Это мясная лавка."], answer: "Это рынок."}
+        - {type: choice, say: "Ovo je samoposluga.", options: ["Это магазин самообслуживания.", "Это пекарня.", "Это склад."], answer: "Это магазин самообслуживания."}
+  - practice:
+      title: "Где купить?"
+      ex:
+        - {type: choice, prompt: "Где купить хлеб?", options: ["pekara", "apoteka", "trafika"], answer: "pekara"}
+        - {type: choice, prompt: "Где купить мясо?", options: ["mesara", "pekara", "piljara"], answer: "mesara"}
+        - {type: choice, prompt: "Где купить лекарство?", options: ["apoteka", "pijaca", "mesara"], answer: "apoteka"}
+        - {type: choice, prompt: "Где купить овощи и фрукты?", options: ["piljara", "pekara", "apoteka"], answer: "piljara"}
+  - practice:
+      title: "Соедини"
+      ex:
+        - type: match
+          prompt: "Соедини слово и перевод"
+          pairs:
+            - ["pekara", "пекарня"]
+            - ["mesara", "мясная лавка"]
+            - ["piljara", "овощи и фрукты"]
+            - ["pijaca", "рынок"]
+            - ["apoteka", "аптека"]
+            - ["trafika", "киоск"]
+  - practice:
+      title: "Собери"
+      ex:
+        - {type: word_bank, prompt: "Собери: «это пекарня»", bank: ["Ovo", "je", "pekara", "apoteka"], accept: ["Ovo je pekara."]}
+        - {type: word_bank, prompt: "Собери: «это рынок»", bank: ["Ovo", "je", "pijaca", "trafika"], accept: ["Ovo je pijaca."]}
+  - practice:
+      title: "Напиши"
+      ex:
+        - {type: fill_blank, prompt: "«Это аптека» → Ovo je ___.", accept: ["apoteka"]}
+        - {type: fill_blank, prompt: "«Это магазин самообслуживания» → Ovo je ___.", accept: ["samoposluga"]}
+        - {type: translate, prompt: "Это магазин.", accept: ["Ovo je prodavnica.", "To je prodavnica."]}
+        - {type: translate, prompt: "Это рынок.", accept: ["Ovo je pijaca.", "To je pijaca."]}

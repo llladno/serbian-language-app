@@ -1,0 +1,169 @@
+lesson: "02d"
+title: "Как дела? (Kako si?)"
+subtitle: "как дела (ты и вы), ответить, увидимся"
+teaches: [kako-si, kako-ide, dobro-hvala, moze, ne-zalim-se, vidimo-se, cujemo-se]
+
+steps:
+  - id: "02d.1"
+    kind: teach
+    title: "Kako si? / Kako ste?"
+    md: "02d/1-kako-si-ste.md"
+
+  - id: "02d.2"
+    kind: practice
+    title: "Запомним: Kako si? / Kako ste?"
+    exercises:
+      - id: "02d.2.1"
+        type: choice
+        prompt: "Незнакомому человеку старше тебя говоришь —"
+        options: ["Kako ste?", "Kako si?", "Doviđenja!"]
+        answer: "Kako ste?"
+
+  - id: "02d.3"
+    kind: teach
+    title: "Kako ide? и «А ты?»"
+    md: "02d/3-kako-ide.md"
+
+  - id: "02d.4"
+    kind: practice
+    title: "Запомним: Kako ide? и «А ты?»"
+    exercises:
+      - id: "02d.4.1"
+        type: choice
+        prompt: "Другу ответили на «как дела». Спрашиваешь в ответ —"
+        options: ["A ti?", "A vi?", "Doviđenja!"]
+        answer: "A ti?"
+
+  - id: "02d.5"
+    kind: teach
+    title: "Dobro, hvala. / Može."
+    md: "02d/5-dobro-moze.md"
+
+  - id: "02d.6"
+    kind: practice
+    title: "Запомним: Dobro, hvala. / Može."
+    exercises:
+      - id: "02d.6.1"
+        type: choice
+        prompt: "«Kako si?» — «___»"
+        options: ["Dobro, hvala.", "Zdravo!", "Doviđenja!"]
+        answer: "Dobro, hvala."
+
+  - id: "02d.7"
+    kind: teach
+    title: "Ne žalim se"
+    md: "02d/7-ne-zalim-se.md"
+
+  - id: "02d.8"
+    kind: practice
+    title: "Запомним: Ne žalim se"
+    exercises:
+      - id: "02d.8.1"
+        type: choice
+        prompt: "Что значит «Ne žalim se»?"
+        options: ["Не жалуюсь", "Не знаю", "Не понимаю"]
+        answer: "Не жалуюсь"
+
+  - id: "02d.9"
+    kind: teach
+    title: "Vidimo se / Čujemo se"
+    md: "02d/9-vidimo-se.md"
+
+  - id: "02d.10"
+    kind: practice
+    title: "Запомним: Vidimo se / Čujemo se"
+    exercises:
+      - id: "02d.10.1"
+        type: choice
+        prompt: "Договорились созвониться. На прощание говоришь —"
+        options: ["Čujemo se.", "Vidimo se.", "Laku noć."]
+        answer: "Čujemo se."
+
+  - id: "02d.11"
+    kind: practice
+    title: "Послушай и выбери"
+    exercises:
+      - id: "02d.11.1"
+        type: choice
+        say: "Kako si?"
+        prompt: "Послушай и выбери перевод."
+        options: ["Как дела? (другу)", "Как дела? (незнакомому)", "Как оно?"]
+        answer: "Как дела? (другу)"
+      - id: "02d.11.2"
+        type: choice
+        say: "Kako ste?"
+        prompt: "Послушай и выбери перевод."
+        options: ["Как дела? (другу)", "Как дела? (незнакомому)", "Как оно?"]
+        answer: "Как дела? (незнакомому)"
+      - id: "02d.11.3"
+        type: choice
+        say: "Dobro, hvala."
+        prompt: "Послушай и выбери перевод."
+        options: ["Хорошо, спасибо.", "Не жалуюсь.", "Увидимся."]
+        answer: "Хорошо, спасибо."
+      - id: "02d.11.4"
+        type: choice
+        say: "Ne žalim se."
+        prompt: "Послушай и выбери перевод."
+        options: ["Не жалуюсь.", "Хорошо, спасибо.", "Созвонимся."]
+        answer: "Не жалуюсь."
+
+  - id: "02d.12"
+    kind: practice
+    title: "Что скажешь?"
+    exercises:
+      - id: "02d.12.1"
+        type: choice
+        prompt: "Заходишь к врачу и спрашиваешь, как дела —"
+        options: ["Kako ste?", "Kako si?", "Kako ide?"]
+        answer: "Kako ste?"
+      - id: "02d.12.2"
+        type: choice
+        prompt: "«Kako ste?» — «___»"
+        options: ["Dobro, hvala. A vi?", "Dobro jutro.", "Laku noć."]
+        answer: "Dobro, hvala. A vi?"
+
+  - id: "02d.13"
+    kind: practice
+    title: "Соедини"
+    exercises:
+      - id: "02d.13.1"
+        type: match
+        prompt: "Соедини фразу и перевод"
+        pairs:
+          - ["Kako si?", "Как дела? (ты)"]
+          - ["Kako ste?", "Как дела? (вы)"]
+          - ["Kako ide?", "Как оно?"]
+          - ["Može", "Нормально"]
+          - ["Ne žalim se", "Не жалуюсь"]
+          - ["Vidimo se", "Увидимся"]
+
+  - id: "02d.14"
+    kind: practice
+    title: "Собери"
+    exercises:
+      - id: "02d.14.1"
+        type: word_bank
+        prompt: "Собери вопрос: «как дела?» (вежливо)"
+        bank: ["Kako", "ste", "si", "ide"]
+        accept: ["Kako ste?"]
+      - id: "02d.14.2"
+        hint: "Глагол «žalim» возвратный: к нему нужно маленькое слово se, и оно стоит ПОСЛЕ глагола."
+        type: word_bank
+        prompt: "Собери ответ: «нормально, не жалуюсь»"
+        bank: ["Može", "ne", "žalim", "se"]
+        accept: ["Može, ne žalim se.", "Ne žalim se."]
+
+  - id: "02d.15"
+    kind: practice
+    title: "Напиши"
+    exercises:
+      - id: "02d.15.1"
+        type: fill_blank
+        prompt: "Другу: «Kako ___?»"
+        accept: ["si", "ide"]
+      - id: "02d.15.2"
+        hint: "Для «вы» нужна форма на -te."
+        type: translate
+        prompt: "Незнакомому человеку: «Как у вас дела?»"
+        accept: ["Kako ste?"]

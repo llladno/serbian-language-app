@@ -1,208 +1,172 @@
 lesson: "05"
-title: "Говорим и работаем (Govorimo i radimo)"
-subtitle: "языки, профессии, текст, диалог, проверка"
-teaches:
-  [
-    govoriti, ruski, srpski, engleski, programer, student, lekar, konobar,
-    nastavnik, ne-razumem, ponovite, polako,
-  ]
+title: "Говорю и понимаю (Govorim i razumem)"
+subtitle: "языки, не понимаю, помедленнее, теперь понимаю"
+teaches: [govoriti, ruski, srpski, engleski, malo-mnogo, dobro-lose, razumeti, ne-razumem, polako, ponovite, sada]
 
 steps:
-  - id: "05.1"
+  - id: "05.11"
     kind: teach
-    title: "Языки и работа"
-    md: "05/1-jezici-posao.md"
+    title: "Говорю по-…"
+    md: "05/11-govoriti.md"
 
-  - id: "05.2"
+  - id: "05.12"
     kind: practice
-    title: "Говорю и работаю"
-    also_ok: ["govorim", "govoriš", "radim", "radi", "programera"]
+    title: "Запомним: Говорю по-…"
     exercises:
-      - id: "05.2.1"
+      - id: "05.12.1"
         type: choice
-        prompt: "«Говорю по-русски» —"
-        options: ["Govorim ruski.", "Govori ruski.", "Govorim ruska."]
+        prompt: "«Я говорю по-русски» —"
+        options: ["Govorim ruski.", "Govorim na ruski.", "Govori ruski."]
         answer: "Govorim ruski."
-      - id: "05.2.2"
-        type: choice
-        prompt: "«Работаю программистом» —"
-        options: ["Radim kao programer.", "Radim programer.", "Radim kao programera."]
-        answer: "Radim kao programer."
-      - id: "05.2.3"
-        type: fill_blank
-        prompt: "Она врач: «Ona radi ___ lekar.»"
-        accept: ["kao"]
-      - id: "05.2.4"
-        type: word_bank
-        prompt: "Собери: «ты говоришь по-сербски?»"
-        bank: ["Govoriš", "srpski"]
-        accept: ["Govoriš srpski?"]
 
-  - id: "05.3"
-    kind: reading
-    title: "Знакомство"
-    md: "05/3-citanje.md"
-    also_ok: ["radi"]
-    exercises:
-      - id: "05.3.1"
-        type: choice
-        prompt: "Откуда Ана?"
-        options: ["Iz Rusije.", "Iz Srbije.", "Iz Novog Sada."]
-        answer: "Iz Rusije."
-      - id: "05.3.2"
-        type: choice
-        prompt: "Кем работает Ана?"
-        options: ["Radi kao programer.", "Radi kao lekar.", "Radi kao konobar."]
-        answer: "Radi kao programer."
+  - id: "05.13"
+    kind: teach
+    title: "Немного, много, хорошо, плохо"
+    md: "05/13-malo.md"
 
-  - id: "05.4"
+  - id: "05.14"
     kind: practice
-    title: "Диктант"
-    mixed: true
+    title: "Запомним: Немного, много, хорошо, плохо"
     exercises:
-      - id: "05.4.1"
-        hint: "Фраза из урока 04: «я» + короткая форма «быть» + откуда."
-        type: listen
-        prompt: "Запиши, что слышишь."
-        say: "Ja sam iz Rusije."
-        accept: ["Ja sam iz Rusije."]
-        ru: ["Я из России", "Я родом из России"]
-        explain: "«Rusije» — родительный падеж после «iz»: одно s и окончание -ije."
-      - id: "05.4.2"
-        type: listen
-        prompt: "Запиши, что слышишь."
-        say: "Odakle si?"
-        accept: ["Odakle si?"]
-        ru: ["Откуда ты?", "Ты откуда?", "Откуда ты родом?"]
-      - id: "05.4.3"
-        type: listen
-        prompt: "Запиши, что слышишь."
-        say: "Radim kao programer."
-        accept: ["Radim kao programer."]
-        ru: ["Я работаю программистом", "Работаю программистом", "Я работаю программистом."]
-
-  - id: "05.5"
-    kind: checkpoint
-    title: "Проверка"
-    also_ok: ["nije", "radim", "radi"]
-    exercises:
-      - id: "05.5.1"
+      - id: "05.14.1"
         type: choice
-        prompt: "«Ты студент?» (ты)"
-        options: ["Ti si student?", "Ti je student?", "Ti sam student?"]
-        answer: "Ti si student?"
-      - id: "05.5.2"
+        prompt: "«Говорите ли по-сербски?» — «___»"
+        options: ["Malo.", "Dobar dan.", "Izvolite."]
+        answer: "Malo."
+
+  - id: "05.15"
+    kind: teach
+    title: "Не понимаю"
+    md: "05/15-ne-razumem.md"
+
+  - id: "05.16"
+    kind: practice
+    title: "Запомним: Не понимаю"
+    exercises:
+      - id: "05.16.1"
+        type: choice
+        prompt: "Не понял собеседника. Говоришь —"
+        options: ["Izvinite, ne razumem.", "Hvala lepo.", "Drago mi je."]
+        answer: "Izvinite, ne razumem."
+
+  - id: "05.17"
+    kind: teach
+    title: "Помедленнее, повторите"
+    md: "05/17-polako.md"
+
+  - id: "05.18"
+    kind: practice
+    title: "Запомним: Помедленнее, повторите"
+    exercises:
+      - id: "05.18.1"
+        type: choice
+        prompt: "Собеседник говорит слишком быстро. Просишь —"
+        options: ["Polako, molim.", "Hvala lepo.", "Malo."]
+        answer: "Polako, molim."
+
+  - id: "05.19"
+    kind: teach
+    title: "Теперь понимаю"
+    md: "05/19-sada.md"
+
+  - id: "05.20"
+    kind: practice
+    title: "Запомним: Теперь понимаю"
+    exercises:
+      - id: "05.20.1"
+        type: choice
+        prompt: "Наконец понял. Говоришь —"
+        options: ["Sada razumem.", "Ne razumem.", "Polako, molim."]
+        answer: "Sada razumem."
+
+  - id: "05.21"
+    kind: practice
+    title: "Послушай и выбери"
+    exercises:
+      - id: "05.21.1"
+        type: choice
+        say: "Govorim ruski."
+        prompt: "Послушай и выбери перевод."
+        options: ["Говорю по-русски.", "Говорю по-сербски.", "Понимаю."]
+        answer: "Говорю по-русски."
+      - id: "05.21.2"
+        type: choice
+        say: "Ne razumem."
+        prompt: "Послушай и выбери перевод."
+        options: ["Не понимаю.", "Понимаю.", "Повторите."]
+        answer: "Не понимаю."
+      - id: "05.21.3"
+        type: choice
+        say: "Polako, molim."
+        prompt: "Послушай и выбери перевод."
+        options: ["Помедленнее, пожалуйста.", "Повторите, пожалуйста.", "Извините."]
+        answer: "Помедленнее, пожалуйста."
+      - id: "05.21.4"
+        type: choice
+        say: "Sada razumem."
+        prompt: "Послушай и выбери перевод."
+        options: ["Теперь понимаю.", "Не понимаю.", "Немного."]
+        answer: "Теперь понимаю."
+
+  - id: "05.22"
+    kind: practice
+    title: "Что скажешь?"
+    exercises:
+      - id: "05.22.1"
+        type: choice
+        prompt: "«Govorite li srpski?» — «___»"
+        options: ["Malo.", "Polako.", "Hvala lepo."]
+        answer: "Malo."
+      - id: "05.22.2"
+        type: choice
+        prompt: "Просишь повторить —"
+        options: ["Ponovite, molim.", "Sada razumem.", "Malo."]
+        answer: "Ponovite, molim."
+
+  - id: "05.23"
+    kind: practice
+    title: "Соедини"
+    exercises:
+      - id: "05.23.1"
         type: match
-        prompt: "Соедини"
+        prompt: "Соедини слово и перевод"
         pairs:
-          - ["Odakle si?", "Откуда ты?"]
-          - ["Govoriš srpski?", "Говоришь по-сербски?"]
-          - ["Radim kao lekar.", "Работаю врачом."]
-      - id: "05.5.3"
-        hint: "Одно слово: ni- + та же форма, что в «Ana je…»."
-        type: fill_blank
-        prompt: "«Ана не из Сербии, она из России» → Ana ___ iz Srbije."
-        accept: ["nije"]
-        explain: "«nije» — та же форма для он/она/оно, одно слово."
-      - id: "05.5.4"
+          - ["govoriti", "говорить"]
+          - ["ruski", "русский (язык)"]
+          - ["srpski", "сербский (язык)"]
+          - ["engleski", "английский (язык)"]
+          - ["malo", "немного"]
+          - ["ne razumem", "не понимаю"]
+
+  - id: "05.24"
+    kind: practice
+    title: "Собери"
+    exercises:
+      - id: "05.24.1"
         type: word_bank
-        prompt: "Собери: «я работаю программистом»"
-        bank: ["Radim", "kao", "programer"]
-        accept: ["Radim kao programer."]
-      - id: "05.5.5"
+        prompt: "Собери: «говорю по-русски»"
+        bank: ["Govorim", "ruski", "srpski"]
+        accept: ["Govorim ruski."]
+      - id: "05.24.2"
+        type: word_bank
+        prompt: "Собери: «извините, не понимаю»"
+        bank: ["Izvinite", "ne", "razumem", "govorim"]
+        accept: ["Izvinite, ne razumem."]
+
+  - id: "05.25"
+    kind: practice
+    title: "Напиши"
+    exercises:
+      - id: "05.25.1"
+        type: fill_blank
+        prompt: "«Говоришь по-сербски?» → Govoriš ___?"
+        accept: ["srpski"]
+      - id: "05.25.2"
+        hint: "Слово было на последнем слайде: четыре буквы, начинается на s."
+        type: fill_blank
+        prompt: "«Теперь понимаю» → ___ razumem."
+        accept: ["Sada", "Sad"]
+      - id: "05.25.3"
         type: translate
-        prompt: "Откуда ты?"
-        accept: ["Odakle si?"]
-
-  - id: "05.6"
-    kind: dialogue
-    title: "Сосед у входа"
-    scene: "Ты выходишь из подъезда, сосед придерживает дверь и заговаривает."
-    voice: m
-    also_ok: ["učim", "znam"]
-    turns:
-      - who: npc
-        sr: "Dobar dan! Vi ste novi ovde?"
-        ru: "Добрый день! Вы здесь новенький?"
-
-      - who: me
-        sr: "Dobar dan. Da, ja sam iz Rusije."
-        ru: "Добрый день. Да, я из России."
-        exercise:
-          id: "05.6.1"
-          type: choice
-          prompt: "Поздоровайся и скажи, что ты из России"
-          options:
-            - "Dobar dan. Da, ja sam iz Rusije."
-            - "Dobar dan. Ne, ja sam iz Rusije."
-            - "Laku noć. Da, ja sam iz Rusije."
-          answer: "Dobar dan. Da, ja sam iz Rusije."
-
-      - who: npc
-        sr: "Drago mi je. Ja sam Marko."
-        ru: "Приятно познакомиться. Я Марко."
-
-      - who: me
-        sr: "Drago mi je takođe."
-        ru: "Мне тоже приятно."
-        exercise:
-          id: "05.6.2"
-          type: choice
-          prompt: "Ответь, что тебе тоже приятно"
-          options:
-            - "Drago mi je takođe."
-            - "Nema na čemu."
-            - "Vidimo se."
-          answer: "Drago mi je takođe."
-          explain: "«takođe» — «тоже, взаимно»: короткий вежливый ответ на «drago mi je»."
-
-      - who: npc
-        sr: "Govorite li srpski?"
-        ru: "Вы говорите по-сербски?"
-
-      - who: me
-        sr: "Malo. Učim srpski."
-        ru: "Немного. Учу сербский."
-        exercise:
-          id: "05.6.3"
-          hint: "Глагол «учить» для «я»: основа uč-, окончание как у govorim."
-          type: fill_blank
-          prompt: "«Немного. Учу сербский» → Malo. ___ srpski."
-          accept: ["Učim"]
-          explain: "učiti → ja učim. «Учу сербский» — про процесс, поэтому настоящее время."
-
-      - who: npc
-        sr: "Radim kao nastavnik. Danas sam umoran."
-        ru: "Работаю учителем. Сегодня устал."
-
-      - who: me
-        sr: "Izvinite, ne razumem. Polako, molim."
-        ru: "Извините, не понимаю. Помедленнее, пожалуйста."
-        exercise:
-          id: "05.6.4"
-          type: choice
-          prompt: "Он говорит слишком быстро. Попроси помедленнее"
-          options:
-            - "Izvinite, ne razumem. Polako, molim."
-            - "Izvinite, ne znam. Hvala, molim."
-            - "Dobro, razumem. Polako, molim."
-          answer: "Izvinite, ne razumem. Polako, molim."
-          explain: "«Ne razumem» — «не понимаю» (не путай с «ne znam» — «не знаю»), «polako» — «помедленнее». Эти две фразы выручат чаще любых других."
-
-      - who: npc
-        sr: "Dobro, izvinite. Polako: radim kao nastavnik."
-        ru: "Хорошо, извините. Медленно: работаю учителем."
-
-      - who: me
-        sr: "Sada razumem. Hvala!"
-        ru: "Теперь понимаю. Спасибо!"
-        exercise:
-          id: "05.6.5"
-          type: translate
-          prompt: "Скажи: «теперь понимаю, спасибо»"
-          accept: ["Sada razumem. Hvala!", "Sad razumem. Hvala!", "Sada razumem, hvala!", "Sad razumem, hvala"]
-          hint: "Слово для «теперь» — в теории этого урока, сразу после «Polako, molim»."
-
-      - who: npc
-        sr: "Nema na čemu. Vidimo se!"
-        ru: "Не за что. Увидимся!"
+        prompt: "Помедленнее, пожалуйста."
+        accept: ["Polako, molim.", "Polako, molim vas.", "Molim vas, polako."]

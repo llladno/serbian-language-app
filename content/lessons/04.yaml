@@ -1,103 +1,139 @@
 lesson: "04"
-title: "Это я (Jesam ja)"
-subtitle: "глагол быть, откуда я, где живу"
-teaches: [biti, zemlja, zovem-se, kako-se-zoves, ja-sam]
+title: "Знакомство (Upoznavanje)"
+subtitle: "как зовут, приятно познакомиться"
+teaches: [kako-se-zoves, zovem-se, ja-sam, drago-mi-je, takodje]
 
 steps:
-  - id: "04.1"
+  - id: "04.11"
     kind: teach
-    title: "Глагол «быть» — jesam"
-    md: "04/1-jesam.md"
+    title: "Как тебя зовут?"
+    md: "04/11-kako-se-zoves.md"
 
-  - id: "04.2"
+  - id: "04.12"
     kind: practice
-    title: "sam / si / je"
-    also_ok: ["nisam", "nisi", "nije", "student"]
+    title: "Запомним: Как тебя зовут?"
     exercises:
-      - id: "04.2.1"
+      - id: "04.12.1"
         type: choice
-        prompt: "«Я из России» —"
-        options: ["Ja sam iz Rusije.", "Ja iz Rusije.", "Ja je iz Rusije."]
-        answer: "Ja sam iz Rusije."
-      - id: "04.2.2"
-        type: choice
-        prompt: "«Ана из Сербии» —"
-        options: ["Ana je iz Srbije.", "Ana si iz Srbije.", "Ana sam iz Srbije."]
-        answer: "Ana je iz Srbije."
-      - id: "04.2.8"
-        type: choice
-        prompt: "«Ты не студент» —"
-        options: ["Ti nisi student.", "Ti nije student.", "Ti ne si student."]
-        answer: "Ti nisi student."
-        explain: "Отрицание «быть» — одно слово: ni + форма, как в таблице (ti → nisi). «ne si» отдельно не говорят."
-      - id: "04.2.3"
-        type: fill_blank
-        prompt: "Ti ___ student? (ты)"
-        accept: ["si"]
-      - id: "04.2.4"
-        hint: "Отрицание «быть» — одно слово, оно начинается на ni-. Для «он» смотри правый столбец таблицы."
-        type: fill_blank
-        prompt: "«Он не студент» → On ___ student."
-        accept: ["nije"]
-        explain: "«nije» — «не есть», одно слово: не «ne» + «je» отдельно."
-      - id: "04.2.5"
-        type: word_bank
-        prompt: "Собери: «я не студент»"
-        bank: ["Ja", "nisam", "student"]
-        accept: ["Ja nisam student."]
-      - id: "04.2.6"
-        hint: "Не хватает подлежащего и короткой формы «быть» для «я» (на -m). Перепиши предложение целиком."
-        type: fix_error
-        prompt: "Iz Rusije."
-        accept: ["Ja sam iz Rusije.", "Iz Rusije sam."]
-        explain: "Без подлежащего и «sam» это не предложение — добавь «Ja sam» (или «sam» в конце)."
-      - id: "04.2.7"
-        hint: "Шесть коротких форм — все в таблице теории (левый столбец). У «мы», «вы» и «они» форма начинается на s-."
-        type: conjugate
-        prompt: "biti — быть"
-        forms: ["ja", "ti", "on/ona/ono", "mi", "vi", "oni/one/ona"]
-        accept:
-          - ["sam"]
-          - ["si"]
-          - ["je"]
-          - ["smo"]
-          - ["ste"]
-          - ["su"]
-        meta: "jesam"
+        prompt: "Спрашиваешь незнакомого человека, как его зовут —"
+        options: ["Kako se zovete?", "Kako se zoveš?", "Kako ste?"]
+        answer: "Kako se zovete?"
 
-  - id: "04.3"
+  - id: "04.13"
     kind: teach
-    title: "Имя, откуда я, где живу"
-    md: "04/3-odakle.md"
+    title: "Меня зовут…"
+    md: "04/13-zovem-se.md"
 
-  - id: "04.4"
+  - id: "04.14"
     kind: practice
-    title: "Откуда и где"
-    also_ok: ["rusije", "srbije", "beogradu"]
+    title: "Запомним: Меня зовут…"
     exercises:
-      - id: "04.4.1"
+      - id: "04.14.1"
         type: choice
-        prompt: "«Откуда ты?» —"
-        options: ["Odakle si?", "Odakle je?", "Odakle sam?"]
-        answer: "Odakle si?"
-      - id: "04.4.2"
+        prompt: "Назови своё имя —"
+        options: ["Zovem se Ana.", "Kako se zoveš?", "Hvala lepo."]
+        answer: "Zovem se Ana."
+
+  - id: "04.15"
+    kind: teach
+    title: "Drago mi je"
+    md: "04/15-drago-mi-je.md"
+
+  - id: "04.16"
+    kind: practice
+    title: "Запомним: Drago mi je"
+    exercises:
+      - id: "04.16.1"
+        type: choice
+        prompt: "Тебе сказали «Drago mi je». Отвечаешь —"
+        options: ["Takođe.", "Nema na čemu.", "Doviđenja."]
+        answer: "Takođe."
+
+  - id: "04.17"
+    kind: practice
+    title: "Послушай и выбери"
+    exercises:
+      - id: "04.17.1"
+        type: choice
+        say: "Kako se zoveš?"
+        prompt: "Послушай и выбери перевод."
+        options: ["Как тебя зовут?", "Как дела?", "Что ты говоришь?"]
+        answer: "Как тебя зовут?"
+      - id: "04.17.2"
+        type: choice
+        say: "Zovem se Ana."
+        prompt: "Послушай и выбери перевод."
+        options: ["Меня зовут Ана.", "Как тебя зовут?", "Приятно познакомиться."]
+        answer: "Меня зовут Ана."
+      - id: "04.17.3"
+        type: choice
+        say: "Drago mi je."
+        prompt: "Послушай и выбери перевод."
+        options: ["Приятно познакомиться.", "Большое спасибо.", "Извините."]
+        answer: "Приятно познакомиться."
+      - id: "04.17.4"
+        type: choice
+        say: "Takođe."
+        prompt: "Послушай и выбери перевод."
+        options: ["Взаимно.", "Не за что.", "До свидания."]
+        answer: "Взаимно."
+
+  - id: "04.18"
+    kind: practice
+    title: "Что скажешь?"
+    exercises:
+      - id: "04.18.1"
+        type: choice
+        prompt: "Знакомишься со сверстником. Спрашиваешь имя —"
+        options: ["Kako se zoveš?", "Kako se zovete?", "Drago mi je."]
+        answer: "Kako se zoveš?"
+      - id: "04.18.2"
+        type: choice
+        prompt: "«Drago mi je.» — «___»"
+        options: ["Takođe.", "Zovem se Ana.", "Molim vas."]
+        answer: "Takođe."
+
+  - id: "04.19"
+    kind: practice
+    title: "Соедини"
+    exercises:
+      - id: "04.19.1"
         type: match
-        prompt: "Соедини"
+        prompt: "Соедини фразу и перевод"
         pairs:
-          - ["iz Rusije", "из России"]
-          - ["iz Srbije", "из Сербии"]
-          - ["živim u Novom Sadu", "живу в Нови-Саде"]
-      - id: "04.4.3"
-        type: fill_blank
-        prompt: "Живу в Белграде: «Živim ___ Beogradu.»"
-        accept: ["u"]
-      - id: "04.4.4"
-        type: word_bank
-        prompt: "Собери: «я из Сербии»"
-        bank: ["Ja", "sam", "iz", "Srbije"]
-        accept: ["Ja sam iz Srbije."]
-      - id: "04.4.5"
+          - ["Kako se zoveš?", "Как тебя зовут?"]
+          - ["Kako se zovete?", "Как вас зовут?"]
+          - ["Zovem se Ana", "Меня зовут Ана"]
+          - ["Ja sam Ana", "Я Ана"]
+          - ["Drago mi je", "Приятно познакомиться"]
+          - ["Takođe", "Взаимно"]
+
+  - id: "04.20"
+    kind: practice
+    title: "Собери"
+    exercises:
+      - id: "04.20.1"
         type: word_bank
         prompt: "Собери: «меня зовут Ана»"
         bank: ["Zovem", "se", "Ana"]
         accept: ["Zovem se Ana."]
+      - id: "04.20.2"
+        type: word_bank
+        prompt: "Собери вопрос: «как вас зовут?»"
+        bank: ["Kako", "se", "zovete", "zoveš"]
+        accept: ["Kako se zovete?"]
+
+  - id: "04.21"
+    kind: practice
+    title: "Напиши"
+    exercises:
+      - id: "04.21.1"
+        hint: "Начинается на zov-, для «ты» заканчивается на -š."
+        type: fill_blank
+        prompt: "Другу: «Kako se ___?»"
+        accept: ["zoveš"]
+      - id: "04.21.2"
+        hint: "Всего три слова; «mi» и «je» звучат слитно, но пишутся раздельно."
+        type: translate
+        prompt: "Приятно познакомиться."
+        accept: ["Drago mi je."]

@@ -1,0 +1,156 @@
+lesson: "05b"
+title: "Работаю и учу (Radim i učim)"
+subtitle: "профессии, работаю, знаю, учу, сегодня"
+teaches: [raditi, radim-kao, znati, uciti, ovde, danas, umoran, programer, student, lekar, konobar, nastavnik]
+
+steps:
+  - id: "05b.1"
+    kind: teach
+    title: "Я работаю…"
+    md: "05b/1-radim-kao.md"
+
+  - id: "05b.2"
+    kind: practice
+    title: "Запомним: Я работаю…"
+    exercises:
+      - id: "05b.2.1"
+        type: choice
+        prompt: "«Я работаю врачом» —"
+        options: ["Radim kao lekar.", "Radim lekar.", "Radi kao lekar."]
+        answer: "Radim kao lekar."
+
+  - id: "05b.3"
+    kind: teach
+    title: "Профессии"
+    md: "05b/3-profesije.md"
+
+  - id: "05b.4"
+    kind: practice
+    title: "Запомним: Профессии"
+    exercises:
+      - id: "05b.4.1"
+        type: choice
+        prompt: "Слово, которое значит «официант», —"
+        options: ["konobar", "lekar", "student"]
+        answer: "konobar"
+
+  - id: "05b.5"
+    kind: teach
+    title: "Знаю и учу"
+    md: "05b/5-znati-uciti.md"
+
+  - id: "05b.6"
+    kind: practice
+    title: "Запомним: Знаю и учу"
+    exercises:
+      - id: "05b.6.1"
+        type: choice
+        prompt: "«Учу сербский» —"
+        options: ["Učim srpski.", "Govorim srpski.", "Radim srpski."]
+        answer: "Učim srpski."
+
+  - id: "05b.7"
+    kind: teach
+    title: "Здесь и сегодня"
+    md: "05b/7-ovde-danas.md"
+
+  - id: "05b.8"
+    kind: practice
+    title: "Запомним: Здесь и сегодня"
+    exercises:
+      - id: "05b.8.1"
+        type: choice
+        prompt: "Слово «umoran» значит —"
+        options: ["усталый", "умный", "сердитый"]
+        answer: "усталый"
+
+  - id: "05b.9"
+    kind: practice
+    title: "Послушай и выбери"
+    exercises:
+      - id: "05b.9.1"
+        type: choice
+        say: "Radim kao programer."
+        prompt: "Послушай и выбери перевод."
+        options: ["Работаю программистом.", "Работаю врачом.", "Учу сербский."]
+        answer: "Работаю программистом."
+      - id: "05b.9.2"
+        type: choice
+        say: "Ona radi kao lekar."
+        prompt: "Послушай и выбери перевод."
+        options: ["Она работает врачом.", "Он работает врачом.", "Она студентка."]
+        answer: "Она работает врачом."
+      - id: "05b.9.3"
+        type: choice
+        say: "Učim srpski."
+        prompt: "Послушай и выбери перевод."
+        options: ["Учу сербский.", "Говорю по-сербски.", "Не понимаю."]
+        answer: "Учу сербский."
+      - id: "05b.9.4"
+        type: choice
+        say: "Danas sam umoran."
+        prompt: "Послушай и выбери перевод."
+        options: ["Сегодня я устал.", "Я здесь.", "Я работаю."]
+        answer: "Сегодня я устал."
+
+  - id: "05b.10"
+    kind: practice
+    title: "Что скажешь?"
+    exercises:
+      - id: "05b.10.1"
+        type: choice
+        prompt: "Тебя спросили, кем ты работаешь. Ты программист —"
+        options: ["Radim kao programer.", "Učim kao programer.", "Znam programer."]
+        answer: "Radim kao programer."
+      - id: "05b.10.2"
+        type: choice
+        prompt: "Слово «student» значит —"
+        options: ["студент", "учитель", "врач"]
+        answer: "студент"
+
+  - id: "05b.11"
+    kind: practice
+    title: "Соедини"
+    exercises:
+      - id: "05b.11.1"
+        type: match
+        prompt: "Соедини слово и перевод"
+        pairs:
+          - ["programer", "программист"]
+          - ["student", "студент"]
+          - ["lekar", "врач"]
+          - ["konobar", "официант"]
+          - ["nastavnik", "учитель"]
+          - ["umoran", "усталый"]
+
+  - id: "05b.12"
+    kind: practice
+    title: "Собери"
+    exercises:
+      - id: "05b.12.1"
+        type: word_bank
+        prompt: "Собери: «работаю программистом»"
+        bank: ["Radim", "kao", "programer", "lekar"]
+        accept: ["Radim kao programer."]
+      - id: "05b.12.2"
+        type: word_bank
+        prompt: "Собери: «учу сербский»"
+        bank: ["Učim", "srpski", "ruski"]
+        accept: ["Učim srpski."]
+
+  - id: "05b.13"
+    kind: practice
+    title: "Напиши"
+    exercises:
+      - id: "05b.13.1"
+        type: fill_blank
+        prompt: "«Работаю врачом» → Radim ___ lekar."
+        accept: ["kao"]
+      - id: "05b.13.2"
+        type: fill_blank
+        prompt: "Профессия «врач» по-сербски — ___"
+        accept: ["lekar"]
+      - id: "05b.13.3"
+        type: translate
+        prompt: "Сегодня я устал."
+        accept: ["Danas sam umoran.", "Umoran sam danas.", "Danas sam umorna.", "Umorna sam danas."]

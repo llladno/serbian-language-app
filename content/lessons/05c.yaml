@@ -1,0 +1,133 @@
+lesson: "05c"
+title: "Повторение: говорю и работаю (Ponavljanje)"
+subtitle: "языки, понимаю, работаю, учу"
+teaches: []
+
+steps:
+  - id: "05c.1"
+    kind: practice
+    title: "Послушай и выбери"
+    exercises:
+      - id: "05c.1.1"
+        type: choice
+        say: "Ne govorim dobro engleski."
+        prompt: "Послушай и выбери перевод."
+        options: ["Плохо говорю по-английски.", "Хорошо говорю по-английски.", "Говорю по-русски."]
+        answer: "Плохо говорю по-английски."
+      - id: "05c.1.2"
+        type: choice
+        say: "Ponovite, molim."
+        prompt: "Послушай и выбери перевод."
+        options: ["Повторите, пожалуйста.", "Помедленнее, пожалуйста.", "Извините."]
+        answer: "Повторите, пожалуйста."
+      - id: "05c.1.3"
+        type: choice
+        say: "Radim kao konobar."
+        prompt: "Послушай и выбери перевод."
+        options: ["Работаю официантом.", "Работаю врачом.", "Учу сербский."]
+        answer: "Работаю официантом."
+
+  - id: "05c.2"
+    kind: reading
+    title: "Знакомство"
+    md: "05c/2-znakomstvo.md"
+    exercises:
+      - id: "05c.2.1"
+        type: choice
+        prompt: "Откуда Ана?"
+        options: ["Из России", "Из Сербии", "Из Нови-Сада"]
+        answer: "Из России"
+      - id: "05c.2.2"
+        type: choice
+        prompt: "Кем работает Ана?"
+        options: ["Программистом", "Врачом", "Официантом"]
+        answer: "Программистом"
+
+  - id: "05c.3"
+    kind: practice
+    title: "Соедини"
+    exercises:
+      - id: "05c.3.1"
+        type: match
+        prompt: "Соедини фразу и перевод"
+        pairs:
+          - ["Govorim srpski", "Говорю по-сербски"]
+          - ["Ne razumem", "Не понимаю"]
+          - ["Polako, molim", "Помедленнее, пожалуйста"]
+          - ["Radim kao lekar", "Работаю врачом"]
+          - ["Učim srpski", "Учу сербский"]
+          - ["Danas sam umoran", "Сегодня я устал"]
+
+  - id: "05c.4"
+    kind: practice
+    title: "Диктант"
+    exercises:
+      - id: "05c.4.1"
+        type: listen
+        say: "Sada razumem."
+        prompt: "Запиши, что слышишь."
+        accept: ["Sada razumem.", "Sad razumem."]
+        ru: ["Теперь понимаю.", "Сейчас понимаю."]
+      - id: "05c.4.2"
+        type: listen
+        say: "Radim kao programer."
+        prompt: "Запиши, что слышишь."
+        accept: ["Radim kao programer."]
+        ru: ["Работаю программистом.", "Я работаю программистом."]
+
+  - id: "05c.5"
+    kind: practice
+    title: "Собери"
+    exercises:
+      - id: "05c.5.1"
+        type: word_bank
+        prompt: "Собери: «повторите, пожалуйста»"
+        bank: ["Ponovite", "molim", "polako"]
+        accept: ["Ponovite, molim."]
+
+  - id: "05c.6"
+    kind: practice
+    title: "Переведи"
+    exercises:
+      - id: "05c.6.1"
+        type: translate
+        prompt: "Говорю по-русски."
+        accept: ["Govorim ruski.", "Ja govorim ruski."]
+      - id: "05c.6.2"
+        type: translate
+        prompt: "Работаю официантом."
+        accept: ["Radim kao konobar.", "Ja radim kao konobar."]
+
+  - id: "05c.7"
+    kind: dialogue
+    title: "Сосед у входа"
+    scene: "Ты выходишь из подъезда. Сосед придерживает дверь и заговаривает с тобой."
+    voice: m
+    turns:
+      - who: npc
+        sr: "Dobar dan! Govorite li srpski?"
+        ru: "Добрый день! Вы говорите по-сербски?"
+
+      - who: me
+        sr: "Malo. Učim srpski."
+        ru: "Немного. Учу сербский."
+        exercise:
+          id: "05c.7.1"
+          type: choice
+          prompt: "Скажи, что говоришь немного и учишь сербский"
+          options: ["Malo. Učim srpski.", "Mnogo. Znam srpski.", "Malo. Radim srpski."]
+          answer: "Malo. Učim srpski."
+
+      - who: npc
+        sr: "Dobro! Ja radim kao lekar. A vi?"
+        ru: "Хорошо! Я работаю врачом. А вы?"
+
+      - who: me
+        sr: "Radim kao programer."
+        ru: "Работаю программистом."
+        exercise:
+          id: "05c.7.2"
+          type: choice
+          prompt: "Скажи, что ты работаешь программистом"
+          options: ["Radim kao programer.", "Radim kao lekar.", "Učim kao programer."]
+          answer: "Radim kao programer."

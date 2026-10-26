@@ -1,123 +1,155 @@
 lesson: "08"
-title: "Числа (Brojevi)"
-subtitle: "числа 0–100 и число+существительное"
-teaches:
-  [
-    sest, sedam, osam, devet, jedanaest, dvanaest, petnaest, trideset,
-    cetrdeset, pedeset, dvesta, trista, godina, kafa,
-  ]
+title: "Числа 0–10 (Brojevi)"
+subtitle: "от нуля до десяти"
+teaches: [nula, jedan, dva, tri, cetiri, pet, sest, sedam, osam, devet, deset]
 
 steps:
-  - id: "08.1"
+  - id: "08.11"
     kind: teach
-    title: "Числа 0–10"
-    md: "08/1-nula-deset.md"
+    title: "0, 1, 2, 3"
+    md: "08/11-nula-tri.md"
 
-  - id: "08.2"
+  - id: "08.12"
+    kind: practice
+    title: "Запомним: 0, 1, 2, 3"
+    exercises:
+      - id: "08.12.1"
+        type: choice
+        prompt: "«3» —"
+        options: ["tri", "dva", "jedan"]
+        answer: "tri"
+
+  - id: "08.13"
+    kind: teach
+    title: "4, 5, 6"
+    md: "08/13-cetiri-sest.md"
+
+  - id: "08.14"
+    kind: practice
+    title: "Запомним: 4, 5, 6"
+    exercises:
+      - id: "08.14.1"
+        type: choice
+        prompt: "«5» —"
+        options: ["pet", "šest", "četiri"]
+        answer: "pet"
+
+  - id: "08.15"
+    kind: teach
+    title: "7, 8, 9, 10"
+    md: "08/15-sedam-deset.md"
+
+  - id: "08.16"
+    kind: practice
+    title: "Запомним: 7, 8, 9, 10"
+    exercises:
+      - id: "08.16.1"
+        type: choice
+        prompt: "«9» —"
+        options: ["devet", "deset", "osam"]
+        answer: "devet"
+
+  - id: "08.17"
+    kind: practice
+    title: "Послушай и выбери"
+    exercises:
+      - id: "08.17.1"
+        type: choice
+        say: "Dva."
+        prompt: "Послушай и выбери перевод."
+        options: ["Два.", "Три.", "Четыре."]
+        answer: "Два."
+      - id: "08.17.2"
+        type: choice
+        say: "Pet."
+        prompt: "Послушай и выбери перевод."
+        options: ["Пять.", "Шесть.", "Девять."]
+        answer: "Пять."
+      - id: "08.17.3"
+        type: choice
+        say: "Sedam."
+        prompt: "Послушай и выбери перевод."
+        options: ["Семь.", "Восемь.", "Шесть."]
+        answer: "Семь."
+      - id: "08.17.4"
+        type: choice
+        say: "Deset."
+        prompt: "Послушай и выбери перевод."
+        options: ["Десять.", "Девять.", "Ноль."]
+        answer: "Десять."
+
+  - id: "08.18"
     kind: practice
     title: "Узнай число"
     exercises:
-      - id: "08.2.1"
+      - id: "08.18.1"
         type: choice
         prompt: "«7» —"
         options: ["sedam", "šest", "osam"]
         answer: "sedam"
-      - id: "08.2.2"
+      - id: "08.18.2"
         type: choice
-        prompt: "«четыре» —"
-        options: ["četiri", "četrdeset", "tri"]
+        prompt: "«4» —"
+        options: ["četiri", "tri", "pet"]
         answer: "četiri"
-      - id: "08.2.3"
+      - id: "08.18.3"
+        type: choice
+        prompt: "«10» —"
+        options: ["deset", "devet", "nula"]
+        answer: "deset"
+      - id: "08.18.4"
+        type: choice
+        prompt: "«0» —"
+        options: ["nula", "jedan", "deset"]
+        answer: "nula"
+
+  - id: "08.19"
+    kind: practice
+    title: "Соедини"
+    exercises:
+      - id: "08.19.1"
         type: match
-        prompt: "Соедини число и цифру"
+        prompt: "Соедини слово и цифру"
         pairs:
-          - ["jedan", "один"]
-          - ["tri", "три"]
-          - ["pet", "пять"]
-          - ["deset", "десять"]
-      - id: "08.2.4"
+          - ["nula", "ноль (0)"]
+          - ["tri", "три (3)"]
+          - ["pet", "пять (5)"]
+          - ["šest", "шесть (6)"]
+          - ["osam", "восемь (8)"]
+          - ["deset", "десять (10)"]
+
+  - id: "08.20"
+    kind: practice
+    title: "Собери"
+    exercises:
+      - id: "08.20.1"
+        type: word_bank
+        prompt: "Собери: «раз, два, три»"
+        bank: ["Jedan", "dva", "tri", "četiri"]
+        accept: ["Jedan, dva, tri."]
+      - id: "08.20.2"
+        type: word_bank
+        prompt: "Собери: «четыре, пять, шесть»"
+        bank: ["Četiri", "pet", "šest", "sedam"]
+        accept: ["Četiri, pet, šest."]
+
+  - id: "08.21"
+    kind: practice
+    title: "Напиши"
+    exercises:
+      - id: "08.21.1"
         type: fill_blank
         prompt: "Запиши словом: 6 → ___"
         accept: ["šest"]
-
-  - id: "08.3"
-    kind: teach
-    title: "Числа 11–100"
-    md: "08/3-do-sto.md"
-
-  - id: "08.4"
-    kind: practice
-    title: "Считаем дальше"
-    exercises:
-      - id: "08.4.1"
-        type: choice
-        prompt: "«30» —"
-        options: ["trideset", "trinaest", "tri"]
-        answer: "trideset"
-      - id: "08.4.2"
-        type: choice
-        prompt: "«15» —"
-        options: ["petnaest", "pedeset", "pet"]
-        answer: "petnaest"
-      - id: "08.4.3"
-        type: match
-        prompt: "Соедини"
-        pairs:
-          - ["dvadeset", "двадцать"]
-          - ["trideset", "тридцать"]
-          - ["pedeset", "пятьдесят"]
-          - ["sto", "сто"]
-      - id: "08.4.4"
-        hint: "Начинается на čet-; пишется одним словом, вторая часть -deset, как в других десятках."
+      - id: "08.21.2"
         type: fill_blank
-        prompt: "«40» словом — ___"
-        accept: ["četrdeset"]
-        explain: "Не «четири+десет»: гласная выпадает — «čet(i)rdeset»."
-      - id: "08.4.5"
-        type: word_bank
-        prompt: "Собери «35»"
-        bank: ["trideset", "pet"]
-        accept: ["trideset pet"]
-
-  - id: "08.5"
-    kind: teach
-    title: "Число + существительное"
-    md: "08/5-broj-imenica.md"
-
-  - id: "08.6"
-    kind: practice
-    title: "Сколько чего"
-    also_ok: ["kafe", "kafu"]
-    exercises:
-      - id: "08.6.1"
-        type: choice
-        prompt: "«два динара» —"
-        options: ["dva dinara", "dva dinar", "dve dinara"]
-        answer: "dva dinara"
-      - id: "08.6.2"
-        type: choice
-        prompt: "«пять кофе» —"
-        options: ["pet kafa", "pet kafe", "pet kafu"]
-        answer: "pet kafa"
-      - id: "08.6.3"
-        type: match
-        prompt: "Соедини"
-        pairs:
-          - ["jedan dinar", "1 динар"]
-          - ["dva dinara", "2 динара"]
-          - ["pet dinara", "5 динаров"]
-      - id: "08.6.4"
-        hint: "После 2, 3, 4 слово женского рода на -a меняет окончание: -a → -e."
+        prompt: "Запиши словом: 8 → ___"
+        accept: ["osam"]
+      - id: "08.21.3"
         type: fill_blank
-        prompt: "Дополни: «tri ___» (kafa, женский род)"
-        accept: ["kafe"]
-      - id: "08.6.5"
-        type: fix_error
-        prompt: "Pet dinar."
-        accept: ["Pet dinara."]
-      - id: "08.6.6"
-        hint: "После 2, 3, 4 слово женского рода на -a меняет окончание: -a → -e."
-        type: fix_error
-        prompt: "Dve kafa."
-        accept: ["Dve kafe."]
-        explain: "После «dva/dve/tri/četiri» женские слова на -a меняют окончание на -e: «kafa» → «kafe»."
+        prompt: "Запиши словом: 0 → ___"
+        accept: ["nula"]
+      - id: "08.21.4"
+        type: fill_blank
+        prompt: "Запиши словом: 9 → ___"
+        accept: ["devet"]

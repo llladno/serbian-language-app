@@ -1,0 +1,85 @@
+id: "10b"
+title: "Не ровно (Pola, i, do)"
+subtitle: "половина, и столько-то минут, без стольких-то"
+teaches: [pola-sata]
+steps:
+  - slide:
+      name: pola
+      title: "Половина"
+      md: |
+        `pola` [по́ла] *(пола — половина)*. Как по-русски «половина третьего» — это 2:30:
+
+        `Pola tri.` [по́ла три.] *(половина третьего — 2:30)*
+
+        `Pola osam.` [по́ла о́сам.] *(половина восьмого — 7:30)*
+
+        > Считаем к следующему часу: `pola tri` — половина пути к трём, то есть 2:30.
+      check:
+        prompt: "2:30 —"
+        options: ["pola tri", "pola dva", "tri i trideset"]
+        answer: "pola tri"
+        also_ok: ["pola"]
+  - slide:
+      name: i-minuta
+      title: "Час и минуты"
+      md: |
+        Минуты после часа — через `i` [и]:
+
+        `Tri i petnaest.` [три и пэтна́эст.] *(3:15)*
+
+        `Osam i dvadeset.` [о́сам и двадэ́сэт.] *(8:20)*
+      check:
+        prompt: "3:15 —"
+        options: ["tri i petnaest", "petnaest do tri", "pola tri"]
+        answer: "tri i petnaest"
+  - slide:
+      name: do
+      title: "Без скольки"
+      md: |
+        Минуты до часа — через `do` [до] *(до)*:
+
+        `Petnaest do tri.` [пэтна́эст до три.] *(без пятнадцати три — 2:45)*
+
+        `Deset do osam.` [дэ́сэт до о́сам.] *(без десяти восемь — 7:50)*
+      check:
+        prompt: "2:45 —"
+        options: ["petnaest do tri", "tri i petnaest", "pola tri"]
+        answer: "petnaest do tri"
+  - practice:
+      title: "Послушай и выбери"
+      ex:
+        - {type: choice, say: "Pola tri.", options: ["Половина третьего (2:30).", "Половина второго (1:30).", "Три часа (3:00)."], answer: "Половина третьего (2:30)."}
+        - {type: choice, say: "Tri i petnaest.", options: ["Три часа пятнадцать минут (3:15).", "Без пятнадцати три (2:45).", "Половина третьего (2:30)."], answer: "Три часа пятнадцать минут (3:15)."}
+        - {type: choice, say: "Petnaest do tri.", options: ["Без пятнадцати три (2:45).", "Три часа пятнадцать минут (3:15).", "Пятнадцать часов."], answer: "Без пятнадцати три (2:45)."}
+        - {type: choice, say: "Deset do osam.", options: ["Без десяти восемь (7:50).", "Восемь часов десять минут (8:10).", "Половина восьмого (7:30)."], answer: "Без десяти восемь (7:50)."}
+  - practice:
+      title: "Какое время?"
+      ex:
+        - {type: choice, prompt: "7:30 —", options: ["pola osam", "pola sedam", "osam i trideset"], answer: "pola osam"}
+        - {type: choice, prompt: "8:20 —", options: ["osam i dvadeset", "dvadeset do osam", "pola osam"], answer: "osam i dvadeset"}
+        - {type: choice, prompt: "7:50 —", options: ["deset do osam", "osam i deset", "pola osam"], answer: "deset do osam"}
+  - practice:
+      title: "Соедини"
+      ex:
+        - type: match
+          prompt: "Соедини время и запись"
+          pairs:
+            - ["pola tri", "половина третьего (2:30)"]
+            - ["pola osam", "половина восьмого (7:30)"]
+            - ["tri i petnaest", "три часа пятнадцать минут (3:15)"]
+            - ["osam i dvadeset", "восемь часов двадцать минут (8:20)"]
+            - ["petnaest do tri", "без пятнадцати три (2:45)"]
+            - ["deset do osam", "без десяти восемь (7:50)"]
+  - practice:
+      title: "Собери"
+      ex:
+        - {type: word_bank, prompt: "Собери: «половина восьмого»", bank: ["Pola", "osam", "sedam", "i"], accept: ["Pola osam."]}
+        - {type: word_bank, prompt: "Собери: «без десяти восемь»", bank: ["Deset", "do", "osam", "i"], accept: ["Deset do osam."]}
+  - practice:
+      title: "Напиши"
+      ex:
+        - {type: fill_blank, prompt: "2:30 → ___ tri.", accept: ["Pola"]}
+        - {type: fill_blank, prompt: "3:15 → Tri ___ petnaest.", accept: ["i"]}
+        - {type: fill_blank, prompt: "2:45 → Petnaest ___ tri.", accept: ["do"]}
+        - {type: translate, prompt: "Половина третьего.", accept: ["Pola tri."]}
+        - {type: translate, prompt: "Без пятнадцати три.", accept: ["Petnaest do tri."]}

@@ -1,0 +1,102 @@
+id: "13"
+start: 11
+title: "Что-то не так (Reklamacija)"
+subtitle: "испорчено, вернуть, поменять, чек"
+teaches: [pokvareno, svez, rok-trajanja, moci, vratiti, zameniti]
+steps:
+  - slide:
+      name: pokvareno
+      title: "Испорчено или свежее"
+      md: |
+        `pokvareno` [поква́рэно] *(покварено — испорчено)* и `sveže` [свэ́жэ] *(свеже — свежее)*.
+
+        `Ovo je pokvareno.` [о́во е поква́рэно.] *(это испорчено)*
+
+        `Ovo je sveže.` [о́во е свэ́жэ.] *(это свежее)*
+
+        > Молоко и йогурт проверяй по `rok trajanja` [рок тра́яня] *(рок трајања — срок годности)*.
+      check:
+        prompt: "«Это испорчено» —"
+        options: ["Ovo je pokvareno.", "Ovo je sveže.", "Ovo je pekara."]
+        answer: "Ovo je pokvareno."
+        also_ok: ["sveže"]
+  - slide:
+      name: vratiti
+      title: "Вернуть"
+      md: |
+        `Mogu li da vratim?` [мо́гу ли да вра́тим?] *(могу ли да вратим — могу вернуть?)*
+
+        `vratiti` [вра́тити] *(вратити — вернуть)*.
+
+        > `mogu li` — «могу ли»: `li` снова делает вопрос.
+      check:
+        prompt: "«Могу вернуть?» —"
+        options: ["Mogu li da vratim?", "Ovo je pokvareno.", "Treba mi hleb."]
+        answer: "Mogu li da vratim?"
+  - slide:
+      name: zameniti
+      title: "Поменять"
+      md: |
+        `Mogu li da zamenim?` [мо́гу ли да замэ́ним?] *(могу ли да заменим — могу поменять?)*
+
+        `zameniti` [замэ́нити] *(заменити — поменять, обменять)*.
+      check:
+        prompt: "«Могу поменять?» —"
+        options: ["Mogu li da zamenim?", "Mogu li da vratim?", "Samo gledam."]
+        answer: "Mogu li da zamenim?"
+        also_ok: ["vratim"]
+  - slide:
+      name: racun
+      title: "Чек"
+      md: |
+        Вернуть без чека обычно нельзя, поэтому спросят:
+
+        `Imate li račun?` [и́матэ ли ра́чун?] *(имате ли рачун — у вас есть чек?)*
+
+        Ответ: `Evo račun.` [э́во ра́чун.] *(вот чек)* или `Nemam računa.` [нэ́мам ра́чуна.] *(у меня нет чека)*
+      check:
+        prompt: "«У вас есть чек?» —"
+        options: ["Imate li račun?", "Imate li sitno?", "Da li imate jaja?"]
+        answer: "Imate li račun?"
+  - practice:
+      title: "Послушай и выбери"
+      also_ok: ["vratim", "zamenim"]
+      ex:
+        - {type: choice, say: "Ovo je pokvareno.", options: ["Это испорчено.", "Это свежее.", "Это дорого."], answer: "Это испорчено."}
+        - {type: choice, say: "Mogu li da vratim?", options: ["Могу вернуть?", "Могу поменять?", "Можно картой?"], answer: "Могу вернуть?"}
+        - {type: choice, say: "Mogu li da zamenim?", options: ["Могу поменять?", "Могу вернуть?", "Можно чек?"], answer: "Могу поменять?"}
+        - {type: choice, say: "Imate li račun?", options: ["У вас есть чек?", "У вас есть мелочь?", "У вас есть пакет?"], answer: "У вас есть чек?"}
+  - practice:
+      title: "Что скажешь?"
+      also_ok: ["vratim", "zamenim"]
+      ex:
+        - {type: choice, prompt: "Молоко испортилось. Ты говоришь —", options: ["Ovo je pokvareno.", "Ovo je sveže.", "Samo gledam."], answer: "Ovo je pokvareno."}
+        - {type: choice, prompt: "Ты хочешь вернуть товар —", options: ["Mogu li da vratim?", "Mogu li da zamenim?", "Kešom ili karticom?"], answer: "Mogu li da vratim?"}
+        - {type: choice, prompt: "Ты хочешь обменять товар —", options: ["Mogu li da zamenim?", "Mogu li da vratim?", "Imate li račun?"], answer: "Mogu li da zamenim?"}
+  - practice:
+      title: "Соедини"
+      also_ok: ["sveže"]
+      ex:
+        - type: match
+          prompt: "Соедини слово и перевод"
+          pairs:
+            - ["pokvareno", "испорчено"]
+            - ["sveže", "свежее"]
+            - ["rok trajanja", "срок годности"]
+            - ["vratiti", "вернуть"]
+            - ["zameniti", "поменять"]
+            - ["račun", "чек"]
+  - practice:
+      title: "Собери"
+      also_ok: ["vratim", "zamenim"]
+      ex:
+        - {type: word_bank, prompt: "Собери: «могу вернуть?»", bank: ["Mogu", "li", "da", "vratim", "zamenim"], accept: ["Mogu li da vratim?"]}
+        - {type: word_bank, prompt: "Собери: «у вас есть чек?»", bank: ["Imate", "li", "račun", "sitno"], accept: ["Imate li račun?"]}
+  - practice:
+      title: "Напиши"
+      also_ok: ["zamenim", "sveže"]
+      ex:
+        - {type: fill_blank, prompt: "«Это испорчено» → Ovo je ___.", accept: ["pokvareno"]}
+        - {type: fill_blank, prompt: "«Могу поменять?» → Mogu li da ___?", accept: ["zamenim"]}
+        - {type: translate, prompt: "Это испорчено.", accept: ["Ovo je pokvareno.", "To je pokvareno."]}
+        - {type: translate, prompt: "Могу вернуть?", accept: ["Mogu li da vratim?"]}

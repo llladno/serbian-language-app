@@ -1,0 +1,175 @@
+lesson: "06b"
+title: "Муж, жена, дети (Muž, žena, deca)"
+subtitle: "муж, жена, сын, дочь, ребёнок, родители"
+teaches: [muz, zena, sin, cerka, dete, deca, roditelji]
+
+steps:
+  - id: "06b.1"
+    kind: teach
+    title: "Муж и жена"
+    md: "06b/1-muz-zena.md"
+
+  - id: "06b.2"
+    kind: practice
+    title: "Запомним: Муж и жена"
+    exercises:
+      - id: "06b.2.1"
+        type: choice
+        prompt: "Слово «муж» по-сербски —"
+        options: ["muž", "žena", "mama"]
+        answer: "muž"
+
+  - id: "06b.3"
+    kind: teach
+    title: "Сын и дочь"
+    md: "06b/3-sin-cerka.md"
+
+  - id: "06b.4"
+    kind: practice
+    title: "Запомним: Сын и дочь"
+    exercises:
+      - id: "06b.4.1"
+        type: choice
+        prompt: "Слово «дочь» по-сербски —"
+        options: ["ćerka", "sin", "sestra"]
+        answer: "ćerka"
+
+  - id: "06b.5"
+    kind: teach
+    title: "Ребёнок и дети"
+    md: "06b/5-dete-deca.md"
+
+  - id: "06b.6"
+    kind: practice
+    title: "Запомним: Ребёнок и дети"
+    exercises:
+      - id: "06b.6.1"
+        type: choice
+        prompt: "«Это дети» —"
+        options: ["Ovo su deca.", "Ovo je dete.", "Ovo je sin."]
+        answer: "Ovo su deca."
+
+  - id: "06b.7"
+    kind: teach
+    title: "Родители"
+    md: "06b/7-roditelji.md"
+
+  - id: "06b.8"
+    kind: practice
+    title: "Запомним: Родители"
+    exercises:
+      - id: "06b.8.1"
+        type: choice
+        prompt: "Слово «родители» по-сербски —"
+        options: ["roditelji", "porodica", "deca"]
+        answer: "roditelji"
+
+  - id: "06b.9"
+    kind: practice
+    title: "Вспомним"
+    exercises:
+      - id: "06b.9.1"
+        type: choice
+        prompt: "Слово «бабушка» по-сербски —"
+        options: ["baba", "deda", "sestra"]
+        answer: "baba"
+      - id: "06b.9.2"
+        type: choice
+        prompt: "«Это брат» —"
+        options: ["Ovo je brat.", "Ovo je sestra.", "Ovo je tata."]
+        answer: "Ovo je brat."
+
+  - id: "06b.10"
+    kind: practice
+    title: "Послушай и выбери"
+    exercises:
+      - id: "06b.10.1"
+        type: choice
+        say: "Ovo je muž."
+        prompt: "Послушай и выбери перевод."
+        options: ["Это муж.", "Это сын.", "Это папа."]
+        answer: "Это муж."
+      - id: "06b.10.2"
+        type: choice
+        say: "Ovo je ćerka."
+        prompt: "Послушай и выбери перевод."
+        options: ["Это дочь.", "Это жена.", "Это сестра."]
+        answer: "Это дочь."
+      - id: "06b.10.3"
+        type: choice
+        say: "Ovo su deca."
+        prompt: "Послушай и выбери перевод."
+        options: ["Это дети.", "Это ребёнок.", "Это родители."]
+        answer: "Это дети."
+      - id: "06b.10.4"
+        type: choice
+        say: "Mama i tata su roditelji."
+        prompt: "Послушай и выбери перевод."
+        options: ["Мама и папа — родители.", "Мама и папа — это семья.", "Бабушка и дедушка — родители."]
+        answer: "Мама и папа — родители."
+
+  - id: "06b.11"
+    kind: practice
+    title: "Что скажешь?"
+    exercises:
+      - id: "06b.11.1"
+        type: choice
+        prompt: "«Муж и жена» —"
+        options: ["Muž i žena.", "Sin i ćerka.", "Brat i sestra."]
+        answer: "Muž i žena."
+      - id: "06b.11.2"
+        type: choice
+        prompt: "«Это сын» —"
+        options: ["Ovo je sin.", "Ovo je ćerka.", "Ovo je muž."]
+        answer: "Ovo je sin."
+
+  - id: "06b.12"
+    kind: practice
+    title: "Соедини"
+    exercises:
+      - id: "06b.12.1"
+        type: match
+        prompt: "Соедини слово и перевод"
+        pairs:
+          - ["muž", "муж"]
+          - ["žena", "жена"]
+          - ["sin", "сын"]
+          - ["ćerka", "дочь"]
+          - ["dete", "ребёнок"]
+          - ["roditelji", "родители"]
+
+  - id: "06b.13"
+    kind: practice
+    title: "Собери"
+    exercises:
+      - id: "06b.13.1"
+        type: word_bank
+        prompt: "Собери: «это дети»"
+        bank: ["Ovo", "su", "deca", "dete"]
+        accept: ["Ovo su deca."]
+      - id: "06b.13.2"
+        type: word_bank
+        prompt: "Собери: «муж и жена»"
+        bank: ["Muž", "i", "žena", "sin"]
+        accept: ["Muž i žena."]
+
+  - id: "06b.14"
+    kind: practice
+    title: "Напиши"
+    exercises:
+      - id: "06b.14.1"
+        type: fill_blank
+        prompt: "«Это дочь» → Ovo je ___."
+        accept: ["ćerka"]
+      - id: "06b.14.2"
+        type: fill_blank
+        prompt: "«Мама и папа — родители» → Mama i tata su ___."
+        accept: ["roditelji"]
+      - id: "06b.14.3"
+        type: translate
+        prompt: "Это сын."
+        accept: ["Ovo je sin.", "To je sin."]
+      - id: "06b.14.4"
+        type: translate
+        prompt: "Это дети."
+        accept: ["Ovo su deca.", "To su deca."]

@@ -1,0 +1,116 @@
+id: "12"
+start: 11
+title: "Сколько и что ещё (Količina)"
+subtitle: "кило, литр, штуки; ещё что-нибудь, это всё"
+teaches: [kilo, pola-kile, sir, litar, komad, pakovanje, deka, jos-nesto, to-je-sve, nesto, nista]
+steps:
+  - slide:
+      name: kilo
+      title: "Кило и полкило"
+      md: |
+        `kilo` [ки́ло] *(кило — килограмм)* и `pola kile` [по́ла ки́лэ] *(пола киле — полкило)*.
+
+        `Kilo sira, molim.` [ки́ло си́ра, мо́лим.] *(кило сыра, пожалуйста)*, `sir` [сир] *(сир — сыр)*
+
+        `Pola kile sira.` [по́ла ки́лэ си́ра.] *(полкило сыра)*
+
+        > После меры слово чуть меняется: `sir` → `sira`. Запоминай фразами.
+      check:
+        prompt: "«Полкило сыра» —"
+        options: ["Pola kile sira.", "Kilo sira.", "Treba mi sir."]
+        answer: "Pola kile sira."
+        also_ok: ["sira"]
+  - slide:
+      name: litar
+      title: "Литр"
+      md: |
+        `litar` [ли́тар] *(литар — литр)*.
+
+        `Litar mleka.` [ли́тар млэ́ка.] *(литр молока)*
+
+        > Здесь `mleko` тоже меняется: `mleka`. Готовая фраза.
+      check:
+        prompt: "«Литр молока» —"
+        options: ["Litar mleka.", "Kilo sira.", "Treba mi mleko."]
+        answer: "Litar mleka."
+        also_ok: ["mleka", "sira"]
+  - slide:
+      name: komad
+      title: "Штуки и граммы"
+      md: |
+        `komad` [ко́мад] *(комад — штука)* и `pakovanje` [пако́ване] *(паковање — упаковка, пачка)*.
+
+        `Dva komada, molim.` [два ко́мада, мо́лим.] *(две штуки, пожалуйста)*
+
+        `Jedno pakovanje.` [е́дно пако́ване.] *(одна упаковка)*
+
+        На рынке и в мясной сыр или колбасу берут на вес: `deka` [дэ́ка] *(дека — 10 граммов)*. `Dvadeset deka sira` [двадэ́сэт дэ́ка си́ра] — это 200 граммов сыра.
+      check:
+        prompt: "«Две штуки, пожалуйста» —"
+        options: ["Dva komada, molim.", "Jedno pakovanje.", "Kilo sira."]
+        answer: "Dva komada, molim."
+        also_ok: ["komada", "sira"]
+  - slide:
+      name: jos-nesto
+      title: "Ещё что-нибудь?"
+      md: |
+        Продавец: `Još nešto?` [ёш нэ́што?] *(још нешто — ещё что-нибудь?)*
+
+        Ты:
+
+        `To je sve, hvala.` [то е свэ, хва́ла.] *(то је све — это всё, спасибо)*
+
+        `Još ovo.` [ёш о́во.] *(још ово — ещё вот это)*
+
+        `Ništa, hvala.` [ни́шта, хва́ла.] *(ништа — ничего, спасибо)*
+
+        > `nešto` [нэ́што] — «что-то», `sve` [свэ] — «всё», `ništa` [ни́шта] — «ничего».
+      check:
+        prompt: "Продавец: «Još nešto?» Тебе больше ничего не нужно —"
+        options: ["To je sve, hvala.", "Još ovo.", "Dajte mi hleb."]
+        answer: "To je sve, hvala."
+  - practice:
+      title: "Вспомним"
+      ex:
+        - {type: choice, prompt: "«Дайте мне молоко» —", options: ["Dajte mi mleko.", "Treba mi mleko.", "Samo gledam."], answer: "Dajte mi mleko."}
+        - {type: choice, prompt: "«Мне нужен хлеб» —", options: ["Treba mi hleb.", "Dajte mi vodu.", "Da li imate jaja?"], answer: "Treba mi hleb."}
+  - practice:
+      title: "Послушай и выбери"
+      also_ok: ["sira", "mleka"]
+      ex:
+        - {type: choice, say: "Kilo sira, molim.", options: ["Кило сыра, пожалуйста.", "Полкило сыра, пожалуйста.", "Литр молока, пожалуйста."], answer: "Кило сыра, пожалуйста."}
+        - {type: choice, say: "Litar mleka.", options: ["Литр молока.", "Кило сыра.", "Полкило сыра."], answer: "Литр молока."}
+        - {type: choice, say: "Još nešto?", options: ["Ещё что-нибудь?", "Это всё?", "Сколько с меня?"], answer: "Ещё что-нибудь?"}
+        - {type: choice, say: "To je sve, hvala.", options: ["Это всё, спасибо.", "Ещё вот это.", "Ничего, спасибо."], answer: "Это всё, спасибо."}
+  - practice:
+      title: "Что скажешь?"
+      also_ok: ["sira", "mleka", "komada"]
+      ex:
+        - {type: choice, prompt: "«Литр молока» —", options: ["Litar mleka.", "Kilo sira.", "Pola kile sira."], answer: "Litar mleka."}
+        - {type: choice, prompt: "«Это всё» —", options: ["To je sve.", "Još nešto?", "Ništa."], answer: "To je sve."}
+        - {type: choice, prompt: "«Ещё вот это» —", options: ["Još ovo.", "To je sve.", "Još nešto?"], answer: "Još ovo."}
+  - practice:
+      title: "Соедини"
+      ex:
+        - type: match
+          prompt: "Соедини слово и перевод"
+          pairs:
+            - ["kilo", "килограмм"]
+            - ["pola kile", "полкило"]
+            - ["litar", "литр"]
+            - ["komad", "штука"]
+            - ["pakovanje", "упаковка"]
+            - ["deka", "10 граммов"]
+  - practice:
+      title: "Собери"
+      also_ok: ["sira"]
+      ex:
+        - {type: word_bank, prompt: "Собери: «кило сыра, пожалуйста»", bank: ["Kilo", "sira", "sir", "molim"], accept: ["Kilo sira, molim."]}
+        - {type: word_bank, prompt: "Собери: «это всё, спасибо»", bank: ["To", "je", "sve", "hvala"], accept: ["To je sve, hvala."]}
+  - practice:
+      title: "Напиши"
+      ex:
+        - {type: fill_blank, prompt: "«Это всё» → To je ___.", accept: ["sve"]}
+        - {type: fill_blank, prompt: "«Ещё что-нибудь?» → Još ___?", accept: ["nešto"]}
+        - {type: translate, prompt: "Это всё, спасибо.", accept: ["To je sve, hvala."]}
+        - {type: translate, prompt: "Ещё что-нибудь?", accept: ["Još nešto?"]}

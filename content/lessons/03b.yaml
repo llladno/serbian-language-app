@@ -1,0 +1,102 @@
+lesson: "03b"
+title: "Повторение: вежливые слова (Ponavljanje)"
+subtitle: "спасибо, не за что, извините, пожалуйста"
+teaches: []
+
+steps:
+  - id: "03b.1"
+    kind: practice
+    title: "Послушай и выбери"
+    exercises:
+      - id: "03b.1.1"
+        type: choice
+        say: "Molim vas."
+        prompt: "Послушай и выбери перевод."
+        options: ["Пожалуйста (просьба).", "Извините.", "Спасибо."]
+        answer: "Пожалуйста (просьба)."
+      - id: "03b.1.2"
+        type: choice
+        say: "Nema problema."
+        prompt: "Послушай и выбери перевод."
+        options: ["Без проблем.", "Не за что.", "Слушаю вас."]
+        answer: "Без проблем."
+      - id: "03b.1.3"
+        type: choice
+        say: "Hvala."
+        prompt: "Послушай и выбери перевод."
+        options: ["Спасибо.", "Пожалуйста.", "До свидания."]
+        answer: "Спасибо."
+
+  - id: "03b.2"
+    kind: practice
+    title: "Что скажешь?"
+    exercises:
+      - id: "03b.2.1"
+        type: choice
+        prompt: "Ты не расслышал и переспрашиваешь —"
+        options: ["Molim?", "Izvolite.", "Hvala."]
+        answer: "Molim?"
+      - id: "03b.2.2"
+        type: choice
+        prompt: "Просишь незнакомого человека о помощи —"
+        options: ["Izvinite, molim vas.", "Izvolite.", "Nema problema."]
+        answer: "Izvinite, molim vas."
+
+  - id: "03b.3"
+    kind: reading
+    title: "Встретил знакомого"
+    md: "03b/3-citanje.md"
+    exercises:
+      - id: "03b.3.1"
+        type: choice
+        prompt: "Как Марко отвечает на «Kako si?»"
+        options: ["Dobro, hvala.", "Laku noć.", "Izvinite."]
+        answer: "Dobro, hvala."
+      - id: "03b.3.2"
+        type: choice
+        prompt: "Чем заканчивается разговор?"
+        options: ["Ćao, prijatno!", "Dobro jutro!", "Molim?"]
+        answer: "Ćao, prijatno!"
+
+  - id: "03b.4"
+    kind: practice
+    title: "Диктант"
+    exercises:
+      - id: "03b.4.1"
+        hint: "Первое слово — dobar (не dobro): оно мужского рода, потому что «dan» мужского рода."
+        type: listen
+        say: "Dobar dan, kako ste?"
+        prompt: "Запиши, что слышишь."
+        accept: ["Dobar dan, kako ste?"]
+        ru: ["Добрый день, как вы?", "Добрый день, как поживаете?", "Добрый день, как у вас дела?", "Добрый день, как дела?", "Здравствуйте, как вы?", "Здравствуйте, как поживаете?", "Здравствуйте, как у вас дела?", "Здравствуйте, как дела?"]
+      - id: "03b.4.2"
+        type: listen
+        say: "Hvala, prijatno!"
+        prompt: "Запиши, что слышишь."
+        accept: ["Hvala, prijatno!"]
+        ru: ["Спасибо, приятного аппетита", "Спасибо, приятного вечера", "Спасибо, всего хорошего", "Спасибо, всего доброго"]
+
+  - id: "03b.5"
+    kind: practice
+    title: "Собери"
+    exercises:
+      - id: "03b.5.1"
+        type: word_bank
+        prompt: "Собери: «большое спасибо»"
+        bank: ["Hvala", "lepo", "molim"]
+        accept: ["Hvala lepo."]
+
+  - id: "03b.6"
+    kind: practice
+    title: "Переведи"
+    exercises:
+      - id: "03b.6.1"
+        hint: "Второе слово — не «doviđenja», а слово из урока «Вечер и до свидания» (его говорят, уходя из магазина или кафе)."
+        type: translate
+        prompt: "Спасибо, всего доброго!"
+        accept: ["Hvala, prijatno!"]
+        explain: "«prijatno» — «всего доброго», отдельное слово от «doviđenja» (до свидания)."
+      - id: "03b.6.2"
+        type: translate
+        prompt: "Извините, пожалуйста."
+        accept: ["Izvinite, molim vas.", "Oprostite, molim vas.", "Molim vas, izvinite.", "Molim vas, oprostite."]

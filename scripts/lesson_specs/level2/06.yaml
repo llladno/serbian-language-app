@@ -1,0 +1,89 @@
+id: "06"
+start: 11
+title: "Семья (Porodica)"
+subtitle: "мама, папа, брат, сестра, бабушка, дедушка"
+teaches: [porodica, mama, tata, brat, sestra, baba, deda]
+steps:
+  - slide:
+      name: mama-tata
+      title: "Мама и папа"
+      md: |
+        `mama` [ма́ма] *(мама)* и `tata` [та́та] *(папа)*.
+
+        `Ovo je mama.` [о́во е ма́ма.] *(это мама)*
+
+        `Ovo je tata.` [о́во е та́та.] *(это папа)*
+      check:
+        prompt: "«Это папа» —"
+        options: ["Ovo je tata.", "Ovo je mama.", "Ja sam tata."]
+        answer: "Ovo je tata."
+  - slide:
+      name: brat-sestra
+      title: "Брат и сестра"
+      md: |
+        `brat` [брат] *(брат)* и `sestra` [сэ́стра] *(сестра)*.
+
+        `Ovo je brat.` [о́во е брат.] *(это брат)*
+
+        `Ovo je sestra.` [о́во е сэ́стра.] *(это сестра)*
+      check:
+        prompt: "Слово «сестра» по-сербски —"
+        options: ["sestra", "brat", "mama"]
+        answer: "sestra"
+  - slide:
+      name: baba-deda
+      title: "Бабушка и дедушка"
+      md: |
+        `baba` [ба́ба] *(бабушка)* и `deda` [дэ́да] *(дедушка)*.
+
+        `Baba i deda.` [ба́ба и дэ́да.] *(бабушка и дедушка)*
+      check:
+        prompt: "Слово «дедушка» по-сербски —"
+        options: ["deda", "baba", "tata"]
+        answer: "deda"
+  - slide:
+      name: porodica
+      title: "Семья"
+      md: |
+        `porodica` [поро́дица] *(породица — семья)*.
+
+        `Mama, tata, brat i sestra — to je porodica.` [ма́ма, та́та, брат и сэ́стра — то е поро́дица.] *(мама, папа, брат и сестра — это семья)*
+      check:
+        prompt: "Слово «семья» по-сербски —"
+        options: ["porodica", "zemlja", "sestra"]
+        answer: "porodica"
+  - practice:
+      title: "Послушай и выбери"
+      ex:
+        - {type: choice, say: "Ovo je mama.", options: ["Это мама.", "Это папа.", "Это сестра."], answer: "Это мама."}
+        - {type: choice, say: "Ovo je brat.", options: ["Это брат.", "Это сестра.", "Это дедушка."], answer: "Это брат."}
+        - {type: choice, say: "Baba i deda.", options: ["Бабушка и дедушка.", "Мама и папа.", "Брат и сестра."], answer: "Бабушка и дедушка."}
+        - {type: choice, say: "Ovo je porodica.", options: ["Это семья.", "Это страна.", "Это мама."], answer: "Это семья."}
+  - practice:
+      title: "Что скажешь?"
+      ex:
+        - {type: choice, prompt: "«Это бабушка» —", options: ["Ovo je baba.", "Ovo je deda.", "Ovo je mama."], answer: "Ovo je baba."}
+        - {type: choice, prompt: "«Брат и сестра» —", options: ["Brat i sestra.", "Mama i tata.", "Baba i deda."], answer: "Brat i sestra."}
+  - practice:
+      title: "Соедини"
+      ex:
+        - type: match
+          prompt: "Соедини слово и перевод"
+          pairs:
+            - ["mama", "мама"]
+            - ["tata", "папа"]
+            - ["brat", "брат"]
+            - ["sestra", "сестра"]
+            - ["baba", "бабушка"]
+            - ["deda", "дедушка"]
+  - practice:
+      title: "Собери"
+      ex:
+        - {type: word_bank, prompt: "Собери: «это мама»", bank: ["Ovo", "je", "mama", "tata"], accept: ["Ovo je mama."]}
+        - {type: word_bank, prompt: "Собери: «бабушка и дедушка»", bank: ["Baba", "i", "deda", "brat"], accept: ["Baba i deda."]}
+  - practice:
+      title: "Напиши"
+      ex:
+        - {type: fill_blank, prompt: "«Это брат» → Ovo je ___.", accept: ["brat"]}
+        - {type: translate, prompt: "Это сестра.", accept: ["Ovo je sestra.", "To je sestra."]}
+        - {type: translate, prompt: "Мама и папа.", accept: ["Mama i tata."]}

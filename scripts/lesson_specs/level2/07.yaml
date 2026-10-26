@@ -1,0 +1,117 @@
+id: "07"
+start: 11
+title: "Мой, твой (Moj, tvoj)"
+subtitle: "мой, твой, его, её: по роду того, о чём говоришь"
+teaches: [moj, tvoj, njegov]
+steps:
+  - slide:
+      name: moj-moja
+      title: "Мой, моя"
+      md: |
+        `moj` [мой] и `moja` [мо́я] *(мой, моя)*. Слово зависит от рода того, о ком говоришь:
+
+        | Род | Слово | Пример |
+        |---|---|---|
+        | мужской | **moj** | `moj brat` [мой брат] *(мой брат)* |
+        | женский | **moja** | `moja sestra` [мо́я сэ́стра] *(моя сестра)* |
+
+        `Ovo je moj brat.` [о́во е мой брат.] *(это мой брат)*
+
+        `Ovo je moja sestra.` [о́во е мо́я сэ́стра.] *(это моя сестра)*
+
+        > Осторожно: `tata` и `deda` мужского рода, хотя оканчиваются на `-a`. Поэтому `moj tata`, `moj deda`.
+      check:
+        prompt: "«Мой папа» —"
+        options: ["moj tata", "moja tata", "moj mama"]
+        answer: "moj tata"
+  - slide:
+      name: moje
+      title: "Моё"
+      md: |
+        Для среднего рода — `moje` [мо́е] *(моё)*. Пример среднего рода — `dete`.
+
+        `Ovo je moje dete.` [о́во е мо́е дэ́тэ.] *(это мой ребёнок)*
+
+        Три формы вместе: **moj** (м.) · **moja** (ж.) · **moje** (ср.)
+      check:
+        prompt: "«Мой ребёнок» —"
+        options: ["moje dete", "moj dete", "moja dete"]
+        answer: "moje dete"
+  - slide:
+      name: tvoj
+      title: "Твой, твоя, твоё"
+      md: |
+        `tvoj` [твой], `tvoja` [тво́я], `tvoje` [тво́е] *(твой, твоя, твоё)* — точно так же по роду:
+
+        `Ovo je tvoj tata.` [о́во е твой та́та.] *(это твой папа)*
+
+        `Ovo je tvoja mama.` [о́во е тво́я ма́ма.] *(это твоя мама)*
+
+        `Ovo je tvoje dete.` [о́во е тво́е дэ́тэ.] *(это твой ребёнок)*
+      check:
+        prompt: "«Твоя сестра» —"
+        options: ["tvoja sestra", "tvoj sestra", "tvoje sestra"]
+        answer: "tvoja sestra"
+  - slide:
+      name: njegov-njen
+      title: "Его, её"
+      md: |
+        `njegov` [не́гов] *(его)* и `njen` [нен] *(её)* тоже подстраиваются под род того, что называют:
+
+        | | мужской | женский |
+        |---|---|---|
+        | **его** | njegov brat | njegova sestra |
+        | **её** | njen brat | njena sestra |
+
+        `Ovo je njegova sestra.` [о́во е не́гова сэ́стра.] *(это его сестра)*
+
+        `Ovo je njen brat.` [о́во е нен брат.] *(это её брат)*
+
+        > Род зависит от слова после (`sestra` — женский), а не от того, чей это брат или сестра.
+      check:
+        prompt: "«Её сестра» —"
+        options: ["njena sestra", "njegova sestra", "njen sestra"]
+        answer: "njena sestra"
+        also_ok: ["njena"]
+  - practice:
+      title: "Послушай и выбери"
+      also_ok: ["njena"]
+      ex:
+        - {type: choice, say: "Ovo je moj tata.", options: ["Это мой папа.", "Это моя мама.", "Это мой брат."], answer: "Это мой папа."}
+        - {type: choice, say: "Ovo je moja mama.", options: ["Это моя мама.", "Это твоя мама.", "Это её мама."], answer: "Это моя мама."}
+        - {type: choice, say: "Ovo je tvoja sestra.", options: ["Это твоя сестра.", "Это моя сестра.", "Это его сестра."], answer: "Это твоя сестра."}
+        - {type: choice, say: "Ovo je njegov brat.", options: ["Это его брат.", "Это её брат.", "Это мой брат."], answer: "Это его брат."}
+  - practice:
+      title: "Выбери форму"
+      also_ok: ["njena"]
+      ex:
+        - {type: choice, prompt: "«Мой дедушка» —", options: ["moj deda", "moja deda", "moje deda"], answer: "moj deda"}
+        - {type: choice, prompt: "«Его мама» —", options: ["njegova mama", "njegov mama", "njen mama"], answer: "njegova mama"}
+        - {type: choice, prompt: "«Её брат» —", options: ["njen brat", "njegov brat", "njena brat"], answer: "njen brat"}
+  - practice:
+      title: "Соедини"
+      also_ok: ["njena"]
+      ex:
+        - type: match
+          prompt: "Соедини фразу и перевод"
+          pairs:
+            - ["moj brat", "мой брат"]
+            - ["moja sestra", "моя сестра"]
+            - ["moje dete", "мой ребёнок"]
+            - ["tvoj tata", "твой папа"]
+            - ["njegova mama", "его мама"]
+            - ["njena baba", "её бабушка"]
+  - practice:
+      title: "Собери"
+      ex:
+        - {type: word_bank, prompt: "Собери: «это моя сестра»", bank: ["Ovo", "je", "moja", "moj", "sestra"], accept: ["Ovo je moja sestra."]}
+        - {type: word_bank, prompt: "Собери: «это твой брат»", bank: ["Ovo", "je", "tvoj", "tvoja", "brat"], accept: ["Ovo je tvoj brat."]}
+  - practice:
+      title: "Напиши"
+      ex:
+        - {type: fill_blank, prompt: "«Моя мама» → ___ mama.", accept: ["moja"]}
+        - {type: fill_blank, prompt: "«Твой ребёнок» → ___ dete.", accept: ["tvoje"]}
+        - {type: fix_error, prompt: "Moj mama.", accept: ["Moja mama."]}
+        - {type: fix_error, prompt: "Tvoja brat.", accept: ["Tvoj brat."]}
+        - {type: translate, prompt: "Это мой папа.", accept: ["Ovo je moj tata.", "To je moj tata."]}
+        - {type: translate, prompt: "Это твоя мама.", accept: ["Ovo je tvoja mama.", "To je tvoja mama."]}

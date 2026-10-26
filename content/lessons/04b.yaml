@@ -1,0 +1,191 @@
+lesson: "04b"
+title: "Быть и откуда я (Biti)"
+subtitle: "sam, si, je, smo, ste, su; откуда ты; где живу"
+teaches: [biti, zemlja, ziveti, odakle-si, iz-rusije, zivim-u-novom-sadu]
+
+steps:
+  - id: "04b.1"
+    kind: teach
+    title: "Глагол «быть»: sam, si, je"
+    md: "04b/1-sam-si-je.md"
+
+  - id: "04b.2"
+    kind: practice
+    title: "Запомним: Глагол «быть»: sam, si, je"
+    also_ok: ["rusije", "srbije"]
+    exercises:
+      - id: "04b.2.1"
+        type: choice
+        prompt: "«Ана из Сербии» —"
+        options: ["Ana je iz Srbije.", "Ana si iz Srbije.", "Ana sam iz Srbije."]
+        answer: "Ana je iz Srbije."
+
+  - id: "04b.3"
+    kind: teach
+    title: "Мы, вы, они: smo, ste, su"
+    md: "04b/3-smo-ste-su.md"
+
+  - id: "04b.4"
+    kind: practice
+    title: "Запомним: Мы, вы, они: smo, ste, su"
+    also_ok: ["rusije", "srbije"]
+    exercises:
+      - id: "04b.4.1"
+        type: choice
+        prompt: "«Вы из Сербии?» —"
+        options: ["Vi ste iz Srbije?", "Vi si iz Srbije?", "Vi je iz Srbije?"]
+        answer: "Vi ste iz Srbije?"
+
+  - id: "04b.5"
+    kind: teach
+    title: "Не: nisam, nisi, nije…"
+    md: "04b/5-nisam.md"
+
+  - id: "04b.6"
+    kind: practice
+    title: "Запомним: Не: nisam, nisi, nije…"
+    also_ok: ["srbije"]
+    exercises:
+      - id: "04b.6.1"
+        type: choice
+        prompt: "«Я не из Сербии» —"
+        options: ["Ja nisam iz Srbije.", "Ja ne sam iz Srbije.", "Ja nije iz Srbije."]
+        answer: "Ja nisam iz Srbije."
+
+  - id: "04b.7"
+    kind: teach
+    title: "Откуда ты?"
+    md: "04b/7-odakle.md"
+
+  - id: "04b.8"
+    kind: practice
+    title: "Запомним: Откуда ты?"
+    also_ok: ["rusije", "srbije"]
+    exercises:
+      - id: "04b.8.1"
+        type: choice
+        prompt: "«Откуда ты?» —"
+        options: ["Odakle si?", "Odakle je?", "Odakle sam?"]
+        answer: "Odakle si?"
+
+  - id: "04b.9"
+    kind: teach
+    title: "Где я живу"
+    md: "04b/9-ziveti.md"
+
+  - id: "04b.10"
+    kind: practice
+    title: "Запомним: Где я живу"
+    also_ok: ["beogradu"]
+    exercises:
+      - id: "04b.10.1"
+        type: choice
+        prompt: "Живу в Белграде: «Živim ___ Beogradu.»"
+        options: ["u", "iz", "sam"]
+        answer: "u"
+
+  - id: "04b.11"
+    kind: practice
+    title: "Послушай и выбери"
+    also_ok: ["rusije", "srbije"]
+    exercises:
+      - id: "04b.11.1"
+        type: choice
+        say: "Ja sam iz Rusije."
+        prompt: "Послушай и выбери перевод."
+        options: ["Я из России.", "Я из Сербии.", "Ты из России?"]
+        answer: "Я из России."
+      - id: "04b.11.2"
+        type: choice
+        say: "Ana je iz Srbije."
+        prompt: "Послушай и выбери перевод."
+        options: ["Ана из Сербии.", "Ана из России.", "Я из Сербии."]
+        answer: "Ана из Сербии."
+      - id: "04b.11.3"
+        type: choice
+        say: "Odakle si?"
+        prompt: "Послушай и выбери перевод."
+        options: ["Откуда ты?", "Где ты живёшь?", "Как тебя зовут?"]
+        answer: "Откуда ты?"
+      - id: "04b.11.4"
+        type: choice
+        say: "Živim u Novom Sadu."
+        prompt: "Послушай и выбери перевод."
+        options: ["Живу в Нови-Саде.", "Я из Нови-Сада.", "Живу в Белграде."]
+        answer: "Живу в Нови-Саде."
+
+  - id: "04b.12"
+    kind: practice
+    title: "Выбери форму"
+    also_ok: ["rusije", "srbije"]
+    exercises:
+      - id: "04b.12.1"
+        type: choice
+        prompt: "«Мы из России» —"
+        options: ["Mi smo iz Rusije.", "Mi su iz Rusije.", "Mi ste iz Rusije."]
+        answer: "Mi smo iz Rusije."
+      - id: "04b.12.2"
+        type: choice
+        prompt: "«Ты из Сербии?» —"
+        options: ["Ti si iz Srbije?", "Ti je iz Srbije?", "Ti sam iz Srbije?"]
+        answer: "Ti si iz Srbije?"
+      - id: "04b.12.3"
+        type: choice
+        prompt: "«Он не из России» —"
+        options: ["On nije iz Rusije.", "On ne je iz Rusije.", "On nisam iz Rusije."]
+        answer: "On nije iz Rusije."
+
+  - id: "04b.13"
+    kind: practice
+    title: "Соедини"
+    also_ok: ["rusije", "srbije"]
+    exercises:
+      - id: "04b.13.1"
+        type: match
+        prompt: "Соедини фразу и перевод"
+        pairs:
+          - ["iz Rusije", "из России"]
+          - ["iz Srbije", "из Сербии"]
+          - ["Odakle si?", "Откуда ты?"]
+          - ["Odakle ste?", "Откуда вы?"]
+          - ["živim u Novom Sadu", "живу в Нови-Саде"]
+          - ["zemlja", "страна"]
+
+  - id: "04b.14"
+    kind: practice
+    title: "Собери"
+    also_ok: ["rusije", "srbije"]
+    exercises:
+      - id: "04b.14.1"
+        type: word_bank
+        prompt: "Собери: «я из Сербии»"
+        bank: ["Ja", "sam", "iz", "Srbije"]
+        accept: ["Ja sam iz Srbije."]
+      - id: "04b.14.2"
+        hint: "Отрицание — одно слово на ni-."
+        type: word_bank
+        prompt: "Собери: «я не из России»"
+        bank: ["Ja", "nisam", "iz", "Rusije", "sam"]
+        accept: ["Ja nisam iz Rusije."]
+
+  - id: "04b.15"
+    kind: practice
+    title: "Напиши"
+    also_ok: ["rusije", "srbije"]
+    exercises:
+      - id: "04b.15.1"
+        type: fill_blank
+        prompt: "Ti ___ iz Rusije? (ты)"
+        accept: ["si"]
+      - id: "04b.15.2"
+        hint: "Отрицание «быть» — одно слово на ni-: ni + короткая форма «быть» для «он». Не «ne» отдельно и не «ne» + форма."
+        type: fill_blank
+        prompt: "«Он не из Сербии» → On ___ iz Srbije."
+        accept: ["nije"]
+        explain: "«nije» — «не есть», одно слово: ni + je. Не «ne je» и не «neje». Так же: ja → nisam, ti → nisi, mi → nismo."
+      - id: "04b.15.3"
+        hint: "Здесь не хватает двух слов: «я» и короткой формы «быть» для «я» (на -m). Перепиши предложение целиком, а не только добавку."
+        type: fix_error
+        prompt: "Iz Rusije."
+        accept: ["Ja sam iz Rusije.", "Iz Rusije sam."]
+        explain: "Без подлежащего и «sam» это не предложение. Нужно всё предложение целиком: «Ja sam iz Rusije.» (или «Iz Rusije sam.»)."

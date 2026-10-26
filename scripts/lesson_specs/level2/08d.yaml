@@ -1,0 +1,50 @@
+id: "08d"
+title: "Повторение: числа (Ponavljanje)"
+subtitle: "от нуля до тысячи, на слух и на письме"
+teaches: []
+steps:
+  - practice:
+      title: "Послушай и выбери"
+      also_ok: ["sedamnaest", "šezdeset", "hiljade"]
+      ex:
+        - {type: choice, say: "Sedamnaest.", options: ["Семнадцать.", "Семьдесят.", "Семь."], answer: "Семнадцать."}
+        - {type: choice, say: "Šezdeset pet.", options: ["Шестьдесят пять.", "Шестнадцать.", "Пятьдесят шесть."], answer: "Шестьдесят пять."}
+        - {type: choice, say: "Trista dinara.", options: ["Триста динаров.", "Тридцать динаров.", "Двести динаров."], answer: "Триста динаров."}
+        - {type: choice, say: "Dve hiljade dinara.", options: ["Две тысячи динаров.", "Тысяча динаров.", "Двести динаров."], answer: "Две тысячи динаров."}
+  - practice:
+      title: "Считаем"
+      ex:
+        - {type: choice, prompt: "2 + 3 = ?", options: ["pet", "šest", "četiri"], answer: "pet"}
+        - {type: choice, prompt: "10 + 10 = ?", options: ["dvadeset", "dvanaest", "sto"], answer: "dvadeset"}
+        - {type: choice, prompt: "50 + 50 = ?", options: ["sto", "pedeset", "hiljadu"], answer: "sto"}
+  - practice:
+      title: "Соедини"
+      also_ok: ["sedamnaest", "šezdeset", "osamsto"]
+      ex:
+        - type: match
+          prompt: "Соедини число и цифру"
+          pairs:
+            - ["sedamnaest", "семнадцать (17)"]
+            - ["šezdeset", "шестьдесят (60)"]
+            - ["osamsto", "восемьсот (800)"]
+            - ["hiljadu", "тысяча (1000)"]
+            - ["dvadeset jedan", "двадцать один (21)"]
+            - ["sto dvadeset", "сто двадцать (120)"]
+  - practice:
+      title: "Диктант"
+      ex:
+        - {type: listen, say: "Petnaest.", prompt: "Запиши, что слышишь.", accept: ["Petnaest."], ru: ["Пятнадцать."]}
+        - {type: listen, say: "Dvadeset osam.", prompt: "Запиши, что слышишь.", accept: ["Dvadeset osam.", "Dvadeset i osam."], ru: ["Двадцать восемь."]}
+        - {type: listen, say: "Sto pedeset dinara.", prompt: "Запиши, что слышишь.", accept: ["Sto pedeset dinara."], ru: ["Сто пятьдесят динаров."]}
+        - {type: listen, say: "Pet hiljada dinara.", prompt: "Запиши, что слышишь.", accept: ["Pet hiljada dinara."], ru: ["Пять тысяч динаров."]}
+  - practice:
+      title: "Собери"
+      ex:
+        - {type: word_bank, prompt: "Собери: «двести пятьдесят динаров»", bank: ["Dvesta", "pedeset", "dinara", "trista"], accept: ["Dvesta pedeset dinara."]}
+        - {type: word_bank, prompt: "Собери: «семьдесят три»", bank: ["Sedamdeset", "tri", "trideset", "sedam", "i"], accept: ["Sedamdeset tri.", "Sedamdeset i tri."]}
+  - practice:
+      title: "Переведи"
+      ex:
+        - {type: translate, prompt: "Сорок два.", accept: ["Četrdeset dva.", "Četrdeset i dva."]}
+        - {type: translate, prompt: "Девяносто девять.", accept: ["Devedeset devet.", "Devedeset i devet."]}
+        - {type: translate, prompt: "Четыреста динаров.", accept: ["Četiristo dinara."]}

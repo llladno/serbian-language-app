@@ -1,0 +1,79 @@
+id: "10c"
+title: "Телефон (Telefon)"
+subtitle: "номер телефона, напиши мне"
+teaches: [koji, broj-telefona, javiti-se, poruka]
+steps:
+  - slide:
+      name: broj-telefona
+      title: "Номер телефона"
+      md: |
+        `broj telefona` [брой тэлэ́фона] *(број телефона — номер телефона)*.
+
+        `Koji je tvoj broj telefona?` [ко́йи е твой брой тэлэ́фона?] *(који је твој број телефона — какой у тебя номер телефона?)*
+
+        `koji` [ко́йи] *(који — какой, который)*.
+      check:
+        prompt: "«Какой у тебя номер телефона?» —"
+        options: ["Koji je tvoj broj telefona?", "Koliko imaš godina?", "Koliko je sati?"]
+        answer: "Koji je tvoj broj telefona?"
+  - slide:
+      name: cifre
+      title: "Номер по цифрам"
+      md: |
+        Номер называют по цифрам:
+
+        `Moj broj je nula šest četiri…` [мой брой е ну́ла шэст чэти́ри…] *(мой номер: ноль шесть четыре…)*
+
+        Ноль в номере — всегда `nula`. Мобильные начинаются на `06…`.
+      check:
+        prompt: "«0 6 4» —"
+        options: ["nula šest četiri", "šest nula četiri", "nula četiri šest"]
+        answer: "nula šest četiri"
+  - slide:
+      name: javi-mi-se
+      title: "Напиши или позвони"
+      md: |
+        `Javi mi se.` [я́ви ми сэ.] *(јави ми се — напиши или позвони мне)* Так прощаются с новым знакомым.
+
+        `poruka` [по́рука] *(порука — сообщение)*: и SMS, и сообщение в мессенджере.
+      check:
+        prompt: "«Напиши или позвони мне» —"
+        options: ["Javi mi se.", "Ovo je poruka.", "Koji je broj?"]
+        answer: "Javi mi se."
+        also_ok: ["koji"]
+  - practice:
+      title: "Послушай и выбери"
+      ex:
+        - {type: choice, say: "Koji je tvoj broj telefona?", options: ["Какой у тебя номер телефона?", "Сколько тебе лет?", "Который час?"], answer: "Какой у тебя номер телефона?"}
+        - {type: choice, say: "Moj broj je nula šest četiri.", options: ["Мой номер: ноль шесть четыре.", "Мой номер: шесть ноль четыре.", "Мне шестьдесят четыре года."], answer: "Мой номер: ноль шесть четыре."}
+        - {type: choice, say: "Javi mi se.", options: ["Напиши или позвони мне.", "Спасибо.", "До свидания."], answer: "Напиши или позвони мне."}
+        - {type: choice, say: "Ovo je poruka.", options: ["Это сообщение.", "Это номер.", "Это телефон."], answer: "Это сообщение."}
+  - practice:
+      title: "Что скажешь?"
+      ex:
+        - {type: choice, prompt: "Спроси номер телефона —", options: ["Koji je tvoj broj telefona?", "Javi mi se.", "Koliko je sati?"], answer: "Koji je tvoj broj telefona?"}
+        - {type: choice, prompt: "Прощаясь, попроси написать или позвонить —", options: ["Javi mi se.", "Koji je tvoj broj?", "Laku noć."], answer: "Javi mi se."}
+  - practice:
+      title: "Соедини"
+      ex:
+        - type: match
+          prompt: "Соедини фразу и перевод"
+          pairs:
+            - ["broj telefona", "номер телефона"]
+            - ["Javi mi se.", "Напиши или позвони мне."]
+            - ["poruka", "сообщение"]
+            - ["koji", "какой"]
+            - ["nula", "ноль"]
+            - ["Koji je tvoj broj?", "Какой у тебя номер?"]
+  - practice:
+      title: "Собери"
+      ex:
+        - {type: word_bank, prompt: "Собери: «напиши или позвони мне»", bank: ["Javi", "mi", "se", "poruka"], accept: ["Javi mi se."]}
+        - {type: word_bank, prompt: "Собери: «какой у тебя номер телефона?»", bank: ["Koji", "je", "tvoj", "broj", "telefona"], accept: ["Koji je tvoj broj telefona?"]}
+  - practice:
+      title: "Напиши"
+      ex:
+        - {type: fill_blank, prompt: "«Какой у тебя номер?» → Koji je tvoj ___ telefona?", accept: ["broj"]}
+        - {type: fill_blank, prompt: "«Мой номер: ноль шесть четыре» → Moj broj je ___ šest četiri.", accept: ["nula"]}
+        - {type: translate, prompt: "Напиши или позвони мне.", accept: ["Javi mi se."]}
+        - {type: translate, prompt: "Какой у тебя номер телефона?", accept: ["Koji je tvoj broj telefona?"]}

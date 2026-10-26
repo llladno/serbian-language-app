@@ -1,126 +1,120 @@
 lesson: "14"
-title: "Проверка 1а (Provera 1a)"
-subtitle: "приветствия, семья, числа/цена/время"
+title: "Проверка: первый контакт (Provera)"
+subtitle: "приветствия, знакомство, язык и работа вместе"
 teaches: []
 
 steps:
-  - id: "14.1"
+  - id: "14.11"
     kind: reading
     title: "Один день"
-    md: "14/1-citanje.md"
-    also_ok: ["kafe", "kafu"]
+    md: "14/11-jedan-dan.md"
     exercises:
-      - id: "14.1.1"
+      - id: "14.11.1"
         type: choice
-        prompt: "Что покупает человек?"
-        options: ["Hleb i dve kafe.", "Mleko i sir.", "Samo kafu."]
-        answer: "Hleb i dve kafe."
-      - id: "14.1.2"
+        prompt: "Где живёт Иван?"
+        options: ["В Нови-Саде", "В Белграде", "В России"]
+        answer: "В Нови-Саде"
+      - id: "14.11.2"
         type: choice
-        prompt: "Чем он платит?"
-        options: ["Karticom.", "Kešom.", "Ništa."]
-        answer: "Karticom."
+        prompt: "Какой язык Иван учит?"
+        options: ["Сербский", "Английский", "Русский"]
+        answer: "Сербский"
 
-  - id: "14.2"
+  - id: "14.12"
     kind: practice
-    title: "Привет и знакомство"
-    mixed: true
-    also_ok: ["ana"]
+    title: "Привет и как дела"
     exercises:
-      - id: "14.2.1"
+      - id: "14.12.1"
         type: choice
-        prompt: "Незнакомому человеку старше тебя —"
+        prompt: "Утро, заходишь в пекарню —"
+        options: ["Dobro jutro!", "Laku noć!", "Prijatno!"]
+        answer: "Dobro jutro!"
+      - id: "14.12.2"
+        type: choice
+        prompt: "Соседу, который старше тебя, говоришь —"
         options: ["Kako ste?", "Kako si?", "Kako ide?"]
         answer: "Kako ste?"
-      - id: "14.2.2"
+      - id: "14.12.3"
+        type: choice
+        prompt: "«Kako si?» — «___»"
+        options: ["Ne žalim se.", "Dobro jutro.", "Molim vas."]
+        answer: "Ne žalim se."
+      - id: "14.12.4"
         type: match
-        prompt: "Соедини"
+        prompt: "Соедини фразу и перевод"
         pairs:
-          - ["Zdravo", "Привет"]
+          - ["Dobar dan", "Добрый день"]
+          - ["Laku noć", "Спокойной ночи"]
           - ["Doviđenja", "До свидания"]
-          - ["Hvala", "Спасибо"]
-          - ["Izvinite", "Извините"]
-      - id: "14.2.3"
-        type: fill_blank
-        prompt: "«Я из России» → Ja ___ iz Rusije."
-        accept: ["sam"]
-      - id: "14.2.4"
+          - ["Vidimo se", "Увидимся"]
+
+  - id: "14.13"
+    kind: practice
+    title: "Вежливость и знакомство"
+    exercises:
+      - id: "14.13.1"
+        type: choice
+        prompt: "Тебе сказали «Hvala lepo». Отвечаешь —"
+        options: ["Nema na čemu.", "Izvolite.", "Takođe."]
+        answer: "Nema na čemu."
+      - id: "14.13.2"
+        type: choice
+        prompt: "«Drago mi je.» — «___»"
+        options: ["Takođe.", "Nema problema.", "Molim?"]
+        answer: "Takođe."
+      - id: "14.13.3"
         type: word_bank
         prompt: "Собери: «меня зовут Ана»"
         bank: ["Zovem", "se", "Ana"]
         accept: ["Zovem se Ana."]
-      - id: "14.2.5"
-        hint: "Первое слово начинается на od-, второе — короткая форма «быть» для «ты» (урок 04)."
-        type: translate
-        prompt: "Откуда ты?"
-        accept: ["Odakle si?"]
 
-  - id: "14.3"
-    kind: practice
-    title: "Семья"
-    mixed: true
-    also_ok: ["brata", "sestru"]
+  - id: "14.14"
+    kind: checkpoint
+    title: "Большая проверка"
+    also_ok: ["rusije", "srbije"]
     exercises:
-      - id: "14.3.1"
+      - id: "14.14.1"
         type: choice
-        prompt: "«У меня есть брат» —"
-        options: ["Imam brata.", "Imam brat.", "Nemam brat."]
-        answer: "Imam brata."
-      - id: "14.3.2"
+        say: "Odakle ste?"
+        prompt: "Послушай и выбери перевод."
+        options: ["Откуда вы?", "Как вас зовут?", "Как у вас дела?"]
+        answer: "Откуда вы?"
+      - id: "14.14.2"
         type: match
-        prompt: "Соедини"
+        prompt: "Соедини фразу и перевод"
         pairs:
-          - ["mama", "мама"]
-          - ["tata", "папа"]
-          - ["sestra", "сестра"]
-          - ["deda", "дедушка"]
-      - id: "14.3.3"
+          - ["Dobro jutro", "Доброе утро"]
+          - ["Hvala lepo", "Большое спасибо"]
+          - ["Zovem se Ana", "Меня зовут Ана"]
+          - ["Govorim ruski", "Говорю по-русски"]
+          - ["Radim kao lekar", "Работаю врачом"]
+          - ["Ne žalim se", "Не жалуюсь"]
+      - id: "14.14.3"
+        hint: "Начинается на ve-; внутри буква č («ч»), не ć."
         type: fill_blank
-        prompt: "«Моя мама» → ___ mama."
-        accept: ["moja"]
-      - id: "14.3.4"
+        prompt: "Вечер: «Dobro ___!»"
+        accept: ["veče"]
+        explain: "«veče» — через č. «veće» (через ć) — другое слово, «совет/собрание»."
+      - id: "14.14.4"
         type: word_bank
-        prompt: "Собери: «это мой папа»"
-        bank: ["Ovo", "je", "moj", "tata"]
-        accept: ["Ovo je moj tata."]
-      - id: "14.3.5"
-        hint: "«Нет» = ne + imam, слитно. «Сестра» после него — как в «Imam sestru»: -a → -u."
+        prompt: "Собери: «я не из Сербии»"
+        bank: ["Ja", "nisam", "iz", "Srbije", "sam"]
+        accept: ["Ja nisam iz Srbije."]
+      - id: "14.14.5"
+        type: listen
+        say: "Ne razumem. Polako, molim."
+        prompt: "Запиши, что слышишь."
+        accept: ["Ne razumem. Polako, molim.", "Ne razumem, polako, molim."]
+        ru: ["Не понимаю. Помедленнее, пожалуйста.", "Не понимаю, помедленнее, пожалуйста."]
+      - id: "14.14.6"
         type: translate
-        prompt: "У меня нет сестры."
-        accept: ["Nemam sestru."]
-        explain: "После «nemam» падеж как после «imam» — винительный «sestru», а не родительный, как в русском «нет сестры»."
-
-  - id: "14.4"
-    kind: practice
-    title: "Числа, цена, время"
-    mixed: true
-    exercises:
-      - id: "14.4.1"
-        type: choice
-        prompt: "«15» —"
-        options: ["petnaest", "pedeset", "pet"]
-        answer: "petnaest"
-      - id: "14.4.2"
-        type: match
-        prompt: "Соедини"
-        pairs:
-          - ["deset", "десять"]
-          - ["dvadeset", "двадцать"]
-          - ["sto", "сто"]
-          - ["pet", "пять"]
-      - id: "14.4.3"
-        hint: "После числа 5 и больше слово «год» стоит в одной форме — на -a."
-        type: fill_blank
-        prompt: "«Мне 30 лет» → Imam trideset ___."
-        accept: ["godina"]
-      - id: "14.4.4"
-        type: word_bank
-        prompt: "Собери: «сколько стоит?»"
-        bank: ["Koliko", "košta"]
-        accept: ["Koliko košta?"]
-      - id: "14.4.5"
-        hint: "Буквально «сколько есть часов»; первое слово то же, что в «Koliko košta?»."
+        prompt: "Добрый день! Как у вас дела?"
+        accept: ["Dobar dan! Kako ste?"]
+      - id: "14.14.7"
         type: translate
-        prompt: "Который час?"
-        accept: ["Koliko je sati?"]
-        explain: "«Koliko je sati?» — устойчивая фраза целиком, «sati» не выбрасывается."
+        prompt: "Я из России, живу в Нови-Саде."
+        accept: ["Ja sam iz Rusije. Živim u Novom Sadu.", "Ja sam iz Rusije, živim u Novom Sadu."]
+      - id: "14.14.8"
+        type: translate
+        prompt: "Говорю по-русски и немного по-сербски."
+        accept: ["Govorim ruski i malo srpski.", "Ja govorim ruski i malo srpski."]

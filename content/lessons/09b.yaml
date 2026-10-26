@@ -1,0 +1,165 @@
+lesson: "09b"
+title: "Сколько тебе лет (Godine)"
+subtitle: "возраст: godina, godine, godinu"
+teaches: [koliko-godina, godina]
+
+steps:
+  - id: "09b.1"
+    kind: teach
+    title: "Сколько тебе лет?"
+    md: "09b/1-koliko-imas.md"
+
+  - id: "09b.2"
+    kind: practice
+    title: "Запомним: Сколько тебе лет?"
+    also_ok: ["brata"]
+    exercises:
+      - id: "09b.2.1"
+        type: choice
+        prompt: "«Сколько тебе лет?» —"
+        options: ["Koliko imaš godina?", "Koliko imaš brata?", "Koliko košta?"]
+        answer: "Koliko imaš godina?"
+
+  - id: "09b.3"
+    kind: teach
+    title: "Мне тридцать лет"
+    md: "09b/3-godina.md"
+
+  - id: "09b.4"
+    kind: practice
+    title: "Запомним: Мне тридцать лет"
+    also_ok: ["godine", "godinu"]
+    exercises:
+      - id: "09b.4.1"
+        type: choice
+        prompt: "«Мне 40 лет» —"
+        options: ["Imam četrdeset godina.", "Imam četrdeset godine.", "Imam četrdeset godinu."]
+        answer: "Imam četrdeset godina."
+
+  - id: "09b.5"
+    kind: teach
+    title: "Двадцать один год"
+    md: "09b/5-godinu.md"
+
+  - id: "09b.6"
+    kind: practice
+    title: "Запомним: Двадцать один год"
+    also_ok: ["godinu", "godine"]
+    exercises:
+      - id: "09b.6.1"
+        type: choice
+        prompt: "«Мне 21 год» —"
+        options: ["Imam dvadeset jednu godinu.", "Imam dvadeset jednu godina.", "Imam dvadeset jedan godina."]
+        answer: "Imam dvadeset jednu godinu."
+
+  - id: "09b.7"
+    kind: teach
+    title: "Два, три, четыре года"
+    md: "09b/7-godine.md"
+
+  - id: "09b.8"
+    kind: practice
+    title: "Запомним: Два, три, четыре года"
+    also_ok: ["godine", "godinu"]
+    exercises:
+      - id: "09b.8.1"
+        type: choice
+        prompt: "«Мне 3 года» —"
+        options: ["Imam tri godine.", "Imam tri godina.", "Imam tri godinu."]
+        answer: "Imam tri godine."
+
+  - id: "09b.9"
+    kind: practice
+    title: "Послушай и выбери"
+    also_ok: ["godinu", "godine"]
+    exercises:
+      - id: "09b.9.1"
+        type: choice
+        say: "Koliko imaš godina?"
+        prompt: "Послушай и выбери перевод."
+        options: ["Сколько тебе лет?", "Сколько стоит?", "Который час?"]
+        answer: "Сколько тебе лет?"
+      - id: "09b.9.2"
+        type: choice
+        say: "Imam trideset godina."
+        prompt: "Послушай и выбери перевод."
+        options: ["Мне тридцать лет.", "Мне тринадцать лет.", "Мне три года."]
+        answer: "Мне тридцать лет."
+      - id: "09b.9.3"
+        type: choice
+        say: "Imam dvadeset jednu godinu."
+        prompt: "Послушай и выбери перевод."
+        options: ["Мне двадцать один год.", "Мне двадцать два года.", "Мне одиннадцать лет."]
+        answer: "Мне двадцать один год."
+      - id: "09b.9.4"
+        type: choice
+        say: "Imam tri godine."
+        prompt: "Послушай и выбери перевод."
+        options: ["Мне три года.", "Мне тридцать лет.", "Мне пять лет."]
+        answer: "Мне три года."
+
+  - id: "09b.10"
+    kind: practice
+    title: "Выбери форму"
+    also_ok: ["godinu", "godine"]
+    exercises:
+      - id: "09b.10.1"
+        type: choice
+        prompt: "«Мне 35 лет» —"
+        options: ["Imam trideset pet godina.", "Imam trideset pet godine.", "Imam trideset pet godinu."]
+        answer: "Imam trideset pet godina."
+      - id: "09b.10.2"
+        type: choice
+        prompt: "«Мне 41 год» —"
+        options: ["Imam četrdeset jednu godinu.", "Imam četrdeset jednu godina.", "Imam četrdeset jednu godine."]
+        answer: "Imam četrdeset jednu godinu."
+      - id: "09b.10.3"
+        type: choice
+        prompt: "«Мне 22 года» —"
+        options: ["Imam dvadeset dve godine.", "Imam dvadeset dve godina.", "Imam dvadeset dve godinu."]
+        answer: "Imam dvadeset dve godine."
+
+  - id: "09b.11"
+    kind: practice
+    title: "Соедини"
+    also_ok: ["godinu", "godine"]
+    exercises:
+      - id: "09b.11.1"
+        type: match
+        prompt: "Соедини фразу и перевод"
+        pairs:
+          - ["Imam pet godina", "Мне пять лет"]
+          - ["Imam dvadeset jednu godinu", "Мне двадцать один год"]
+          - ["Imam trideset dve godine", "Мне тридцать два года"]
+          - ["Imam četrdeset godina", "Мне сорок лет"]
+          - ["Imam tri godine", "Мне три года"]
+          - ["Koliko imaš godina?", "Сколько тебе лет?"]
+
+  - id: "09b.12"
+    kind: practice
+    title: "Собери"
+    also_ok: ["godinu", "godine"]
+    exercises:
+      - id: "09b.12.1"
+        type: word_bank
+        prompt: "Собери: «мне сорок лет»"
+        bank: ["Imam", "četrdeset", "godina", "godine", "godinu"]
+        accept: ["Imam četrdeset godina."]
+      - id: "09b.12.2"
+        type: word_bank
+        prompt: "Собери: «мне двадцать два года»"
+        bank: ["Imam", "dvadeset", "dve", "godine", "godina"]
+        accept: ["Imam dvadeset dve godine."]
+
+  - id: "09b.13"
+    kind: practice
+    title: "Напиши"
+    exercises:
+      - id: "09b.13.1"
+        type: fill_blank
+        prompt: "«Сколько тебе лет?» → Koliko ___ godina?"
+        accept: ["imaš"]
+      - id: "09b.13.2"
+        type: fill_blank
+        prompt: "«Мне тридцать лет» → ___ trideset godina."
+        accept: ["Imam"]

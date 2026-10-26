@@ -202,6 +202,18 @@ func decodeExercise(dir, rel string, e exerciseYAML) (Exercise, error) {
 		if !slicesContains(e.Options, e.Answer) {
 			return Exercise{}, fmt.Errorf("%s: exercise %s: answer %q is not among options", rel, e.ID, e.Answer)
 		}
+		if e.Say != "" {
+			// «Послушай и выбери»: a clip plays and the learner picks the
+			// meaning. The sentence is shown instead of the clip for someone who
+			// cannot listen (audio=off), so the answer must be Russian, not the
+			// sentence itself.
+			if !isCyrillic(e.Answer) {
+				return Exercise{}, fmt.Errorf("%s: exercise %s: a choice with say must have a Russian answer (the meaning of say), got %q", rel, e.ID, e.Answer)
+			}
+			if clipPresent(filepath.Join(dir, "audio", e.ID+".mp3")) {
+				ex.Audio = e.ID + ".mp3"
+			}
+		}
 	case e.Type == "match":
 		if len(ex.Pairs) < 2 || len(ex.Pairs) > 6 {
 			return Exercise{}, fmt.Errorf("%s: exercise %s: match needs 2..6 pairs", rel, e.ID)

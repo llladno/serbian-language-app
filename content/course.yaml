@@ -5,32 +5,42 @@ phases:
     title: "Уровень 1 — Первый контакт"
     lessons:
       [
-        "00", "01", "02", "03", "04", "05", "06", "07", "08", "09", "10",
-        "11", "12", "13", "14", "15",
+        "00", "01", "01b", "02", "02b", "02c", "02d", "02e", "03", "03b",
+        "04", "04b", "04c", "05", "05b", "05c", "14",
+      ]
+  # Level 2 is the first paid level (see SeedEconomyDefaults): the second half of
+  # the old level 1, numbers, prices, time and shops.
+  - id: "1b"
+    title: "Уровень 2 — Числа и магазин"
+    lessons:
+      [
+        "06", "06b", "06c", "07", "07b", "08", "08b", "08c",
+        "08d", "09", "09b", "10", "10b", "10c", "10d", "11",
+        "11b", "12", "12b", "12c", "13", "13b", "15",
       ]
   - id: "2"
-    title: "Уровень 2 — Быт"
+    title: "Уровень 3 — Быт"
     lessons:
       [
         "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26",
         "27", "28", "29",
       ]
   - id: "3"
-    title: "Уровень 3 — Связная речь"
+    title: "Уровень 4 — Связная речь"
     lessons:
       [
         "30", "31", "32", "33", "34", "35", "36", "37", "38", "39", "40",
         "41",
       ]
   - id: "4"
-    title: "Уровень 4 — Падежи в жизни"
+    title: "Уровень 5 — Падежи в жизни"
     lessons:
       [
         "42", "43", "44", "45", "46", "47", "48", "49", "50", "51", "52",
         "53", "54", "55", "56", "57", "58", "59",
       ]
   - id: "5"
-    title: "Уровень 5 — Жизнь на сербском"
+    title: "Уровень 6 — Жизнь на сербском"
     lessons:
       [
         "60", "61", "62", "63", "64", "65", "66", "67", "68", "69", "70",
@@ -44,63 +54,159 @@ lessons:
     file: "lessons/00.yaml"
   "01":
     title: "Особые звуки (Specifični glasovi)"
-    subtitle: "особые буквы č ć š ž đ dž lj nj, проверка"
+    subtitle: "буквы с галочками: š ž č lj nj ć đ dž"
     file: "lessons/01.yaml"
+  "01b":
+    title: "Повторение: особые звуки (Ponavljanje)"
+    subtitle: "восемь букв и восемь слов вместе"
+    file: "lessons/01b.yaml"
   "02":
     title: "Привет! (Zdravo!)"
-    subtitle: "приветствия, как дела, ты/вы"
+    subtitle: "четыре способа поздороваться"
     file: "lessons/02.yaml"
+  "02b":
+    title: "Вечер и до свидания (Veče i doviđenja)"
+    subtitle: "добрый вечер, спокойной ночи, до свидания, всего доброго"
+    file: "lessons/02b.yaml"
+  "02c":
+    title: "Повторение: приветствия (Ponavljanje)"
+    subtitle: "восемь фраз вместе: поздороваться и попрощаться"
+    file: "lessons/02c.yaml"
+  "02d":
+    title: "Как дела? (Kako si?)"
+    subtitle: "как дела (ты и вы), ответить, увидимся"
+    file: "lessons/02d.yaml"
+  "02e":
+    title: "Повторение: как дела (Ponavljanje)"
+    subtitle: "ты и вы, ответы, увидимся"
+    file: "lessons/02e.yaml"
   "03":
     title: "Пожалуйста, спасибо (Molim, hvala)"
-    subtitle: "вежливые слова, текст, диктант, проверка"
+    subtitle: "спасибо, не за что, извините, пожалуйста"
     file: "lessons/03.yaml"
+  "03b":
+    title: "Повторение: вежливые слова (Ponavljanje)"
+    subtitle: "спасибо, не за что, извините, пожалуйста"
+    file: "lessons/03b.yaml"
   "04":
-    title: "Это я (Jesam ja)"
-    subtitle: "глагол быть, откуда я, где живу"
+    title: "Знакомство (Upoznavanje)"
+    subtitle: "как зовут, приятно познакомиться"
     file: "lessons/04.yaml"
+  "04b":
+    title: "Быть и откуда я (Biti)"
+    subtitle: "sam, si, je, smo, ste, su; откуда ты; где живу"
+    file: "lessons/04b.yaml"
+  "04c":
+    title: "Повторение: знакомство (Ponavljanje)"
+    subtitle: "имя, приятно, откуда я, где живу"
+    file: "lessons/04c.yaml"
   "05":
-    title: "Говорим и работаем (Govorimo i radimo)"
-    subtitle: "языки, профессии, текст, диалог, проверка"
+    title: "Говорю и понимаю (Govorim i razumem)"
+    subtitle: "языки, не понимаю, помедленнее, теперь понимаю"
     file: "lessons/05.yaml"
+  "05b":
+    title: "Работаю и учу (Radim i učim)"
+    subtitle: "профессии, работаю, знаю, учу, сегодня"
+    file: "lessons/05b.yaml"
+  "05c":
+    title: "Повторение: говорю и работаю (Ponavljanje)"
+    subtitle: "языки, понимаю, работаю, учу"
+    file: "lessons/05c.yaml"
   "06":
     title: "Семья (Porodica)"
-    subtitle: "семья, imam / nemam"
+    subtitle: "мама, папа, брат, сестра, бабушка, дедушка"
     file: "lessons/06.yaml"
+  "06b":
+    title: "Муж, жена, дети (Muž, žena, deca)"
+    subtitle: "муж, жена, сын, дочь, ребёнок, родители"
+    file: "lessons/06b.yaml"
+  "06c":
+    title: "У меня есть (Imam)"
+    subtitle: "у меня есть, у меня нет, у тебя есть?"
+    file: "lessons/06c.yaml"
   "07":
     title: "Мой, твой (Moj, tvoj)"
-    subtitle: "притяжательные, текст, проверка"
+    subtitle: "мой, твой, его, её: по роду того, о чём говоришь"
     file: "lessons/07.yaml"
+  "07b":
+    title: "Повторение: семья (Ponavljanje)"
+    subtitle: "родные, «у меня есть», мой и твой вместе"
+    file: "lessons/07b.yaml"
   "08":
-    title: "Числа (Brojevi)"
-    subtitle: "числа 0–100 и число+существительное"
+    title: "Числа 0–10 (Brojevi)"
+    subtitle: "от нуля до десяти"
     file: "lessons/08.yaml"
+  "08b":
+    title: "Числа 11–100 (Brojevi do sto)"
+    subtitle: "11–19, десятки, составные числа"
+    file: "lessons/08b.yaml"
+  "08c":
+    title: "Сотни и тысячи (Stotine i hiljade)"
+    subtitle: "сто, двести, тысяча, динары"
+    file: "lessons/08c.yaml"
+  "08d":
+    title: "Повторение: числа (Ponavljanje)"
+    subtitle: "от нуля до тысячи, на слух и на письме"
+    file: "lessons/08d.yaml"
   "09":
-    title: "Цена и возраст (Cena i godine)"
-    subtitle: "цена, возраст"
+    title: "Цена (Cena)"
+    subtitle: "сколько стоит, почём, сколько с меня"
     file: "lessons/09.yaml"
+  "09b":
+    title: "Сколько тебе лет (Godine)"
+    subtitle: "возраст: godina, godine, godinu"
+    file: "lessons/09b.yaml"
   "10":
-    title: "Часы и телефон (Sati i telefon)"
-    subtitle: "часы, телефон, текст, проверка"
+    title: "Который час (Koliko je sati?)"
+    subtitle: "часы, во сколько, утро и вечер"
     file: "lessons/10.yaml"
+  "10b":
+    title: "Не ровно (Pola, i, do)"
+    subtitle: "половина, и столько-то минут, без стольких-то"
+    file: "lessons/10b.yaml"
+  "10c":
+    title: "Телефон (Telefon)"
+    subtitle: "номер телефона, напиши мне"
+    file: "lessons/10c.yaml"
+  "10d":
+    title: "Повторение: цена, возраст, время, телефон (Ponavljanje)"
+    subtitle: "всё, что про числа в жизни, вместе"
+    file: "lessons/10d.yaml"
   "11":
-    title: "В магазин (U prodavnicu)"
-    subtitle: "магазин, первые слова"
+    title: "Магазины (Prodavnice)"
+    subtitle: "где что купить: магазин, пекарня, рынок, аптека"
     file: "lessons/11.yaml"
+  "11b":
+    title: "В магазине (U prodavnici)"
+    subtitle: "слушаю вас, мне нужно, дайте, у вас есть, я смотрю"
+    file: "lessons/11b.yaml"
   "12":
-    title: "Количество и оплата (Količina i plaćanje)"
-    subtitle: "сколько, ещё что-нибудь, оплата"
+    title: "Сколько и что ещё (Količina)"
+    subtitle: "кило, литр, штуки; ещё что-нибудь, это всё"
     file: "lessons/12.yaml"
+  "12b":
+    title: "Оплата (Plaćanje)"
+    subtitle: "наличные или карта, мелочь, чек, пакет, скидки"
+    file: "lessons/12b.yaml"
+  "12c":
+    title: "Повторение: в магазине (Ponavljanje)"
+    subtitle: "заказать, взвесить, заплатить"
+    file: "lessons/12c.yaml"
   "13":
-    title: "Возврат товара (Reklamacija)"
-    subtitle: "возврат, очередь, текст, диалог, проверка"
+    title: "Что-то не так (Reklamacija)"
+    subtitle: "испорчено, вернуть, поменять, чек"
     file: "lessons/13.yaml"
+  "13b":
+    title: "Очередь и часы работы (Red, radno vreme)"
+    subtitle: "кто последний, я за вами, открыто и закрыто"
+    file: "lessons/13b.yaml"
   "14":
-    title: "Проверка 1а (Provera 1a)"
-    subtitle: "приветствия, семья, числа/цена/время"
+    title: "Проверка: первый контакт (Provera)"
+    subtitle: "приветствия, знакомство, язык и работа вместе"
     file: "lessons/14.yaml"
   "15":
-    title: "Проверка 1б (Provera 1b)"
-    subtitle: "в магазине, ролёвки"
+    title: "Проверка уровня 2 (Provera)"
+    subtitle: "семья, числа, цена, время, магазин"
     file: "lessons/15.yaml"
   "16":
     title: "Повседневность (Svakodnevnica)"

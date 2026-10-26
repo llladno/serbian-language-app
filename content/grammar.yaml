@@ -6,9 +6,9 @@
 # по-настоящему (как fill_blank), а не самооценкой.
 
 - id: "jesam"
-  front: "jesam — быть, презент (настоящее время)"
+  front: "biti — быть, презент (настоящее время)"
   note: "ja sam, ti si, on/ona/ono je, mi smo, vi ste, oni/one/ona su"
-  lesson: "04"
+  lesson: "04b"
   example_sr: "Ja sam iz Rusije."
   example_ru: "Я из России."
   items:
@@ -40,8 +40,8 @@
 - id: "imati"
   front: "imati — иметь, презент (настоящее время, + nemati)"
   note: "отрицание — отдельный глагол nemati: nemam, nemaš, nema…"
-  lesson: "06"
-  example_sr: "Imam brata. Nemam sestru."
+  lesson: "06c"
+  example_sr: "Imam brata. Nemam sestre."
   example_ru: "У меня есть брат. У меня нет сестры."
   items:
     - prompt: "ja (я)"

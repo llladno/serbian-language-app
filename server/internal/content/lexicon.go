@@ -132,7 +132,13 @@ func coveredByPrefix(tok string, known map[string]bool) bool {
 func strictStrings(e Exercise) []string {
 	var out []string
 	out = append(out, e.Accept...)
-	out = append(out, e.Options...)
+	for _, o := range e.Options {
+		// A listen-choice offers Russian meanings; they are not Serbian words
+		// the learner could be missing.
+		if !isCyrillic(o) {
+			out = append(out, o)
+		}
+	}
 	out = append(out, e.Bank...)
 	if e.Say != "" {
 		out = append(out, e.Say)

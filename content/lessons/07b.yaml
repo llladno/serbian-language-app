@@ -1,0 +1,164 @@
+lesson: "07b"
+title: "Повторение: семья (Ponavljanje)"
+subtitle: "родные, «у меня есть», мой и твой вместе"
+teaches: []
+
+steps:
+  - id: "07b.1"
+    kind: practice
+    title: "Послушай и выбери"
+    also_ok: ["brata", "sestru", "sestre", "decu"]
+    exercises:
+      - id: "07b.1.1"
+        type: choice
+        say: "Imam brata i sestru."
+        prompt: "Послушай и выбери перевод."
+        options: ["У меня есть брат и сестра.", "У меня есть брат.", "У меня нет брата и сестры."]
+        answer: "У меня есть брат и сестра."
+      - id: "07b.1.2"
+        type: choice
+        say: "Ovo je moja baba."
+        prompt: "Послушай и выбери перевод."
+        options: ["Это моя бабушка.", "Это моя мама.", "Это твоя бабушка."]
+        answer: "Это моя бабушка."
+      - id: "07b.1.3"
+        type: choice
+        say: "Nemam sestre."
+        prompt: "Послушай и выбери перевод."
+        options: ["У меня нет сестры.", "У меня нет брата.", "У меня есть сестра."]
+        answer: "У меня нет сестры."
+      - id: "07b.1.4"
+        type: choice
+        say: "Imaš li decu?"
+        prompt: "Послушай и выбери перевод."
+        options: ["У тебя есть дети?", "У тебя есть брат?", "У меня есть дети."]
+        answer: "У тебя есть дети?"
+
+  - id: "07b.2"
+    kind: reading
+    title: "Моя семья"
+    md: "07b/2-porodica.md"
+    exercises:
+      - id: "07b.2.1"
+        type: choice
+        prompt: "Есть ли у Аны брат?"
+        options: ["Нет, только сестра", "Да, и брат, и сестра", "Нет ни брата, ни сестры"]
+        answer: "Нет, только сестра"
+      - id: "07b.2.2"
+        type: choice
+        prompt: "Кем работает сестра Аны?"
+        options: ["Врачом", "Программистом", "Официантом"]
+        answer: "Врачом"
+
+  - id: "07b.3"
+    kind: practice
+    title: "Соедини"
+    also_ok: ["brata", "sestre", "njena"]
+    exercises:
+      - id: "07b.3.1"
+        type: match
+        prompt: "Соедини фразу и перевод"
+        pairs:
+          - ["moj tata", "мой папа"]
+          - ["moja mama", "моя мама"]
+          - ["tvoj brat", "твой брат"]
+          - ["njena sestra", "её сестра"]
+          - ["Imam sina", "У меня есть сын"]
+          - ["Nemam brata", "У меня нет брата"]
+
+  - id: "07b.4"
+    kind: practice
+    title: "Диктант"
+    also_ok: ["brata", "sestru", "sestre"]
+    exercises:
+      - id: "07b.4.1"
+        type: listen
+        say: "Imam brata i sestru."
+        prompt: "Запиши, что слышишь."
+        accept: ["Imam brata i sestru."]
+        ru: ["У меня есть брат и сестра."]
+      - id: "07b.4.2"
+        type: listen
+        say: "Ovo je moja mama."
+        prompt: "Запиши, что слышишь."
+        accept: ["Ovo je moja mama.", "To je moja mama."]
+        ru: ["Это моя мама."]
+      - id: "07b.4.3"
+        type: listen
+        say: "Nemam sestre."
+        prompt: "Запиши, что слышишь."
+        accept: ["Nemam sestre."]
+        ru: ["У меня нет сестры."]
+
+  - id: "07b.5"
+    kind: practice
+    title: "Собери"
+    also_ok: ["brata", "sestru", "sestre"]
+    exercises:
+      - id: "07b.5.1"
+        type: word_bank
+        prompt: "Собери: «мой папа и моя мама»"
+        bank: ["Moj", "tata", "i", "moja", "mama", "moje"]
+        accept: ["Moj tata i moja mama."]
+      - id: "07b.5.2"
+        type: word_bank
+        prompt: "Собери: «у меня есть брат и сестра»"
+        bank: ["Imam", "brata", "i", "sestru", "sestre"]
+        accept: ["Imam brata i sestru."]
+
+  - id: "07b.6"
+    kind: practice
+    title: "Переведи"
+    also_ok: ["brata", "sestre"]
+    exercises:
+      - id: "07b.6.1"
+        type: translate
+        prompt: "У меня нет сестры."
+        accept: ["Nemam sestre."]
+      - id: "07b.6.2"
+        type: translate
+        prompt: "У тебя есть брат?"
+        accept: ["Imaš li brata?"]
+      - id: "07b.6.3"
+        type: translate
+        prompt: "Это моя бабушка."
+        accept: ["Ovo je moja baba.", "To je moja baba."]
+
+  - id: "07b.7"
+    kind: dialogue
+    title: "Семейное фото"
+    scene: "Ты в гостях у Марко. На полке стоит семейная фотография, и он показывает её."
+    voice: m
+    also_ok: ["brata", "sestru", "sestre"]
+    turns:
+      - who: npc
+        sr: "Zdravo! Ovo je moja porodica. Ovo je moj tata."
+        ru: "Привет! Это моя семья. Это мой папа."
+
+      - who: me
+        sr: "A ovo je tvoja mama?"
+        ru: "А это твоя мама?"
+        exercise:
+          id: "07b.7.1"
+          type: choice
+          prompt: "Спроси, это ли его мама"
+          options: ["A ovo je tvoja mama?", "A ovo je moja mama?", "A ovo je tvoj mama?"]
+          answer: "A ovo je tvoja mama?"
+
+      - who: npc
+        sr: "Da, ovo je moja mama. Imam brata i sestru. A ti?"
+        ru: "Да, это моя мама. У меня есть брат и сестра. А у тебя?"
+
+      - who: me
+        sr: "Imam sestru. Nemam brata."
+        ru: "У меня есть сестра. Брата нет."
+        exercise:
+          id: "07b.7.2"
+          type: choice
+          prompt: "Скажи, что у тебя есть сестра, а брата нет"
+          options: ["Imam sestru. Nemam brata.", "Nemam sestre. Imam brata.", "Imam sestru i brata."]
+          answer: "Imam sestru. Nemam brata."
+
+      - who: npc
+        sr: "Dobro, razumem."
+        ru: "Хорошо, понятно."

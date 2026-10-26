@@ -1,0 +1,98 @@
+id: "12c"
+title: "Повторение: в магазине (Ponavljanje)"
+subtitle: "заказать, взвесить, заплатить"
+teaches: []
+steps:
+  - practice:
+      title: "Послушай и выбери"
+      also_ok: ["sira", "karticom"]
+      ex:
+        - {type: choice, say: "Dajte mi pola kile sira.", options: ["Дайте мне полкило сыра.", "Мне нужно кило сыра.", "У вас есть сыр?"], answer: "Дайте мне полкило сыра."}
+        - {type: choice, say: "Koliko dugujem?", options: ["Сколько с меня?", "Сколько стоит?", "Сколько всё вместе?"], answer: "Сколько с меня?"}
+        - {type: choice, say: "Kešom ili karticom?", options: ["Наличными или картой?", "Мелочь есть?", "Чек нужен?"], answer: "Наличными или картой?"}
+  - reading:
+      name: kafa
+      title: "В кафе"
+      text: |
+        — Dobar dan! Pošto je kafa?
+        — Sto pedeset dinara.
+        — Dajte mi jednu kafu, molim.
+        — Izvolite. Još nešto?
+        — To je sve. Koliko dugujem?
+        — Sto pedeset dinara. Kešom ili karticom?
+        — Karticom.
+        — Izvolite račun. Prijatno!
+
+        ---
+
+        — Добрый день! Почём кофе?
+        — Сто пятьдесят динаров.
+        — Дайте мне один кофе, пожалуйста.
+        — Пожалуйста. Ещё что-нибудь?
+        — Это всё. Сколько с меня?
+        — Сто пятьдесят динаров. Наличными или картой?
+        — Картой.
+        — Вот чек. Всего доброго!
+      ex:
+        - {type: choice, prompt: "Сколько стоит кофе?", options: ["Сто пятьдесят динаров", "Сто динаров", "Триста динаров"], answer: "Сто пятьдесят динаров"}
+        - {type: choice, prompt: "Чем платит покупатель?", options: ["Картой", "Наличными", "Мелочью"], answer: "Картой"}
+  - practice:
+      title: "Соедини"
+      also_ok: ["sira"]
+      ex:
+        - type: match
+          prompt: "Соедини фразу и перевод"
+          pairs:
+            - ["Treba mi hleb", "Мне нужен хлеб"]
+            - ["Kilo sira, molim", "Кило сыра, пожалуйста"]
+            - ["Još nešto?", "Ещё что-нибудь?"]
+            - ["To je sve", "Это всё"]
+            - ["Kešom ili karticom?", "Наличными или картой?"]
+            - ["Račun, molim", "Чек, пожалуйста"]
+  - practice:
+      title: "Диктант"
+      also_ok: ["sira", "karticom"]
+      ex:
+        - {type: listen, say: "Dajte mi jednu kafu, molim.", prompt: "Запиши, что слышишь.", accept: ["Dajte mi jednu kafu, molim."], ru: ["Дайте мне один кофе, пожалуйста."]}
+        - {type: listen, say: "To je sve. Koliko dugujem?", prompt: "Запиши, что слышишь.", accept: ["To je sve. Koliko dugujem?"], ru: ["Это всё. Сколько с меня?"]}
+        - {type: listen, say: "Kešom ili karticom?", prompt: "Запиши, что слышишь.", accept: ["Kešom ili karticom?"], ru: ["Наличными или картой?"]}
+  - practice:
+      title: "Собери"
+      also_ok: ["sira", "karticom"]
+      ex:
+        - {type: word_bank, prompt: "Собери: «дайте мне полкило сыра»", bank: ["Dajte", "mi", "pola", "kile", "sira", "sir"], accept: ["Dajte mi pola kile sira."]}
+        - {type: word_bank, prompt: "Собери: «наличными или картой?»", bank: ["Kešom", "ili", "karticom", "račun"], accept: ["Kešom ili karticom?"]}
+  - practice:
+      title: "Переведи"
+      also_ok: ["karticom"]
+      ex:
+        - {type: translate, prompt: "Это всё. Сколько с меня?", accept: ["To je sve. Koliko dugujem?", "To je sve, koliko dugujem?"]}
+        - {type: translate, prompt: "Картой.", accept: ["Karticom."]}
+        - {type: translate, prompt: "У вас есть мелочь?", accept: ["Imate li sitno?", "Da li imate sitno?"]}
+  - dialogue:
+      title: "В пекарне"
+      scene: "Утро, ты заходишь в пекарню за хлебом. За прилавком продавщица."
+      voice: f
+      also_ok: ["karticom"]
+      turns:
+        - {who: npc, sr: "Dobar dan, izvolite?", ru: "Добрый день, слушаю вас?"}
+        - who: me
+          sr: "Dobar dan. Treba mi hleb."
+          ru: "Добрый день. Мне нужен хлеб."
+          ex: {type: choice, prompt: "Поздоровайся и скажи, что тебе нужен хлеб", options: ["Dobar dan. Treba mi hleb.", "Dobar dan. Samo gledam.", "Dobro veče. Treba mi hleb."], answer: "Dobar dan. Treba mi hleb."}
+        - {who: npc, sr: "Imamo hleb. Koliko komada?", ru: "Хлеб есть. Сколько штук?"}
+        - who: me
+          sr: "Dva komada, molim."
+          ru: "Две штуки, пожалуйста."
+          ex: {type: choice, prompt: "Скажи, что тебе нужно две штуки", options: ["Dva komada, molim.", "Dva kilo, molim.", "Jedno pakovanje, molim."], answer: "Dva komada, molim."}
+        - {who: npc, sr: "Još nešto?", ru: "Ещё что-нибудь?"}
+        - who: me
+          sr: "To je sve. Koliko dugujem?"
+          ru: "Это всё. Сколько с меня?"
+          ex: {type: choice, prompt: "Скажи, что это всё, и спроси, сколько с тебя", options: ["To je sve. Koliko dugujem?", "To je sve. Koliko košta kafa?", "Još ovo. Koliko dugujem?"], answer: "To je sve. Koliko dugujem?"}
+        - {who: npc, sr: "Sto dvadeset dinara. Kešom ili karticom?", ru: "Сто двадцать динаров. Наличными или картой?"}
+        - who: me
+          sr: "Karticom."
+          ru: "Картой."
+          ex: {type: choice, prompt: "Скажи, что платишь картой", options: ["Karticom.", "Kešom.", "Ne treba, hvala."], answer: "Karticom."}
+        - {who: npc, sr: "Izvolite račun. Prijatno!", ru: "Вот чек. Всего доброго!"}

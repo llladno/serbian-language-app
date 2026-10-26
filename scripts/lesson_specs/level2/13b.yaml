@@ -1,0 +1,90 @@
+id: "13b"
+title: "Очередь и часы работы (Red, radno vreme)"
+subtitle: "кто последний, я за вами, открыто и закрыто"
+teaches: [red-queue, ko-je-poslednji, vreme, radno-vreme, otvoreno-zatvoreno]
+steps:
+  - slide:
+      name: red
+      title: "Очередь"
+      md: |
+        `red` [рэд] *(ред — очередь)*. Встаёшь в очередь — спроси:
+
+        `Ko je poslednji?` [ко е по́слэдни?] *(ко је последњи — кто последний?)*
+
+        `ko` [ко] *(ко — кто)*, `poslednji` [по́слэдни] *(последњи — последний)*.
+      check:
+        prompt: "«Кто последний?» —"
+        options: ["Ko je poslednji?", "Koliko je sati?", "Koliko košta?"]
+        answer: "Ko je poslednji?"
+  - slide:
+      name: za-vama
+      title: "Я за вами"
+      md: |
+        Узнал, кто последний, и встал за ним: `Ja sam za vama.` [я сам за ва́ма.] *(ја сам за вама — я за вами)*
+
+        Если последний — ты, на вопрос «Ko je poslednji?» отвечай: `Ja sam.` [я сам.] *(я)*
+      check:
+        prompt: "«Я за вами» —"
+        options: ["Ja sam za vama.", "Ja sam iz Rusije.", "Ko je poslednji?"]
+        answer: "Ja sam za vama."
+  - slide:
+      name: radno-vreme
+      title: "Часы работы"
+      md: |
+        `radno vreme` [ра́дно врэ́мэ] *(радно време — часы работы)*, `vreme` [врэ́мэ] — «время».
+
+        `Radno vreme: od osam do pet.` [ра́дно врэ́мэ: од о́сам до пэт.] *(часы работы: с восьми до пяти)*
+      check:
+        prompt: "«Часы работы» —"
+        options: ["radno vreme", "red", "račun"]
+        answer: "radno vreme"
+  - slide:
+      name: otvoreno
+      title: "Открыто, закрыто"
+      md: |
+        `otvoreno` [отво́рэно] *(отворено — открыто)* и `zatvoreno` [затво́рэно] *(затворено — закрыто)*.
+
+        `Otvoreno je.` [отво́рэно е.] *(открыто)* · `Zatvoreno je.` [затво́рэно е.] *(закрыто)*
+
+        Спросить: `Do koliko radite?` [до ко́лико ра́дитэ?] *(до колико радите — до скольки вы работаете?)*
+      check:
+        prompt: "«Закрыто» —"
+        options: ["zatvoreno", "otvoreno", "pokvareno"]
+        answer: "zatvoreno"
+  - practice:
+      title: "Послушай и выбери"
+      ex:
+        - {type: choice, say: "Ko je poslednji?", options: ["Кто последний?", "Кто вы?", "Который час?"], answer: "Кто последний?"}
+        - {type: choice, say: "Ja sam za vama.", options: ["Я за вами.", "Я последний.", "Я из России."], answer: "Я за вами."}
+        - {type: choice, say: "Do koliko radite?", options: ["До скольки вы работаете?", "Во сколько вы открываетесь?", "Сколько стоит?"], answer: "До скольки вы работаете?"}
+        - {type: choice, say: "Zatvoreno je.", options: ["Закрыто.", "Открыто.", "Испорчено."], answer: "Закрыто."}
+  - practice:
+      title: "Что скажешь?"
+      ex:
+        - {type: choice, prompt: "Ты встаёшь в очередь —", options: ["Ko je poslednji?", "Do koliko radite?", "Ja sam za vama."], answer: "Ko je poslednji?"}
+        - {type: choice, prompt: "Ты пришёл после женщины в очереди —", options: ["Ja sam za vama.", "Ko je poslednji?", "Zatvoreno je."], answer: "Ja sam za vama."}
+        - {type: choice, prompt: "Ты хочешь узнать, до скольки работает магазин —", options: ["Do koliko radite?", "Radno vreme.", "Ko je poslednji?"], answer: "Do koliko radite?"}
+  - practice:
+      title: "Соедини"
+      ex:
+        - type: match
+          prompt: "Соедини фразу и перевод"
+          pairs:
+            - ["red", "очередь"]
+            - ["radno vreme", "часы работы"]
+            - ["otvoreno", "открыто"]
+            - ["zatvoreno", "закрыто"]
+            - ["Ko je poslednji?", "Кто последний?"]
+            - ["Ja sam za vama.", "Я за вами."]
+  - practice:
+      title: "Собери"
+      ex:
+        - {type: word_bank, prompt: "Собери: «кто последний?»", bank: ["Ko", "je", "poslednji", "red"], accept: ["Ko je poslednji?"]}
+        - {type: word_bank, prompt: "Собери: «до скольки вы работаете?»", bank: ["Do", "koliko", "radite", "radim"], accept: ["Do koliko radite?"]}
+  - practice:
+      title: "Напиши"
+      ex:
+        - {type: fill_blank, prompt: "«Кто последний?» → Ko je ___?", accept: ["poslednji"]}
+        - {type: fill_blank, prompt: "«Я за вами» → Ja sam ___ vama.", accept: ["za"]}
+        - {type: translate, prompt: "Закрыто.", accept: ["Zatvoreno je.", "Zatvoreno."]}
+        - {type: translate, prompt: "Кто последний?", accept: ["Ko je poslednji?"]}
