@@ -130,10 +130,10 @@ func TestPaymentProviderIsChosenByTheAccountsEmail(t *testing.T) {
 	t.Setenv("TBANK_EMAILS", " man@example.com ,BOTH@example.com")
 	c := Load()
 	for email, want := range map[string]string{
-		"greg@example.com": ProviderYooKassa,
-		"GREG@EXAMPLE.COM": ProviderYooKassa,
-		"man@example.com":  ProviderTBank,
-		// an address in both lists pays through Т-Касса, the newer of the two
+		// either list opens the tariffs, and the only service is Т-Касса
+		"greg@example.com":   ProviderTBank,
+		"GREG@EXAMPLE.COM":   ProviderTBank,
+		"man@example.com":    ProviderTBank,
 		"both@example.com":   ProviderTBank,
 		"other@example.com":  "",
 		"":                   "",
@@ -153,7 +153,7 @@ func TestNobodyIsListedByDefault(t *testing.T) {
 	clearEnv(t)
 	t.Setenv("TARIFFS_EMAILS", "")
 	t.Setenv("TBANK_EMAILS", "")
-	if c := Load(); c.TariffsAllowed("anyone@example.com") || c.TBankConfigured() || c.YooKassaConfigured() {
+	if c := Load(); c.TariffsAllowed("anyone@example.com") || c.TBankConfigured() {
 		t.Errorf("a bare environment lists someone or connects a service: %+v", c)
 	}
 }
@@ -203,7 +203,7 @@ func TestLevelCooldownDefaultsToAMonthAndZeroTurnsItOff(t *testing.T) {
 	}
 }
 
-func TestTariffsForAllOpensThemThroughTBankAndKeepsTheListedOverrides(t *testing.T) {
+func TestTariffsForAllOpensThemThroughTBankForListedAndUnlistedAlike(t *testing.T) {
 	clearEnv(t)
 	t.Setenv("TARIFFS_EMAILS", "greg@example.com")
 	t.Setenv("TBANK_EMAILS", "man@example.com")
@@ -212,7 +212,7 @@ func TestTariffsForAllOpensThemThroughTBankAndKeepsTheListedOverrides(t *testing
 	for email, want := range map[string]string{
 		"someone@example.com": ProviderTBank, // everyone else pays through Т-Касса
 		"SOMEONE@Example.com": ProviderTBank,
-		"greg@example.com":    ProviderYooKassa, // a listed address keeps its service
+		"greg@example.com":    ProviderTBank,
 		"man@example.com":     ProviderTBank,
 		"":                    ProviderTBank, // no email (Telegram only): pays through Т-Касса, naming a receipt address then
 		"   ":                 ProviderTBank,

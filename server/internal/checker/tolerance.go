@@ -6,11 +6,15 @@ import "strings"
 // learner only slipped on the SPELLING of one word. We accept it (OK=true) but
 // flag it (Typo=true) so the UI tells them how the word is really written.
 //
-// The line we must not cross: in Serbian one letter at the END of a word is
-// grammar, not a typo (sin/sina, godina/godine, nisi/nije, kafa/kafe). Those
-// stay wrong. So a one-letter slip is forgiven only when
-//   - the word is at least 5 letters (si/je/su/sam are different forms), and
-//   - the slip is not in the last 2 letters (3 for words of 7+ letters).
+// One letter of difference is forgiven wherever it sits, endings included: the
+// learner's job is to know the word, not to spell it. The slip is flagged, and
+// the attempt is stored with typo = 1, so "Повторить" brings the exercise back
+// until it is written exactly (this is what keeps sin/sina from slipping past
+// for good). Two limits remain:
+//   - the word is at least 4 letters (si/su/je/ja are different forms, not slips);
+//   - conjugation tables (CheckForms) keep the strict rule: every cell there
+//     differs from its neighbours by the ending, and the old protection of the
+//     last 2 letters (3 for words of 7+) still applies.
 // A missing/replaced diacritic (c/č/ć, s/š, z/ž, dj/đ) is forgiven anywhere,
 // because for a Russian ear č and ć are one sound.
 
@@ -64,7 +68,9 @@ func protectedTail(n int) int {
 }
 
 // slip reports whether typed is the expected word with only a spelling slip.
-func slip(typed, want string) bool {
+// lenient is the everyday rule (one letter anywhere in a word of 4+ letters);
+// strict, for conjugation tables, still protects the ending.
+func slip(typed, want string, lenient bool) bool {
 	if typed == want {
 		return false
 	}
@@ -72,6 +78,12 @@ func slip(typed, want string) bool {
 		return true // diacritics only
 	}
 	w := []rune(want)
+	if lenient {
+		if len(w) < 4 {
+			return false
+		}
+		return oneEditBefore([]rune(typed), w, len(w)+1) // the limit is past every position
+	}
 	if len(w) < 5 {
 		return false
 	}
@@ -126,7 +138,7 @@ func doubled(r []rune, i int) bool {
 
 // softMatch finds an accepted variant that the answer matches up to exactly
 // one spelling slip in exactly one word. It returns that variant.
-func softMatch(answerTokens []string, accept []string) (string, bool) {
+func softMatch(answerTokens []string, accept []string, lenient bool) (string, bool) {
 	for _, a := range accept {
 		et := normTokens(a)
 		if len(et) != len(answerTokens) || len(et) == 0 {
@@ -144,7 +156,7 @@ func softMatch(answerTokens []string, accept []string) (string, bool) {
 			}
 			bad = i
 		}
-		if ok && bad >= 0 && slip(answerTokens[bad], et[bad]) {
+		if ok && bad >= 0 && slip(answerTokens[bad], et[bad], lenient) {
 			return a, true
 		}
 	}

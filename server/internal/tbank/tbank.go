@@ -6,7 +6,7 @@
 // Every request and every notification carries a Token: a SHA-256 over the
 // request's top-level values and the terminal's password (see Sign). A
 // notification's Token is checked, but callers still take only the payment id
-// from it and ask GetState for the truth, as they do for ЮKassa.
+// from it and ask GetState for the truth.
 package tbank
 
 import (

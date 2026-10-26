@@ -14,19 +14,22 @@ func TestSoftAcceptance(t *testing.T) {
 		{"missing š", "sesir", []string{"šešir"}, true, true},
 		{"doubled letter", "Radim kao programmer", []string{"Radim kao programer."}, true, true},
 		{"dropped letter in the stem", "hvla", []string{"hvala"}, true, true},
-		{"swapped letters in the stem", "dobor dan", []string{"dobar dan"}, false, false}, // 'dobor' vs 'dobar' is a vowel swap, 4 letters: strict
 		{"dj for đ", "dovidjenja", []string{"doviđenja"}, true, true},
-		// grammar lives in the ending: never a typo
-		{"case ending sin/sina", "sin", []string{"sina"}, false, false},
-		{"plural ending godina/godine", "godina", []string{"godine"}, false, false},
-		{"last letter of a long word", "razumen", []string{"razumem"}, false, false},
+		// one letter anywhere in a word of 4+ letters is forgiven (and flagged), endings included
+		{"case ending sin/sina", "sin", []string{"sina"}, true, true},
+		{"plural ending godina/godine", "godina", []string{"godine"}, true, true},
+		{"last letter of a long word", "razumen", []string{"razumem"}, true, true},
+		{"ending -u/-a", "sestra", []string{"sestru"}, true, true},
+		{"vowel swap dobor/dobar", "dobor dan", []string{"dobar dan"}, true, true},
+		{"missing letter in an ending (roditeli)", "roditeli", []string{"roditelji"}, true, true},
+		{"extra last letter", "hvalas", []string{"hvala"}, true, true},
+		// short words stay exact: si/su/je/ja are different forms
 		{"short word si/su", "su", []string{"si"}, false, false},
-		{"negation nisi/nije", "nisi", []string{"nije"}, false, false},
-		{"ending -u/-a", "sestra", []string{"sestru"}, false, false},
+		{"three letters stay exact", "san", []string{"sam"}, false, false},
+		{"negation nisi/nije is two edits", "nisi", []string{"nije"}, false, false},
 		// still wrong
 		{"two words wrong", "dobro dan", []string{"dobar dan"}, false, false},
 		{"missing word", "hvala", []string{"Hvala, prijatno!"}, false, false},
-		{"extra last letter (not a double)", "hvalas", []string{"hvala"}, false, false},
 		{"doubled last letter is just a slip", "hvalaa", []string{"hvala"}, true, true},
 	}
 	for _, c := range cases {
@@ -75,5 +78,38 @@ func TestSerbianCyrillicToLatin(t *testing.T) {
 	}
 	if _, ok := SerbianCyrillicToLatin("zdravo"); ok {
 		t.Error("pure Latin has nothing to transliterate")
+	}
+}
+
+func TestConjugationKeepsEndingsStrict(t *testing.T) {
+	// In a conjugation table every cell differs from its neighbours by the ending:
+	// forgiving one letter there would make the exercise meaningless.
+	res := CheckForms([]string{"imaš", "imam"}, [][]string{{"imam"}, {"imaš"}})
+	for i, r := range res {
+		if r.OK {
+			t.Errorf("cell %d: a one-letter ending slip must stay wrong in a conjugation table: %+v", i, r)
+		}
+	}
+	if r := CheckForms([]string{"imam"}, [][]string{{"imam"}}); !r[0].OK {
+		t.Errorf("exact cell must pass: %+v", r[0])
+	}
+}
+
+func TestCheckStrictProtectsTheEnding(t *testing.T) {
+	for _, c := range []struct{ typed, want string }{
+		{"Imam brat.", "Imam brata."},
+		{"Moj mama.", "Moja mama."},
+		{"Imam trideset godinu.", "Imam trideset godina."},
+	} {
+		if r := CheckStrict(c.typed, []string{c.want}); r.OK {
+			t.Errorf("CheckStrict(%q, %q) passed: the unchanged wrong sentence must stay wrong", c.typed, c.want)
+		}
+		if r := Check(c.typed, []string{c.want}); !r.OK || !r.Typo {
+			t.Errorf("Check(%q, %q) = %+v: the everyday rule forgives one letter", c.typed, c.want, r)
+		}
+	}
+	// Diacritics and doubled letters are still forgiven strictly.
+	if r := CheckStrict("sesir", []string{"šešir"}); !r.OK {
+		t.Errorf("a missing diacritic is forgiven everywhere: %+v", r)
 	}
 }

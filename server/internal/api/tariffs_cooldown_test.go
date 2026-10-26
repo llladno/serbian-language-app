@@ -16,10 +16,10 @@ import (
 
 // cooldownAPI is the tariffs app with a movable clock and a three-day cooldown
 // (short, so that moving the clock stays inside the test session's lifetime).
-func cooldownAPI(t *testing.T, yk *fakeYooKassa, days int) (http.Handler, *store.Store, func(time.Duration), func() time.Time) {
+func cooldownAPI(t *testing.T, tb *fakeTBank, days int) (http.Handler, *store.Store, func(time.Duration), func() time.Time) {
 	t.Helper()
 	now := fixedNow
-	h, st := tariffsAPIWith(t, yk, nil, func(d *Deps) {
+	h, st := tariffsAPIWith(t, tb, func(d *Deps) {
 		d.Now = func() time.Time { return now }
 		d.Config.TariffLevelCooldownDays = days
 	})
@@ -27,8 +27,8 @@ func cooldownAPI(t *testing.T, yk *fakeYooKassa, days int) (http.Handler, *store
 }
 
 func TestALevelBoughtForRublesHoldsTheNextOneBackUntilTheCooldownEnds(t *testing.T) {
-	yk := newFakeYooKassa(t)
-	h, st, advance, clock := cooldownAPI(t, yk, 3)
+	tb := newFakeTBank(t)
+	h, st, advance, clock := cooldownAPI(t, tb, 3)
 	_, c := listedUser(t, h, st)
 
 	// before any purchase nothing is held back
@@ -37,8 +37,13 @@ func TestALevelBoughtForRublesHoldsTheNextOneBackUntilTheCooldownEnds(t *testing
 	}
 
 	o := order(t, h, c, "level")
-	yk.set("yk-1", "succeeded")
+	tb.set("9001", "CONFIRMED")
 	doCookie(h, c, "GET", fmt.Sprintf("/api/me/orders/%d", o.ID), "")
+	// the paid level is spent on level B (the learner's choice), which frees the next order
+	// from "choose first" and leaves only the monthly limit
+	if rr := chooseLevel(h, c, o.ID, "B"); rr.Code != 200 {
+		t.Fatalf("choose B = %d %s", rr.Code, rr.Body)
+	}
 
 	got := getTariffsOf(t, h, c)
 	want := clock().Add(72 * time.Hour).UTC().Format(time.RFC3339)
@@ -54,8 +59,8 @@ func TestALevelBoughtForRublesHoldsTheNextOneBackUntilTheCooldownEnds(t *testing
 	if rr.Code != http.StatusConflict || !strings.Contains(rr.Body.String(), "level_cooldown") {
 		t.Fatalf("second level order = %d %s, want 409 level_cooldown", rr.Code, rr.Body)
 	}
-	if yk.count() != 1 {
-		t.Errorf("ЮKassa saw %d payments, want 1: a refused order must not reach the payment service", yk.count())
+	if tb.count() != 1 {
+		t.Errorf("the bank saw %d payments, want 1: a refused order must not reach the payment service", tb.count())
 	}
 
 	// the year is not held back
@@ -74,8 +79,8 @@ func TestALevelBoughtForRublesHoldsTheNextOneBackUntilTheCooldownEnds(t *testing
 }
 
 func TestOnlyAPaidLevelStartsTheCooldown(t *testing.T) {
-	yk := newFakeYooKassa(t)
-	h, st, _, _ := cooldownAPI(t, yk, 3)
+	tb := newFakeTBank(t)
+	h, st, _, _ := cooldownAPI(t, tb, 3)
 	_, c := listedUser(t, h, st)
 
 	// an order that was never paid, and one that was canceled, hold nothing back
@@ -83,7 +88,7 @@ func TestOnlyAPaidLevelStartsTheCooldown(t *testing.T) {
 	if got := getTariffsOf(t, h, c); got.Level.AvailableFrom != "" {
 		t.Fatalf("a pending order started the cooldown: %q", got.Level.AvailableFrom)
 	}
-	yk.set("yk-1", "canceled")
+	tb.set("9001", "REJECTED")
 	getTariffsOf(t, h, c) // opening the screen settles the canceled one
 	if o := order(t, h, c, "level"); o.Status != "pending" {
 		t.Fatalf("order after a canceled one = %+v", o)
@@ -91,12 +96,12 @@ func TestOnlyAPaidLevelStartsTheCooldown(t *testing.T) {
 }
 
 func TestTheYearDoesNotStartTheCooldown(t *testing.T) {
-	yk := newFakeYooKassa(t)
-	h, st, _, _ := cooldownAPI(t, yk, 3)
+	tb := newFakeTBank(t)
+	h, st, _, _ := cooldownAPI(t, tb, 3)
 	_, c := listedUser(t, h, st)
 
 	order(t, h, c, "year")
-	yk.set("yk-1", "succeeded")
+	tb.set("9001", "CONFIRMED")
 	got := getTariffsOf(t, h, c) // settles the year
 	if got.Year.Until == "" {
 		t.Fatalf("no running year after paying for it: %+v", got)
@@ -107,13 +112,16 @@ func TestTheYearDoesNotStartTheCooldown(t *testing.T) {
 }
 
 func TestAZeroCooldownTurnsTheLimitOff(t *testing.T) {
-	yk := newFakeYooKassa(t)
-	h, st, _, _ := cooldownAPI(t, yk, 0)
+	tb := newFakeTBank(t)
+	h, st, _, _ := cooldownAPI(t, tb, 0)
 	_, c := listedUser(t, h, st)
 
 	o := order(t, h, c, "level")
-	yk.set("yk-1", "succeeded")
+	tb.set("9001", "CONFIRMED")
 	doCookie(h, c, "GET", fmt.Sprintf("/api/me/orders/%d", o.ID), "")
+	if rr := chooseLevel(h, c, o.ID, "B"); rr.Code != 200 {
+		t.Fatalf("choose B = %d %s", rr.Code, rr.Body)
+	}
 
 	if got := getTariffsOf(t, h, c); got.Level.AvailableFrom != "" {
 		t.Fatalf("available_from with the limit off = %q", got.Level.AvailableFrom)
@@ -127,7 +135,7 @@ func TestAZeroCooldownTurnsTheLimitOff(t *testing.T) {
 func TestTheLimitAppliesToTBankPaymentsToo(t *testing.T) {
 	tb := newFakeTBank(t)
 	now := fixedNow
-	h, st := tariffsAPIWith(t, nil, tb, func(d *Deps) {
+	h, st := tariffsAPIWith(t, tb, func(d *Deps) {
 		d.Now = func() time.Time { return now }
 		d.Config.TariffLevelCooldownDays = 3
 	})
@@ -136,6 +144,9 @@ func TestTheLimitAppliesToTBankPaymentsToo(t *testing.T) {
 	o := order(t, h, c, "level")
 	tb.set("9001", "CONFIRMED")
 	doCookie(h, c, "GET", fmt.Sprintf("/api/me/orders/%d", o.ID), "")
+	if rr := chooseLevel(h, c, o.ID, "B"); rr.Code != 200 {
+		t.Fatalf("choose B = %d %s", rr.Code, rr.Body)
+	}
 
 	rr := doCookie(h, c, "POST", "/api/me/orders", `{"tariff":"level"}`)
 	if rr.Code != http.StatusConflict || !strings.Contains(rr.Body.String(), "level_cooldown") {

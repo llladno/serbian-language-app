@@ -2,7 +2,6 @@ package api
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"io"
 	"log"
@@ -18,9 +17,9 @@ import (
 
 // Paying rubles for the paid levels. Spec: docs/superpowers/specs/2026-10-14-tariffs-design.md.
 //
-// Everything here is closed to all but the accounts in TARIFFS_EMAILS (paying
-// through ЮKassa) and TBANK_EMAILS (paying through Т-Касса); see tariffsEnabled
-// and payproviders.go. The screens hide themselves from the features flag in
+// Everything here is closed to all but the accounts in TARIFFS_EMAILS or
+// TBANK_EMAILS (or everyone with a verified email, with TARIFFS_FOR_ALL), paying
+// through Т-Касса; see tariffsEnabled and payproviders.go. The screens hide themselves from the features flag in
 // the account DTO, and the endpoints answer 404 as if they did not exist.
 
 // pendingWindow is how far back a learner's unfinished payments are still
@@ -98,27 +97,61 @@ func normalizePhone(raw string) (string, bool) {
 	return "", false
 }
 
-// nextLockedPhase is the level "Уровень" would open: the first level in course
-// order that is locked for this learner and for sale (at least one of its lessons
-// is written; the same rule the course screen uses to tell a price tag from
-// «скоро»).
-func (h handlers) nextLockedPhase(us *store.UserStore) (id, title string, ok bool, err error) {
+// levelChoiceDTO is a level a paid "Уровень" can open: closed for this learner and
+// on sale. After names the level before it in the course when that one is also still
+// to be opened, so the screen can say "better after ...": the levels build on each other.
+type levelChoiceDTO struct {
+	ID      string `json:"id"`
+	Title   string `json:"title"`
+	Lessons int    `json:"lessons"`
+	After   string `json:"after,omitempty"`
+}
+
+// levelChoices are the levels a paid level can open, in course order: locked for
+// this learner and for sale (at least one of its lessons is written; the same rule
+// the course screen uses to tell a price tag from «скоро»). A running year opens
+// everything, so it leaves none.
+func (h handlers) levelChoices(us *store.UserStore) ([]levelChoiceDTO, error) {
 	locked, _, err := h.phaseAccess(us)
 	if err != nil {
-		return "", "", false, err
+		return nil, err
 	}
 	c := h.Course()
+	var out []levelChoiceDTO
+	at := map[string]int{} // phase id -> index in out
 	for _, p := range c.Phases {
 		if !locked[p.ID] {
 			continue
 		}
+		written := 0
 		for _, lid := range p.Lessons {
 			if l := c.Lessons[lid]; l != nil && !l.Planned {
-				return p.ID, p.Title, true, nil
+				written++
+			}
+		}
+		if written == 0 {
+			continue
+		}
+		at[p.ID] = len(out)
+		out = append(out, levelChoiceDTO{ID: p.ID, Title: p.Title, Lessons: written})
+	}
+	for i := 1; i < len(c.Phases); i++ {
+		if j, ok := at[c.Phases[i].ID]; ok {
+			if _, prev := at[c.Phases[i-1].ID]; prev {
+				out[j].After = c.Phases[i-1].Title
 			}
 		}
 	}
-	return "", "", false, nil
+	return out, nil
+}
+
+// nextLockedPhase is the first level a paid level could open (see levelChoices).
+func (h handlers) nextLockedPhase(us *store.UserStore) (id, title string, ok bool, err error) {
+	choices, err := h.levelChoices(us)
+	if err != nil || len(choices) == 0 {
+		return "", "", false, err
+	}
+	return choices[0].ID, choices[0].Title, true, nil
 }
 
 // levelCooldownEnd is when this learner may buy another level for rubles: a
@@ -171,6 +204,10 @@ type tariffsDTO struct {
 			ID    string `json:"id"`
 			Title string `json:"title"`
 		} `json:"next"`
+		// Choices are the levels a paid level can open, and Credits the learner's
+		// paid level orders that have not been spent on one yet (oldest first).
+		Choices []levelChoiceDTO `json:"choices"`
+		Credits []int64          `json:"credits"`
 	} `json:"level"`
 	Year struct {
 		Price    int64 `json:"price"`
@@ -210,9 +247,15 @@ func (h handlers) getTariffs(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	us := h.Store.User(ac.UserID)
-	id, title, found, err := h.nextLockedPhase(us)
+	choices, err := h.levelChoices(us)
 	if err != nil {
-		log.Printf("tariffs: next level: %v", err)
+		log.Printf("tariffs: level choices: %v", err)
+		fail(w, http.StatusInternalServerError, "internal error")
+		return
+	}
+	credits, err := h.Store.UnclaimedLevelPayments(ac.UserID)
+	if err != nil {
+		log.Printf("tariffs: level credits: %v", err)
 		fail(w, http.StatusInternalServerError, "internal error")
 		return
 	}
@@ -241,11 +284,19 @@ func (h handlers) getTariffs(w http.ResponseWriter, r *http.Request) {
 	if held {
 		out.Level.AvailableFrom = cooldownEnd.UTC().Format(time.RFC3339)
 	}
-	if found {
+	out.Level.Choices = choices
+	if out.Level.Choices == nil {
+		out.Level.Choices = []levelChoiceDTO{}
+	}
+	out.Level.Credits = []int64{}
+	for _, p := range credits {
+		out.Level.Credits = append(out.Level.Credits, p.ID)
+	}
+	if len(choices) > 0 {
 		out.Level.Next = &struct {
 			ID    string `json:"id"`
 			Title string `json:"title"`
-		}{ID: id, Title: title}
+		}{ID: choices[0].ID, Title: choices[0].Title}
 	}
 	out.Year.Price = rubles(year.PriceKopecks)
 	out.Year.OldPrice = rubles(year.OldPriceKopecks)
@@ -265,6 +316,9 @@ type orderDTO struct {
 	// reads these; a year's end date comes from GET /api/me/tariffs.
 	PhaseTitle string `json:"phase_title,omitempty"`
 	Bonus      int64  `json:"bonus,omitempty"`
+	// Choose is set on a paid level order whose level has not been chosen yet: the
+	// screen asks the learner which one to open (POST /api/me/orders/{id}/level).
+	Choose bool `json:"choose,omitempty"`
 }
 
 // orderDTO describes one of the buyer's orders. A succeeded one carries what it
@@ -274,6 +328,9 @@ func (h handlers) orderDTO(p store.Payment) orderDTO {
 	out := orderDTO{ID: p.ID, Tariff: p.TariffCode, Status: p.Status}
 	if p.Status != store.PaymentSucceeded {
 		return out
+	}
+	if p.TariffCode == store.TariffLevel && p.GrantedPhase == "" {
+		out.Choose = true
 	}
 	if p.TariffCode == store.TariffLevel && p.GrantedPhase != "" {
 		for _, ph := range h.Course().Phases {
@@ -324,19 +381,29 @@ func (h handlers) createOrder(w http.ResponseWriter, r *http.Request) {
 
 	us := h.Store.User(ac.UserID)
 	var amount int64
-	var phase, description string
+	var description string
 	switch tariff.Code {
 	case store.TariffLevel:
-		id, title, found, err := h.nextLockedPhase(us)
+		choices, err := h.levelChoices(us)
 		if err != nil {
-			log.Printf("orders: next level: %v", err)
+			log.Printf("orders: level choices: %v", err)
 			fail(w, http.StatusInternalServerError, "internal error")
 			return
 		}
-		if !found {
+		if len(choices) == 0 {
 			// Every level on sale is open already: charging for one would be
 			// taking money for nothing.
 			fail(w, http.StatusConflict, "nothing_to_buy")
+			return
+		}
+		// A level that was paid for and not chosen yet comes first: two credits at
+		// once would only be a puzzle for the learner.
+		if credits, err := h.Store.UnclaimedLevelPayments(ac.UserID); err != nil {
+			log.Printf("orders: level credits: %v", err)
+			fail(w, http.StatusInternalServerError, "internal error")
+			return
+		} else if len(credits) > 0 {
+			fail(w, http.StatusConflict, "level_pending_choice")
 			return
 		}
 		// One level a month: a level paid for recently holds the next one back.
@@ -355,7 +422,8 @@ func (h handlers) createOrder(w http.ResponseWriter, r *http.Request) {
 			fail(w, http.StatusInternalServerError, "internal error")
 			return
 		}
-		amount, phase, description = levelPriceKopecks(tariff, hasPaid), id, title
+		// No level is named: the learner chooses after paying (chooseLevel).
+		amount, description = levelPriceKopecks(tariff, hasPaid), "Уровень курса сербского языка (на выбор)"
 	case store.TariffYear:
 		amount, description = tariff.PriceKopecks, tariff.Title
 	default:
@@ -375,7 +443,7 @@ func (h handlers) createOrder(w http.ResponseWriter, r *http.Request) {
 		receipt = receiptPhone
 	}
 	pid, err := h.Store.CreatePayment(store.Payment{
-		UserID: ac.UserID, TariffCode: tariff.Code, GrantedPhase: phase, AmountKopecks: amount,
+		UserID: ac.UserID, TariffCode: tariff.Code, AmountKopecks: amount,
 		Provider: prov.Name(), ReceiptContact: receipt,
 	}, h.Now())
 	if err != nil {
@@ -434,6 +502,82 @@ func (h handlers) getOrder(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, h.orderDTO(p))
 }
 
+// chooseLevel spends a paid level on the level the learner picks. It answers with
+// the order as it stands afterwards (the level named, the bonus). Asking again for
+// the same level is not an error; another level on a spent order is refused.
+func (h handlers) chooseLevel(w http.ResponseWriter, r *http.Request) {
+	ac, ok := authFrom(r)
+	if !ok {
+		fail(w, http.StatusUnauthorized, "no session")
+		return
+	}
+	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
+	if err != nil {
+		fail(w, http.StatusNotFound, "not found")
+		return
+	}
+	p, err := h.Store.PaymentByID(id)
+	if err != nil || p.UserID != ac.UserID {
+		fail(w, http.StatusNotFound, "not found")
+		return
+	}
+	var req struct {
+		Phase string `json:"phase"`
+	}
+	if err := decode(r, &req); err != nil {
+		fail(w, http.StatusBadRequest, "bad request body")
+		return
+	}
+	if p.TariffCode != store.TariffLevel || p.Status != store.PaymentSucceeded {
+		fail(w, http.StatusConflict, "not_claimable")
+		return
+	}
+	if p.GrantedPhase != "" {
+		if p.GrantedPhase != req.Phase {
+			fail(w, http.StatusConflict, "already_chosen")
+			return
+		}
+		writeJSON(w, http.StatusOK, h.orderDTO(p))
+		return
+	}
+	choices, err := h.levelChoices(h.Store.User(ac.UserID))
+	if err != nil {
+		log.Printf("orders: choose: choices: %v", err)
+		fail(w, http.StatusInternalServerError, "internal error")
+		return
+	}
+	allowed := false
+	for _, c := range choices {
+		if c.ID == req.Phase {
+			allowed = true
+			break
+		}
+	}
+	if !allowed {
+		fail(w, http.StatusBadRequest, "bad_phase")
+		return
+	}
+	switch err := h.Store.ClaimLevel(ac.UserID, id, req.Phase, h.Now()); {
+	case errors.Is(err, store.ErrNotClaimable):
+		fail(w, http.StatusConflict, "not_claimable")
+		return
+	case errors.Is(err, store.ErrCreditSpent):
+		fail(w, http.StatusConflict, "already_chosen")
+		return
+	case err != nil:
+		log.Printf("orders: choose %d: %v", id, err)
+		fail(w, http.StatusInternalServerError, "internal error")
+		return
+	}
+	done, err := h.Store.PaymentByID(id)
+	if err != nil {
+		log.Printf("orders: choose: reload %d: %v", id, err)
+		fail(w, http.StatusInternalServerError, "internal error")
+		return
+	}
+	writeJSON(w, http.StatusOK, h.orderDTO(done))
+}
+
 // settlePending settles every unfinished payment of one learner.
 func (h handlers) settlePending(ctx context.Context, userID string) {
 	pending, err := h.Store.PendingPayments(userID, h.Now().Add(-pendingWindow))
@@ -487,52 +631,8 @@ func (h handlers) settlePayment(ctx context.Context, p store.Payment) (store.Pay
 	return h.Store.PaymentByID(p.ID)
 }
 
-// yookassaWebhook receives ЮKassa's payment notifications. They are not signed,
-// so the body is used for one thing only: the payment id. The truth about that
-// payment is fetched from ЮKassa by settlePayment. An answer other than 200 makes
-// ЮKassa retry for a day, so a failure to ask ЮKassa or to write the grant is
-// answered 500; anything we simply have nothing to do with is answered 200.
-func (h handlers) yookassaWebhook(w http.ResponseWriter, r *http.Request) {
-	if !h.Config.YooKassaConfigured() {
-		w.WriteHeader(http.StatusOK)
-		return
-	}
-	body, err := io.ReadAll(http.MaxBytesReader(w, r.Body, 1<<20))
-	if err != nil {
-		fail(w, http.StatusBadRequest, "bad body")
-		return
-	}
-	var n struct {
-		Event  string `json:"event"`
-		Object struct {
-			ID string `json:"id"`
-		} `json:"object"`
-	}
-	if err := json.Unmarshal(body, &n); err != nil || n.Object.ID == "" {
-		w.WriteHeader(http.StatusOK)
-		return
-	}
-	if n.Event != "payment.succeeded" && n.Event != "payment.canceled" {
-		w.WriteHeader(http.StatusOK)
-		return
-	}
-	p, err := h.Store.PaymentByProviderID(config.ProviderYooKassa, n.Object.ID)
-	if err != nil {
-		// Not one of ours (another integration on the same shop, or a payment
-		// from before this one existed).
-		w.WriteHeader(http.StatusOK)
-		return
-	}
-	if _, err := h.settlePayment(r.Context(), p); err != nil {
-		log.Printf("yookassa webhook: settle %d: %v", p.ID, err)
-		fail(w, http.StatusInternalServerError, "try again")
-		return
-	}
-	w.WriteHeader(http.StatusOK)
-}
-
-// tbankWebhook receives Т-Касса's notifications. Unlike ЮKassa's they are signed,
-// so one that is not signed with our terminal's password is refused (400). A
+// tbankWebhook receives Т-Касса's notifications. They are signed, so one that
+// is not signed with our terminal's password is refused (400). A
 // signed one is still only a nudge: the payment id is taken from it and the truth
 // is fetched with GetState by settlePayment. The bank wants exactly "OK" with a
 // 200 within ten seconds, and otherwise retries for a day and then daily for a
@@ -576,4 +676,28 @@ func (h handlers) tbankWebhook(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	ok()
+}
+
+// trackTariffEvent handles POST /api/me/tariff-events {kind, source}: the places that sell the tariffs report each
+// showing and each press on the way to them, and the admin's «Воронка тарифов» counts the rows. Best-effort
+// analytics: a failure to write is logged and still answered 204, never shown to the learner. Only an unknown
+// kind, source or body is refused (400). Closed, like the rest of the tariffs, to accounts that do not see them.
+func (h handlers) trackTariffEvent(w http.ResponseWriter, r *http.Request) {
+	ac, ok := authFrom(r)
+	if !ok {
+		fail(w, http.StatusUnauthorized, "no session")
+		return
+	}
+	var req struct {
+		Kind   string `json:"kind"`
+		Source string `json:"source"`
+	}
+	if err := decode(r, &req); err != nil || !store.ValidTariffEvent(req.Kind, req.Source) {
+		fail(w, http.StatusBadRequest, "bad request body")
+		return
+	}
+	if _, err := h.Store.RecordTariffEvent(ac.UserID, req.Kind, req.Source, h.Now()); err != nil {
+		log.Printf("tariff events: %v", err)
+	}
+	w.WriteHeader(http.StatusNoContent)
 }

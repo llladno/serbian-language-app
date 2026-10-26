@@ -65,9 +65,14 @@ func TestCheckNearMiss(t *testing.T) {
 	if !miss.OK {
 		t.Fatalf("trailing punct should still pass")
 	}
-	typo := Check("Nemam vremana", []string{"Nemam vremena"})
+	// one letter is forgiven (and flagged); two letters in one word are a near miss, not a pass
+	slipped := Check("Nemam vremana", []string{"Nemam vremena"})
+	if !slipped.OK || !slipped.Typo {
+		t.Errorf("one-letter slip should pass as a typo: %+v", slipped)
+	}
+	typo := Check("Nemam vramana", []string{"Nemam vremena"})
 	if typo.OK || !typo.NearMiss {
-		t.Errorf("one-letter typo should be a near miss: %+v", typo)
+		t.Errorf("a two-letter typo should be a near miss: %+v", typo)
 	}
 	wayOff := Check("ja ne znam", []string{"Nemam vremena"})
 	if wayOff.NearMiss {
@@ -125,5 +130,35 @@ func TestCheckMatch(t *testing.T) {
 
 	if ok, _ := CheckMatch(map[string]string{"Dobro jutro": "Доброе утро"}, pairs); ok {
 		t.Error("incomplete match should not be ok")
+	}
+}
+
+func TestTooShortRecognisesAPieceOfTheAnswer(t *testing.T) {
+	accept := []string{"Ja sam iz Rusije.", "Iz Rusije sam."}
+	for _, c := range []struct {
+		name, answer string
+		want         bool
+	}{
+		{"the added words only", "ja sam", true},
+		{"the first word", "Ja", true},
+		{"the end of the sentence", "iz Rusije", true},
+		{"a piece of the other variant", "Rusije sam", true},
+		{"the whole sentence is not a piece", "Ja sam iz Rusije", false},
+		{"more than the sentence", "Ja sam iz Rusije danas", false},
+		{"a different word", "Ja sam iz Srbije", false},
+		{"words in the wrong order", "sam ja", false},
+		{"nothing typed", "   ", false},
+	} {
+		if got := TooShort(c.answer, accept); got != c.want {
+			t.Errorf("%s: TooShort(%q) = %v, want %v", c.name, c.answer, got, c.want)
+		}
+	}
+	// Serbian typed in Cyrillic is still a piece of the Latin answer.
+	if !TooShort("ја сам", accept) {
+		t.Error("Cyrillic «ја сам» is a piece of «Ja sam iz Rusije»")
+	}
+	// One word answers have no smaller piece.
+	if TooShort("sin", []string{"sina"}) {
+		t.Error("a part of a word is a misspelling, not a short answer")
 	}
 }

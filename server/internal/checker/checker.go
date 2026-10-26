@@ -61,8 +61,16 @@ func normTokens(s string) []string {
 	return strings.Fields(n)
 }
 
-// Check grades answer against the accepted variants.
-func Check(answer string, accept []string) Result {
+// Check grades answer against the accepted variants, forgiving one letter (tolerance.go).
+func Check(answer string, accept []string) Result { return check(answer, accept, true) }
+
+// CheckStrict is Check for exercises where the ending is the point (conjugation cells, fix_error):
+// a one-letter slip in the last letters stays wrong, only diacritics and a doubled letter are forgiven.
+func CheckStrict(answer string, accept []string) Result { return check(answer, accept, false) }
+
+// check is Check with the choice of rule: lenient forgives one letter anywhere in a word
+// of 4+ letters, strict (conjugation tables) still protects the ending.
+func check(answer string, accept []string, lenient bool) Result {
 	na := Normalize(answer)
 	for _, a := range accept {
 		if Normalize(a) == na {
@@ -81,7 +89,7 @@ func Check(answer string, accept []string) Result {
 	}
 	// One spelling slip in one word is forgiven, but flagged (tolerance.go).
 	if toks := strings.Fields(na); len(toks) > 0 {
-		if v, ok := softMatch(toks, accept); ok {
+		if v, ok := softMatch(toks, accept, lenient); ok {
 			return Result{OK: true, Expected: v, Typo: true}
 		}
 	}
@@ -102,6 +110,41 @@ func Check(answer string, accept []string) Result {
 		}
 	}
 	return Result{OK: false, Expected: best, Diff: diffChunks(at, normTokens(best)), NearMiss: nearMiss}
+}
+
+// TooShort reports whether answer is a strict, unbroken part of one of the accepted answers: the
+// learner wrote a piece of the sentence (the corrected word, the first words) and not the whole of
+// it. That is a slip of format, not of knowledge, so the caller asks for the rest instead of marking
+// a mistake. Serbian typed in Cyrillic counts like Latin; a part of a single word is a misspelling,
+// never a short answer.
+func TooShort(answer string, accept []string) bool {
+	na := Normalize(answer)
+	if lat, ok := SerbianCyrillicToLatin(answer); ok {
+		na = Normalize(lat)
+	}
+	got := strings.Fields(na)
+	if len(got) == 0 {
+		return false
+	}
+	for _, a := range accept {
+		want := normTokens(a)
+		if len(got) >= len(want) {
+			continue
+		}
+		for i := 0; i+len(got) <= len(want); i++ {
+			same := true
+			for j := range got {
+				if want[i+j] != got[j] {
+					same = false
+					break
+				}
+			}
+			if same {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 // CheckChoice grades a single-choice answer against the one correct option.
@@ -133,7 +176,7 @@ func CheckForms(answers []string, acceptForms [][]string) []Result {
 		if i < len(answers) {
 			ans = answers[i]
 		}
-		out[i] = Check(ans, accept)
+		out[i] = check(ans, accept, false)
 	}
 	return out
 }

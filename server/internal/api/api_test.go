@@ -288,13 +288,73 @@ func TestCheckWrongReturnsExpectedAndExplain(t *testing.T) {
 	}
 }
 
+// A choice with `say` is a listening task that needs no typing: the clip comes
+// with the exercise, the sentence only when the learner cannot listen (and then
+// in place of the clip), and the right answer is never sent.
+func TestListenChoiceHidesTheSentence(t *testing.T) {
+	h, _ := newTestAPI(t)
+	get := func(path string) exerciseDTO {
+		for _, b := range decodeBody[[]exerciseBlockDTO](t, do(h, "GET", path, "")) {
+			for _, e := range b.Exercises {
+				if e.ID == "01-A-5" {
+					return e
+				}
+			}
+		}
+		t.Fatal("no 01-A-5")
+		return exerciseDTO{}
+	}
+
+	normal := get("/api/lessons/01/exercises")
+	if normal.Audio != "01-A-5.mp3" || normal.Text != "" || len(normal.Options) != 3 {
+		t.Errorf("listen choice = %+v", normal)
+	}
+	off := get("/api/lessons/01/exercises?audio=off")
+	if off.Audio != "" || off.Text != "Dobro jutro." || off.Prompt != "Выбери перевод." {
+		t.Errorf("audio=off listen choice = %+v", off)
+	}
+
+	bad := decodeBody[checkResultDTO](t, do(h, "POST", "/api/lessons/01/exercises/01-A-5/check", `{"answer":"Добрый вечер."}`))
+	if bad.OK || bad.Expected != "Доброе утро." || bad.Say != "Dobro jutro." {
+		t.Errorf("wrong answer = %+v", bad)
+	}
+	good := decodeBody[checkResultDTO](t, do(h, "POST", "/api/lessons/01/exercises/01-A-5/check", `{"answer":"Доброе утро."}`))
+	if !good.OK || good.Say != "Dobro jutro." {
+		t.Errorf("right answer = %+v", good)
+	}
+}
+
 func TestCheckConjugateFormByForm(t *testing.T) {
 	h, _ := newTestAPI(t)
-	body := `{"answers":["govorim","WRONG","govori","govorimo","govorite","govore"]}`
-	rr := do(h, "POST", "/api/lessons/01/exercises/01-A-3/check", body)
-	res := decodeBody[checkResultDTO](t, rr)
-	if res.OK || len(res.Forms) != 6 || res.Forms[1].OK {
-		t.Errorf("forms = %+v", res)
+	check := func(body string) checkResultDTO {
+		return decodeBody[checkResultDTO](t, do(h, "POST", "/api/lessons/01/exercises/01-A-3/check", body))
+	}
+
+	// One wrong form out of six is a near miss: counted, but shown yellow.
+	one := check(`{"answers":["govorim","WRONG","govori","govorimo","govorite","govore"]}`)
+	if !one.OK || !one.Partial || len(one.Forms) != 6 || one.Forms[1].OK || one.Forms[1].Expected == "" {
+		t.Errorf("one wrong form: %+v", one)
+	}
+	// Two wrong forms is a real mistake.
+	two := check(`{"answers":["govorim","WRONG","govori","govorimo","govorite","WRONG"]}`)
+	if two.OK || two.Partial {
+		t.Errorf("two wrong forms must fail: %+v", two)
+	}
+	// All right is plain OK, not partial.
+	all := check(`{"answers":["govorim","govoriš","govori","govorimo","govorite","govore"]}`)
+	if !all.OK || all.Partial {
+		t.Errorf("all right: %+v", all)
+	}
+}
+
+func TestForgivable(t *testing.T) {
+	for _, c := range []struct {
+		wrong, total int
+		want         bool
+	}{{1, 6, true}, {1, 3, true}, {1, 2, false}, {2, 6, false}, {0, 6, false}} {
+		if got := forgivable(c.wrong, c.total); got != c.want {
+			t.Errorf("forgivable(%d,%d) = %v, want %v", c.wrong, c.total, got, c.want)
+		}
 	}
 }
 

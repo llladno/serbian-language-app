@@ -74,31 +74,19 @@ type Config struct {
 
 	// TariffsEmails are the accounts, by VERIFIED email address, that see and can
 	// use the paid tariffs (the level and year pages, offers, orders), paying
-	// through ЮKassa. Everyone else gets neither the screens nor the endpoints.
-	// Empty means nobody. Matched case-insensitively. From TARIFFS_EMAILS, a
-	// comma-separated list.
+	// through Т-Касса (the only payment service). Everyone else gets neither the
+	// screens nor the endpoints. Empty means nobody. Matched case-insensitively.
+	// From TARIFFS_EMAILS, a comma-separated list.
 	TariffsEmails []string
-	// TBankEmails are accounts that see the same tariffs but pay through Т-Касса
-	// (Т-Банк) instead. An address in both lists pays through Т-Касса. From
-	// TBANK_EMAILS.
+	// TBankEmails is a second list with the same effect as TariffsEmails, kept
+	// because it was set before ЮKassa was dropped and there is one service now.
+	// From TBANK_EMAILS.
 	TBankEmails []string
 	// TariffsForAll opens the tariffs to every account with a verified email
-	// address: each pays through Т-Касса, except the addresses listed above, which
-	// keep the service they are listed for. An account with no email (Telegram
-	// only) still sees nothing: the receipt has to go somewhere. From
-	// TARIFFS_FOR_ALL (1, true or yes).
+	// address. An account with no email (Telegram only) still sees nothing unless
+	// this is on: the receipt has to go somewhere (it is asked for when paying).
+	// From TARIFFS_FOR_ALL (1, true or yes).
 	TariffsForAll bool
-	// YooKassaShopID and YooKassaSecretKey are the credentials of the ЮKassa shop
-	// that takes the payments: the test shop's while testing, the real one's at
-	// launch. Both empty means payments are not connected and orders are refused.
-	// From YOOKASSA_SHOP_ID and YOOKASSA_SECRET_KEY.
-	YooKassaShopID    string
-	YooKassaSecretKey string
-	// YooKassaTaxSystem is the receipt's tax_system_code (1..6); 0 leaves it out,
-	// which ЮKassa accepts for a shop with a single tax system. YOOKASSA_TAX_SYSTEM.
-	YooKassaTaxSystem int
-	// YooKassaAPIBase overrides the ЮKassa API address (tests). YOOKASSA_API_BASE.
-	YooKassaAPIBase string
 	// TBankTerminalKey and TBankPassword are the Т-Касса terminal's credentials:
 	// the test terminal's (its key ends in DEMO) while testing, the real one's at
 	// launch. Both empty means Т-Касса is not connected. From TBANK_TERMINAL_KEY
@@ -110,6 +98,13 @@ type Config struct {
 	TBankTaxation string
 	// TBankAPIBase overrides the Т-Касса API address (tests). TBANK_API_BASE.
 	TBankAPIBase string
+	// PaymentsDev swaps every payment service for a stand-in cash desk that the developer
+	// operates with two buttons (the page /dev/pay), so the whole flow from the order to
+	// the choice of a level can be tried on a local machine without a bank. It changes
+	// only who takes the money: who may pay and what happens after are the real code. From
+	// PAYMENTS_DEV (1, true or yes), and never on an https base: the production site is
+	// served over https, so a .env copied there cannot turn it on.
+	PaymentsDev bool
 	// TariffLevelCooldownDays is how long after paying for a level the next one
 	// cannot be bought for rubles: one level a month. Levels bought for зёрнышки
 	// and the year are not held back. 0 turns the limit off. From
@@ -147,14 +142,11 @@ func Load() Config {
 		TariffsEmails:         parseEmailList(os.Getenv("TARIFFS_EMAILS")),
 		TBankEmails:           parseEmailList(os.Getenv("TBANK_EMAILS")),
 		TariffsForAll:         parseFlag(os.Getenv("TARIFFS_FOR_ALL")),
-		YooKassaShopID:        strings.TrimSpace(os.Getenv("YOOKASSA_SHOP_ID")),
-		YooKassaSecretKey:     strings.TrimSpace(os.Getenv("YOOKASSA_SECRET_KEY")),
-		YooKassaTaxSystem:     parseSmallInt(os.Getenv("YOOKASSA_TAX_SYSTEM")),
-		YooKassaAPIBase:       strings.TrimSpace(os.Getenv("YOOKASSA_API_BASE")),
 		TBankTerminalKey:      strings.TrimSpace(os.Getenv("TBANK_TERMINAL_KEY")),
 		TBankPassword:         strings.TrimSpace(os.Getenv("TBANK_PASSWORD")),
 		TBankTaxation:         taxationOr(os.Getenv("TBANK_TAXATION"), "usn_income"),
 		TBankAPIBase:          strings.TrimSpace(os.Getenv("TBANK_API_BASE")),
+		PaymentsDev:           parseFlag(os.Getenv("PAYMENTS_DEV")) && !strings.HasPrefix(base, "https://"),
 
 		TariffLevelCooldownDays: daysOr(os.Getenv("TARIFF_LEVEL_COOLDOWN_DAYS"), 30),
 	}
@@ -212,30 +204,32 @@ func parseEmailList(raw string) []string {
 	return out
 }
 
-func parseSmallInt(raw string) int {
-	n, err := strconv.Atoi(strings.TrimSpace(raw))
-	if err != nil || n < 0 || n > 6 {
-		return 0
-	}
-	return n
-}
-
 // Payment services an account can be sent to.
 const (
-	ProviderYooKassa = "yookassa"
-	ProviderTBank    = "tbank"
+	ProviderTBank = "tbank"
+	// ProviderDev is the stand-in cash desk of PAYMENTS_DEV: no bank, no money.
+	ProviderDev = "dev"
 )
 
 // PaymentProviderFor says which payment service the account with this email
-// pays through: ProviderTBank for an address in TBANK_EMAILS, ProviderYooKassa
-// for one in TARIFFS_EMAILS, ProviderTBank for everyone else when the tariffs
-// are open to all (TARIFFS_FOR_ALL), and "" otherwise (those accounts see no
-// payments at all). An account with no email (Telegram only) has no list entry
-// to match, so it pays through Т-Касса when the tariffs are open to all and sees
-// nothing otherwise; the address for its receipt is asked for when it pays.
+// pays through: ProviderTBank for an address in TARIFFS_EMAILS or TBANK_EMAILS
+// and for everyone else when the tariffs are open to all (TARIFFS_FOR_ALL), and
+// "" otherwise (those accounts see no payments at all). An account with no email
+// (Telegram only) has no list entry to match, so it pays through Т-Касса when the
+// tariffs are open to all and sees nothing otherwise; the address for its receipt
+// is asked for when it pays.
 // For an account that has an email the caller must already have established that
 // it is verified: an address someone merely typed at registration proves nothing.
 func (c Config) PaymentProviderFor(email string) string {
+	p := c.realProviderFor(email)
+	if p != "" && c.PaymentsDev {
+		// Who may pay stays as configured; only the cash desk is replaced.
+		return ProviderDev
+	}
+	return p
+}
+
+func (c Config) realProviderFor(email string) string {
 	email = strings.ToLower(strings.TrimSpace(email))
 	if email == "" {
 		if c.TariffsForAll {
@@ -250,7 +244,7 @@ func (c Config) PaymentProviderFor(email string) string {
 	}
 	for _, e := range c.TariffsEmails {
 		if e == email {
-			return ProviderYooKassa
+			return ProviderTBank
 		}
 	}
 	if c.TariffsForAll {
@@ -260,14 +254,9 @@ func (c Config) PaymentProviderFor(email string) string {
 }
 
 // TariffsAllowed reports whether the account with this email may use the paid
-// tariffs at all (through either payment service).
+// tariffs at all.
 func (c Config) TariffsAllowed(email string) bool {
 	return c.PaymentProviderFor(email) != ""
-}
-
-// YooKassaConfigured reports whether ЮKassa payments are connected.
-func (c Config) YooKassaConfigured() bool {
-	return c.YooKassaShopID != "" && c.YooKassaSecretKey != ""
 }
 
 // TBankConfigured reports whether Т-Касса payments are connected.

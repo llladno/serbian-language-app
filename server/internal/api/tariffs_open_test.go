@@ -11,14 +11,14 @@ import (
 // With TARIFFS_FOR_ALL on, the tariffs are open to every account with a verified
 // email, paying through Т-Касса.
 
-func openAPI(t *testing.T, yk *fakeYooKassa, tb *fakeTBank) (http.Handler, *store.Store) {
+func openAPI(t *testing.T, tb *fakeTBank) (http.Handler, *store.Store) {
 	t.Helper()
-	return tariffsAPIWith(t, yk, tb, func(d *Deps) { d.Config.TariffsForAll = true })
+	return tariffsAPIWith(t, tb, func(d *Deps) { d.Config.TariffsForAll = true })
 }
 
 func TestWhenOpenToAllAnOrdinaryVerifiedAccountSeesTheTariffsAndPaysThroughTBank(t *testing.T) {
-	yk, tb := newFakeYooKassa(t), newFakeTBank(t)
-	h, st := openAPI(t, yk, tb)
+	tb := newFakeTBank(t)
+	h, st := openAPI(t, tb)
 	uid := registerAndVerify(t, h, st, "someone@example.com", "secret1234", "Anna")
 	c := authed(t, st, uid)
 
@@ -29,27 +29,18 @@ func TestWhenOpenToAllAnOrdinaryVerifiedAccountSeesTheTariffsAndPaysThroughTBank
 		t.Fatalf("tariffs = %+v, want payments ready and the first-purchase price", got)
 	}
 	o := order(t, h, c, "level")
-	if o.ConfirmationURL != "https://pay.test/tb/9001" || tb.count() != 1 || yk.count() != 0 {
-		t.Fatalf("order = %+v (Т-Касса %d, ЮKassa %d payments), want it paid through Т-Касса", o, tb.count(), yk.count())
+	if o.ConfirmationURL != "https://pay.test/tb/9001" || tb.count() != 1 {
+		t.Fatalf("order = %+v (%d bank payments), want it paid through Т-Касса", o, tb.count())
 	}
 	if p, _ := st.PaymentByID(o.ID); p.Provider != "tbank" || p.ReceiptContact != "someone@example.com" {
 		t.Errorf("payment row = %+v", p)
 	}
 }
 
-func TestWhenOpenToAllTheListedAddressesKeepTheirService(t *testing.T) {
-	yk, tb := newFakeYooKassa(t), newFakeTBank(t)
-	h, st := openAPI(t, yk, tb)
-	_, gc := listedUser(t, h, st) // listed for ЮKassa
-	if o := order(t, h, gc, "level"); !strings.HasPrefix(o.ConfirmationURL, "https://pay.test/confirm/") || yk.count() != 1 || tb.count() != 0 {
-		t.Fatalf("the ЮKassa-listed account's order = %+v (ЮKassa %d, Т-Касса %d)", o, yk.count(), tb.count())
-	}
-}
-
 // Open to all does not mean open to anyone who types an address: an account
 // whose email was typed at sign-up but never verified still sees nothing.
 func TestWhenOpenToAllAnAccountWithAnUnverifiedEmailStillSeesNothing(t *testing.T) {
-	h, st := openAPI(t, newFakeYooKassa(t), newFakeTBank(t))
+	h, st := openAPI(t, newFakeTBank(t))
 
 	if rr := anon(h, "POST", "/api/auth/register", registerBody("unverified@example.com", "secret1234", "U")); rr.Code != 200 {
 		t.Fatalf("register = %d", rr.Code)
@@ -71,8 +62,8 @@ func TestWhenOpenToAllAnAccountWithAnUnverifiedEmailStillSeesNothing(t *testing.
 // Once the tariffs are open to all it sees them and pays through Т-Касса, naming
 // the email or phone its receipt goes to.
 func TestWhenOpenToAllATelegramOnlyAccountPaysAndNamesItsReceiptContact(t *testing.T) {
-	yk, tb := newFakeYooKassa(t), newFakeTBank(t)
-	h, st := openAPI(t, yk, tb)
+	tb := newFakeTBank(t)
+	h, st := openAPI(t, tb)
 	tgOnly, err := st.CreateUser("Tg")
 	if err != nil {
 		t.Fatal(err)
@@ -108,8 +99,8 @@ func TestWhenOpenToAllATelegramOnlyAccountPaysAndNamesItsReceiptContact(t *testi
 		t.Fatalf("order = %d %s", rr.Code, rr.Body)
 	}
 	o := decodeBody[orderDTO](t, rr)
-	if o.ConfirmationURL != "https://pay.test/tb/9001" || tb.count() != 1 || yk.count() != 0 {
-		t.Fatalf("order = %+v (Т-Касса %d, ЮKassa %d payments), want it paid through Т-Касса", o, tb.count(), yk.count())
+	if o.ConfirmationURL != "https://pay.test/tb/9001" || tb.count() != 1 {
+		t.Fatalf("order = %+v (%d bank payments), want it paid through Т-Касса", o, tb.count())
 	}
 	if p, _ := st.PaymentByID(o.ID); p.Provider != "tbank" || p.ReceiptContact != "buyer@example.com" {
 		t.Errorf("payment row = %+v, want the receipt email kept, lower-cased", p)
@@ -156,7 +147,7 @@ func TestNormalizePhone(t *testing.T) {
 
 // Closed to all, a Telegram-only account sees nothing, as before.
 func TestATelegramOnlyAccountSeesNothingWhileTheTariffsAreNotOpenToAll(t *testing.T) {
-	h, st := tariffsAPIWith(t, newFakeYooKassa(t), newFakeTBank(t))
+	h, st := tariffsAPIWith(t, newFakeTBank(t))
 	tgOnly, err := st.CreateUser("Tg")
 	if err != nil {
 		t.Fatal(err)
@@ -171,7 +162,7 @@ func TestATelegramOnlyAccountSeesNothingWhileTheTariffsAreNotOpenToAll(t *testin
 }
 
 func TestWhenOpenToAllButTBankIsNotConnectedNothingCanBeBought(t *testing.T) {
-	h, st := openAPI(t, newFakeYooKassa(t), nil) // ЮKassa only: Т-Касса has no terminal
+	h, st := openAPI(t, nil) // Т-Касса has no terminal
 	uid := registerAndVerify(t, h, st, "someone@example.com", "secret1234", "Anna")
 	c := authed(t, st, uid)
 	if got := getTariffsOf(t, h, c); got.PaymentsReady {

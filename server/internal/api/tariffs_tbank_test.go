@@ -15,7 +15,7 @@ import (
 	"github.com/grisha/serbian-app/server/internal/tbank"
 )
 
-// The account that pays through Т-Касса; listedEmail pays through ЮKassa.
+// An account listed in TBANK_EMAILS; listedEmail is listed in TARIFFS_EMAILS. Both lists have the same effect.
 const tbankEmail = "man30968@gmail.com"
 
 // fakeTBank stands in for securepay.tinkoff.ru. Like the bank it refuses a
@@ -100,6 +100,13 @@ func (f *fakeTBank) get(id string) tbPayment {
 	return *f.payments[id]
 }
 
+// latestID is the id of the payment started last.
+func (f *fakeTBank) latestID() string {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	return fmt.Sprint(9000 + len(f.payments))
+}
+
 func (f *fakeTBank) count() int {
 	f.mu.Lock()
 	defer f.mu.Unlock()
@@ -131,26 +138,25 @@ func tbankAccount(t *testing.T, h http.Handler, st *store.Store) (string, *http.
 
 // ---- who pays through whom ----
 
-func TestEachListedAccountPaysThroughItsOwnService(t *testing.T) {
-	yk, tb := newFakeYooKassa(t), newFakeTBank(t)
-	h, st := tariffsAPIWith(t, yk, tb)
+func TestAccountsInEitherListPayThroughTheBank(t *testing.T) {
+	tb := newFakeTBank(t)
+	h, st := tariffsAPIWith(t, tb)
 	_, gc := listedUser(t, h, st)
 	_, mc := tbankAccount(t, h, st)
 
 	og := order(t, h, gc, "level")
-	if !strings.HasPrefix(og.ConfirmationURL, "https://pay.test/confirm/") || yk.count() != 1 || tb.count() != 0 {
-		t.Fatalf("the ЮKassa account's order = %+v (ЮKassa %d, Т-Касса %d payments)", og, yk.count(), tb.count())
+	if !strings.HasPrefix(og.ConfirmationURL, "https://pay.test/tb/") || tb.count() != 1 {
+		t.Fatalf("the TARIFFS_EMAILS account's order = %+v (%d bank payments)", og, tb.count())
 	}
 	om := order(t, h, mc, "level")
-	if !strings.HasPrefix(om.ConfirmationURL, "https://pay.test/tb/") || tb.count() != 1 || yk.count() != 1 {
-		t.Fatalf("the Т-Касса account's order = %+v (ЮKassa %d, Т-Касса %d payments)", om, yk.count(), tb.count())
+	if !strings.HasPrefix(om.ConfirmationURL, "https://pay.test/tb/") || tb.count() != 2 {
+		t.Fatalf("the TBANK_EMAILS account's order = %+v (%d bank payments)", om, tb.count())
 	}
-	if p, _ := st.PaymentByID(og.ID); p.Provider != "yookassa" {
-		t.Errorf("first payment provider = %q", p.Provider)
+	if p, _ := st.PaymentByID(og.ID); p.Provider != "tbank" || p.ProviderPaymentID != "9001" || !p.Test {
+		t.Errorf("first payment = %+v, want tbank / 9001 / test (a DEMO terminal)", p)
 	}
-	p, _ := st.PaymentByID(om.ID)
-	if p.Provider != "tbank" || p.ProviderPaymentID != "9001" || !p.Test {
-		t.Errorf("second payment = %+v, want tbank / 9001 / test (a DEMO terminal)", p)
+	if p, _ := st.PaymentByID(om.ID); p.Provider != "tbank" || p.ProviderPaymentID != "9002" || !p.Test {
+		t.Errorf("second payment = %+v, want tbank / 9002 / test (a DEMO terminal)", p)
 	}
 	for _, c := range []*http.Cookie{gc, mc} {
 		if rr := doCookie(h, c, "GET", "/api/auth/session", ""); !decodeBody[sessionUserDTO](t, rr).Features.Tariffs {
@@ -159,8 +165,8 @@ func TestEachListedAccountPaysThroughItsOwnService(t *testing.T) {
 	}
 }
 
-func TestEveryoneElseSeesNoPaymentsEvenWithBothServicesConnected(t *testing.T) {
-	h, st := tariffsAPIWith(t, newFakeYooKassa(t), newFakeTBank(t))
+func TestEveryoneElseSeesNoPaymentsEvenWithTheBankConnected(t *testing.T) {
+	h, st := tariffsAPIWith(t, newFakeTBank(t))
 	other := registerAndVerify(t, h, st, "someone@example.com", "secret1234", "Other")
 	oc := authed(t, st, other)
 	for _, c := range []struct{ method, path, body string }{
@@ -179,7 +185,7 @@ func TestEveryoneElseSeesNoPaymentsEvenWithBothServicesConnected(t *testing.T) {
 
 // Only a verified address counts for Т-Касса too.
 func TestAnUnverifiedAccountWithTheTBankAddressSeesNothing(t *testing.T) {
-	h, st := tariffsAPIWith(t, nil, newFakeTBank(t))
+	h, st := tariffsAPIWith(t, newFakeTBank(t))
 	if rr := anon(h, "POST", "/api/auth/register", registerBody(tbankEmail, "secret1234", "Impostor")); rr.Code != 200 {
 		t.Fatalf("register = %d", rr.Code)
 	}
@@ -192,32 +198,11 @@ func TestAnUnverifiedAccountWithTheTBankAddressSeesNothing(t *testing.T) {
 	}
 }
 
-// Each account needs ITS service connected: ЮKassa's keys do not make Т-Касса work.
-func TestAnAccountWhoseServiceIsNotConnectedCannotBuy(t *testing.T) {
-	h, st := tariffsAPIWith(t, newFakeYooKassa(t), nil) // ЮKassa only
-	_, mc := tbankAccount(t, h, st)
-	_, gc := listedUser(t, h, st)
-
-	if got := getTariffsOf(t, h, mc); got.PaymentsReady {
-		t.Error("payments_ready for the Т-Касса account with no terminal")
-	}
-	rr := doCookie(h, mc, "POST", "/api/me/orders", `{"tariff":"level"}`)
-	if rr.Code != http.StatusServiceUnavailable || !strings.Contains(rr.Body.String(), "payments_unavailable") {
-		t.Fatalf("order = %d %s, want 503 payments_unavailable", rr.Code, rr.Body)
-	}
-	if got := getTariffsOf(t, h, gc); !got.PaymentsReady {
-		t.Error("the ЮKassa account lost its payments because Т-Касса is missing")
-	}
-	if hook := anon(h, "POST", "/api/tbank/webhook", `{"Status":"CONFIRMED"}`); hook.Code != 200 || hook.Body.String() != "OK" {
-		t.Errorf("webhook without a terminal = %d %q, want a quiet 200 OK", hook.Code, hook.Body)
-	}
-}
-
 // ---- ordering and paying through Т-Касса ----
 
 func TestOrderingALevelAsksTheBankForExactlyThatPayment(t *testing.T) {
 	tb := newFakeTBank(t)
-	h, st := tariffsAPIWith(t, nil, tb)
+	h, st := tariffsAPIWith(t, tb)
 	uid, c := tbankAccount(t, h, st)
 
 	o := order(t, h, c, "level")
@@ -239,7 +224,7 @@ func TestOrderingALevelAsksTheBankForExactlyThatPayment(t *testing.T) {
 	if req["NotificationURL"] != testBaseURL+"/api/tbank/webhook" {
 		t.Errorf("NotificationURL = %v", req["NotificationURL"])
 	}
-	if req["PayType"] != "O" || !strings.Contains(req["Description"].(string), "Падежи") {
+	if req["PayType"] != "O" || !strings.Contains(req["Description"].(string), "на выбор") {
 		t.Errorf("PayType/Description = %v / %v", req["PayType"], req["Description"])
 	}
 	rec := req["Receipt"].(map[string]any)
@@ -253,17 +238,17 @@ func TestOrderingALevelAsksTheBankForExactlyThatPayment(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if p.UserID != uid || p.GrantedPhase != "B" || p.AmountKopecks != 19900 || p.Status != "pending" {
-		t.Errorf("payment row = %+v", p)
+	if p.UserID != uid || p.GrantedPhase != "" || p.AmountKopecks != 19900 || p.Status != "pending" {
+		t.Errorf("payment row = %+v, want pending and no level fixed (the learner chooses after paying)", p)
 	}
 	if !phaseLocked(t, h, c, "B") {
 		t.Error("level B opened before anything was paid")
 	}
 }
 
-func TestReturningFromTheBankOpensTheLevelThroughTBank(t *testing.T) {
+func TestReturningFromTheBankGivesACreditThroughTBankThatOpensTheChosenLevel(t *testing.T) {
 	tb := newFakeTBank(t)
-	h, st := tariffsAPIWith(t, nil, tb)
+	h, st := tariffsAPIWith(t, tb)
 	_, c := tbankAccount(t, h, st)
 	o := order(t, h, c, "level")
 	path := fmt.Sprintf("/api/me/orders/%d", o.ID)
@@ -279,8 +264,14 @@ func TestReturningFromTheBankOpensTheLevelThroughTBank(t *testing.T) {
 	if got := decodeBody[orderDTO](t, doCookie(h, c, "GET", path, "")).Status; got != "succeeded" {
 		t.Fatalf("status after CONFIRMED = %s", got)
 	}
+	if !phaseLocked(t, h, c, "B") || !phaseLocked(t, h, c, "C") {
+		t.Error("the payment opened a level by itself: the learner chooses the level")
+	}
+	if rr := chooseLevel(h, c, o.ID, "B"); rr.Code != 200 {
+		t.Fatalf("choose B = %d %s", rr.Code, rr.Body)
+	}
 	if phaseLocked(t, h, c, "B") {
-		t.Error("level B still locked after the payment was confirmed")
+		t.Error("level B still locked after it was chosen")
 	}
 	if !phaseLocked(t, h, c, "C") {
 		t.Error("level C opened too")
@@ -292,7 +283,7 @@ func TestReturningFromTheBankOpensTheLevelThroughTBank(t *testing.T) {
 
 func TestAYearBoughtThroughTBankOpensEveryLevel(t *testing.T) {
 	tb := newFakeTBank(t)
-	h, st := tariffsAPIWith(t, nil, tb)
+	h, st := tariffsAPIWith(t, tb)
 	_, c := tbankAccount(t, h, st)
 	order(t, h, c, "year")
 	if tb.get("9001").Request["Amount"].(json.Number).String() != "100000" {
@@ -311,7 +302,7 @@ func TestAYearBoughtThroughTBankOpensEveryLevel(t *testing.T) {
 func TestARejectedBankPaymentOpensNothingAndCanBeRetried(t *testing.T) {
 	for _, status := range []string{"REJECTED", "AUTH_FAIL", "CANCELED", "DEADLINE_EXPIRED"} {
 		tb := newFakeTBank(t)
-		h, st := tariffsAPIWith(t, nil, tb)
+		h, st := tariffsAPIWith(t, tb)
 		_, c := tbankAccount(t, h, st)
 		o := order(t, h, c, "level")
 		tb.set("9001", status)
@@ -330,7 +321,7 @@ func TestARejectedBankPaymentOpensNothingAndCanBeRetried(t *testing.T) {
 func TestWhenTheBankRefusesTheOrderIsClosed(t *testing.T) {
 	tb := newFakeTBank(t)
 	tb.failInit = true
-	h, st := tariffsAPIWith(t, nil, tb)
+	h, st := tariffsAPIWith(t, tb)
 	uid, c := tbankAccount(t, h, st)
 	rr := doCookie(h, c, "POST", "/api/me/orders", `{"tariff":"level"}`)
 	if rr.Code != http.StatusBadGateway || !strings.Contains(rr.Body.String(), "payment_failed") {
@@ -349,7 +340,7 @@ func TestABankPaymentOfTheWrongAmountOrOrderIsNeverGranted(t *testing.T) {
 		"other order": func(p *tbPayment) { p.OrderID = "999-1" },
 	} {
 		tb := newFakeTBank(t)
-		h, st := tariffsAPIWith(t, nil, tb)
+		h, st := tariffsAPIWith(t, tb)
 		_, c := tbankAccount(t, h, st)
 		o := order(t, h, c, "level")
 		tb.mu.Lock()
@@ -368,9 +359,9 @@ func TestABankPaymentOfTheWrongAmountOrOrderIsNeverGranted(t *testing.T) {
 
 // ---- the bank's notification ----
 
-func TestASignedNotificationOpensTheLevelWithoutAnySession(t *testing.T) {
+func TestASignedNotificationSettlesThePaymentWithoutAnySession(t *testing.T) {
 	tb := newFakeTBank(t)
-	h, st := tariffsAPIWith(t, nil, tb)
+	h, st := tariffsAPIWith(t, tb)
 	_, c := tbankAccount(t, h, st)
 	order(t, h, c, "level")
 	tb.set("9001", "CONFIRMED")
@@ -380,8 +371,8 @@ func TestASignedNotificationOpensTheLevelWithoutAnySession(t *testing.T) {
 	if rr.Code != 200 || rr.Body.String() != "OK" {
 		t.Fatalf("webhook = %d %q, want 200 with the body OK the bank waits for", rr.Code, rr.Body)
 	}
-	if phaseLocked(t, h, c, "B") {
-		t.Error("level B still locked after the notification")
+	if got := getTariffsOf(t, h, c); len(got.Level.Credits) != 1 {
+		t.Errorf("credits = %v after the notification, want the paid level waiting for a choice", got.Level.Credits)
 	}
 	// the bank sends AUTHORIZED and CONFIRMED together, and retries; nothing may change
 	for _, status := range []string{"AUTHORIZED", "CONFIRMED"} {
@@ -396,7 +387,7 @@ func TestASignedNotificationOpensTheLevelWithoutAnySession(t *testing.T) {
 
 func TestANotificationThatIsNotSignedByTheBankIsRefusedAndOpensNothing(t *testing.T) {
 	tb := newFakeTBank(t)
-	h, st := tariffsAPIWith(t, nil, tb)
+	h, st := tariffsAPIWith(t, tb)
 	_, c := tbankAccount(t, h, st)
 	order(t, h, c, "level")
 	tb.set("9001", "CONFIRMED") // even if the bank did mark it paid
@@ -421,7 +412,7 @@ func TestANotificationThatIsNotSignedByTheBankIsRefusedAndOpensNothing(t *testin
 // the payment is not paid, nothing opens.
 func TestASignedNotificationForAnUnpaidPaymentOpensNothing(t *testing.T) {
 	tb := newFakeTBank(t)
-	h, st := tariffsAPIWith(t, nil, tb)
+	h, st := tariffsAPIWith(t, tb)
 	_, c := tbankAccount(t, h, st)
 	order(t, h, c, "level") // NEW at the bank
 
@@ -438,7 +429,7 @@ func TestASignedNotificationForAnUnpaidPaymentOpensNothing(t *testing.T) {
 
 func TestBankNotificationsWeHaveNothingToDoWithGetAQuietOK(t *testing.T) {
 	tb := newFakeTBank(t)
-	h, st := tariffsAPIWith(t, nil, tb)
+	h, st := tariffsAPIWith(t, tb)
 	_, c := tbankAccount(t, h, st)
 	order(t, h, c, "level")
 
@@ -463,7 +454,7 @@ func TestBankNotificationsWeHaveNothingToDoWithGetAQuietOK(t *testing.T) {
 
 func TestTheBankNotificationIsRetriedWhenWeCannotAskTheBank(t *testing.T) {
 	tb := newFakeTBank(t)
-	h, st := tariffsAPIWith(t, nil, tb)
+	h, st := tariffsAPIWith(t, tb)
 	_, c := tbankAccount(t, h, st)
 	order(t, h, c, "level")
 	tb.set("9001", "CONFIRMED")
@@ -477,32 +468,29 @@ func TestTheBankNotificationIsRetriedWhenWeCannotAskTheBank(t *testing.T) {
 	if rr := anon(h, "POST", "/api/tbank/webhook", body); rr.Code != 200 {
 		t.Fatalf("webhook after = %d", rr.Code)
 	}
-	if phaseLocked(t, h, c, "B") {
-		t.Error("level B still locked after the retry")
+	if got := getTariffsOf(t, h, c); len(got.Level.Credits) != 1 {
+		t.Errorf("credits = %v after the retry, want the paid level waiting for a choice", got.Level.Credits)
 	}
 }
 
-// A ЮKassa payment is still settled by ЮKassa when Т-Касса is connected too, and
-// the other way round: the payment row, not the account, says whose it is.
-func TestEachPaymentIsSettledWithTheServiceThatMadeIt(t *testing.T) {
-	yk, tb := newFakeYooKassa(t), newFakeTBank(t)
-	h, st := tariffsAPIWith(t, yk, tb)
-	_, gc := listedUser(t, h, st)
-	_, mc := tbankAccount(t, h, st)
-	og, om := order(t, h, gc, "level"), order(t, h, mc, "level")
-
-	yk.set("yk-1", "succeeded") // only the ЮKassa payment was paid
-	doCookie(h, gc, "GET", fmt.Sprintf("/api/me/orders/%d", og.ID), "")
-	if phaseLocked(t, h, gc, "B") {
-		t.Error("the ЮKassa account's level did not open")
+// Payments made through ЮKassa before it was dropped stay in the table. Nothing can settle them any
+// more, so asking about one changes nothing and breaks nothing.
+func TestAPaymentOfADroppedServiceIsLeftAlone(t *testing.T) {
+	h, st := tariffsAPIWith(t, newFakeTBank(t))
+	uid, c := listedUser(t, h, st)
+	pid, err := st.CreatePayment(store.Payment{UserID: uid, TariffCode: store.TariffLevel, AmountKopecks: 19900, Provider: "yookassa"}, fixedNow)
+	if err != nil {
+		t.Fatal(err)
 	}
-	if !phaseLocked(t, h, mc, "B") {
-		t.Error("the Т-Касса account's level opened though only ЮKassa's payment was paid")
+	if err := st.SetPaymentProviderID(pid, "yk-1", false); err != nil {
+		t.Fatal(err)
 	}
-	tb.set("9001", "CONFIRMED")
-	doCookie(h, mc, "GET", fmt.Sprintf("/api/me/orders/%d", om.ID), "")
-	if phaseLocked(t, h, mc, "B") {
-		t.Error("the Т-Касса account's level did not open once the bank confirmed")
+	rr := doCookie(h, c, "GET", fmt.Sprintf("/api/me/orders/%d", pid), "")
+	if rr.Code != 200 || decodeBody[orderDTO](t, rr).Status != store.PaymentPending {
+		t.Fatalf("old order = %d %s, want it shown as it was, pending", rr.Code, rr.Body)
+	}
+	if got := getTariffsOf(t, h, c); len(got.Level.Credits) != 0 || got.HasPaidLevel {
+		t.Fatalf("an old ЮKassa payment gave %+v", got)
 	}
 }
 

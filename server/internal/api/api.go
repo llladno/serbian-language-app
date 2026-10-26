@@ -175,10 +175,15 @@ func Handler(deps Deps) http.Handler {
 	root.HandleFunc("GET /api/me/tariffs", h.requireTariffs(h.getTariffs))
 	root.HandleFunc("POST /api/me/orders", h.requireTariffs(h.createOrder))
 	root.HandleFunc("GET /api/me/orders/{id}", h.requireTariffs(h.getOrder))
-	// ЮKassa's payment notification: no session, its body is never trusted (see
-	// yookassaWebhook), exempt from the origin check like the other webhooks.
-	root.HandleFunc("POST /api/yookassa/webhook", h.yookassaWebhook)
-	// Т-Касса's: signed with the terminal password, which tbankWebhook checks.
+	root.HandleFunc("POST /api/me/orders/{id}/level", h.requireTariffs(h.chooseLevel))
+	// Where the tariffs were shown and pressed: the log behind the admin's «Воронка тарифов».
+	root.HandleFunc("POST /api/me/tariff-events", h.requireTariffs(h.trackTariffEvent))
+	// The stand-in cash desk of PAYMENTS_DEV; 404 everywhere unless the flag is on.
+	root.HandleFunc("GET /api/dev/pay/{id}", h.requireTariffs(h.devOrderInfo))
+	root.HandleFunc("POST /api/dev/pay/{id}", h.requireTariffs(h.devPay))
+	// Т-Касса's payment notification: no session, signed with the terminal password,
+	// which tbankWebhook checks (and even then only as a nudge to ask the bank);
+	// exempt from the origin check like the other webhooks.
 	root.HandleFunc("POST /api/tbank/webhook", h.tbankWebhook)
 	root.HandleFunc("GET /api/me/quests", h.requireSession(h.listQuests))
 	root.HandleFunc("POST /api/me/quests/{id}/claim", h.requireSession(h.claimQuest))
@@ -208,7 +213,7 @@ func Handler(deps Deps) http.Handler {
 	protected.HandleFunc("GET /api/lessons/{id}/exercises", h.getExercises)
 	protected.HandleFunc("POST /api/lessons/{id}/exercises/{exId}/check", h.checkExercise)
 	protected.HandleFunc("GET /api/lessons/{id}/attempts", h.lessonAttempts)
-	protected.HandleFunc("GET /api/mistakes", h.getMistakes)
+	protected.HandleFunc("GET /api/repeat", h.getRepeat)
 	protected.HandleFunc("POST /api/lessons/{id}/steps/{step}", h.setStepStatus)
 	protected.HandleFunc("POST /api/lessons/{id}/complete", h.completeLesson)
 	protected.HandleFunc("POST /api/lessons/{id}/reset", h.resetLesson)
@@ -526,6 +531,7 @@ func (h handlers) getExercises(w http.ResponseWriter, r *http.Request) {
 // player and the mistakes screen so the two can never drift apart.
 func toExerciseDTO(e content.Exercise, audioOff bool) exerciseDTO {
 	d := exerciseDTO{ID: e.ID, Type: e.Type, Prompt: e.Prompt, Forms: e.Forms, Meta: e.Meta, Audio: e.Audio, Explain: e.Explain, Hint: e.Hint}
+	d.Shape = answerShape(e)
 	switch e.Type {
 	case "listen":
 		// A learner who cannot listen gets the sentence as text to
@@ -538,6 +544,13 @@ func toExerciseDTO(e content.Exercise, audioOff bool) exerciseDTO {
 		}
 	case "choice":
 		d.Options = e.Options
+		// A listen-choice (choice with say): the clip travels with it, the
+		// sentence only for a learner who cannot listen, in place of the clip.
+		if audioOff && e.Say != "" {
+			d.Audio, d.Explain = "", ""
+			d.Text = e.Say
+			d.Prompt = "Выбери перевод."
+		}
 	case "word_bank":
 		d.Bank = e.Bank
 	case "match":
@@ -547,6 +560,28 @@ func toExerciseDTO(e content.Exercise, audioOff bool) exerciseDTO {
 		}
 	}
 	return d
+}
+
+// answerShape says what kind of text an exercise wants typed (see exerciseDTO.Shape). One word
+// or more is read off the accepted answers: if every variant is a single word, the answer is a word.
+func answerShape(e content.Exercise) string {
+	switch e.Type {
+	case "fill_blank":
+		return "blank"
+	case "fix_error":
+		return "sentence"
+	case "translate", "listen":
+		for _, a := range e.Accept {
+			if len(strings.Fields(checker.Normalize(a))) > 1 {
+				return "phrase"
+			}
+		}
+		if len(e.Accept) == 0 {
+			return ""
+		}
+		return "word"
+	}
+	return ""
 }
 
 type checkRequest struct {
@@ -581,6 +616,14 @@ func (h handlers) findTurn(lesson, exID string) (content.Turn, bool) {
 		}
 	}
 	return content.Turn{}, false
+}
+
+// forgivable: one wrong slot out of three or more in a multi-slot exercise
+// (conjugation table, match) is a near miss, not a failure — it is counted as
+// done and shown yellow with the right answer. With two slots one wrong is
+// already half the exercise, so that stays a mistake.
+func forgivable(wrong, total int) bool {
+	return wrong == 1 && total >= 3
 }
 
 func (h handlers) checkExercise(w http.ResponseWriter, r *http.Request) {
@@ -623,31 +666,72 @@ func (h handlers) checkExercise(w http.ResponseWriter, r *http.Request) {
 		}
 		resp.OK = allOK
 		resp.Forms = results
+		if !allOK {
+			wrong := 0
+			for _, r := range results {
+				if !r.OK {
+					wrong++
+				}
+			}
+			if forgivable(wrong, len(results)) {
+				resp.OK, resp.Partial = true, true
+			}
+		}
 		recordAnswer = strings.Join(req.Answers, " | ")
-		correct = allOK
+		correct = resp.OK
 	case "choice":
 		res := checker.CheckChoice(req.Answer, ex.Answer)
 		resp.OK = res.OK
 		resp.Expected = res.Expected
+		resp.Say = ex.Say
 		recordAnswer = req.Answer
 		correct = res.OK
 	case "match":
 		ok, per := checker.CheckMatch(req.Pairs, ex.Pairs)
 		resp.OK = ok
 		resp.Match = per
+		if !ok {
+			wrong := 0
+			for _, v := range per {
+				if !v {
+					wrong++
+				}
+			}
+			if forgivable(wrong, len(per)) {
+				resp.OK, resp.Partial = true, true
+			}
+		}
 		b, _ := json.Marshal(req.Pairs)
 		recordAnswer = string(b)
-		correct = ok
+		correct = resp.OK
 	default:
 		accept := ex.Accept
 		if ex.Type == "listen" && req.RU {
 			accept = ex.RU
 			resp.Explain = "" // it explains how the sentence is spelled, not what it means
 		}
-		res := checker.Check(req.Answer, accept)
+		// Where one letter is the whole point, the ending stays protected: fix_error starts with the wrong
+		// sentence in the box (`Imam brat.` must not pass as a typo of `Imam brata.`), and word_bank is built
+		// from tiles, so a different tile (`sin` for `sina`) is a wrong choice, never a typo.
+		check := checker.Check
+		if ex.Type == "fix_error" || ex.Type == "word_bank" {
+			check = checker.CheckStrict
+		}
+		res := check(req.Answer, accept)
+		if !res.OK && (ex.Type == "translate" || ex.Type == "fix_error" || ex.Type == "listen") && checker.TooShort(req.Answer, accept) {
+			// Only a piece of the answer (just the corrected word, the first words): a slip of format.
+			// Say so, mark nothing and record nothing, so the learner can finish the sentence for free.
+			writeJSON(w, 200, checkResultDTO{Format: "too_short"})
+			return
+		}
+		if ex.Type == "fix_error" && res.OK && checker.Normalize(req.Answer) == checker.Normalize(ex.Prompt) {
+			// Handed in as it was given (a diacritics-only fix is forgiven letter by letter, but not
+			// by doing nothing): still the wrong sentence.
+			res = checker.Result{OK: false, Expected: res.Expected}
+		}
 		if !res.OK && ex.Type == "fill_blank" {
 			// Typing the whole sentence into the blank is not a mistake.
-			if full := checker.Check(req.Answer, content.FillSentences(ex.Prompt, accept)); full.OK {
+			if full := check(req.Answer, content.FillSentences(ex.Prompt, accept)); full.OK {
 				res = full
 			}
 		}
@@ -665,7 +749,7 @@ func (h handlers) checkExercise(w http.ResponseWriter, r *http.Request) {
 	// transaction) must not turn a good answer into an error page. It must not
 	// be silent either: the learner's progress is not being saved.
 	if err := us.AddAttempt(store.Attempt{
-		ExerciseID: exID, Lesson: lesson, Block: block, Answer: recordAnswer, Correct: correct,
+		ExerciseID: exID, Lesson: lesson, Block: block, Answer: recordAnswer, Correct: correct, Typo: resp.Typo,
 	}, now); err != nil {
 		uid := ""
 		if ac, ok := authFrom(r); ok {

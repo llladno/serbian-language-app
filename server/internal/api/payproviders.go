@@ -10,16 +10,17 @@ import (
 
 	"github.com/grisha/serbian-app/server/internal/config"
 	"github.com/grisha/serbian-app/server/internal/tbank"
-	"github.com/grisha/serbian-app/server/internal/yookassa"
 )
 
-// A payment service, as the order and settlement code sees it. ЮKassa and
-// Т-Касса differ in how they are called and signed, but both do the same three
-// things for us: make a payment the buyer completes on the service's own page,
-// say where a payment stands, and (through a notification) tell us to ask. The
-// store, the grant and the screens know nothing about which one was used; the
-// payment row records it (payments.provider) so that a notification or the
-// return page is settled with the service that made the payment.
+// A payment service, as the order and settlement code sees it. Т-Касса is the
+// only real one (the stand-in cash desk of PAYMENTS_DEV is the other, for a
+// developer's machine); the interface keeps the order and settlement code free of
+// how a service is called and signed. A service does three things for us: make a
+// payment the buyer completes on the service's own page, say where a payment
+// stands, and (through a notification) tell us to ask. The store, the grant and
+// the screens know nothing about which one was used; the payment row records it
+// (payments.provider) so that a notification or the return page is settled with
+// the service that made the payment.
 type payProvider interface {
 	// Name is the payments.provider value.
 	Name() string
@@ -59,13 +60,12 @@ type payState struct {
 // providerNamed is the service a stored payment was made with, nil if unknown.
 func (h handlers) providerNamed(name string) payProvider {
 	switch name {
-	case config.ProviderYooKassa:
-		return yookassaProvider{c: &yookassa.Client{
-			ShopID:    h.Config.YooKassaShopID,
-			SecretKey: h.Config.YooKassaSecretKey,
-			Base:      h.Config.YooKassaAPIBase,
-			TaxSystem: h.Config.YooKassaTaxSystem,
-		}}
+	case config.ProviderDev:
+		// Only with PAYMENTS_DEV: a stored stand-in payment is inert everywhere else.
+		if h.Config.PaymentsDev {
+			return devProvider{}
+		}
+		return nil
 	case config.ProviderTBank:
 		return tbankProvider{c: &tbank.Client{
 			TerminalKey: h.Config.TBankTerminalKey,
@@ -81,42 +81,6 @@ func (h handlers) providerNamed(name string) payProvider {
 // an account that has none.
 func (h handlers) providerFor(email string) payProvider {
 	return h.providerNamed(h.Config.PaymentProviderFor(email))
-}
-
-// ---- ЮKassa ----
-
-type yookassaProvider struct{ c *yookassa.Client }
-
-func (yookassaProvider) Name() string       { return config.ProviderYooKassa }
-func (p yookassaProvider) Configured() bool { return p.c.Configured() }
-
-func (p yookassaProvider) Create(ctx context.Context, in payCreate) (payCreated, error) {
-	id := strconv.FormatInt(in.OrderID, 10)
-	yp, err := p.c.Create(ctx, yookassa.CreateInput{
-		AmountKopecks:  in.AmountKopecks,
-		Description:    in.Description,
-		ReturnURL:      in.ReturnURL,
-		Email:          in.Email,
-		Metadata:       map[string]string{"order_id": id, "tariff": in.Tariff},
-		IdempotenceKey: "order-" + id,
-	})
-	if err != nil {
-		return payCreated{}, err
-	}
-	return payCreated{ProviderPaymentID: yp.ID, PayURL: yp.ConfirmationURL, Test: yp.Test}, nil
-}
-
-func (p yookassaProvider) State(ctx context.Context, id string) (payState, error) {
-	yp, err := p.c.Get(ctx, id)
-	if err != nil {
-		return payState{}, err
-	}
-	return payState{
-		Paid:          yp.Status == "succeeded" && yp.Paid,
-		Failed:        yp.Status == "canceled",
-		AmountKopecks: yp.AmountKopecks,
-		OrderRef:      orderRef(yp.Metadata["order_id"]),
-	}, nil
 }
 
 // ---- Т-Касса ----

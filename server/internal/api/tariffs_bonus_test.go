@@ -9,7 +9,7 @@ import (
 // Paying for a tariff brings зёрнышки with it: 1000 for a level, 15000 for the year.
 
 func TestTheTariffsScreenQuotesTheBonusCurrency(t *testing.T) {
-	h, st := tariffsAPI(t, newFakeYooKassa(t))
+	h, st := tariffsAPI(t, newFakeTBank(t))
 	_, c := listedUser(t, h, st)
 	got := getTariffsOf(t, h, c)
 	if got.Level.Bonus != 1000 || got.Year.Bonus != 15000 {
@@ -18,15 +18,15 @@ func TestTheTariffsScreenQuotesTheBonusCurrency(t *testing.T) {
 }
 
 func TestPayingForALevelCreditsItsBonus(t *testing.T) {
-	yk := newFakeYooKassa(t)
-	h, st := tariffsAPI(t, yk)
+	tb := newFakeTBank(t)
+	h, st := tariffsAPI(t, tb)
 	uid, c := listedUser(t, h, st)
 
 	o := order(t, h, c, "level")
 	if bal, _ := st.Balance(uid); bal != 0 {
 		t.Fatalf("balance with the order only created = %d", bal)
 	}
-	yk.set("yk-1", "succeeded")
+	tb.set("9001", "CONFIRMED")
 	doCookie(h, c, "GET", fmt.Sprintf("/api/me/orders/%d", o.ID), "")
 	if bal, _ := st.Balance(uid); bal != 1000 {
 		t.Fatalf("balance after paying for a level = %d, want 1000", bal)
@@ -34,7 +34,7 @@ func TestPayingForALevelCreditsItsBonus(t *testing.T) {
 
 	// a notification for the same payment, and another visit to the return page,
 	// must not credit again
-	anon(h, "POST", "/api/yookassa/webhook", `{"event":"payment.succeeded","object":{"id":"yk-1"}}`)
+	anon(h, "POST", "/api/tbank/webhook", tb.notification("9001", "CONFIRMED"))
 	doCookie(h, c, "GET", fmt.Sprintf("/api/me/orders/%d", o.ID), "")
 	if bal, _ := st.Balance(uid); bal != 1000 {
 		t.Fatalf("balance after repeats = %d, want still 1000", bal)
@@ -43,7 +43,7 @@ func TestPayingForALevelCreditsItsBonus(t *testing.T) {
 
 func TestPayingForTheYearCreditsItsBonusThroughTBankToo(t *testing.T) {
 	tb := newFakeTBank(t)
-	h, st := tariffsAPIWith(t, nil, tb)
+	h, st := tariffsAPIWith(t, tb)
 	uid, c := tbankAccount(t, h, st)
 
 	order(t, h, c, "year")
@@ -58,11 +58,11 @@ func TestPayingForTheYearCreditsItsBonusThroughTBankToo(t *testing.T) {
 }
 
 func TestACanceledPaymentCreditsNothing(t *testing.T) {
-	yk := newFakeYooKassa(t)
-	h, st := tariffsAPI(t, yk)
+	tb := newFakeTBank(t)
+	h, st := tariffsAPI(t, tb)
 	uid, c := listedUser(t, h, st)
 	o := order(t, h, c, "year")
-	yk.set("yk-1", "canceled")
+	tb.set("9001", "REJECTED")
 	doCookie(h, c, "GET", fmt.Sprintf("/api/me/orders/%d", o.ID), "")
 	if bal, _ := st.Balance(uid); bal != 0 {
 		t.Fatalf("balance after a canceled payment = %d", bal)
@@ -71,8 +71,8 @@ func TestACanceledPaymentCreditsNothing(t *testing.T) {
 
 // The thank-you screen asks the order what it brought.
 func TestAPaidOrderSaysWhichLevelItOpenedAndWhatBonusCameWithIt(t *testing.T) {
-	yk := newFakeYooKassa(t)
-	h, st := tariffsAPI(t, yk)
+	tb := newFakeTBank(t)
+	h, st := tariffsAPI(t, tb)
 	_, c := listedUser(t, h, st)
 	path := func(id int64) string { return fmt.Sprintf("/api/me/orders/%d", id) }
 
@@ -82,14 +82,19 @@ func TestAPaidOrderSaysWhichLevelItOpenedAndWhatBonusCameWithIt(t *testing.T) {
 		t.Fatalf("an unpaid order already claims %+v", pending)
 	}
 
-	yk.set("yk-1", "succeeded")
+	tb.set("9001", "CONFIRMED")
 	paid := decodeBody[orderDTO](t, doCookie(h, c, "GET", path(level.ID), ""))
-	if paid.Status != "succeeded" || paid.PhaseTitle != "Уровень 4 — Падежи" || paid.Bonus != 1000 {
-		t.Fatalf("paid level order = %+v, want the level's title and 1000", paid)
+	// paid, with the bonus, and waiting for the learner to say which level
+	if paid.Status != "succeeded" || paid.PhaseTitle != "" || !paid.Choose || paid.Bonus != 1000 {
+		t.Fatalf("paid level order = %+v, want paid, 1000 and waiting for a choice", paid)
+	}
+	chosen := decodeBody[orderDTO](t, chooseLevel(h, c, level.ID, "B"))
+	if chosen.PhaseTitle != "Уровень 4 — Падежи" || chosen.Choose || chosen.Bonus != 1000 {
+		t.Fatalf("order after choosing = %+v, want the level's title and 1000", chosen)
 	}
 
 	year := order(t, h, c, "year")
-	yk.set("yk-2", "succeeded")
+	tb.set("9002", "CONFIRMED")
 	paidYear := decodeBody[orderDTO](t, doCookie(h, c, "GET", path(year.ID), ""))
 	if paidYear.PhaseTitle != "" || paidYear.Bonus != 15000 {
 		t.Fatalf("paid year order = %+v, want no level title and 15000", paidYear)

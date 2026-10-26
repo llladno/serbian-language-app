@@ -101,6 +101,10 @@ type exerciseDTO struct {
 	// so the client can offer it as a pre-answer hint, not just a post-check
 	// explanation.
 	Explain string `json:"explain,omitempty"`
+	// Shape tells the learner what to type, without the answer: "word" (one word), "phrase"
+	// (a phrase or sentence to write out), "blank" (only the word missing from the sentence shown),
+	// "sentence" (rewrite the whole sentence with the error fixed). Empty for exercises that are not typed.
+	Shape string `json:"shape,omitempty"`
 	// Hint is the pre-answer 💡 nudge (never contains the answer — enforced at
 	// load time by content.validateHint). Falls back to Explain on the client.
 	Hint string `json:"hint,omitempty"`
@@ -131,9 +135,18 @@ type checkResultDTO struct {
 	Forms    []checker.Result `json:"forms,omitempty"`
 	Match    map[string]bool  `json:"match,omitempty"` // match: per-pair correctness
 	NearMiss bool             `json:"near_miss,omitempty"`
+	// Format: "too_short", the answer is only a piece of the right one. Nothing is marked or
+	// recorded: the learner is asked to write the whole thing and tries again for free.
+	Format string `json:"format,omitempty"`
+	// Partial: OK, but one slot of a multi-slot exercise (conjugate, match) was
+	// wrong. The UI shows it yellow with the right answer; see forgivable.
+	Partial bool `json:"partial,omitempty"`
 	// Typo: the answer was accepted despite a spelling slip (see
 	// checker/tolerance.go); Expected then carries the correct spelling.
 	Typo bool `json:"typo,omitempty"`
+	// Say: the Serbian sentence a listen-choice played, revealed once it is
+	// answered (right or wrong) so the learner can read what they heard.
+	Say string `json:"say,omitempty"`
 
 	// dialogue: the canonical line this answer produces, so the chat can show
 	// a bubble without a second request — sent whether the answer was right
