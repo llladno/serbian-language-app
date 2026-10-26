@@ -27,17 +27,39 @@ const (
 // store test, and the behaviour would differ between the backends, since
 // Postgres tests TRUNCATE after migrating while SQLite tests do not.
 //
-// Prices are derived, not picked: Level 4 costs what the free levels pay
-// (50 + 70 + 90) plus the Telegram quest (20) = 230; Level 5 costs Level 4's
-// price plus what Level 4 itself pays (110) plus the "100 words" and "100
-// reviews" quests (25 + 10) = 375. TestSeededEconomyMatchesTheDesign recomputes
-// both from these tables, so a reward edited here without the price following
-// fails the build. Every number is editable from the admin panel afterwards.
+// Level 1 is the only free level. Level 2 opens for the lessons of Level 1
+// alone, with room to spare. Level 3 is earned by lessons and ordinary quests,
+// Level 4 is saved up for with a streak, and Levels 5 and 6 are bought. The
+// prices (40, 150, 260, 370, 480) rise by an even step after the first and are
+// tied to a reference learner: one lesson a day, a streak that is never broken,
+// subscribed to the channel, no invited friends. Their income at the end of each
+// level is the level pays (52 / 70 / 70 / 90 / 110) plus the one-off quests that
+// arrive by then plus the daily drip (217 / 446 / 544 / 738 / 884); without the
+// streak quests and the drip it is much less, the floor (120 / 275 / 345 / 515 /
+// 625). The cumulative price of the levels bought so far (40, 190, 450, 820,
+//  1300. is kept against the two:
+//     Level 2 costs 40 against the 52 that finishing Level 1 pays (42 for the
+//     lessons themselves, 10 for the level): at most four fifths of it, the rest is
+//     room to spare. Quests are not needed.
+//     Level 3 stays under the floor: lessons and ordinary quests pay for it, no
+//     streak needed (85 to spare).
+//     Level 4 is above the floor and no more than the income: it takes a streak,
+//     and a streak is enough (94 to spare).
+//     Levels 5 and 6 are above the income, 82 and 416 short when the learner
+//     finishes the level before, so they are bought.
 //
-// The phase ids below ("1".."5") are course.yaml's. A renamed phase silently
-// breaks both halves — a phase_completed quest nobody can finish, and a phase
-// that stops locking — so TestSeedMatchesTheRealCourse cross-checks them
+// Prices never fall from one level to the next, or a later level could be bought
+// before an earlier one. TestSeededEconomyMatchesTheDesign recomputes all of this
+// from these tables, so a reward edited here without the price following fails
+// the build. Every number is editable from the admin panel afterwards.
+//
+// The phase ids below ("1", "1b", "2".."5") are course.yaml's. A renamed phase
+// silently breaks both halves — a phase_completed quest nobody can finish, and
+// a phase that stops locking — so TestSeedMatchesTheRealCourse cross-checks them
 // against the real content tree.
+//
+// A database seeded before Level 2 was paid is moved to these numbers by
+// migration 030 instead, since this runs once.
 func (s *Store) SeedEconomyDefaults(phases []economy.PhaseLessons, now time.Time) error {
 	if err := s.seedOnce(seededKey, now, seedCatalogue); err != nil {
 		return err
@@ -88,8 +110,10 @@ func (s *Store) seedOnce(marker string, now time.Time, write func(tx *dbtx, ts s
 func seedLessonRewards(tx *dbtx, ts string, phases []economy.PhaseLessons) error {
 	sortOrder := 100
 	for _, ph := range phases {
-		for i, lesson := range ph.Lessons {
-			reward, ok := economy.LessonReward(ph.ID, i+1)
+		pos := 0
+		for _, lesson := range ph.Lessons {
+			pos++
+			reward, ok := economy.LessonReward(ph.ID, pos)
 			if !ok {
 				break // a phase that does not pay for lessons
 			}
@@ -162,13 +186,14 @@ var defaultQuests = []defaultQuest{
 	{"streak_days", 7, "", "Стрик 7 дней", "Занимайся 7 дней подряд", 60, 60},
 	{"streak_days", 30, "", "Стрик 30 дней", "Занимайся 30 дней подряд", 40, 61},
 	{"streak_days", 100, "", "Стрик 100 дней", "Занимайся 100 дней подряд", 150, 62},
-	// A level is still worth 50 / 70 / 90 / 110 in total; most of it now arrives
+	// A level is worth 52 / 70 / 70 / 90 / 110 in total; most of it arrives
 	// lesson by lesson (see seedLessonRewards), and what is left is the bonus
 	// for finishing the level — the one moment worth a modal.
 	{"phase_completed", 100, "1", "Уровень 1 на 100%", "Пройди все уроки первого уровня", 10, 70},
-	{"phase_completed", 100, "2", "Уровень 2 на 100%", "Пройди все уроки второго уровня", 19, 71},
-	{"phase_completed", 100, "3", "Уровень 3 на 100%", "Пройди все уроки третьего уровня", 30, 72},
-	{"phase_completed", 100, "4", "Уровень 4 на 100%", "Пройди все уроки четвёртого уровня", 22, 73},
+	{"phase_completed", 100, "1b", "Уровень 2 на 100%", "Пройди все уроки второго уровня", 14, 71},
+	{"phase_completed", 100, "2", "Уровень 3 на 100%", "Пройди все уроки третьего уровня", 19, 72},
+	{"phase_completed", 100, "3", "Уровень 4 на 100%", "Пройди все уроки четвёртого уровня", 30, 73},
+	{"phase_completed", 100, "4", "Уровень 5 на 100%", "Пройди все уроки пятого уровня", 22, 74},
 }
 
 type defaultProduct struct {
@@ -181,7 +206,10 @@ type defaultProduct struct {
 }
 
 var defaultProducts = []defaultProduct{
-	{"phase_unlock", "4", "Уровень 4 — Падежи в жизни", "Открывает уровень 4: падежи, прилагательные, местоимения", 230, 10},
-	{"phase_unlock", "5", "Уровень 5 — Жизнь на сербском", "Открывает уровень 5: чувства, звонки, работа, документы", 375, 11},
+	{"phase_unlock", "1b", "Уровень 2 — Числа и магазин", "Открывает уровень 2: семья, числа, цены, время, магазин", 40, 9},
+	{"phase_unlock", "2", "Уровень 3 — Быт", "Открывает уровень 3: повседневность, квартира, еда, город", 150, 10},
+	{"phase_unlock", "3", "Уровень 4 — Связная речь", "Открывает уровень 4: прошлое, планы, транспорт, здоровье", 260, 11},
+	{"phase_unlock", "4", "Уровень 5 — Падежи в жизни", "Открывает уровень 5: падежи, прилагательные, местоимения", 370, 13},
+	{"phase_unlock", "5", "Уровень 6 — Жизнь на сербском", "Открывает уровень 6: чувства, звонки, работа, документы", 480, 14},
 	{"consumable", "streak_repair", "Восстановить стрик", "Вернёт сгоревший стрик в течение 48 часов", 25, 20},
 }

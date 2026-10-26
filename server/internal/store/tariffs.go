@@ -41,6 +41,14 @@ const (
 
 var ErrTariffUnavailable = errors.New("tariff unavailable")
 
+// ErrNotClaimable: the payment is not a paid level credit of this learner (it does
+// not exist, belongs to somebody else, is not paid, is a year, or no level was named).
+// ErrCreditSpent: the credit was already spent on another level.
+var (
+	ErrNotClaimable = errors.New("payment is not an unspent level credit")
+	ErrCreditSpent  = errors.New("level credit already spent on another level")
+)
+
 // Tariff reads one tariff, active or not.
 func (s *Store) Tariff(code string) (Tariff, error) {
 	var t Tariff
@@ -246,11 +254,13 @@ func (s *Store) CompletePayment(id int64, now time.Time) (granted bool, err erro
 
 	switch code {
 	case TariffLevel:
-		if _, err := tx.Exec(`INSERT INTO user_entitlements (user_id, kind, ref, qty, updated_at)
-			VALUES (?, 'phase_unlock', ?, 1, ?)
-			ON CONFLICT (user_id, kind, ref) DO UPDATE SET qty = 1, updated_at = ?`,
-			userID, phase, iso, iso); err != nil {
-			return false, fmt.Errorf("complete payment: grant level: %w", err)
+		// An order made without a level is a credit: the learner picks the level
+		// after paying (ClaimLevel). Only an order that fixed its level, as the old
+		// ones did, opens it here.
+		if phase != "" {
+			if err := grantLevelTx(tx, userID, phase, iso); err != nil {
+				return false, fmt.Errorf("complete payment: grant level: %w", err)
+			}
 		}
 	case TariffYear:
 		var days int
@@ -302,6 +312,91 @@ func (s *Store) CompletePayment(id int64, now time.Time) (granted bool, err erro
 		return false, fmt.Errorf("complete payment: commit: %w", err)
 	}
 	return true, nil
+}
+
+// grantLevelTx opens one level for good.
+func grantLevelTx(tx *dbtx, userID, phase, iso string) error {
+	_, err := tx.Exec(`INSERT INTO user_entitlements (user_id, kind, ref, qty, updated_at)
+		VALUES (?, 'phase_unlock', ?, 1, ?)
+		ON CONFLICT (user_id, kind, ref) DO UPDATE SET qty = 1, updated_at = ?`,
+		userID, phase, iso, iso)
+	return err
+}
+
+// UnclaimedLevelPayments are the learner's paid level orders that have not been
+// spent on a level yet (the credits), oldest first.
+func (s *Store) UnclaimedLevelPayments(userID string) ([]Payment, error) {
+	rows, err := s.db.Query(`SELECT `+paymentCols+` FROM payments
+		WHERE user_id = ? AND tariff_code = ? AND status = ? AND granted_phase = ''
+		ORDER BY paid_at, id`, userID, TariffLevel, PaymentSucceeded)
+	if err != nil {
+		return nil, fmt.Errorf("unclaimed level payments: %w", err)
+	}
+	defer rows.Close()
+	var out []Payment
+	for rows.Next() {
+		p, err := scanPayment(rows)
+		if err != nil {
+			return nil, fmt.Errorf("unclaimed level payments: %w", err)
+		}
+		out = append(out, p)
+	}
+	return out, rows.Err()
+}
+
+// ClaimLevel spends a paid level credit on phase: the payment now names the level
+// and the learner owns it. It happens once. Asking again for the same level is not
+// an error (a second tap); another level on a spent credit is ErrCreditSpent.
+// Whether phase is a level that may be opened is the caller's check: the store does
+// not know the course.
+func (s *Store) ClaimLevel(userID string, paymentID int64, phase string, now time.Time) error {
+	if phase == "" {
+		return ErrNotClaimable
+	}
+	tx, err := s.db.Begin()
+	if err != nil {
+		return fmt.Errorf("claim level: begin: %w", err)
+	}
+	defer tx.Rollback()
+
+	var code, status, granted string
+	err = tx.QueryRow(`SELECT tariff_code, status, granted_phase FROM payments WHERE id = ? AND user_id = ?`,
+		paymentID, userID).Scan(&code, &status, &granted)
+	if errors.Is(err, sql.ErrNoRows) {
+		return ErrNotClaimable
+	}
+	if err != nil {
+		return fmt.Errorf("claim level: read: %w", err)
+	}
+	if code != TariffLevel || status != PaymentSucceeded {
+		return ErrNotClaimable
+	}
+	if granted == phase {
+		return nil
+	}
+	if granted != "" {
+		return ErrCreditSpent
+	}
+	res, err := tx.Exec(`UPDATE payments SET granted_phase = ? WHERE id = ? AND granted_phase = ''`, phase, paymentID)
+	if err != nil {
+		return fmt.Errorf("claim level: mark: %w", err)
+	}
+	if n, _ := res.RowsAffected(); n == 0 {
+		// Somebody spent it between our read and our write. The same level is the
+		// same answer as a second tap; another one is a refusal.
+		var now string
+		if err := tx.QueryRow(`SELECT granted_phase FROM payments WHERE id = ?`, paymentID).Scan(&now); err == nil && now == phase {
+			return nil
+		}
+		return ErrCreditSpent
+	}
+	if err := grantLevelTx(tx, userID, phase, now.UTC().Format(time.RFC3339)); err != nil {
+		return fmt.Errorf("claim level: grant: %w", err)
+	}
+	if err := tx.Commit(); err != nil {
+		return fmt.Errorf("claim level: commit: %w", err)
+	}
+	return nil
 }
 
 // AllAccessUntil reports when the learner's running year ends. ok is false when

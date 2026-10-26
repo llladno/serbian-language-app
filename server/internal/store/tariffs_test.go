@@ -9,7 +9,7 @@ func newPayment(t *testing.T, s *Store, uid, code, phase string, amount int64) i
 	t.Helper()
 	id, err := s.CreatePayment(Payment{
 		UserID: uid, TariffCode: code, GrantedPhase: phase, AmountKopecks: amount,
-		Provider: "yookassa", ReceiptContact: "a@example.com",
+		Provider: "tbank", ReceiptContact: "a@example.com",
 	}, day0)
 	if err != nil {
 		t.Fatalf("CreatePayment: %v", err)

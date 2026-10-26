@@ -135,6 +135,9 @@ type Attempt struct {
 	Block      string
 	Answer     string
 	Correct    bool
+	// Typo marks an answer that was right only because a one-letter slip was forgiven:
+	// "Повторить" brings such an exercise back until it is written exactly.
+	Typo bool
 }
 
 // WeakExercise is an exercise the learner keeps getting wrong.
@@ -934,13 +937,16 @@ func (u *UserStore) AddAttempt(a Attempt, now time.Time) error {
 		return fmt.Errorf("add attempt: count prior: %w", err)
 	}
 
-	correct := 0
+	correct, typo := 0, 0
 	if a.Correct {
 		correct = 1
 	}
-	if _, err := tx.Exec(`INSERT INTO attempts (user_id, exercise_id, lesson, block, answer, correct, attempted_at)
-		VALUES (?, ?, ?, ?, ?, ?, ?)`,
-		u.user, a.ExerciseID, a.Lesson, a.Block, a.Answer, correct,
+	if a.Typo {
+		typo = 1
+	}
+	if _, err := tx.Exec(`INSERT INTO attempts (user_id, exercise_id, lesson, block, answer, correct, typo, attempted_at)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+		u.user, a.ExerciseID, a.Lesson, a.Block, a.Answer, correct, typo,
 		now.UTC().Format(time.RFC3339)); err != nil {
 		return fmt.Errorf("add attempt: %w", err)
 	}

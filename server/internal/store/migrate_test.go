@@ -2,6 +2,7 @@ package store
 
 import (
 	"database/sql"
+	"fmt"
 	"slices"
 	"testing"
 
@@ -497,7 +498,7 @@ func TestMigration020Level4Economy(t *testing.T) {
 
 	t.Run("old seed values are replaced", func(t *testing.T) {
 		s := seedOld(t)
-		if err := s.runMigrations(); err != nil {
+		if err := s.runMigrationsUpTo(20); err != nil {
 			t.Fatalf("run migrations: %v", err)
 		}
 		if got := count(t, s, `SELECT price FROM products WHERE kind = 'phase_unlock' AND ref = '4'`); got != 230 {
@@ -533,7 +534,7 @@ func TestMigration020Level4Economy(t *testing.T) {
 		s := seedOld(t)
 		mustExec(t, s, `UPDATE products SET price = 700 WHERE kind = 'phase_unlock' AND ref = '4'`)
 		mustExec(t, s, `UPDATE quests SET reward = 99 WHERE kind = 'streak_days' AND target = 7`)
-		if err := s.runMigrations(); err != nil {
+		if err := s.runMigrationsUpTo(20); err != nil {
 			t.Fatalf("run migrations: %v", err)
 		}
 		if got := count(t, s, `SELECT price FROM products WHERE kind = 'phase_unlock' AND ref = '4'`); got != 700 {
@@ -546,7 +547,7 @@ func TestMigration020Level4Economy(t *testing.T) {
 
 	t.Run("an unseeded database gets nothing", func(t *testing.T) {
 		s := openStoreAtVersion(t, 19)
-		if err := s.runMigrations(); err != nil {
+		if err := s.runMigrationsUpTo(20); err != nil {
 			t.Fatalf("run migrations: %v", err)
 		}
 		if got := count(t, s, `SELECT COUNT(*) FROM quests`); got != 0 {
@@ -556,11 +557,11 @@ func TestMigration020Level4Economy(t *testing.T) {
 
 	t.Run("running twice adds nothing", func(t *testing.T) {
 		s := seedOld(t)
-		if err := s.runMigrations(); err != nil {
+		if err := s.runMigrationsUpTo(20); err != nil {
 			t.Fatal(err)
 		}
 		before := count(t, s, `SELECT COUNT(*) FROM quests`)
-		if err := s.runMigrations(); err != nil {
+		if err := s.runMigrationsUpTo(20); err != nil {
 			t.Fatal(err)
 		}
 		if after := count(t, s, `SELECT COUNT(*) FROM quests`); after != before {
@@ -707,8 +708,8 @@ func TestUpgradeFromProductionAtMigration012(t *testing.T) {
 	if got, want := count(`SELECT COUNT(*) FROM schema_migrations`), count(`SELECT COUNT(DISTINCT version) FROM schema_migrations`); got != want {
 		t.Errorf("schema_migrations has repeated versions: %d rows, %d distinct", got, want)
 	}
-	if got := count(`SELECT MAX(version) FROM schema_migrations`); got != 29 {
-		t.Errorf("latest version = %d, want 29", got)
+	if got := count(`SELECT MAX(version) FROM schema_migrations`); got != 32 { // 32: tariff_events
+		t.Errorf("latest version = %d, want 32", got)
 	}
 	// every account that existed before the script setting reads in Latin, as before
 	if got, want := count(`SELECT COUNT(*) FROM users WHERE script = 'latin'`), count(`SELECT COUNT(*) FROM users`); got != want || want == 0 {
@@ -742,11 +743,14 @@ func TestUpgradeFromProductionAtMigration012(t *testing.T) {
 	if err := s.SeedEconomyDefaults(nil, day0); err != nil {
 		t.Fatalf("seed: %v", err)
 	}
-	if got := count(`SELECT price FROM products WHERE kind = 'phase_unlock' AND ref = '4'`); got != 230 {
-		t.Errorf("level 4 price = %d, want 230", got)
+	if got := count(`SELECT price FROM products WHERE kind = 'phase_unlock' AND ref = '1b'`); got != 40 {
+		t.Errorf("level 2 price = %d, want 40", got)
 	}
-	if got := count(`SELECT price FROM products WHERE kind = 'phase_unlock' AND ref = '5'`); got != 375 {
-		t.Errorf("level 5 price = %d, want 375", got)
+	if got := count(`SELECT price FROM products WHERE kind = 'phase_unlock' AND ref = '4'`); got != 370 {
+		t.Errorf("level 5 price = %d, want 370", got)
+	}
+	if got := count(`SELECT price FROM products WHERE kind = 'phase_unlock' AND ref = '5'`); got != 480 {
+		t.Errorf("level 6 price = %d, want 480", got)
 	}
 	if got := count(`SELECT reward FROM quests WHERE kind = 'friends_invited'`); got != 30 {
 		t.Errorf("invite quest reward = %d, want 30", got)
@@ -780,4 +784,209 @@ func TestAMigrationBelowTheNewestRecordedVersionStillRuns(t *testing.T) {
 	if err := s.db.QueryRow(`SELECT COUNT(*) FROM schema_migrations WHERE version = 23`).Scan(&n); err != nil || n != 1 {
 		t.Fatalf("version 23 recorded %d times (%v), want once", n, err)
 	}
+}
+
+// Migration 030 makes Level 2 the first paid level. A database the seed ran on
+// before it ends up with exactly what a fresh seed writes, a learner who had
+// started a level that used to be free keeps it, and anything edited in the admin
+// panel is left alone.
+func TestMigration030Level2Paywall(t *testing.T) {
+	// seedOld is the production database as it stood before: Level 1 was sixteen
+	// numbered lessons that paid 2, and 4 on every fourth, and only Levels 4 and 5
+	// were for sale.
+	seedOld := func(t *testing.T) *Store {
+		t.Helper()
+		s := openStoreAtVersion(t, 29)
+		mustExec(t, s, `INSERT INTO economy_settings (key, value, updated_at) VALUES ('economy_seeded', '1', 'x')`)
+		mustExec(t, s, `INSERT INTO economy_settings (key, value, updated_at) VALUES ('economy_lessons_seeded', '1', 'x')`)
+		for _, p := range []struct {
+			ref, title, desc string
+			price            int
+			sort             int
+		}{
+			{"4", "Уровень 4 — Падежи в жизни", "Открывает уровень 4: падежи, прилагательные, местоимения", 230, 10},
+			{"5", "Уровень 5 — Жизнь на сербском", "Открывает уровень 5: чувства, звонки, работа, документы", 375, 11},
+		} {
+			mustExec(t, s, `INSERT INTO products (kind, ref, title, description, price, sort_order, created_at, updated_at)
+				VALUES ('phase_unlock', ?, ?, ?, ?, ?, 'x', 'x')`, p.ref, p.title, p.desc, p.price, p.sort)
+		}
+		for _, q := range []struct {
+			param, title string
+			reward, sort int
+		}{
+			{"1", "Уровень 1 на 100%", 10, 70}, {"2", "Уровень 2 на 100%", 19, 71},
+			{"3", "Уровень 3 на 100%", 30, 72}, {"4", "Уровень 4 на 100%", 22, 73},
+		} {
+			mustExec(t, s, `INSERT INTO quests (kind, target, param, title, description, reward, sort_order, created_at, updated_at)
+				VALUES ('phase_completed', 100, ?, ?, 'старое', ?, ?, 'x', 'x')`, q.param, q.title, q.reward, q.sort)
+		}
+		for n := 0; n <= 15; n++ {
+			reward := 2
+			if (n+1)%4 == 0 {
+				reward = 4
+			}
+			id := fmt.Sprintf("%02d", n)
+			mustExec(t, s, `INSERT INTO quests (kind, target, param, title, reward, sort_order, created_at, updated_at)
+				VALUES ('lesson_completed', 1, ?, ?, ?, ?, 'x', 'x')`, id, "Урок "+id, reward, 101+n)
+		}
+		return s
+	}
+	// snapshot is what the economy looks like after a migration or a fresh seed:
+	// Level 1 and 2 lesson rewards, the level bonuses, the level products.
+	snapshot := func(t *testing.T, s *Store) map[string]string {
+		t.Helper()
+		out := map[string]string{}
+		rows, err := s.db.Query(`SELECT kind, param, reward, title FROM quests
+			WHERE kind = 'phase_completed' OR (kind = 'lesson_completed' AND param < '16')`)
+		if err != nil {
+			t.Fatal(err)
+		}
+		for rows.Next() {
+			var kind, param, title string
+			var reward int
+			if err := rows.Scan(&kind, &param, &reward, &title); err != nil {
+				t.Fatal(err)
+			}
+			if kind == "phase_completed" {
+				out["quest:"+param] = fmt.Sprintf("%d %s", reward, title)
+			} else {
+				out["lesson:"+param] = fmt.Sprint(reward)
+			}
+		}
+		rows.Close()
+		prows, err := s.db.Query(`SELECT ref, price, title, sort_order FROM products WHERE kind = 'phase_unlock'`)
+		if err != nil {
+			t.Fatal(err)
+		}
+		for prows.Next() {
+			var ref, title string
+			var price, sort int
+			if err := prows.Scan(&ref, &price, &title, &sort); err != nil {
+				t.Fatal(err)
+			}
+			out["product:"+ref] = fmt.Sprintf("%d %s %d", price, title, sort)
+		}
+		prows.Close()
+		return out
+	}
+	count := func(t *testing.T, s *Store, q string, a ...any) int {
+		t.Helper()
+		var n int
+		if err := s.db.QueryRow(q, a...).Scan(&n); err != nil {
+			t.Fatal(err)
+		}
+		return n
+	}
+
+	t.Run("an old database ends up where a fresh seed starts", func(t *testing.T) {
+		s := seedOld(t)
+		if err := s.runMigrations(); err != nil {
+			t.Fatalf("run migrations: %v", err)
+		}
+		fresh := newStore(t)
+		if err := fresh.SeedEconomyDefaults(realPhases(t), seedNow); err != nil {
+			t.Fatal(err)
+		}
+		got, want := snapshot(t, s), snapshot(t, fresh)
+		for k, w := range want {
+			// the old fixture holds only the phase_unlock rows 4 and 5 as products
+			// and no other quests, so compare what the migration is responsible for
+			if g, ok := got[k]; !ok {
+				t.Errorf("%s: missing after the migration, a fresh seed has %q", k, w)
+			} else if g != w {
+				t.Errorf("%s = %q after the migration, a fresh seed has %q", k, g, w)
+			}
+		}
+		for k := range got {
+			if _, ok := want[k]; !ok {
+				t.Errorf("%s exists after the migration but not in a fresh seed", k)
+			}
+		}
+	})
+
+	t.Run("admin edits survive", func(t *testing.T) {
+		s := seedOld(t)
+		mustExec(t, s, `UPDATE products SET price = 333 WHERE kind = 'phase_unlock' AND ref = '4'`)
+		mustExec(t, s, `UPDATE quests SET reward = 7 WHERE kind = 'lesson_completed' AND param = '02'`)
+		mustExec(t, s, `UPDATE quests SET title = 'Мой уровень' WHERE kind = 'phase_completed' AND param = '2'`)
+		if err := s.runMigrations(); err != nil {
+			t.Fatalf("run migrations: %v", err)
+		}
+		if got := count(t, s, `SELECT price FROM products WHERE kind = 'phase_unlock' AND ref = '4'`); got != 333 {
+			t.Errorf("an edited price became %d, want 333 kept", got)
+		}
+		if got := count(t, s, `SELECT reward FROM quests WHERE kind = 'lesson_completed' AND param = '02'`); got != 7 {
+			t.Errorf("an edited reward became %d, want 7 kept", got)
+		}
+		var title string
+		if err := s.db.QueryRow(`SELECT title FROM quests WHERE kind = 'phase_completed' AND param = '2'`).Scan(&title); err != nil {
+			t.Fatal(err)
+		}
+		if title != "Мой уровень" {
+			t.Errorf("an edited title became %q, want it kept", title)
+		}
+	})
+
+	t.Run("a started level stays open", func(t *testing.T) {
+		s := seedOld(t)
+		for _, p := range []struct{ user, lesson string }{
+			{"usr_a", "08"}, // began Level 2
+			{"usr_b", "17"}, // began Level 3
+			{"usr_c", "31"}, // began Level 4
+			{"usr_d", "05"}, // only Level 1: nothing to keep
+			{"usr_e", "42"}, // Level 5 was already for sale
+			{"usr_a", "16"}, // and Level 3 too
+		} {
+			mustExec(t, s, `INSERT INTO lesson_progress (user_id, lesson, status) VALUES (?, ?, 'in_progress')`, p.user, p.lesson)
+		}
+		if err := s.runMigrations(); err != nil {
+			t.Fatalf("run migrations: %v", err)
+		}
+		has := func(user, phase string) bool {
+			return count(t, s, `SELECT COUNT(*) FROM user_entitlements WHERE user_id = ? AND kind = 'phase_unlock' AND ref = ?`, user, phase) == 1
+		}
+		for _, want := range []struct {
+			user, phase string
+			open        bool
+		}{
+			{"usr_a", "1b", true}, {"usr_a", "2", true}, {"usr_a", "3", false},
+			{"usr_b", "2", true}, {"usr_b", "1b", false},
+			{"usr_c", "3", true},
+			{"usr_d", "1b", false}, {"usr_d", "2", false},
+			{"usr_e", "4", false}, {"usr_e", "3", false},
+		} {
+			if has(want.user, want.phase) != want.open {
+				t.Errorf("%s / level %s: open = %v, want %v", want.user, want.phase, !want.open, want.open)
+			}
+		}
+	})
+
+	t.Run("an unseeded database gets nothing", func(t *testing.T) {
+		s := openStoreAtVersion(t, 29)
+		mustExec(t, s, `INSERT INTO lesson_progress (user_id, lesson, status) VALUES ('usr_a', '08', 'in_progress')`)
+		if err := s.runMigrations(); err != nil {
+			t.Fatalf("run migrations: %v", err)
+		}
+		for _, table := range []string{"quests", "products", "user_entitlements"} {
+			if got := count(t, s, `SELECT COUNT(*) FROM `+table); got != 0 {
+				t.Errorf("%d rows in %s on a database the seed has not run on, want 0", got, table)
+			}
+		}
+	})
+
+	t.Run("running twice changes nothing", func(t *testing.T) {
+		s := seedOld(t)
+		mustExec(t, s, `INSERT INTO lesson_progress (user_id, lesson, status) VALUES ('usr_a', '08', 'in_progress')`)
+		if err := s.runMigrations(); err != nil {
+			t.Fatal(err)
+		}
+		before := fmt.Sprint(snapshot(t, s)) + fmt.Sprint(count(t, s, `SELECT COUNT(*) FROM quests`), count(t, s, `SELECT COUNT(*) FROM user_entitlements`))
+		if err := s.runMigrations(); err != nil {
+			t.Fatal(err)
+		}
+		after := fmt.Sprint(snapshot(t, s)) + fmt.Sprint(count(t, s, `SELECT COUNT(*) FROM quests`), count(t, s, `SELECT COUNT(*) FROM user_entitlements`))
+		if before != after {
+			t.Errorf("a second run changed the economy:\n before %s\n after  %s", before, after)
+		}
+	})
 }

@@ -33,7 +33,7 @@ func newStore(t *testing.T) *Store {
 	}
 	if IsPostgresDSN(dsn) {
 		truncate := func() {
-			s.db.Exec(`TRUNCATE users, identities, sessions, email_tokens, srs_cards, reviews, attempts, lesson_progress, lesson_step_progress, bot_reminders, support_messages, link_visits, bot_outbox, notifications, notification_recipients, donations, broadcasts, currency_ledger, user_daily_activity, streak_repairs, user_answer_streak, quests, quest_claims, products, promo_codes, promo_code_products, promo_redemptions, user_entitlements, bot_prefs, payments`)
+			s.db.Exec(`TRUNCATE users, identities, sessions, email_tokens, srs_cards, reviews, attempts, lesson_progress, lesson_step_progress, bot_reminders, support_messages, link_visits, bot_outbox, notifications, notification_recipients, donations, broadcasts, currency_ledger, user_daily_activity, streak_repairs, user_answer_streak, quests, quest_claims, products, promo_codes, promo_code_products, promo_redemptions, user_entitlements, bot_prefs, payments, tariff_events`)
 		}
 		truncate()
 		restoreEconomySettings(t, s)
@@ -165,7 +165,7 @@ func TestLeaderboardPage(t *testing.T) {
 	if _, err := u.GradeCard("vocab:x", srs.Good, day0); err != nil {
 		t.Fatal(err)
 	}
-	if err := u.AddAttempt(Attempt{"01-A-1", "01", "A", "z", true}, day0); err != nil {
+	if err := u.AddAttempt(Attempt{"01-A-1", "01", "A", "z", true, false}, day0); err != nil {
 		t.Fatal(err)
 	}
 	if err := u.SetLessonStatus("01", "done", day0); err != nil {
@@ -401,15 +401,15 @@ func TestGradeCardPersistsAndLogsReview(t *testing.T) {
 func TestAddAttemptAndWeakExercises(t *testing.T) {
 	_, u := newUser(t)
 	// failed twice, then fixed: no longer weak
-	u.AddAttempt(Attempt{"02-C-1", "02", "C", "x", false}, day0)
-	u.AddAttempt(Attempt{"02-C-1", "02", "C", "y", false}, day0)
-	u.AddAttempt(Attempt{"02-C-1", "02", "C", "radi", true}, day0)
-	u.AddAttempt(Attempt{"02-B-1", "02", "B", "ok", true}, day0)
+	u.AddAttempt(Attempt{"02-C-1", "02", "C", "x", false, false}, day0)
+	u.AddAttempt(Attempt{"02-C-1", "02", "C", "y", false, false}, day0)
+	u.AddAttempt(Attempt{"02-C-1", "02", "C", "radi", true, false}, day0)
+	u.AddAttempt(Attempt{"02-B-1", "02", "B", "ok", true, false}, day0)
 	// right once, then wrong: weak until it is answered correctly again
-	u.AddAttempt(Attempt{"02-C-2", "02", "C", "ok", true}, day0)
-	u.AddAttempt(Attempt{"02-C-2", "02", "C", "x", false}, day0)
+	u.AddAttempt(Attempt{"02-C-2", "02", "C", "ok", true, false}, day0)
+	u.AddAttempt(Attempt{"02-C-2", "02", "C", "x", false, false}, day0)
 	// failed once and never retried: weak
-	u.AddAttempt(Attempt{"02-C-3", "02", "C", "x", false}, day0)
+	u.AddAttempt(Attempt{"02-C-3", "02", "C", "x", false, false}, day0)
 
 	w, err := u.WeakExercises(10)
 	if err != nil {
@@ -425,8 +425,8 @@ func TestAddAttemptAndWeakExercises(t *testing.T) {
 		t.Errorf("weak[1] = %+v", w[1])
 	}
 
-	u.AddAttempt(Attempt{"02-C-2", "02", "C", "ok", true}, day0)
-	u.AddAttempt(Attempt{"02-C-3", "02", "C", "ok", true}, day0)
+	u.AddAttempt(Attempt{"02-C-2", "02", "C", "ok", true, false}, day0)
+	u.AddAttempt(Attempt{"02-C-3", "02", "C", "ok", true, false}, day0)
 	if w, _ := u.WeakExercises(10); len(w) != 0 {
 		t.Errorf("weak after fixing = %+v", w)
 	}
@@ -487,8 +487,8 @@ func TestActivityByDay(t *testing.T) {
 	_, u := newUser(t)
 	u.EnsureCards([]CardSeed{{"vocab:x", "vocab", "x"}})
 	u.GradeCard("vocab:x", srs.Good, day0)
-	u.AddAttempt(Attempt{"01-A-1", "01", "A", "z", true}, day0)
-	u.AddAttempt(Attempt{"01-A-2", "01", "A", "z", false}, day0.AddDate(0, 0, -3))
+	u.AddAttempt(Attempt{"01-A-1", "01", "A", "z", true, false}, day0)
+	u.AddAttempt(Attempt{"01-A-2", "01", "A", "z", false, false}, day0.AddDate(0, 0, -3))
 
 	acts, err := u.ActivityByDay(day0.AddDate(0, 0, -7))
 	if err != nil {
@@ -511,7 +511,7 @@ func TestActivityByDay(t *testing.T) {
 func meetDailyGoal(t *testing.T, u *UserStore, tag string, at time.Time) {
 	t.Helper()
 	for i := 0; i < 10; i++ {
-		if err := u.AddAttempt(Attempt{fmt.Sprintf("01-%s-%d", tag, i), "01", "A", "z", true}, at); err != nil {
+		if err := u.AddAttempt(Attempt{fmt.Sprintf("01-%s-%d", tag, i), "01", "A", "z", true, false}, at); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -560,12 +560,12 @@ func TestStreakDaysGraceAndExercises(t *testing.T) {
 	}
 	// Nine of today's ten actions: today is not active yet, the grace holds.
 	for i := 0; i < 9; i++ {
-		u.AddAttempt(Attempt{fmt.Sprintf("01-c-%d", i), "01", "A", "z", true}, day0)
+		u.AddAttempt(Attempt{fmt.Sprintf("01-c-%d", i), "01", "A", "z", true, false}, day0)
 	}
 	if got, _ := u.StreakDays(day0); got != 2 {
 		t.Errorf("streak with today under goal = %d, want 2", got)
 	}
-	u.AddAttempt(Attempt{"01-c-9", "01", "A", "z", true}, day0)
+	u.AddAttempt(Attempt{"01-c-9", "01", "A", "z", true, false}, day0)
 	if got, _ := u.StreakDays(day0); got != 3 {
 		t.Errorf("streak with today active = %d, want 3", got)
 	}
@@ -645,7 +645,7 @@ func TestImportSQLite(t *testing.T) {
 	u := src.User(grishaID)
 	u.EnsureCards([]CardSeed{{"vocab:x", "vocab", "x"}, {"vocab:y", "vocab", "y"}})
 	u.GradeCard("vocab:x", srs.Good, day0)
-	u.AddAttempt(Attempt{"01-A-1", "01", "A", "z", true}, day0)
+	u.AddAttempt(Attempt{"01-A-1", "01", "A", "z", true, false}, day0)
 	u.SetLessonStatus("01", "done", day0)
 	src.Close()
 
