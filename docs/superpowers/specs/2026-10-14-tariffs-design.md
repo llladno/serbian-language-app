@@ -1,3 +1,7 @@
+> **2026-10-26: ЮKassa убрана из приложения целиком** (пакет, вебхук, переменные `YOOKASSA_*`), платит только Т-Касса;
+> `TARIFFS_EMAILS` и `TBANK_EMAILS` теперь два списка с одним действием. Всё ниже про ЮKassa остаётся как история
+> решений, в коде этого больше нет.
+
 # Tariffs (paid access for rubles) — design
 
 Status: **built 2026-10-15 and open only to the accounts in `TARIFFS_EMAILS` (paying

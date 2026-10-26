@@ -33,9 +33,14 @@ The word "задание" is overloaded in Russian. In this doc and in code:
 
 | Product wording | `course.yaml` phases | Access |
 |---|---|---|
-| first course (free) | 1 (Первый контакт), 2 (Быт), 3 (Связная речь) | free |
-| second course | 4 — Падежи в жизни | currency; costs what the free levels pay plus the Telegram quest (230) |
-| third course | 5 — Жизнь на сербском | currency; costs Level 4's price plus what Level 4 pays and the "100 words" and "100 reviews" quests (375); needs nearly every quest or a long streak |
+| free course | 1 (Первый контакт) | free |
+| level 2 | 1b — Числа и магазин | currency, 40: the lessons of Level 1 alone pay for it, with room to spare |
+| level 3 | 2 — Быт | currency, 150: lessons and ordinary quests pay for it, no streak needed |
+| level 4 | 3 — Связная речь | currency, 260: needs a streak |
+| level 5 | 4 — Падежи в жизни | currency, 370: more than a perfect learner has when they get there, it is bought (a tariff) |
+| level 6 | 5 — Жизнь на сербском | currency, 480: the same |
+
+**Changed 2026-10-22.** Until then Levels 1–3 (phases 1, 2, 3) were free and the first purchase was phase 4 (230 / 375). Level 1 was split in two when it was re-cut into short lessons, and Level 2 became the first paid level. Level 2 opens for the lessons of Level 1 alone, Level 3 is earned by lessons and ordinary quests, Level 4 is saved up for with a streak, Levels 5 and 6 are bought. Migration 030 moves a seeded database to these numbers, and gives every learner who had started a level that used to be free its unlock.
 
 There is no "pay with money" unlock path. Money, when it arrives, buys currency
 (see Out of scope), never a level directly.
@@ -453,18 +458,21 @@ All editable from the admin panel; these are seeds, not constants.
 | Сделать 100 / 500 повторений | 10 / 30 |
 | Серия 5 / 10 / 20 правильных подряд | 3 / 5 / 15 |
 | Стрик 3 / 7 / 30 / 100 дней (разово) | 20 / 60 / 40 / 150 |
-| Уровни 1 / 2 / 3 / 4: уроки + бонус за завершение | 50 / 70 / 90 / 110 |
-| **Total** | **853** |
+| Уровни 1 / 2 / 3 / 4 / 5: уроки + бонус за завершение | 52 / 70 / 70 / 90 / 110 |
+| **Total** | **925** |
 
 **Daily drip:** days 1–29 → 1, days 30–99 → 2, day 100+ → 3. 169 over 100
 consecutive days, ~960 over a year.
 
-**Prices**
+**Prices.** They are tied to a reference learner: one lesson a day, a streak that is never broken, subscribed to the channel, no invited friends. Their income at the end of Levels 1–5 is 217 / 446 / 544 / 738 / 884 (level pays, the one-off quests they have reached, the daily drip). Without the streak quests and the drip it is 120 / 275 / 345 / 515 / 625 (the "floor": what lessons and ordinary quests pay). The cumulative price of the levels bought so far (40 / 190 / 450 / 820 / 1300) stays under four fifths of what Level 1 pays for Level 2, under the floor for Level 3, above the floor and within the income for Level 4, and above the income for Levels 5 and 6. Prices never fall from one level to the next. `TestSeededEconomyMatchesTheDesign` recomputes it.
 
 | Product | Price | Rationale |
 |---|---|---|
-| Уровень 4 | 230 | 50 + 70 + 90 (levels 1–3) + 20 (Telegram) — everything the free course pays |
-| Уровень 5 | 375 | 230 + 110 (Level 4 pays) + 25 ("100 слов") + 10 ("100 повторений"): total 605 earned out of 853 in the pool, so it takes nearly every quest, or months of streak drip |
+| Уровень 2 | 40 | Level 1 pays 52 (17 lessons 42 + level bonus 10): 40 is under four fifths of it, and under the 42 that the lessons pay before the bonus is claimed. The quests (15 for 5 and 10 lessons and more) are all spare |
+| Уровень 3 | 150 | total 190: under the 275 that lessons and ordinary quests have paid by the end of Level 2 (85 to spare, 65 without the Telegram quest) |
+| Уровень 4 | 260 | total 450: above the 345 of lessons and ordinary quests, within the 544 the reference learner has (94 to spare): needs a streak |
+| Уровень 5 | 370 | total 820: above the 738 the reference learner has at the end of Level 4 (82 short) |
+| Уровень 6 | 480 | total 1300: above the 884 they have at the end of Level 5 (416 short) |
 | Восстановление стрика | 25 | 48-hour window |
 | Палитра | 30 | per palette |
 
