@@ -3,6 +3,7 @@ package store
 import (
 	"database/sql"
 	"fmt"
+	"os"
 	"slices"
 	"testing"
 
@@ -368,7 +369,8 @@ func TestMigration004RelabelsLessons(t *testing.T) {
 	mustExec(t, s, `INSERT INTO attempts (user_id, exercise_id, lesson, block, answer, correct, attempted_at)
 		VALUES (?, '09.16.3', '09', '09.16', 'Jedan sok, molim.', 1, '2026-09-06T12:00:00Z')`, uid)
 
-	if err := s.runMigrations(); err != nil {
+	// Up to 4 only: 033 would also credit the split pieces of this old progress (TestMigration033...).
+	if err := s.runMigrationsUpTo(4); err != nil {
 		t.Fatalf("run migrations: %v", err)
 	} // applies version 4
 
@@ -421,7 +423,7 @@ func TestMigration004RelabelsLessons(t *testing.T) {
 	}
 
 	// idempotent: re-running does not re-fire the hook or duplicate rows
-	if err := s.runMigrations(); err != nil {
+	if err := s.runMigrationsUpTo(4); err != nil {
 		t.Fatalf("re-run: %v", err)
 	}
 	s.db.QueryRow(`SELECT COUNT(*) FROM lesson_progress WHERE user_id = ?`, uid).Scan(&n)
@@ -695,8 +697,9 @@ func TestUpgradeFromProductionAtMigration012(t *testing.T) {
 	if got := count(`SELECT COUNT(*) FROM identities`); got != 3 {
 		t.Errorf("identities = %d, want 3", got)
 	}
-	if got := count(`SELECT COUNT(*) FROM lesson_progress WHERE user_id = 'usr_a'`); got != 2 {
-		t.Errorf("lesson_progress = %d, want 2", got)
+	// 05 (done) and 06 (started), plus 05b and 05c credited by 033 for the finished old 05
+	if got := count(`SELECT COUNT(*) FROM lesson_progress WHERE user_id = 'usr_a'`); got != 4 {
+		t.Errorf("lesson_progress = %d, want 4", got)
 	}
 	if got := count(`SELECT COUNT(*) FROM srs_cards`); got != 1 {
 		t.Errorf("srs_cards = %d, want 1", got)
@@ -708,8 +711,8 @@ func TestUpgradeFromProductionAtMigration012(t *testing.T) {
 	if got, want := count(`SELECT COUNT(*) FROM schema_migrations`), count(`SELECT COUNT(DISTINCT version) FROM schema_migrations`); got != want {
 		t.Errorf("schema_migrations has repeated versions: %d rows, %d distinct", got, want)
 	}
-	if got := count(`SELECT MAX(version) FROM schema_migrations`); got != 32 { // 32: tariff_events
-		t.Errorf("latest version = %d, want 32", got)
+	if got := count(`SELECT MAX(version) FROM schema_migrations`); got != 33 { // 33: credit_split_lessons
+		t.Errorf("latest version = %d, want 33", got)
 	}
 	// every account that existed before the script setting reads in Latin, as before
 	if got, want := count(`SELECT COUNT(*) FROM users WHERE script = 'latin'`), count(`SELECT COUNT(*) FROM users`); got != want || want == 0 {
@@ -1057,4 +1060,105 @@ func TestMigration030Level2Paywall(t *testing.T) {
 			t.Errorf("a second run changed the economy:\n before %s\n after  %s", before, after)
 		}
 	})
+}
+
+// TestMigration033CreditsSplitLessons: the old lessons 01-13 were cut into short ones
+// on 2026-10-26 (19:20 UTC): old "02" is now "02", "02b", "02c", "02d", "02e". Whoever
+// finished an old lesson before that has learned what its new pieces teach, so the
+// pieces count as done for them. Somebody who finished a lesson after the cut did the
+// new, shorter one and gets nothing extra. Every change is logged, and
+// scripts/rollback_033_lesson_credit.sql puts the table back as it was.
+func TestMigration033CreditsSplitLessons(t *testing.T) {
+	s := openStoreAtVersion(t, 32)
+	progress := func(user, lesson, status, started, completed string) {
+		var st, done any
+		if started != "" {
+			st = started
+		}
+		if completed != "" {
+			done = completed
+		}
+		mustExec(t, s, `INSERT INTO lesson_progress (user_id, lesson, status, started_at, completed_at) VALUES (?, ?, ?, ?, ?)`,
+			user, lesson, status, st, done)
+	}
+	// old: finished old 02 and old 13 before the cut, started 02c and finished 02d after it
+	progress("old", "02", "done", "2026-10-01T10:00:00Z", "2026-10-01T10:30:00Z")
+	progress("old", "02c", "in_progress", "2026-10-27T09:00:00Z", "")
+	progress("old", "02d", "done", "2026-10-27T09:00:00Z", "2026-10-27T09:10:00Z")
+	progress("old", "13", "done", "2026-10-05T10:00:00Z", "2026-10-05T11:00:00Z")
+	// new: finished 02 after the cut, that is the new short lesson
+	progress("new", "02", "done", "2026-10-26T20:00:00Z", "2026-10-26T20:10:00Z")
+	// started: never finished old 04
+	progress("started", "04", "in_progress", "2026-10-10T10:00:00Z", "")
+	// done00: lessons that were not split give nothing
+	progress("done00", "00", "done", "2026-10-02T10:00:00Z", "2026-10-02T10:05:00Z")
+	progress("done00", "14", "done", "2026-10-02T11:00:00Z", "2026-10-02T11:05:00Z")
+
+	table := func() map[string]string {
+		t.Helper()
+		rows, err := s.db.Query(`SELECT user_id, lesson, status, COALESCE(started_at, ''), COALESCE(completed_at, '') FROM lesson_progress`)
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer rows.Close()
+		out := map[string]string{}
+		for rows.Next() {
+			var u, l, st, a, b string
+			if err := rows.Scan(&u, &l, &st, &a, &b); err != nil {
+				t.Fatal(err)
+			}
+			out[u+"/"+l] = st + " " + a + " " + b
+		}
+		return out
+	}
+	before := table()
+
+	if err := s.runMigrations(); err != nil {
+		t.Fatal(err)
+	}
+	got := table()
+	want := map[string]string{
+		"old/02":     "done 2026-10-01T10:00:00Z 2026-10-01T10:30:00Z",
+		"old/02b":    "done 2026-10-01T10:00:00Z 2026-10-01T10:30:00Z",
+		"old/02c":    "done 2026-10-27T09:00:00Z 2026-10-01T10:30:00Z", // keeps when it was started
+		"old/02d":    "done 2026-10-27T09:00:00Z 2026-10-27T09:10:00Z", // already done: untouched
+		"old/02e":    "done 2026-10-01T10:00:00Z 2026-10-01T10:30:00Z",
+		"old/13":     "done 2026-10-05T10:00:00Z 2026-10-05T11:00:00Z",
+		"old/13b":    "done 2026-10-05T10:00:00Z 2026-10-05T11:00:00Z",
+		"new/02":     "done 2026-10-26T20:00:00Z 2026-10-26T20:10:00Z",
+		"started/04": "in_progress 2026-10-10T10:00:00Z ",
+		"done00/00":  "done 2026-10-02T10:00:00Z 2026-10-02T10:05:00Z",
+		"done00/14":  "done 2026-10-02T11:00:00Z 2026-10-02T11:05:00Z",
+	}
+	for k, v := range want {
+		if got[k] != v {
+			t.Errorf("%s = %q, want %q", k, got[k], v)
+		}
+	}
+	for k := range got {
+		if _, ok := want[k]; !ok {
+			t.Errorf("unexpected row %s = %q", k, got[k])
+		}
+	}
+
+	var logged int
+	if err := s.db.QueryRow(`SELECT COUNT(*) FROM lesson_credit_log`).Scan(&logged); err != nil {
+		t.Fatal(err)
+	}
+	if logged != 4 { // 02b, 02c, 02e, 13b
+		t.Errorf("log has %d rows, want 4", logged)
+	}
+
+	// The rollback script restores the table exactly.
+	b, err := os.ReadFile("../../../scripts/rollback_033_lesson_credit.sql")
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, stmt := range splitSQL(string(b)) {
+		mustExec(t, s, stmt)
+	}
+	after := table()
+	if fmt.Sprint(after) != fmt.Sprint(before) {
+		t.Errorf("rollback left\n %v\nwant\n %v", after, before)
+	}
 }
