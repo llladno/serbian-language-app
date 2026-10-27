@@ -1310,7 +1310,13 @@ func (h handlers) reviewGradeGram(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	res := checker.Check(req.Answer, card.Items[req.ItemIndex].Accept)
+	// The form alone or the form in a phrase ("mi imamo", "Imamo brata.") is right; a wrong
+	// answer is still shown the bare form, not the closest sentence.
+	item := card.Items[req.ItemIndex]
+	res := checker.Check(req.Answer, item.Answers())
+	if !res.OK {
+		res = checker.Check(req.Answer, item.Accept)
+	}
 	grade := srs.Again
 	if res.OK {
 		grade = srs.Good

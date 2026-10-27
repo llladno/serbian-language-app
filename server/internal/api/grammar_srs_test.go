@@ -223,3 +223,29 @@ func TestReviewGradeGramUnheldCardIs404(t *testing.T) {
 		t.Fatalf("%d %s, want 404 unknown card", rr.Code, rr.Body)
 	}
 }
+
+// TestReviewGradeGramTakesTheFormInAPhrase: "впиши форму" answered with the pronoun and
+// the form ("ja radim") is right, not "✗ Не то" (a real support message, 2026-10-27).
+func TestReviewGradeGramTakesTheFormInAPhrase(t *testing.T) {
+	h, _ := newTestAPI(t)
+	q := decodeBody[[]reviewCardDTO](t, do(h, "GET", "/api/review/queue", ""))
+	var gram reviewCardDTO
+	for _, c := range q {
+		if c.Kind == "gram" {
+			gram = c
+		}
+	}
+	if gram.CardID == "" {
+		t.Fatal("no gram card in queue")
+	}
+	pronoun, _, _ := strings.Cut(gram.ItemPrompt, " ")
+	answer := pronoun + " " + fixtureGramItemAnswer[gram.ItemPrompt]
+
+	rr := do(h, "POST", "/api/review/grade-gram", fmt.Sprintf(`{"card_id":%q,"item_index":%d,"answer":%q}`, gram.CardID, gram.ItemIndex, answer))
+	if rr.Code != 200 {
+		t.Fatalf("%d %s", rr.Code, rr.Body)
+	}
+	if res := decodeBody[gramCheckResultDTO](t, rr); !res.OK || res.Typo {
+		t.Errorf("%q for %q: %+v, want ok without a typo note", answer, gram.ItemPrompt, res)
+	}
+}

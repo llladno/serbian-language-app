@@ -97,3 +97,28 @@ func TestACardThatDrillsPersonsGivesEveryItemItsOwnExample(t *testing.T) {
 		t.Errorf("found %d person cards, want the present tenses, jesam, imati and perfekt (>= 5)", persons)
 	}
 }
+
+// "Впиши форму" asks for the form, but a learner who types it in a sentence is not
+// wrong: "Imamo brata." for "mi" (the item's own example), "mi imamo" with the
+// pronoun, "Pišem ti" for "Pišem ___" (a real support message, 2026-10-27).
+func TestGrammarItemAnswersTakeTheFormInASentence(t *testing.T) {
+	cases := []struct {
+		it   GrammarItem
+		want []string
+	}{
+		{GrammarItem{Prompt: "mi (мы)", Accept: []string{"imamo"}, ExampleSR: "Imamo brata."},
+			[]string{"imamo", "mi imamo", "Imamo brata."}},
+		{GrammarItem{Prompt: "oni/one/ona (они)", Accept: []string{"su"}, ExampleSR: "Oni su iz Rusije."},
+			[]string{"su", "oni su", "one su", "ona su", "Oni su iz Rusije."}},
+		{GrammarItem{Prompt: "я пишу тебе: Pišem ___", Accept: []string{"ti"}},
+			[]string{"ti", "Pišem ti"}},
+		// a noun in the prompt is not a pronoun: "voz" + answer is no sentence
+		{GrammarItem{Prompt: "voz (поезд)", Accept: []string{"vozom"}},
+			[]string{"vozom"}},
+	}
+	for _, c := range cases {
+		if got := c.it.Answers(); strings.Join(got, "|") != strings.Join(c.want, "|") {
+			t.Errorf("%q: Answers() = %q, want %q", c.it.Prompt, got, c.want)
+		}
+	}
+}

@@ -2,6 +2,8 @@
 // vocabulary, false friends) from a directory of YAML and Markdown files.
 package content
 
+import "strings"
+
 // Course is an in-memory snapshot of everything under a content directory.
 type Course struct {
 	Title        string
@@ -194,4 +196,39 @@ func (g GrammarCard) ExampleFor(idx int) (sr, ru string) {
 		return it.ExampleSR, it.ExampleRU
 	}
 	return g.ExampleSR, g.ExampleRU
+}
+
+// personPronouns are the person cues of a verb card's prompts ("mi (мы)", "oni/one/ona (они)").
+var personPronouns = map[string]bool{
+	"ja": true, "ti": true, "on": true, "ona": true, "ono": true,
+	"mi": true, "vi": true, "oni": true, "one": true,
+}
+
+// Answers is what the check accepts for the item: the form itself, and the form in a
+// sentence, since "впиши форму" does not stop a learner from typing a phrase. That is
+// the item's own example (it always uses the form), the form after the prompt's
+// pronoun ("mi imamo"), and the filled-in sentence of a "Pišem ___" prompt.
+func (it GrammarItem) Answers() []string {
+	out := append([]string{}, it.Accept...)
+	if cue := strings.TrimSpace(parenRE.ReplaceAllString(it.Prompt, "")); cue != "" {
+		for _, p := range strings.Split(cue, "/") {
+			if !personPronouns[p] {
+				continue
+			}
+			for _, a := range it.Accept {
+				out = append(out, p+" "+a)
+			}
+		}
+	}
+	// Grammar prompts put the Serbian after a colon ("я пишу тебе: Pišem ___"), which
+	// FillSentences (written for exercise prompts) does not cut at.
+	fill := it.Prompt
+	if i := strings.LastIndex(fill, ": "); i >= 0 {
+		fill = fill[i+2:]
+	}
+	out = append(out, FillSentences(fill, it.Accept)...)
+	if it.ExampleSR != "" {
+		out = append(out, it.ExampleSR)
+	}
+	return out
 }
