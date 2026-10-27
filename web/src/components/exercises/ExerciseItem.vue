@@ -6,7 +6,8 @@ import ChoiceAnswer from './ChoiceAnswer.vue'
 import WordBankAnswer from './WordBankAnswer.vue'
 import MatchAnswer from './MatchAnswer.vue'
 
-defineProps<{ lesson: string; exercise: Exercise; prior?: LessonAttempt }>()
+// `offscreen`: mounted but not shown (a lesson keeps the whole step mounted), so its clip must not start.
+defineProps<{ lesson: string; exercise: Exercise; prior?: LessonAttempt; offscreen?: boolean }>()
 defineEmits<{ graded: [ok: boolean]; ungraded: []; cantListen: [] }>()
 
 const textTypes = ['translate', 'fill_blank', 'fix_error', 'listen']
@@ -35,6 +36,7 @@ const textTypes = ['translate', 'fill_blank', 'fix_error', 'listen']
     :audio="exercise.audio"
     :text="exercise.text"
     :prior="prior"
+    :offscreen="offscreen"
     @graded="$emit('graded', $event)"
     @ungraded="$emit('ungraded')"
     @cant-listen="$emit('cantListen')"
@@ -73,6 +75,7 @@ const textTypes = ['translate', 'fill_blank', 'fix_error', 'listen']
     :shape="exercise.shape"
     :explain="exercise.hint || exercise.explain"
     :prior="prior"
+    :offscreen="offscreen"
     @graded="$emit('graded', $event)"
     @ungraded="$emit('ungraded')"
     @cant-listen="$emit('cantListen')"

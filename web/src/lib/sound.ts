@@ -126,6 +126,11 @@ export function speakClip(clip: string) {
   }
 }
 
+/** Stop a sentence started by speakClip: a speaker button tapped meanwhile plays alone. */
+export function stopSpeech() {
+  if (voice && voice.src !== SILENCE) voice.pause()
+}
+
 /** Everything that marks a lesson as finished: the chime and the buzz. */
 export function celebrate() {
   playWin()

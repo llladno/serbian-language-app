@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { RefreshCw } from 'lucide-vue-next'
 import { api } from '../../api'
 import { useWrongGoesToEnd } from '../../lib/lessonRules'
@@ -23,6 +23,8 @@ const props = defineProps<{
   audio?: string
   text?: string
   prior?: LessonAttempt
+  // Mounted but not on screen (see ExerciseBlock): the clip waits until it is.
+  offscreen?: boolean
 }>()
 const emit = defineEmits<{
   graded: [ok: boolean, result: CheckResult, answer: string]
@@ -45,10 +47,15 @@ const showRetry = computed(
 )
 const pending = ref(false)
 
-// «Послушай и выбери» starts the clip by itself; the speaker stays for hearing it again.
-onMounted(() => {
-  if (props.audio && !props.text && !props.prior) speakClip(props.audio)
-})
+// «Послушай и выбери» starts the clip by itself when it comes on screen, once per unanswered showing;
+// the speaker stays for hearing it again.
+watch(
+  () => props.offscreen,
+  (off) => {
+    if (!off && props.audio && !props.text && !fromPrior.value && !result.value) speakClip(props.audio)
+  },
+  { immediate: true },
+)
 
 async function choose(opt: string) {
   if (pending.value || result.value || fromPrior.value) return

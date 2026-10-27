@@ -38,6 +38,7 @@ const { show } = useScript()
         :lesson="lesson"
         :exercise="ex"
         :prior="roundOf(ex.id) ? undefined : priors?.[ex.id]"
+        :offscreen="ex.id !== activeId"
         @graded="emit('graded', ex.id, $event)"
         @ungraded="emit('ungraded', ex.id)"
         @cant-listen="emit('cantListen')"

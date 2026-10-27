@@ -14,9 +14,11 @@ function stopOthers(self: () => void) {
 // The same button instance is reused when the word under it changes (the
 // dictionary drill, review cards), so the <audio> is bound to the clip it was
 // made for: a new src drops the old one, and the next tap plays the new word.
-// One clip at a time across all buttons; whatever gets cut off goes back to idle.
+// One clip at a time across all buttons; whatever gets cut off goes back to idle. A sentence the app
+// started by itself (lib/sound.ts: a dictation that just appeared) is cut off too.
 import { onBeforeUnmount, ref, watch } from 'vue'
 import { Volume2 } from 'lucide-vue-next'
+import { stopSpeech } from '../lib/sound'
 
 const props = withDefaults(defineProps<{ src?: string; size?: number }>(), { size: 30 })
 
@@ -50,6 +52,7 @@ function play(e: Event) {
   }
   const a = el
   stopOthers(drop)
+  stopSpeech()
   a.currentTime = 0
   playing.value = true
   a.play().catch(() => {

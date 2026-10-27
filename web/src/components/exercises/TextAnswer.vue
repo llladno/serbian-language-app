@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { RefreshCw } from 'lucide-vue-next'
 import { api } from '../../api'
 import { useWrongGoesToEnd } from '../../lib/lessonRules'
@@ -31,6 +31,8 @@ const props = defineProps<{
   // about the screen follows from this being set — no speaker, no Serbian
   // keys, and the answer is Russian.
   text?: string
+  // Mounted but not on screen (see ExerciseBlock): the dictation waits until it is.
+  offscreen?: boolean
 }>()
 
 // fill_blank / fix_error prompts are Serbian sentences — make their words
@@ -70,14 +72,19 @@ const formatLine = computed(() => {
 const helpText = computed(() => [formatLine.value, props.explain].filter(Boolean).join(' '))
 
 const answer = ref(props.prior?.answer ?? startingAnswer())
-
-// A dictation starts by itself, so the learner does not have to find the speaker first (an already answered one
-// shown again, and the text-only mode, stay silent). The speaker stays for hearing it again.
-onMounted(() => {
-  if (props.type === 'listen' && props.audio && !props.text && !props.prior) speakClip(props.audio)
-})
 const result = ref<CheckResult | null>(null)
 const fromPrior = ref(!!props.prior)
+
+// A dictation starts by itself when it comes on screen, so the learner does not have to find the speaker first
+// (an answered one shown again, and the text-only mode, stay silent). The speaker stays for hearing it again.
+watch(
+  () => props.offscreen,
+  (off) => {
+    if (off || props.type !== 'listen' || !props.audio || props.text || fromPrior.value || result.value) return
+    speakClip(props.audio)
+  },
+  { immediate: true },
+)
 
 // After a mistake the way forward is the lesson's own button (the exercise
 // comes back at the end of the step), not an instant redo.

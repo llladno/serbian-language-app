@@ -2,6 +2,7 @@ import { describe, it, expect, afterEach, beforeEach, vi } from 'vitest'
 import { nextTick } from 'vue'
 import { enableAutoUnmount, mount } from '@vue/test-utils'
 import SpeakButton from './SpeakButton.vue'
+import { speakClip } from '../lib/sound'
 
 // A fake <audio>: records what it was asked to play and lets a test finish or
 // interrupt the clip the way the browser does.
@@ -72,5 +73,15 @@ describe('SpeakButton', () => {
     await w.find('button').trigger('click')
     w.unmount()
     expect(FakeAudio.all[0].paused).toBe(true)
+  })
+
+  it('cuts off a sentence the app started by itself, so two phrases never sound at once', async () => {
+    speakClip('dictation.mp3')
+    const voice = FakeAudio.all.find((a) => a.src === '/audio/dictation.mp3')
+    expect(voice?.paused).toBe(false)
+    const w = mount(SpeakButton, { props: { src: 'a.mp3' } })
+    await w.find('button').trigger('click')
+    expect(voice?.paused).toBe(true)
+    expect(FakeAudio.all.filter((a) => !a.paused).map((a) => a.src)).toEqual(['/audio/a.mp3'])
   })
 })
