@@ -3,7 +3,8 @@ import { mount, flushPromises } from '@vue/test-utils'
 import ReviewView from './ReviewView.vue'
 import { api } from '../api'
 import { useSessionStore } from '../stores/session'
-import type { ReviewCard, SessionUser } from '../types'
+import type { GramCheckResult, ReviewCard, SessionUser } from '../types'
+import { repeatedLines } from '../test/repeatedLines'
 
 vi.mock('vue-router', () => ({
   useRoute: () => ({ params: {}, query: {} }),
@@ -125,4 +126,46 @@ describe('ReviewView in Latin', () => {
     await card.trigger('click')
     expect(w.text()).toContain('Ja sam ovde.')
   })
+})
+
+// No line of text appears twice on a card, in any state (see test/repeatedLines.ts).
+describe('ReviewView never shows a line twice', () => {
+  beforeEach(() => readIn('latin'))
+  const click = async (w: Awaited<ReturnType<typeof open>>, text: string) => {
+    await w.findAll('button').find((b) => b.text() === text)!.trigger('click')
+    await flushPromises()
+  }
+  const cases: [string, ReviewCard, ((w: Awaited<ReturnType<typeof open>>) => Promise<void>)?][] = [
+    ['a known word, hidden', known],
+    ['a known word, shown', known, (w) => click(w, 'Показать')],
+    ['a false friend, shown', falseFriend, (w) => click(w, 'Показать')],
+    ['a new word, before a pick', quiz],
+    ['a new word, picked right', quiz, (w) => click(w, 'быть')],
+    ['a new word, picked wrong', { ...quiz, options: ['быть', 'бить', 'выть'] }, (w) => click(w, 'выть')],
+    ['a grammar card, before an answer', gram],
+  ]
+  for (const [name, card, act] of cases) {
+    it(name, async () => {
+      const w = await open(card)
+      await act?.(w)
+      expect(repeatedLines(w)).toEqual([])
+    })
+  }
+
+  const gramAnswers: [string, string, GramCheckResult][] = [
+    ['right', 'radim', { ok: true, expected: 'radim' } as GramCheckResult],
+    ['right in a phrase with a typo', 'Ja radim ovdee.', { ok: true, typo: true, expected: 'Ja radim ovde.' } as GramCheckResult],
+    ['wrong', 'radiš', { ok: false, expected: 'radim' } as GramCheckResult],
+    ['a near miss', 'radm', { ok: false, near_miss: true, expected: 'radim' } as GramCheckResult],
+  ]
+  for (const [name, typed, res] of gramAnswers) {
+    it(`a grammar card, answered ${name}`, async () => {
+      const grade = vi.spyOn(api, 'gradeGram').mockResolvedValue(res)
+      const w = await open(gram)
+      await w.find('input').setValue(typed)
+      await click(w, 'Проверить')
+      expect(grade).toHaveBeenCalledTimes(1)
+      expect(repeatedLines(w)).toEqual([])
+    })
+  }
 })

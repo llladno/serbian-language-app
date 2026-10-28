@@ -91,7 +91,8 @@ function retry() {
     <div v-if="audio || text" class="mb-5 flex flex-col items-center gap-3 px-8">
       <p v-if="text" class="serbian whitespace-pre-wrap text-xl font-medium" data-test="listen-as-text">{{ show(text) }}</p>
       <SpeakButton v-else :src="audio" :size="52" />
-      <p v-if="result?.say" class="serbian text-xl font-medium" data-test="listen-said">{{ show(result.say) }}</p>
+      <!-- what was played; read as text, the sentence is already on screen -->
+      <p v-if="result?.say && !text" class="serbian text-xl font-medium" data-test="listen-said">{{ show(result.say) }}</p>
       <span class="flex items-center gap-1.5 text-sm text-[var(--muted)]">
         {{ show(prompt) }}
         <HintButton v-if="explain && !result && !fromPrior" :text="show(explain)" />
