@@ -50,8 +50,8 @@ export function discountPercent(now: number, regular: number): number {
 
 // What twelve months of "Уровень" cost at the fastest pace the tariff allows,
 // one level a month: this learner's price for the first, the regular price for
-// the other eleven. This is the honest yardstick for the year, because buying
-// levels more often is not possible.
+// the other eleven. This is the yardstick for the year, because buying levels
+// more often is not possible; the year also covers the levels still to come.
 export function monthlyYearCost(levelNow: number, levelRegular: number): number {
   return levelNow + levelRegular * 11
 }

@@ -9,7 +9,7 @@ import { computed, ref } from 'vue'
 import { api, ApiError } from '../api'
 import { initData, isTelegram, openExternalLink } from '../telegram'
 import { useSessionStore } from './session'
-import { discountPercent, looksLikeContact, monthlyYearCost, yearSaving } from '../lib/tariffs'
+import { discountPercent, monthlyYearCost, yearSaving } from '../lib/tariffs'
 import type { LevelChoice, Order, TariffCode, TariffsInfo } from '../types'
 
 export const useTariffsStore = defineStore('tariffs', () => {
@@ -22,11 +22,11 @@ export const useTariffsStore = defineStore('tariffs', () => {
   const ready = computed(() => enabled.value && info.value !== null)
 
   // An account that came in through Telegram has no email, so the receipt needs
-  // an email or phone typed in. It is kept on the device so the next purchase is one tap.
+  // an email or phone typed in (ReceiptContactModal asks when a pay button is pressed). It is kept on
+  // the device so the next purchase starts with it filled in.
   const RECEIPT_KEY = 'tariffs.receiptContact'
   const needsReceiptContact = computed(() => enabled.value && !session.user?.email)
   const receiptContact = ref(readSaved(RECEIPT_KEY))
-  const receiptContactValid = computed(() => !needsReceiptContact.value || looksLikeContact(receiptContact.value))
   function setReceiptContact(value: string) {
     receiptContact.value = value
     try {
@@ -50,15 +50,9 @@ export const useTariffsStore = defineStore('tariffs', () => {
     const at = info.value?.level.available_from
     return at && new Date(at) > new Date() ? at : null
   })
-  // What the year saves against buying a level every month for twelve months.
-  const monthlyCost = computed(() => monthlyYearCost(levelNow.value, levelRegular.value))
-  const yearSaves = computed(() => yearSaving(yearPrice.value, monthlyCost.value))
   // The зёрнышки that come with each tariff, once, when it is paid for.
   const levelBonus = computed(() => info.value?.level.bonus ?? 0)
   const yearBonus = computed(() => info.value?.year.bonus ?? 0)
-  // How many more the year brings than twelve months of levels would (0 when it
-  // brings no more): the extra the year's зёрнышки are worth on top of the saving.
-  const yearBonusExtra = computed(() => Math.max(0, yearBonus.value - levelBonus.value * 12))
   const hasPaidLevel = computed(() => info.value?.has_paid_level ?? false)
   const yearUntil = computed(() => info.value?.year.until ?? null)
   const yearActive = computed(() => yearUntil.value !== null && new Date(yearUntil.value) > new Date())
@@ -71,6 +65,9 @@ export const useTariffsStore = defineStore('tariffs', () => {
   const choices = computed<LevelChoice[]>(() => info.value?.level.choices ?? [])
   const credits = computed<number[]>(() => info.value?.level.credits ?? [])
   const hasCredit = computed(() => credits.value.length > 0)
+  // What the year saves against buying a level every month for twelve months.
+  const monthlyCost = computed(() => monthlyYearCost(levelNow.value, levelRegular.value))
+  const yearSaves = computed(() => yearSaving(yearPrice.value, monthlyCost.value))
 
   async function load(force = false) {
     if (!enabled.value || loading.value) return
@@ -125,8 +122,8 @@ export const useTariffsStore = defineStore('tariffs', () => {
   }
 
   return {
-    info, loading, paying, enabled, ready, needsReceiptContact, receiptContact, receiptContactValid, setReceiptContact, levelNow, levelRegular, yearPrice, yearOld,
-    levelDiscount, levelFrom, monthlyCost, yearSaves, levelBonus, yearBonus, yearBonusExtra, hasPaidLevel, hasTariff, yearUntil, yearActive, paymentsReady, choices, credits, hasCredit, load, pay, checkOrder, chooseLevel,
+    info, loading, paying, enabled, ready, needsReceiptContact, receiptContact, setReceiptContact, levelNow, levelRegular, yearPrice, yearOld,
+    levelDiscount, levelFrom, monthlyCost, yearSaves, levelBonus, yearBonus, hasPaidLevel, hasTariff, yearUntil, yearActive, paymentsReady, choices, credits, hasCredit, load, pay, checkOrder, chooseLevel,
   }
 })
 
@@ -144,7 +141,7 @@ export function payErrorMessage(e: unknown): string {
     if (e.message === 'nothing_to_buy') return 'Все платные уровни уже открыты'
     if (e.message === 'level_pending_choice') return 'Сначала выберите уровень, который вы уже оплатили'
     if (e.message === 'level_cooldown') return 'Уровень за рубли можно открывать раз в месяц. Дата — на странице тарифов'
-    if (e.message === 'receipt_contact_invalid') return 'Проверь почту или телефон для чека: в них, похоже, опечатка'
+    if (e.message === 'receipt_contact_invalid') return 'Проверьте почту или телефон для чека: в них, похоже, опечатка'
     if (e.message === 'payment_failed') return 'Платёжная система не ответила. Попробуйте ещё раз'
   }
   return 'Не получилось начать оплату. Попробуйте ещё раз'

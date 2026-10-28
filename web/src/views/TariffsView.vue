@@ -14,19 +14,19 @@
 // Everything else stays quiet, and each plan's advantages are set in bold with
 // a small icon so they can be read in a glance.
 import { computed, onMounted, ref } from 'vue'
-import { ExternalLink, LockOpen, Sparkles } from 'lucide-vue-next'
+import { LockOpen, Sparkles } from 'lucide-vue-next'
 import { ApiError } from '../api'
 import { useCourseStore } from '../stores/course'
 import { useTariffsStore, payErrorMessage } from '../stores/tariffs'
 import { useWalletStore } from '../stores/wallet'
 import { useToasts } from '../lib/toasts'
 import { useLevelChoiceModal } from '../lib/levelChoiceModal'
-import { isTelegram, initData } from '../telegram'
 import { daysLeft, grouped, longDate, perMonth, rub, shortDate } from '../lib/tariffs'
 import { pluralRu } from '../lib/plural'
 import BotPrefsSection from '../components/BotPrefsSection.vue'
 import LevelCreditNotice from '../components/LevelCreditNotice.vue'
 import PaymentThanksModal from '../components/PaymentThanksModal.vue'
+import ReceiptContactModal from '../components/ReceiptContactModal.vue'
 import SeedIcon from '../components/SeedIcon.vue'
 import scene from '../assets/tariffs-promo-scene.webp'
 import heart from '../assets/donate/heart.png'
@@ -54,37 +54,46 @@ const inside = computed(() => {
   return names.slice(0, 3).join(', ') + (rest > 0 ? ` и ещё ${rest}` : '')
 })
 
-// The year against twelve months of levels, as two bars: the level yardstick is
-// the full width, the year is its share of it (never so thin that it vanishes).
+// The year against twelve months of levels, one a month: that sum is the full width of the bar, the year is
+// its share of it (never so thin that it vanishes).
 const yearBar = computed(() => Math.max(6, Math.round((tariffs.yearPrice / (tariffs.monthlyCost || 1)) * 100)))
 const levelWaitDays = computed(() => (tariffs.levelFrom ? daysLeft(tariffs.levelFrom) : 0))
 
 // How long a running year has left, for the "my tariff" card.
 const yearDays = computed(() => (tariffs.yearUntil ? daysLeft(tariffs.yearUntil) : 0))
 
-// Telegram sells digital goods in Stars only, so inside the Mini App the same
-// button hands off to the phone's browser instead of paying in place (spec,
-// "Inside Telegram"). Same check as DonateCard: the script is loaded everywhere,
-// but initData is only non-empty in a real Telegram session.
-const inMiniApp = isTelegram() && !!initData()
-
 const canPay = computed(() => tariffs.paymentsReady && !tariffs.paying)
 
-// The receipt contact (email or phone) of an account that has no email (it came
-// in through Telegram): asked once, above the plans, and checked before any
-// payment starts.
-const receiptField = ref<HTMLInputElement | null>(null)
+// An account that has no email (it came in through Telegram) is asked where the receipt goes when it
+// presses a pay button: the window keeps the tariff that was pressed and starts its payment once it
+// has an email or a phone. An account with an email goes straight to the bank. (Inside the Telegram
+// Mini App the bank's page opens in the phone's browser; the store does that.)
+const askingFor = ref<TariffCode | null>(null)
+// Dev builds only (`make dev`): the window opens even for an account that has an email, so it can be looked at
+// with the admin account; ?receipt=0 on the page switches that off to try the plain path. What is typed is not
+// sent then: the server uses the account's own email. A production build has no such branch.
+const askAnyway = import.meta.env.DEV && new URL(window.location.href).searchParams.get('receipt') !== '0'
 
 async function pay(tariff: TariffCode) {
   if (!tariffs.paymentsReady) {
     toasts.push({ title: 'Оплата ещё не подключена', text: 'Пока уровни можно открыть за зёрнышки.' })
     return
   }
-  if (!tariffs.receiptContactValid) {
-    toasts.push({ title: 'Нужна почта или телефон для чека', text: 'Впишите их в поле над тарифами.' })
-    receiptField.value?.focus()
+  if (tariffs.needsReceiptContact || askAnyway) {
+    askingFor.value = tariff
     return
   }
+  await startPayment(tariff)
+}
+
+async function contactGiven(contact: string) {
+  const tariff = askingFor.value
+  askingFor.value = null
+  if (tariffs.needsReceiptContact) tariffs.setReceiptContact(contact)
+  if (tariff) await startPayment(tariff)
+}
+
+async function startPayment(tariff: TariffCode) {
   try {
     await tariffs.pay(tariff)
   } catch (e) {
@@ -171,26 +180,6 @@ onMounted(async () => {
       <p class="mt-1 text-[var(--muted)]">Цены можно посмотреть, а кнопки заработают, когда подключим платёжную систему.</p>
     </section>
 
-    <!-- An account that came in through Telegram has no email: the receipt (54-ФЗ)
-         has to go somewhere, an email or a phone, so it is asked for here, once. -->
-    <section v-if="tariffs.ready && tariffs.needsReceiptContact" class="card p-4" data-test="receipt-contact">
-      <label for="receipt-contact" class="block text-sm font-bold">Почта или телефон для чека</label>
-      <input
-        id="receipt-contact"
-        ref="receiptField"
-        :value="tariffs.receiptContact"
-        type="text"
-        inputmode="email"
-        autocomplete="email"
-        autocapitalize="off"
-        placeholder="почта или телефон"
-        class="field mt-2 w-full"
-        data-test="receipt-contact-input"
-        @input="tariffs.setReceiptContact(($event.target as HTMLInputElement).value)"
-      />
-      <p class="mt-1.5 text-xs text-[var(--muted)]">Туда придёт чек об оплате. Доступ откроется на этом аккаунте.</p>
-    </section>
-
     <!-- A running year. There is no auto-renew, so there is nothing to cancel:
          the card says so, and the one thing a person can still switch off is the
          bot's reminder that the year is ending. -->
@@ -209,8 +198,7 @@ onMounted(async () => {
       <p class="thanks mt-2" data-test="my-tariff-thanks">Hvala lepo <img :src="heart" alt="" aria-hidden="true" class="heart" /></p>
       <div class="mt-4"><BotPrefsSection :only="['billing']" /></div>
       <button class="btn btn-ghost mt-4 w-full" :disabled="!canPay" data-test="extend-year" @click="pay('year')">
-        <template v-if="inMiniApp">Продлить на сайте <ExternalLink :size="16" :stroke-width="2.25" /></template>
-        <template v-else>Продлить на год — {{ rub(tariffs.yearPrice) }}</template>
+        Продлить на год — {{ rub(tariffs.yearPrice) }}
       </button>
     </section>
 
@@ -240,8 +228,7 @@ onMounted(async () => {
           <span v-if="tariffs.levelDiscount" class="badge" data-test="level-discount">−{{ tariffs.levelDiscount }}%</span>
         </p>
         <p v-if="tariffs.levelDiscount" class="mt-1 text-sm font-semibold text-[var(--accent)]" data-test="level-discount-note">
-          Скидка {{ tariffs.levelDiscount }}% на первую покупку: {{ rub(tariffs.levelNow) }} вместо
-          {{ rub(tariffs.levelRegular) }}
+          Скидка {{ tariffs.levelDiscount }}% на первую покупку
         </p>
 
         <ul class="perks">
@@ -253,7 +240,7 @@ onMounted(async () => {
             <span class="ico"><img :src="repeatIcon" alt="" aria-hidden="true" class="px repeat" /></span>
             <span><b>Повторения без лимита.</b> Сколько серий «Повторить» в день захотите, столько и будет.</span>
           </li>
-          <li v-if="tariffs.levelBonus" data-test="level-bonus">
+          <li v-if="tariffs.levelBonus" class="centered" data-test="level-bonus">
             <span class="ico ico-seed"><SeedIcon :size="14" /></span>
             <span>
               <b>
@@ -261,7 +248,6 @@ onMounted(async () => {
                 <span class="sr-only">{{ wallet.currencyWord(tariffs.levelBonus) }}</span>
                 в подарок к уровню.
               </b>
-              Тратятся в магазине на другие уровни.
             </span>
           </li>
         </ul>
@@ -288,13 +274,12 @@ onMounted(async () => {
         </button>
         <button
           v-else-if="tariffs.choices.length && !tariffs.levelFrom"
-          class="btn btn-ghost mt-auto w-full"
+          class="btn btn-primary mt-auto w-full"
           :disabled="!canPay"
           data-test="buy-level"
           @click="pay('level')"
         >
           <template v-if="tariffs.paying === 'level'">Переходим к оплате…</template>
-          <template v-else-if="inMiniApp">Оплатить на сайте <ExternalLink :size="16" :stroke-width="2.25" /></template>
           <template v-else>Хочу уровень — {{ rub(tariffs.levelNow) }}</template>
         </button>
         <button v-else-if="tariffs.choices.length && tariffs.levelFrom" class="btn btn-ghost mt-auto w-full" disabled data-test="level-wait">
@@ -321,42 +306,33 @@ onMounted(async () => {
         </p>
         <p class="mt-1 text-sm text-[var(--muted)]">≈ {{ rub(perMonth(tariffs.yearPrice)) }} в месяц · ранняя цена</p>
 
-        <!-- The argument for the year, as one picture: what twelve months of
-             levels cost at the fastest pace the tariff allows, against the year. -->
-        <div v-if="tariffs.yearSaves" class="saving" data-test="year-saving">
-          <p class="font-extrabold">Выгоднее на {{ tariffs.yearSaves.percent }}%, чем брать уровень каждый месяц</p>
-          <div class="bars">
-            <span class="bar-label">Уровень в месяц, 12 месяцев</span>
-            <span class="bar-amount" data-test="saving-monthly">{{ rub(tariffs.monthlyCost) }}</span>
-            <span class="bar" aria-hidden="true"><i class="bar-fill bar-muted" style="width: 100%"></i></span>
-            <span class="bar-label">Год</span>
-            <span class="bar-amount" data-test="saving-year">{{ rub(tariffs.yearPrice) }}</span>
-            <span class="bar" aria-hidden="true"><i class="bar-fill" :style="{ width: yearBar + '%' }"></i></span>
-          </div>
-          <p class="mt-2 text-sm" data-test="saving-rub">
-            Экономия <b>{{ rub(tariffs.yearSaves.rub) }}</b>
+        <!-- The argument for the year, as one picture: a thin bar under the price, the year's share of what a level
+             every month for twelve months would cost (the fastest pace the tariff allows); under it the year's
+             price at the left and "вместо 3 488 ₽" at the right. -->
+        <div v-if="tariffs.yearSaves" class="thin" data-test="year-saving">
+          <span class="bar" aria-hidden="true"><i class="bar-fill" :style="{ width: yearBar + '%' }"></i></span>
+          <p class="thin-row">
+            <b data-test="saving-year">{{ rub(tariffs.yearPrice) }}</b>
+            <span data-test="saving-monthly">вместо {{ rub(tariffs.monthlyCost) }}</span>
           </p>
         </div>
 
         <ul class="perks">
-          <li>
+          <li class="centered">
             <span class="ico"><LockOpen :size="15" :stroke-width="2.5" /></span>
-            <span><b>Все уровни сразу.</b> Без очереди и ожидания.</span>
+            <span><b>Все уровни сразу.</b></span>
           </li>
           <li data-test="year-repeat">
             <span class="ico"><img :src="repeatIcon" alt="" aria-hidden="true" class="px repeat" /></span>
             <span><b>Повторения без лимита.</b> Сколько хотите серий «Повторить» в день.</span>
           </li>
-          <li v-if="tariffs.yearBonus" data-test="year-bonus">
+          <li v-if="tariffs.yearBonus" class="centered" data-test="year-bonus">
             <span class="ico ico-seed"><SeedIcon :size="14" /></span>
             <span>
               <b>
                 +{{ grouped(tariffs.yearBonus) }} <SeedIcon :size="13" class="inline-seed" />
                 <span class="sr-only">{{ wallet.currencyWord(tariffs.yearBonus) }}</span>
-                в подарок<template v-if="tariffs.yearBonusExtra"
-                  >, на {{ grouped(tariffs.yearBonusExtra) }} больше, чем за двенадцать месяцев по
-                  {{ grouped(tariffs.levelBonus) }}</template
-                >.
+                в подарок.
               </b>
             </span>
           </li>
@@ -367,7 +343,6 @@ onMounted(async () => {
         </ul>
         <button class="btn btn-primary mt-auto w-full" :disabled="!canPay" data-test="buy-year" @click="pay('year')">
           <template v-if="tariffs.paying === 'year'">Переходим к оплате…</template>
-          <template v-else-if="inMiniApp">Оплатить на сайте <ExternalLink :size="16" :stroke-width="2.25" /></template>
           <template v-else>Хочу всё на год — {{ rub(tariffs.yearPrice) }}</template>
         </button>
       </section>
@@ -390,6 +365,12 @@ onMounted(async () => {
     </p>
 
     <PaymentThanksModal :order="thanks" :year-until="tariffs.yearUntil" @close="thanks = null" />
+    <ReceiptContactModal
+      :open="askingFor !== null"
+      :initial="tariffs.receiptContact"
+      @close="askingFor = null"
+      @submit="contactGiven"
+    />
   </div>
 </template>
 
@@ -459,6 +440,10 @@ button:disabled {
   display: flex;
   align-items: flex-start;
   gap: 0.6rem;
+}
+/* A row that is one short line sits at the middle of its icon tile, not at the top of it. */
+.perks li.centered {
+  align-items: center;
 }
 .perks b {
   font-weight: 800;
@@ -561,48 +546,35 @@ button:disabled {
   outline-offset: -2px;
   background: linear-gradient(165deg, var(--accent-soft), var(--card) 42%);
 }
-.saving {
-  margin-top: 1rem;
-  border-radius: 0.9rem;
-  background: var(--card);
-  padding: 0.85rem 0.95rem;
-  font-size: 0.875rem;
-  box-shadow: inset 0 0 0 1px var(--accent-soft);
+/* The year's saving: a thin bar under the price, the amounts under its two ends. */
+.thin {
+  margin-top: 0.75rem;
 }
-.bars {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 0.15rem 0.75rem;
-  margin-top: 0.7rem;
-}
-.bars > .bar {
-  grid-column: 1 / -1;
-  margin-bottom: 0.5rem;
-}
-.bar-label {
+.thin-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.5rem;
+  margin-top: 0.35rem;
   font-size: 0.8125rem;
   color: var(--muted);
-}
-.bar-amount {
-  font-size: 0.875rem;
-  font-weight: 800;
   font-variant-numeric: tabular-nums;
+}
+.thin-row b {
+  font-weight: 800;
+  color: var(--fg);
 }
 .bar {
   display: block;
-  height: 0.55rem;
+  height: 0.4rem;
   overflow: hidden;
   border-radius: 999px;
-  background: var(--bg-soft);
+  background: color-mix(in srgb, var(--muted) 30%, transparent);
 }
 .bar-fill {
   display: block;
   height: 100%;
   border-radius: 999px;
   background: var(--accent);
-}
-.bar-muted {
-  background: var(--muted);
-  opacity: 0.4;
 }
 </style>

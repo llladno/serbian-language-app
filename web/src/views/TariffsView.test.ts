@@ -22,6 +22,7 @@ const assign = vi.fn()
 
 // The level part of the quote, with some of it changed (choices, credits, the limit).
 const levelOf = (over: Partial<TariffsInfo['level']>): TariffsInfo['level'] => ({ ...tariffsInfo().level, ...over })
+const norm = (text: string) => text.replace(/\s+/g, ' ').trim()
 
 function course(locked: { '4': boolean; '5': boolean } = { '4': true, '5': true }): Course {
   return {
@@ -53,6 +54,7 @@ async function mountView(over: Partial<TariffsInfo> = {}, c: Course = course(), 
 }
 
 beforeEach(() => {
+  vi.stubEnv('DEV', false) // the tests see a production build; the dev-only window has its own tests below
   vi.mocked(isTelegram).mockReturnValue(false)
   vi.mocked(initData).mockReturnValue('')
   vi.mocked(openExternalLink).mockReset()
@@ -63,6 +65,7 @@ beforeEach(() => {
 })
 afterEach(() => {
   vi.restoreAllMocks()
+  vi.unstubAllEnvs()
   vi.useRealTimers()
   useLevelChoiceModal().closeModal()
 })
@@ -117,9 +120,8 @@ describe('TariffsView: what makes buying worthwhile', () => {
   it('says the first purchase is a discount from 299, in percent', async () => {
     const w = await mountView()
     expect(w.get('[data-test="level-discount"]').text()).toBe('−17%')
-    const note = w.get('[data-test="level-discount-note"]').text().replace(/\s+/g, ' ')
-    expect(note).toContain('Скидка 17% на первую покупку')
-    expect(note).toContain('249 ₽ вместо 299 ₽')
+    // the prices are in the line above; the note only names the discount
+    expect(w.get('[data-test="level-discount-note"]').text().replace(/\s+/g, ' ')).toBe('Скидка 17% на первую покупку')
   })
 
   it('shows no discount once the regular price applies', async () => {
@@ -129,22 +131,24 @@ describe('TariffsView: what makes buying worthwhile', () => {
     expect(w.find('[data-test="level-price"] .was').exists()).toBe(false)
   })
 
-  // The year is sold against the monthly tariff: twelve levels, one a month.
-  it('shows how much cheaper the year is than a level every month', async () => {
+  // The year is set against a level every month for twelve months: the first at this learner's price, the
+  // other eleven at the regular one (249 + 11 × 299 = 3 538 with the test prices).
+  it('shows how much the year saves against a level every month', async () => {
     const w = await mountView()
     expect(w.get('[data-test="year-badge"]').text()).toBe('Выгода 72%')
-    const saving = w.get('[data-test="year-saving"]')
-    const text = saving.text().replace(/\s+/g, ' ')
-    expect(text).toContain('Выгоднее на 72%')
-    expect(w.get('[data-test="saving-monthly"]').text()).toBe('3\u00a0538\u00a0₽') // 249 + 11 × 299
-    expect(w.get('[data-test="saving-year"]').text()).toBe('1\u00a0000\u00a0₽')
-    expect(w.get('[data-test="saving-rub"]').text().replace(/\s+/g, ' ')).toContain('2 538 ₽')
+  })
+
+  it('draws a thin bar with the year\'s price at the left and "вместо" the twelve-month sum at the right', async () => {
+    const w = await mountView()
+    expect(norm(w.get('.thin-row b').text())).toBe('1 000 ₽')
+    expect(norm(w.get('.thin-row span').text())).toBe('вместо 3 538 ₽')
+    expect(norm(w.get('[data-test="tariff-year"]').text())).toContain('≈ 83 ₽ в месяц') // the line stays under the price
   })
 
   it('counts every month at 299 once the first purchase is behind the learner', async () => {
     const w = await mountView({ has_paid_level: true, level: { price: 299, regular_price: 299, next: null } })
-    expect(w.get('[data-test="saving-monthly"]').text()).toBe('3\u00a0588\u00a0₽')
-    expect(w.get('[data-test="saving-rub"]').text().replace(/\s+/g, ' ')).toContain('2 588 ₽')
+    expect(norm(w.get('[data-test="saving-monthly"]').text())).toBe('вместо 3 588 ₽')
+    expect(w.get('[data-test="year-badge"]').text()).toBe('Выгода 72%') // (3 588 − 1 000) / 3 588
   })
 
   it('claims no saving when the year would not be cheaper', async () => {
@@ -159,10 +163,12 @@ describe('TariffsView: what makes buying worthwhile', () => {
     expect(level.findAll('.perks li')).toHaveLength(3) // forever, unlimited repeats, the зёрнышки
     expect(level.text()).toContain('Навсегда, без подписки')
     expect(level.text()).toContain('само ничего не спишется')
+    expect(level.text()).not.toContain('Тратятся в магазине') // the gift line stops at "в подарок к уровню"
     expect(w.get('[data-test="level-monthly"]').text()).toContain('раз в месяц')
     const year = w.get('[data-test="tariff-year"]')
     expect(year.findAll('.perks li')).toHaveLength(4) // every level, unlimited repeats, the зёрнышки, new levels
     expect(year.text()).toContain('Все уровни сразу')
+    expect(year.text()).not.toContain('Без очереди') // the line says "Все уровни сразу" and stops
     expect(year.text()).toContain('Новые уровни включены')
   })
 })
@@ -186,16 +192,17 @@ describe('TariffsView: the зёрнышки that come with a tariff', () => {
     expect(w.get('[data-test="year-bonus"]').text()).toContain('+15\u00a0000 зёрнышек')
   })
 
-  it('says how much more the year brings than twelve months of levels', async () => {
+  it('gives the year\'s зёрнышки in one short line, with no sum against twelve levels', async () => {
     const w = await mountWithCurrency()
     const text = w.get('[data-test="year-bonus"]').text().replace(/\s+/g, ' ')
-    expect(text).toContain('на 3 000 больше, чем за двенадцать месяцев по 1 000') // spaces normalised above
+    expect(text).toContain('в подарок')
+    expect(text).not.toContain('больше')
+    expect(text).not.toContain('двенадцать')
   })
 
-  it('leaves out the comparison when the year brings no more than twelve levels would', async () => {
-    const w = await mountWithCurrency({ year: { price: 1000, old_price: 2000, bonus: 12000 } })
-    expect(w.get('[data-test="year-bonus"]').text()).toContain('+12\u00a0000 зёрнышек')
-    expect(w.get('[data-test="year-bonus"]').text()).not.toContain('больше')
+  it('centres the one-line gift rows against their icons', async () => {
+    const w = await mountWithCurrency()
+    for (const row of ['level-bonus', 'year-bonus']) expect(w.get(`[data-test="${row}"]`).classes()).toContain('centered')
   })
 
   it('says on both cards that repeats have no daily limit', async () => {
@@ -306,7 +313,7 @@ describe('TariffsView: paying', () => {
       id: 9, tariff: 'year', status: 'pending', confirmation_url: 'https://pay.test/confirm/9',
     })
     const w = await mountView()
-    expect(w.get('[data-test="buy-year"]').text()).toContain('Оплатить на сайте')
+    expect(w.get('[data-test="buy-year"]').text()).not.toContain('на сайте') // the button reads as it does in a browser
     await w.get('[data-test="buy-year"]').trigger('click')
     await flushPromises()
     expect(openExternalLink).toHaveBeenCalledWith('https://pay.test/confirm/9')
@@ -316,8 +323,20 @@ describe('TariffsView: paying', () => {
   it('treats Telegram\'s WebApp object without initData as a plain browser', async () => {
     vi.mocked(isTelegram).mockReturnValue(true)
     vi.mocked(initData).mockReturnValue('')
+    vi.spyOn(api, 'createOrder').mockResolvedValue({
+      id: 10, tariff: 'year', status: 'pending', confirmation_url: 'https://pay.test/confirm/10',
+    })
     const w = await mountView()
-    expect(w.get('[data-test="buy-year"]').text()).toContain('Хочу всё на год')
+    await w.get('[data-test="buy-year"]').trigger('click')
+    await flushPromises()
+    expect(assign).toHaveBeenCalledWith('https://pay.test/confirm/10')
+    expect(openExternalLink).not.toHaveBeenCalled()
+  })
+
+  it('makes both pay buttons the main button', async () => {
+    const w = await mountView()
+    expect(w.get('[data-test="buy-level"]').classes()).toContain('btn-primary')
+    expect(w.get('[data-test="buy-year"]').classes()).toContain('btn-primary')
   })
 
   it('says so, and sends nothing, while payments are not connected', async () => {
@@ -340,44 +359,108 @@ describe('TariffsView: paying', () => {
   })
 })
 
-// An account that came in through Telegram has no email: the receipt needs an
-// email or a phone.
+// An account that came in through Telegram has no email: the receipt needs an email or a phone, which a
+// window asks for when a pay button is pressed. The window is teleported to <body>, outside the view.
 describe('TariffsView: paying without an account email', () => {
   const tgOnly = { email: '', email_verified: false }
+  const modal = () => document.body.querySelector('[data-test="receipt-contact-modal"]')
+  const field = () => document.body.querySelector<HTMLInputElement>('[data-test="receipt-contact-input"]')
+  const error = () => document.body.querySelector('[data-test="receipt-contact-error"]')
+  const click = async (selector: string) => {
+    document.body.querySelector<HTMLElement>(selector)?.click()
+    await flushPromises()
+  }
+  const type = async (value: string) => {
+    field()!.value = value
+    field()!.dispatchEvent(new Event('input'))
+    await flushPromises()
+  }
+  const press = async (w: Awaited<ReturnType<typeof mountView>>, button: string) => {
+    await w.get(`[data-test="${button}"]`).trigger('click')
+    await flushPromises()
+  }
 
   beforeEach(() => localStorage.clear())
 
-  it('asks for the receipt contact, and an account with an email is not asked', async () => {
-    expect((await mountView({}, course(), '', tgOnly)).find('[data-test="receipt-contact"]').exists()).toBe(true)
-    expect((await mountView()).find('[data-test="receipt-contact"]').exists()).toBe(false)
+  it('keeps the page free of a receipt field and opens the window when a pay button is pressed', async () => {
+    const create = vi.spyOn(api, 'createOrder')
+    const w = await mountView({}, course(), '', tgOnly)
+    expect(w.find('[data-test="receipt-contact"]').exists()).toBe(false)
+    expect(modal()).toBeNull()
+    await press(w, 'buy-year')
+    expect(modal()).not.toBeNull()
+    expect(document.body.textContent).toContain('Куда прислать чек?')
+    expect(create).not.toHaveBeenCalled()
+  })
+
+  it('in a dev build the window opens for an account that has an email too, and sends no contact', async () => {
+    vi.stubEnv('DEV', true)
+    const create = vi.spyOn(api, 'createOrder').mockResolvedValue({
+      id: 13, tariff: 'year', status: 'pending', confirmation_url: 'https://pay.test/tb/13',
+    })
+    const w = await mountView() // the admin account has an email
+    await press(w, 'buy-year')
+    expect(modal()).not.toBeNull()
+    await type('buyer@example.com')
+    await click('[data-test="receipt-contact-submit"]')
+    expect(create).toHaveBeenCalledWith('year') // the account's own email is the receipt's address, not what was typed
+    expect(localStorage.getItem('tariffs.receiptContact')).toBeNull()
+  })
+
+  it('?receipt=0 switches that off in a dev build: straight to the bank', async () => {
+    vi.stubEnv('DEV', true)
+    const create = vi.spyOn(api, 'createOrder').mockResolvedValue({
+      id: 14, tariff: 'year', status: 'pending', confirmation_url: 'https://pay.test/tb/14',
+    })
+    const w = await mountView({}, course(), '?receipt=0')
+    await press(w, 'buy-year')
+    expect(modal()).toBeNull()
+    expect(create).toHaveBeenCalledWith('year')
+  })
+
+  it('does not ask an account that has an email: the button goes straight to the bank', async () => {
+    const create = vi.spyOn(api, 'createOrder').mockResolvedValue({
+      id: 10, tariff: 'level', status: 'pending', confirmation_url: 'https://pay.test/tb/10',
+    })
+    const w = await mountView()
+    await press(w, 'buy-level')
+    expect(modal()).toBeNull()
+    expect(create).toHaveBeenCalledWith('level')
   })
 
   it('sends nothing, and says why, until the contact looks like an email or a phone', async () => {
     const create = vi.spyOn(api, 'createOrder')
     const w = await mountView({}, course(), '', tgOnly)
-    await w.get('[data-test="buy-year"]').trigger('click')
-    await w.get('[data-test="receipt-contact-input"]').setValue('not a contact')
-    await w.get('[data-test="buy-level"]').trigger('click')
-    await w.get('[data-test="receipt-contact-input"]').setValue('12345')
-    await w.get('[data-test="buy-level"]').trigger('click')
-    await flushPromises()
+    await press(w, 'buy-year')
+    await click('[data-test="receipt-contact-submit"]') // empty
+    expect(error()).not.toBeNull()
+    await type('not a contact')
+    expect(error()).toBeNull() // the note goes away as soon as the buyer types again
+    await click('[data-test="receipt-contact-submit"]')
+    expect(error()).not.toBeNull()
+    await type('12345')
+    await click('[data-test="receipt-contact-submit"]')
+    expect(error()).not.toBeNull()
+    expect(modal()).not.toBeNull()
     expect(create).not.toHaveBeenCalled()
-    expect(useToasts().items.value.map((t) => t.title)).toEqual(Array(3).fill('Нужна почта или телефон для чека'))
   })
 
-  it('orders with the typed email, and keeps it for next time', async () => {
+  it('orders with the typed email, closes the window and keeps the email for next time', async () => {
     const create = vi.spyOn(api, 'createOrder').mockResolvedValue({
       id: 11, tariff: 'year', status: 'pending', confirmation_url: 'https://pay.test/tb/11',
     })
     const w = await mountView({}, course(), '', tgOnly)
-    await w.get('[data-test="receipt-contact-input"]').setValue('  buyer@example.com ')
-    await w.get('[data-test="buy-year"]').trigger('click')
-    await flushPromises()
+    await press(w, 'buy-year')
+    await type('  buyer@example.com ')
+    await click('[data-test="receipt-contact-submit"]')
     expect(create).toHaveBeenCalledWith('year', 'buyer@example.com')
+    expect(assign).toHaveBeenCalledWith('https://pay.test/tb/11')
+    expect(modal()).toBeNull()
     expect(localStorage.getItem('tariffs.receiptContact')).toBe('buyer@example.com')
-    // a fresh visit starts with it filled in
+    // the next press asks again with it filled in, so a returning buyer only confirms
     const again = await mountView({}, course(), '', tgOnly)
-    expect((again.get('[data-test="receipt-contact-input"]').element as HTMLInputElement).value).toBe('buyer@example.com')
+    await press(again, 'buy-level')
+    expect(field()?.value).toBe('buyer@example.com')
   })
 
   it('orders with a typed phone as it was written', async () => {
@@ -385,19 +468,30 @@ describe('TariffsView: paying without an account email', () => {
       id: 12, tariff: 'level', status: 'pending', confirmation_url: 'https://pay.test/tb/12',
     })
     const w = await mountView({}, course(), '', tgOnly)
-    await w.get('[data-test="receipt-contact-input"]').setValue('8 (903) 123-45-67')
-    await w.get('[data-test="buy-level"]').trigger('click')
-    await flushPromises()
+    await press(w, 'buy-level')
+    await type('8 (903) 123-45-67')
+    await click('[data-test="receipt-contact-submit"]')
     expect(create).toHaveBeenCalledWith('level', '8 (903) 123-45-67')
   })
 
-  it('tells the buyer when the server turned the contact down', async () => {
+  it('starts nothing when the window is closed', async () => {
+    const create = vi.spyOn(api, 'createOrder')
+    const w = await mountView({}, course(), '', tgOnly)
+    await press(w, 'buy-year')
+    await click('[data-test="receipt-contact-close"]')
+    expect(modal()).toBeNull()
+    expect(create).not.toHaveBeenCalled()
+  })
+
+  it('tells the buyer when the server turned the contact down, and asks again on the next press', async () => {
     vi.spyOn(api, 'createOrder').mockRejectedValue(new ApiError(400, 'receipt_contact_invalid'))
     const w = await mountView({}, course(), '', tgOnly)
-    await w.get('[data-test="receipt-contact-input"]').setValue('buyer@example.com')
-    await w.get('[data-test="buy-level"]').trigger('click')
-    await flushPromises()
+    await press(w, 'buy-level')
+    await type('buyer@example.com')
+    await click('[data-test="receipt-contact-submit"]')
     expect(useToasts().items.value[0].text).toContain('почту или телефон')
+    await press(w, 'buy-level')
+    expect(field()?.value).toBe('buyer@example.com') // the window is back, to be corrected
   })
 })
 
