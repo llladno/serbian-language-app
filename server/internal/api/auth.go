@@ -398,6 +398,15 @@ func (h handlers) verifyEmail(w http.ResponseWriter, r *http.Request) {
 		// the success page — the next login resends a verify mail anyway.
 		log.Printf("verify: set verified: %v", err)
 	}
+	// Whoever holds the one-time link just proved they own the address, so sign
+	// them in: asking for the password again right after the mail lost people
+	// before their first lesson. Best effort — without a session the success
+	// page still offers the login form.
+	if ident, err := h.Store.IdentityByID(identityID); err != nil {
+		log.Printf("verify: load identity: %v", err)
+	} else if err := h.issueSession(w, r, ident.UserID); err != nil {
+		log.Printf("verify: issue session: %v", err)
+	}
 	redirect("ok=1")
 }
 

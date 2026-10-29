@@ -31,9 +31,14 @@ const error = ref<string | null>(null)
 const cooldown = ref(0)
 let timer: ReturnType<typeof setInterval> | undefined
 
-onMounted(() => {
+onMounted(async () => {
   if (mode.value === 'gate' && session.user?.email_verified) {
     router.push('/profile')
+  }
+  // The verify link signs the owner in, so skip the login screen when it did.
+  if (mode.value === 'ok') {
+    await session.fetchSession()
+    if (session.user) router.push('/profile')
   }
 })
 

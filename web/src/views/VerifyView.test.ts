@@ -27,6 +27,33 @@ describe('VerifyView', () => {
     expect(w.text()).toContain('подтверждена')
   })
 
+  it('goes straight to the profile on ?ok=1 when the link signed the user in', async () => {
+    query = { ok: '1' }
+    const session = useSessionStore()
+    vi.spyOn(session, 'fetchSession').mockImplementation(async () => {
+      session.user = {
+        id: '1',
+        name: 'Г',
+        email: 'g@example.com',
+        email_verified: true,
+        telegram: { linked: false, username: '' },
+      }
+    })
+    mount(VerifyView)
+    await flushPromises()
+    expect(push).toHaveBeenCalledWith('/profile')
+  })
+
+  it('stays on the success view for ?ok=1 when there is no session', async () => {
+    query = { ok: '1' }
+    const session = useSessionStore()
+    vi.spyOn(session, 'fetchSession').mockResolvedValue(undefined)
+    const w = mount(VerifyView)
+    await flushPromises()
+    expect(push).not.toHaveBeenCalled()
+    expect(w.text()).toContain('Войти')
+  })
+
   it('shows the resend form for ?err=1', () => {
     query = { err: '1' }
     const w = mount(VerifyView)

@@ -508,6 +508,16 @@ func TestVerifyEmailHappyRedirect(t *testing.T) {
 		t.Errorf("email_verified_at still empty after verify")
 	}
 
+	// The link also signs the owner in: the cookie it sets opens /api/session.
+	cookie := grabSessionCookie(t, rr)
+	req := httptest.NewRequest("GET", "/api/auth/session", nil)
+	req.AddCookie(cookie)
+	sr := httptest.NewRecorder()
+	h.ServeHTTP(sr, req)
+	if sr.Code != http.StatusOK {
+		t.Errorf("session with the verify cookie = %d %s, want 200", sr.Code, sr.Body)
+	}
+
 	// The same token a second time fails closed.
 	rr = anon(h, "GET", "/api/auth/verify?token="+token, "")
 	if rr.Code != http.StatusFound || rr.Header().Get("Location") != testBaseURL+"/verify?err=1" {
@@ -521,6 +531,9 @@ func TestVerifyEmailBadToken(t *testing.T) {
 		rr := anon(h, "GET", "/api/auth/verify?token="+name, "")
 		if rr.Code != http.StatusFound || rr.Header().Get("Location") != testBaseURL+"/verify?err=1" {
 			t.Errorf("token %q = %d %q, want 302 %q", name, rr.Code, rr.Header().Get("Location"), testBaseURL+"/verify?err=1")
+		}
+		if len(rr.Result().Cookies()) != 0 {
+			t.Errorf("token %q set cookies %v, want none", name, rr.Result().Cookies())
 		}
 	}
 }
