@@ -185,6 +185,7 @@ func TestButtonRowRoundTrip(t *testing.T) {
 		{"channel", &telegram.InlineButton{ChannelURL: "https://t.me/c"}, store.OutboxButton{Type: "channel_check", Target: "https://t.me/c"}},
 		{"stop button", &telegram.InlineButton{Label: telegram.PrefOffLabel, PrefOff: telegram.PrefLearning}, store.OutboxButton{Label: telegram.PrefOffLabel, Type: "pref_off", Target: "learning"}},
 		{"settings", &telegram.InlineButton{Prefs: &prefs}, store.OutboxButton{Type: "prefs", Target: "101"}},
+		{"repeat nudge", &telegram.InlineButton{Label: "Повторить", RepeatNudgeURL: "https://x/repeat"}, store.OutboxButton{Label: "Повторить", Type: "repeat_nudge", Target: "https://x/repeat"}},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
@@ -200,7 +201,7 @@ func TestButtonRowRoundTrip(t *testing.T) {
 				return
 			}
 			if back.Label != tc.in.Label || back.WebAppURL != tc.in.WebAppURL || back.URL != tc.in.URL ||
-				back.ChannelURL != tc.in.ChannelURL || back.PrefOff != tc.in.PrefOff {
+				back.ChannelURL != tc.in.ChannelURL || back.PrefOff != tc.in.PrefOff || back.RepeatNudgeURL != tc.in.RepeatNudgeURL {
 				t.Errorf("round trip = %+v, want %+v", back, tc.in)
 			}
 			if (back.Prefs == nil) != (tc.in.Prefs == nil) || (back.Prefs != nil && *back.Prefs != *tc.in.Prefs) {

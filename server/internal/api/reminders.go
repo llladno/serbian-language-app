@@ -53,6 +53,9 @@ func stopButton() *telegram.InlineButton {
 //     spell: it won't repeat until the account has been active again more
 //     recently than the last nudge (store.BotReminderState.InactiveSentAt).
 //
+// A third, independent message goes to learners who still study but have stopped opening
+// «Повторить»: see maybeNudgeRepeat and repeat.NudgeDue.
+//
 // Meant to be called from a ticker (see main.go); safe to call repeatedly —
 // the dedup state lives in the store, not in memory, so a crash or restart
 // between calls can't cause a duplicate send.
@@ -90,12 +93,15 @@ func RunReminderSweep(deps Deps, now time.Time) error {
 		}
 		us := deps.Store.User(tu.UserID)
 
+		// One study message a day: the nudge about «Повторить» holds back when one of these went out.
+		studyMessageToday := state.AllDoneDate == today || now.Sub(state.InactiveSentAt) < 24*time.Hour
 		if state.AllDoneDate != today {
 			rows, err := h.dueQueueRows(us, now)
 			if err != nil {
 				log.Printf("reminder sweep: queue for %s: %v", tu.UserID, err)
 			} else if len(rows) == 0 {
 				deps.EnqueueTelegramMessage(tu.ChatID, pickMessage(allDoneMessages), stopButton(), telegram.PriorityNormal)
+				studyMessageToday = true
 				if err := deps.Store.SetBotReminderAllDoneDate(tu.UserID, today); err != nil {
 					log.Printf("reminder sweep: save all-done state for %s: %v", tu.UserID, err)
 				}
@@ -110,10 +116,13 @@ func RunReminderSweep(deps Deps, now time.Time) error {
 		}
 		if now.Sub(last) >= reminderInactivityAfter && state.InactiveSentAt.Before(last) {
 			deps.EnqueueTelegramMessage(tu.ChatID, pickMessage(inactivityMessages), stopButton(), telegram.PriorityNormal)
+			studyMessageToday = true
 			if err := deps.Store.SetBotReminderInactiveSentAt(tu.UserID, now); err != nil {
 				log.Printf("reminder sweep: save inactivity state for %s: %v", tu.UserID, err)
 			}
 		}
+
+		h.maybeNudgeRepeat(tu, now, last, studyMessageToday)
 	}
 	return nil
 }
