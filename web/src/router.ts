@@ -31,6 +31,17 @@ import { useSessionStore } from './stores/session'
 
 const PUBLIC_AUTH_ROUTES = new Set(['login', 'register', 'verify', 'forgot', 'reset'])
 
+// Where the app opens for someone who is signed in.
+const HOME = '/course'
+// The screens a learner lands on when they come in, as opposed to ones they open on purpose.
+const LANDING_ROUTES = new Set(['course', 'profile'])
+// A learner who has not started anything is taken into the first lesson once per page load; after that the course
+// map and the profile open normally, so going back out of the lesson does not bounce them in again.
+let startLessonOffered = false
+export function resetStartLessonOffer() {
+  startLessonOffered = false
+}
+
 // Exported standalone (not folded into beforeEach) so it can be unit tested as
 // a pure function against a session store, without a real router/navigation.
 export function resolveGuard(to: RouteLocationNormalized, session: ReturnType<typeof useSessionStore>) {
@@ -39,11 +50,15 @@ export function resolveGuard(to: RouteLocationNormalized, session: ReturnType<ty
     return PUBLIC_AUTH_ROUTES.has(name) ? true : { path: '/login', query: { next: to.fullPath } }
   }
   if (name === 'verify') return true
-  if (PUBLIC_AUTH_ROUTES.has(name)) return { path: '/profile' }
+  if (PUBLIC_AUTH_ROUTES.has(name)) return { path: HOME }
   // A Telegram-only account has no email at all, so email_verified is false
   // by construction (nothing to verify) - only force the gate when there is
   // an actual unverified email on the account, never merely "not true".
   if (session.user.email && !session.user.email_verified) return { path: '/verify' }
+  if (session.user.start_lesson && LANDING_ROUTES.has(name) && !startLessonOffered) {
+    startLessonOffered = true
+    return { path: '/lesson/' + session.user.start_lesson }
+  }
   // Not open to everyone yet: the server's features flag says who may see it.
   if (name === 'tariffs' && !session.user.features?.tariffs) return { path: '/profile' }
   return true
@@ -94,7 +109,7 @@ const router = createRouter({
     { path: '/verify', name: 'verify', component: VerifyView },
     { path: '/forgot', name: 'forgot', component: ForgotView },
     { path: '/reset', name: 'reset', component: ResetView },
-    { path: '/', redirect: '/profile' },
+    { path: '/', redirect: HOME },
     { path: '/profile', name: 'profile', component: ProfileView, meta: { wide: true } },
     { path: '/course', name: 'course', component: CourseView },
     { path: '/lesson/:id', name: 'lesson', component: LessonView, meta: { hideTabBar: true } },
@@ -114,7 +129,11 @@ const router = createRouter({
 router.beforeEach(async (to) => {
   const session = useSessionStore()
   await waitForSession(session)
-  if (to.name === 'tariffs') await waitForFreshSession(session)
+  // The cached account the page painted with never carries the first-lesson offer, so a learner who came back to an
+  // account that has not started yet would be left on the course map: wait for the server's own answer once.
+  if (to.name === 'tariffs' || (LANDING_ROUTES.has(to.name as string) && !startLessonOffered)) {
+    await waitForFreshSession(session)
+  }
   return resolveGuard(to, session)
 })
 

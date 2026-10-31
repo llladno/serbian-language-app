@@ -26,7 +26,7 @@ api.health().then((h) => (telegramEnabled.value = !!h.telegram_bot_id)).catch(()
 const tg = useTelegramStart('login')
 
 function goNext() {
-  const next = typeof route.query.next === 'string' ? route.query.next : '/profile'
+  const next = typeof route.query.next === 'string' ? route.query.next : '/course'
   router.push(next)
 }
 

@@ -27,7 +27,7 @@ describe('VerifyView', () => {
     expect(w.text()).toContain('подтверждена')
   })
 
-  it('goes straight to the profile on ?ok=1 when the link signed the user in', async () => {
+  it('goes straight to the course on ?ok=1 when the link signed the user in', async () => {
     query = { ok: '1' }
     const session = useSessionStore()
     vi.spyOn(session, 'fetchSession').mockImplementation(async () => {
@@ -41,7 +41,7 @@ describe('VerifyView', () => {
     })
     mount(VerifyView)
     await flushPromises()
-    expect(push).toHaveBeenCalledWith('/profile')
+    expect(push).toHaveBeenCalledWith('/course')
   })
 
   it('stays on the success view for ?ok=1 when there is no session', async () => {
@@ -96,6 +96,6 @@ describe('VerifyView', () => {
       telegram: { linked: false, username: '' },
     }
     mount(VerifyView)
-    expect(push).toHaveBeenCalledWith('/profile')
+    expect(push).toHaveBeenCalledWith('/course')
   })
 })

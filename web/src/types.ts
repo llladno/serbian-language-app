@@ -309,6 +309,9 @@ export interface SessionUser {
   email: string
   email_verified: boolean
   telegram: { linked: boolean; username: string }
+  // Set by the server only for a learner who has not opened a lesson or answered anything yet: the lesson the app
+  // opens on, once. Never kept in the browser cache, so a stale value cannot send someone back into it.
+  start_lesson?: string
   // Parts of the app that are not open to everyone yet; the server decides.
   features?: { tariffs: boolean }
   // The Serbian script the learner reads in. Absent on an account cached before

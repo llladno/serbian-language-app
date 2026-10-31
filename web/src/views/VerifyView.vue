@@ -33,12 +33,12 @@ let timer: ReturnType<typeof setInterval> | undefined
 
 onMounted(async () => {
   if (mode.value === 'gate' && session.user?.email_verified) {
-    router.push('/profile')
+    router.push('/course')
   }
   // The verify link signs the owner in, so skip the login screen when it did.
   if (mode.value === 'ok') {
     await session.fetchSession()
-    if (session.user) router.push('/profile')
+    if (session.user) router.push('/course')
   }
 })
 

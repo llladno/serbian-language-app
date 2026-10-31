@@ -23,7 +23,8 @@ function readCachedUser(): SessionUser | null {
 
 function writeCachedUser(u: SessionUser | null) {
   try {
-    if (u) localStorage.setItem(CACHE_KEY, JSON.stringify(u))
+    // start_lesson is a one-time offer for this page load, not part of who the learner is.
+    if (u) localStorage.setItem(CACHE_KEY, JSON.stringify({ ...u, start_lesson: undefined }))
     else localStorage.removeItem(CACHE_KEY)
   } catch {
     // private browsing / storage full — it's only a display cache, fine to skip

@@ -166,8 +166,12 @@ type sessionUserDTO struct {
 	Email         string `json:"email"`
 	EmailVerified bool   `json:"email_verified"`
 	// Script is the Serbian script the learner reads in, "latin" or "cyrillic".
-	Script   string `json:"script"`
-	Telegram struct {
+	Script string `json:"script"`
+	// StartLesson is set only for a learner who has not opened a lesson or
+	// answered anything yet: the lesson the app takes them straight into when
+	// it opens. Absent for everyone else.
+	StartLesson string `json:"start_lesson,omitempty"`
+	Telegram    struct {
 		Linked   bool   `json:"linked"`
 		Username string `json:"username"`
 	} `json:"telegram"`

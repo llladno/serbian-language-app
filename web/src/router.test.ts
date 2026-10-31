@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import type { RouteLocationNormalized } from 'vue-router'
-import { resolveGuard, waitForFreshSession } from './router'
+import { resolveGuard, resetStartLessonOffer, waitForFreshSession } from './router'
 import { useSessionStore } from './stores/session'
 import type { SessionUser } from './types'
 
@@ -19,7 +19,10 @@ function verifiedUser(overrides: Partial<SessionUser> = {}): SessionUser {
   }
 }
 
-beforeEach(() => setActivePinia(createPinia()))
+beforeEach(() => {
+  setActivePinia(createPinia())
+  resetStartLessonOffer()
+})
 
 describe('resolveGuard', () => {
   it('sends a logged-out visitor from a private route to /login with next=', () => {
@@ -39,12 +42,41 @@ describe('resolveGuard', () => {
     }
   })
 
-  it('sends a logged-in, verified visitor away from login/register/forgot/reset to /profile', () => {
+  it('sends a logged-in, verified visitor away from login/register/forgot/reset to the course', () => {
     const session = useSessionStore()
     session.user = verifiedUser()
     for (const name of ['login', 'register', 'forgot', 'reset']) {
-      expect(resolveGuard(route(name), session)).toEqual({ path: '/profile' })
+      expect(resolveGuard(route(name), session)).toEqual({ path: '/course' })
     }
+  })
+
+  // A learner who has not started anything lands in the first lesson, but only once per page load, so leaving the lesson
+  // does not bounce them back in, and nobody who has already studied is ever taken there.
+  it('takes a learner who has not started into the first lesson, once', () => {
+    const session = useSessionStore()
+    session.user = verifiedUser({ start_lesson: '00' })
+    expect(resolveGuard(route('course'), session)).toEqual({ path: '/lesson/00' })
+    expect(resolveGuard(route('course'), session)).toBe(true)
+    expect(resolveGuard(route('profile'), session)).toBe(true)
+  })
+
+  it('does not take anyone into a lesson from a screen they opened on purpose', () => {
+    const session = useSessionStore()
+    session.user = verifiedUser({ start_lesson: '00' })
+    expect(resolveGuard(route('vocab'), session)).toBe(true)
+    expect(resolveGuard(route('quests'), session)).toBe(true)
+  })
+
+  it('does not take a learner with an unconfirmed email past the /verify gate', () => {
+    const session = useSessionStore()
+    session.user = verifiedUser({ email_verified: false, start_lesson: '00' })
+    expect(resolveGuard(route('course'), session)).toEqual({ path: '/verify' })
+  })
+
+  it('leaves a learner who has already started on the course map', () => {
+    const session = useSessionStore()
+    session.user = verifiedUser()
+    expect(resolveGuard(route('course'), session)).toBe(true)
   })
 
   it('still lets a logged-in visitor reach /verify', () => {

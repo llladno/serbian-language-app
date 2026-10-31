@@ -124,7 +124,33 @@ func (h handlers) summaryToDTO(userID string, s userSummary) sessionUserDTO {
 	dto.Telegram.Linked = s.TelegramLinked
 	dto.Telegram.Username = s.TelegramUsername
 	dto.Features.Tariffs = h.tariffsEnabled(s)
+	dto.StartLesson = h.startLessonFor(userID)
 	return dto
+}
+
+// startLessonFor returns the id of the first lesson of the course for a
+// learner who has not started anything, and "" for everyone else. A failed
+// lookup counts as "has started": sending someone into a lesson by mistake is
+// worse than showing them the course map.
+func (h handlers) startLessonFor(userID string) string {
+	started, err := h.Store.HasLearningActivity(userID)
+	if err != nil {
+		log.Printf("start lesson: %v", err)
+		return ""
+	}
+	if started || h.Course == nil {
+		return ""
+	}
+	c := h.Course()
+	if c == nil {
+		return ""
+	}
+	for _, p := range c.Phases {
+		if len(p.Lessons) > 0 {
+			return p.Lessons[0]
+		}
+	}
+	return ""
 }
 
 // register accepts {email, password, name}. It validates the shape

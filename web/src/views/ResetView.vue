@@ -26,7 +26,7 @@ async function submit() {
   error.value = null
   try {
     await session.reset(token, password.value)
-    router.push('/profile')
+    router.push('/course')
   } catch (e) {
     error.value = authErrorMessage(e)
   } finally {

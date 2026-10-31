@@ -40,7 +40,7 @@ describe('ResetView', () => {
     await w.find('form').trigger('submit.prevent')
     await flushPromises()
     expect(session.reset).toHaveBeenCalledWith('abc123', 'secret123')
-    expect(push).toHaveBeenCalledWith('/profile')
+    expect(push).toHaveBeenCalledWith('/course')
   })
 
   it('shows an error when there is no token', () => {

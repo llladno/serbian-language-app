@@ -19,7 +19,7 @@ beforeEach(() => {
 afterEach(() => vi.restoreAllMocks())
 
 describe('LoginView', () => {
-  it('logs in and navigates to /profile by default', async () => {
+  it('logs in and navigates to /course by default', async () => {
     const session = useSessionStore()
     vi.spyOn(session, 'login').mockResolvedValue(undefined)
     const w = mount(LoginView)
@@ -28,7 +28,7 @@ describe('LoginView', () => {
     await w.find('form').trigger('submit.prevent')
     await flushPromises()
     expect(session.login).toHaveBeenCalledWith('g@example.com', 'secret123')
-    expect(push).toHaveBeenCalledWith('/profile')
+    expect(push).toHaveBeenCalledWith('/course')
   })
 
   it('shows the generic error message on wrong credentials', async () => {
@@ -95,7 +95,7 @@ describe('LoginView', () => {
     expect(poll).toHaveBeenCalledTimes(2)
     await flushPromises()
 
-    expect(push).toHaveBeenCalledWith('/profile')
+    expect(push).toHaveBeenCalledWith('/course')
     vi.useRealTimers()
   })
 })
