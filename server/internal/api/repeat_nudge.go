@@ -3,6 +3,8 @@ package api
 import (
 	"fmt"
 	"log"
+	"net/http"
+	"regexp"
 	"time"
 
 	"github.com/grisha/serbian-app/server/internal/repeat"
@@ -19,6 +21,17 @@ const repeatNudgeVariants = 3
 
 // repeatNudgeLabel is the text of the button that opens «Повторить».
 const repeatNudgeLabel = "Повторить"
+
+// repeatIntroText is the one-off message to a learner who studies but never opened «Повторить».
+// It has no opt-out button: it is sent once and the learner's study switch already covers it.
+const repeatIntroText = "Пройденные уроки можно повторять 🔁\n\n" +
+	"В приложении есть раздел «Повторить»: мы собираем пятнадцать заданий из пройденных уроков и сначала ставим те, где были ошибки. " +
+	"Минут пять, и слова держатся в голове заметно дольше. Hajde (давай), загляни!"
+
+// repeatIntroPerSweep caps how many introductions one reminder sweep queues. A sweep runs every 20
+// minutes, the outbox sends 25 messages a second against Telegram's 30, so a batch this size drains
+// in a few seconds and the whole audience takes a couple of hours, inside each learner's daytime.
+var repeatIntroPerSweep = 150
 
 // daysWord is «день / дня / дней» for n.
 func daysWord(n int) string {
@@ -74,12 +87,12 @@ func (h handlers) maybeNudgeRepeat(tu store.TelegramUser, info store.RepeatNudge
 		kind = store.NudgeControl
 	}
 	// Recorded before it is queued: a failure here must not turn into a message sent every sweep.
-	written, err := h.Store.RecordRepeatNudge(tu.UserID, variant, kind, now, info.LastRepeat)
+	token, err := h.Store.RecordRepeatNudge(tu.UserID, variant, kind, now, info.LastRepeat)
 	if err != nil {
 		log.Printf("reminder sweep: record repeat nudge for %s: %v", tu.UserID, err)
 		return
 	}
-	if !written {
+	if token == "" {
 		return // another sweep got there first
 	}
 	if kind == store.NudgeControl {
@@ -91,7 +104,7 @@ func (h handlers) maybeNudgeRepeat(tu store.TelegramUser, info store.RepeatNudge
 	}
 	days := int(now.Sub(info.LastRepeat) / (24 * time.Hour))
 	h.EnqueueTelegramMessage(tu.ChatID, repeatNudgeText(variant, name, days),
-		&telegram.InlineButton{Label: repeatNudgeLabel, RepeatNudgeURL: h.Config.AppBaseURL + "/repeat"},
+		&telegram.InlineButton{Label: repeatNudgeLabel, RepeatNudgeURL: repeatURL(h.Config.AppBaseURL, token)},
 		telegram.PriorityNormal)
 }
 
@@ -121,4 +134,54 @@ func (h handlers) repeatNudgeOffPressed(queryID string, tgID, chatID, messageID 
 	if err := telegram.RemoveKeyboard(token, chatID, messageID); err != nil {
 		log.Printf("telegram webhook: redraw keyboard: %v", err)
 	}
+}
+
+// repeatURL is the address the button under a «Повторить» message opens. The token says which message
+// it came from, so RepeatClickTracker can count the press.
+func repeatURL(base, token string) string { return base + "/repeat?n=" + token }
+
+// maybeIntroRepeat queues the one-off introduction to one learner if it is due and the sweep still has
+// room, and reports whether it did. info is their nudge state as the sweep read it.
+func (h handlers) maybeIntroRepeat(tu store.TelegramUser, info store.RepeatNudgeInfo, now, lastActivity time.Time, otherToday bool) bool {
+	loc := h.Store.User(tu.UserID).Location()
+	if !repeat.IntroDue(repeat.IntroInput{
+		Now:                now.In(loc),
+		LastRepeat:         info.LastRepeat,
+		LastActivity:       lastActivity,
+		AlreadySent:        !info.LastNudge.IsZero(), // for someone who never repeated, any row is the intro
+		OtherLearningToday: otherToday,
+	}) {
+		return false
+	}
+	// Recorded before it is queued, like the nudge: a failure must not turn into a message every sweep.
+	token, err := h.Store.RecordRepeatNudge(tu.UserID, 0, store.NudgeIntro, now, info.LastRepeat)
+	if err != nil {
+		log.Printf("reminder sweep: record repeat intro for %s: %v", tu.UserID, err)
+		return false
+	}
+	if token == "" {
+		return false
+	}
+	h.EnqueueTelegramMessage(tu.ChatID, repeatIntroText,
+		&telegram.InlineButton{Label: repeatNudgeLabel, WebAppURL: repeatURL(h.Config.AppBaseURL, token)},
+		telegram.PriorityNormal)
+	return true
+}
+
+var clickToken = regexp.MustCompile(`^[0-9a-f]{16}$`)
+
+// RepeatClickTracker counts a press on the button under a «Повторить» message. The button opens
+// /repeat?n=<token>; this wrapper notes the token when the page is requested and then serves the
+// page whatever happens: counting must never get in the way of opening the screen.
+func RepeatClickTracker(deps Deps, next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodGet && r.URL.Path == "/repeat" {
+			if n := r.URL.Query().Get("n"); clickToken.MatchString(n) {
+				if _, err := deps.Store.NoteRepeatClick(n, deps.Now()); err != nil {
+					log.Printf("repeat click: %v", err)
+				}
+			}
+		}
+		next.ServeHTTP(w, r)
+	})
 }

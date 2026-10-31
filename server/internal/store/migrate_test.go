@@ -711,8 +711,8 @@ func TestUpgradeFromProductionAtMigration012(t *testing.T) {
 	if got, want := count(`SELECT COUNT(*) FROM schema_migrations`), count(`SELECT COUNT(DISTINCT version) FROM schema_migrations`); got != want {
 		t.Errorf("schema_migrations has repeated versions: %d rows, %d distinct", got, want)
 	}
-	if got := count(`SELECT MAX(version) FROM schema_migrations`); got != 35 { // 35: repeat_nudge (34 is stories, still on its own branch)
-		t.Errorf("latest version = %d, want 35", got)
+	if got := count(`SELECT MAX(version) FROM schema_migrations`); got != 36 { // 35, 36: repeat_nudge (34 is stories, still on its own branch)
+		t.Errorf("latest version = %d, want 36", got)
 	}
 	// every account that existed before the script setting reads in Latin, as before
 	if got, want := count(`SELECT COUNT(*) FROM users WHERE script = 'latin'`), count(`SELECT COUNT(*) FROM users`); got != want || want == 0 {

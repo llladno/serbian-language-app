@@ -137,14 +137,14 @@ func TestRecordRepeatNudgeWritesOnlyOnceASpellEvenWhenTwoSweepsRace(t *testing.T
 	lastRepeat := day0.Add(-72 * time.Hour)
 
 	first, err := s.RecordRepeatNudge(u.user, 1, NudgeSent, day0, lastRepeat)
-	if err != nil || !first {
-		t.Fatalf("first = %v, %v; want it written", first, err)
+	if err != nil || first == "" {
+		t.Fatalf("first = %q, %v; want it written", first, err)
 	}
 	// A second sweep (another container during a deploy) that read the state before the first
 	// one wrote must not add a second row.
 	second, err := s.RecordRepeatNudge(u.user, 2, NudgeSent, day0.Add(time.Minute), lastRepeat)
-	if err != nil || second {
-		t.Fatalf("second = %v, %v; want it refused", second, err)
+	if err != nil || second != "" {
+		t.Fatalf("second = %q, %v; want it refused", second, err)
 	}
 	if info, _ := s.RepeatNudgeInfo(u.user); info.Sent != 1 {
 		t.Fatalf("Sent = %d, want 1", info.Sent)
@@ -152,7 +152,60 @@ func TestRecordRepeatNudgeWritesOnlyOnceASpellEvenWhenTwoSweepsRace(t *testing.T
 
 	// After the learner repeats again a new spell begins and a new row is allowed.
 	third, err := s.RecordRepeatNudge(u.user, 2, NudgeSent, day0.Add(96*time.Hour), day0.Add(48*time.Hour))
-	if err != nil || !third {
-		t.Fatalf("third = %v, %v; want a new spell to be written", third, err)
+	if err != nil || third == "" {
+		t.Fatalf("third = %q, %v; want a new spell to be written", third, err)
+	}
+}
+
+func TestAClickOnTheButtonIsRecordedOnceAgainstItsMessage(t *testing.T) {
+	s, u := newUser(t)
+	token, err := s.RecordRepeatNudge(u.user, 0, NudgeIntro, day0, time.Time{})
+	if err != nil || token == "" {
+		t.Fatalf("RecordRepeatNudge = %q, %v", token, err)
+	}
+	other, _ := s.RecordRepeatNudge(u.user, 1, NudgeSent, day0.Add(96*time.Hour), day0.Add(48*time.Hour))
+	if other == token {
+		t.Fatal("two messages share a token: a click could not be told apart")
+	}
+
+	if ok, err := s.NoteRepeatClick("not-a-token", day0.Add(time.Hour)); err != nil || ok {
+		t.Fatalf("unknown token = %v, %v; want ignored", ok, err)
+	}
+	if ok, err := s.NoteRepeatClick(token, day0.Add(time.Hour)); err != nil || !ok {
+		t.Fatalf("first click = %v, %v; want recorded", ok, err)
+	}
+	// The learner opens the screen again or reloads it: still one click, at the first time.
+	if ok, _ := s.NoteRepeatClick(token, day0.Add(5*time.Hour)); ok {
+		t.Fatal("second click recorded again")
+	}
+	stats, err := s.RepeatNudgeStats()
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, g := range stats.Groups {
+		switch g.Kind {
+		case NudgeIntro:
+			if g.Count != 1 || g.Clicked != 1 {
+				t.Errorf("intro group = %+v, want 1 sent and 1 clicked", g)
+			}
+		case NudgeSent:
+			if g.Clicked != 0 {
+				t.Errorf("the other message shows a click: %+v", g)
+			}
+		}
+	}
+}
+
+func TestIntroIsWrittenOncePerLearnerAndDoesNotBlockLaterNudges(t *testing.T) {
+	s, u := newUser(t)
+	if tok, _ := s.RecordRepeatNudge(u.user, 0, NudgeIntro, day0, time.Time{}); tok == "" {
+		t.Fatal("intro not written")
+	}
+	if tok, _ := s.RecordRepeatNudge(u.user, 0, NudgeIntro, day0.Add(time.Hour), time.Time{}); tok != "" {
+		t.Fatal("a second intro was written for the same learner")
+	}
+	// They open «Повторить» after the intro and lapse: the nudge may follow.
+	if tok, _ := s.RecordRepeatNudge(u.user, 1, NudgeSent, day0.Add(100*time.Hour), day0.Add(10*time.Hour)); tok == "" {
+		t.Fatal("a nudge after the learner came back was refused because of the intro")
 	}
 }

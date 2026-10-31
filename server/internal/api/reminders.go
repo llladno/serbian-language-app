@@ -84,6 +84,7 @@ func RunReminderSweep(deps Deps, now time.Time) error {
 		return fmt.Errorf("reminder sweep: last activity: %w", err)
 	}
 	today := now.UTC().Format("2006-01-02")
+	introLeft := repeatIntroPerSweep
 
 	for _, tu := range users {
 		// Study reminders are opt-out: someone who switched them off (in the
@@ -105,7 +106,7 @@ func RunReminderSweep(deps Deps, now time.Time) error {
 
 		var nudge store.RepeatNudgeInfo
 		nudgeKnown := false
-		if deps.Config.RepeatNudge {
+		if deps.Config.RepeatNudge || deps.Config.RepeatIntro {
 			if nudge, err = deps.Store.RepeatNudgeInfo(tu.UserID); err != nil {
 				log.Printf("reminder sweep: repeat nudge info for %s: %v", tu.UserID, err)
 			} else {
@@ -143,8 +144,13 @@ func RunReminderSweep(deps Deps, now time.Time) error {
 			}
 		}
 
-		if nudgeKnown {
+		if nudgeKnown && deps.Config.RepeatNudge {
 			h.maybeNudgeRepeat(tu, nudge, now, last, studyMessageToday)
+		}
+		if nudgeKnown && deps.Config.RepeatIntro && introLeft > 0 {
+			if h.maybeIntroRepeat(tu, nudge, now, last, studyMessageToday) {
+				introLeft--
+			}
 		}
 	}
 	return nil

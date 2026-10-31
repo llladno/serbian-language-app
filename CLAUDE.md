@@ -583,7 +583,10 @@ localStorage). `GET .../exercises?audio=off` отдаёт `say` как `text`
 Правило «одно в сутки» общее для трёх сообщений (`studyMessageGap` в `reminders.go`): «Все слова сделаны», «Давно не
 заглядывал» и это; созревшее вторым ждёт следующего обхода после суток. Запись `repeat_nudges` идёт одним SQL-запросом с
 проверкой (`RecordRepeatNudge`), поэтому два обхода сразу не дадут дубль. Рассылка выключена, пока не задано `REPEAT_NUDGE=1`
-(выкладка её не запускает; пока выключено, не пишется и контрольных строк).
+(выкладка её не запускает, пока выключено, не пишется и контрольных строк). Разовое знакомство «Пройденные уроки можно
+повторять» всем, кто занимался, но не открывал раздел (`repeat.IntroDue`, `maybeIntroRepeat`): `REPEAT_INTRO=1`, не больше
+`repeatIntroPerSweep` за обход ради лимитов Telegram, без контрольной группы. Кнопка каждого из четырёх сообщений ведёт на
+`/repeat?n=<токен>`, `api.RepeatClickTracker` пишет `repeat_nudges.clicked_at` (миграция 036).
 Вызывается из `RunReminderSweep` (`api/repeat_nudge.go`, `maybeNudgeRepeat`). Половина учеников (`repeat.InControl`) сообщений
 не получает, для них пишется строка `repeat_nudges` с `kind = 'control'`, чтобы было с чем сравнить (`Store.RepeatNudgeStats`).
 Последнее открытие пишет `GET /api/repeat` всем (`UserStore.NoteRepeatOpened`), потому что у учеников с безлимитом нет строки

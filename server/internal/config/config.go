@@ -91,6 +91,10 @@ type Config struct {
 	// «Повторить». Off unless set, so a deploy does not start it: it starts when this is
 	// turned on, and stops when it is turned off. From REPEAT_NUDGE (1, true or yes).
 	RepeatNudge bool
+	// RepeatIntro switches on the one-off introduction of «Повторить» to every learner who has
+	// studied but never opened it: a capped batch per reminder sweep until all have had it. Off
+	// unless set. From REPEAT_INTRO (1, true or yes).
+	RepeatIntro bool
 	// TBankTerminalKey and TBankPassword are the Т-Касса terminal's credentials:
 	// the test terminal's (its key ends in DEMO) while testing, the real one's at
 	// launch. Both empty means Т-Касса is not connected. From TBANK_TERMINAL_KEY
@@ -147,6 +151,7 @@ func Load() Config {
 		TBankEmails:           parseEmailList(os.Getenv("TBANK_EMAILS")),
 		TariffsForAll:         parseFlag(os.Getenv("TARIFFS_FOR_ALL")),
 		RepeatNudge:           parseFlag(os.Getenv("REPEAT_NUDGE")),
+		RepeatIntro:           parseFlag(os.Getenv("REPEAT_INTRO")),
 		TBankTerminalKey:      strings.TrimSpace(os.Getenv("TBANK_TERMINAL_KEY")),
 		TBankPassword:         strings.TrimSpace(os.Getenv("TBANK_PASSWORD")),
 		TBankTaxation:         taxationOr(os.Getenv("TBANK_TAXATION"), "usn_income"),

@@ -134,3 +134,32 @@ func TestControlGroupIsStableAndRoughlyHalf(t *testing.T) {
 		t.Fatalf("control group holds %d of 1000, want about half", n)
 	}
 }
+
+// introInput is a learner who studies but has never opened «Повторить»: the one-off introduction is for them.
+func introInput() IntroInput {
+	return IntroInput{Now: nudgeNow, LastActivity: nudgeNow.Add(-5 * 24 * time.Hour)}
+}
+
+func TestIntroDueForAStudentWhoNeverOpenedRepeat(t *testing.T) {
+	if !IntroDue(introInput()) {
+		t.Fatal("a learner who studied and never opened «Повторить» should get the introduction, however long ago they studied")
+	}
+}
+
+func TestIntroSkipsWhoOpenedRepeatWhoNeverStudiedWhoGotItAndWhoHeardTodayAndNight(t *testing.T) {
+	cases := map[string]func(*IntroInput){
+		"opened repeat": func(in *IntroInput) { in.LastRepeat = nudgeNow.Add(-time.Hour) },
+		"never studied": func(in *IntroInput) { in.LastActivity = time.Time{} },
+		"already sent":  func(in *IntroInput) { in.AlreadySent = true },
+		"other message": func(in *IntroInput) { in.OtherLearningToday = true },
+		"before 10":     func(in *IntroInput) { in.Now = time.Date(2026, 11, 3, 9, 59, 0, 0, time.UTC) },
+		"from 20":       func(in *IntroInput) { in.Now = time.Date(2026, 11, 3, 20, 0, 0, 0, time.UTC) },
+	}
+	for name, change := range cases {
+		in := introInput()
+		change(&in)
+		if IntroDue(in) {
+			t.Errorf("%s: introduction due, want not", name)
+		}
+	}
+}

@@ -70,3 +70,25 @@ func NudgeVariant(userID string, sentBefore, n int) int {
 func InControl(userID string) bool {
 	return hash("nudge-control|"+userID)%2 == 0
 }
+
+// IntroInput describes one learner at the moment of a reminder sweep, for the one-off introduction of
+// «Повторить». Now must already be in the learner's timezone.
+type IntroInput struct {
+	Now                time.Time
+	LastRepeat         time.Time // zero = never opened «Повторить»
+	LastActivity       time.Time // zero = never studied
+	AlreadySent        bool      // the introduction went out before
+	OtherLearningToday bool      // another study message went out in the last day
+}
+
+// IntroDue reports whether the learner should get the one-off introduction now: they have studied,
+// never opened «Повторить», have not had this message, and it is their daytime. How long ago they
+// studied does not matter: the message is for everyone who has lessons behind them.
+func IntroDue(in IntroInput) bool {
+	switch {
+	case in.AlreadySent, in.OtherLearningToday, !in.LastRepeat.IsZero(), in.LastActivity.IsZero():
+		return false
+	}
+	h := in.Now.Hour()
+	return h >= nudgeFromHour && h < nudgeToHour
+}

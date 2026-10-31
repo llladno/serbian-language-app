@@ -263,7 +263,7 @@ func main() {
 	// No StripPrefix: landing.FS() is rooted at dist/, which already
 	// contains _nuxt/... at that same relative path.
 	mux.Handle("/_nuxt/", cacheControl(http.FileServer(http.FS(landing.FS()))))
-	mux.Handle("/", landingHandler(landing.FS(), spaHandler(web.FS())))
+	mux.Handle("/", api.RepeatClickTracker(apiDeps, landingHandler(landing.FS(), spaHandler(web.FS()))))
 
 	log.Printf("listening on %s", *addr)
 	// The security headers wrap EVERYTHING, not just /api/: the SPA HTML and the

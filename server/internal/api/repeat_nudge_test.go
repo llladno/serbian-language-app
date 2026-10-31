@@ -1,6 +1,8 @@
 package api
 
 import (
+	"net/http"
+	"net/http/httptest"
 	"regexp"
 	"strconv"
 	"strings"
@@ -76,8 +78,13 @@ func TestSweepNudgesALearnerWhoStudiesButStoppedRepeating(t *testing.T) {
 	if len(got) != 1 || got[0].ChatID != 4242 {
 		t.Fatalf("nudges = %+v, want exactly one to chat 4242", got)
 	}
-	if got[0].Button.RepeatNudgeURL != testBaseURL+"/repeat" || got[0].Button.Label != "Повторить" {
-		t.Errorf("button = %+v, want «Повторить» opening the repeat screen", got[0].Button)
+	url := got[0].Button.RepeatNudgeURL
+	if !strings.HasPrefix(url, testBaseURL+"/repeat?n=") || got[0].Button.Label != "Повторить" {
+		t.Errorf("button = %+v, want «Повторить» opening the repeat screen with a click token", got[0].Button)
+	}
+	// The token in the address belongs to the message just recorded: pressing the button is counted.
+	if ok, err := st.NoteRepeatClick(strings.TrimPrefix(url, testBaseURL+"/repeat?n="), fixedNow.Add(time.Hour)); err != nil || !ok {
+		t.Errorf("the nudge's token matches no recorded message: %v, %v", ok, err)
 	}
 	info, _ := st.RepeatNudgeInfo(uid)
 	if info.Sent != 1 || !info.LastNudge.Equal(fixedNow) {
@@ -358,5 +365,136 @@ func TestNudgeIsOffUntilSwitchedOnAndLeavesNoTraceWhileOff(t *testing.T) {
 		if info, _ := st.RepeatNudgeInfo(uid); !info.LastNudge.IsZero() {
 			t.Fatalf("control=%v: a nudge row was written while switched off: %+v", control, info)
 		}
+	}
+}
+
+func introMessages(sink *tgSink) []sentTgMessage {
+	var out []sentTgMessage
+	for _, m := range sink.all() {
+		if m.Text == repeatIntroText {
+			out = append(out, m)
+		}
+	}
+	return out
+}
+
+func introLearner(t *testing.T, st *store.Store, chatID int64) string {
+	t.Helper()
+	uid := nudgeLearner(t, st, chatID, false)
+	studyAt(t, st, uid, fixedNow.Add(-10*time.Hour))
+	return uid
+}
+
+func TestIntroGoesOnceToAStudentWhoNeverOpenedRepeat(t *testing.T) {
+	d, st, sink := newReminderDeps(t)
+	d.Config.RepeatIntro = true
+	uid := introLearner(t, st, 4242)
+
+	_ = RunReminderSweep(d, fixedNow)
+	_ = RunReminderSweep(d, fixedNow.Add(40*time.Minute))
+	_ = RunReminderSweep(d, fixedNow.Add(30*time.Hour))
+	got := introMessages(sink)
+	if len(got) != 1 || got[0].ChatID != 4242 {
+		t.Fatalf("intro messages = %+v, want exactly one, to chat 4242", got)
+	}
+	b := got[0].Button
+	if b.Label != "Повторить" || !strings.HasPrefix(b.WebAppURL, testBaseURL+"/repeat?n=") {
+		t.Errorf("button = %+v, want «Повторить» opening the screen with a click token", b)
+	}
+	if b.RepeatNudgeURL != "" {
+		t.Errorf("the one-off message carries the opt-out row: %+v", b)
+	}
+	if ok, _ := st.NoteRepeatClick(strings.TrimPrefix(b.WebAppURL, testBaseURL+"/repeat?n="), fixedNow.Add(time.Hour)); !ok {
+		t.Error("the intro's token matches no recorded message")
+	}
+	if info, _ := st.RepeatNudgeInfo(uid); info.LastNudge.IsZero() {
+		t.Error("nothing recorded for the intro")
+	}
+}
+
+func TestIntroSkipsWhoUsedRepeatWhoNeverStudiedWhoSwitchedStudyOffAndEveryoneWhileOff(t *testing.T) {
+	d, st, sink := newReminderDeps(t)
+	d.Config.RepeatIntro = true
+
+	used := introLearner(t, st, 1)
+	_ = st.User(used).NoteRepeatOpened(fixedNow.Add(-90 * time.Hour))
+	idle := nudgeLearner(t, st, 2, false) // never studied
+	_ = idle
+	off := introLearner(t, st, 3)
+	if err := st.SetBotPrefs(off, store.BotPrefs{Learning: false}, fixedNow); err != nil {
+		t.Fatal(err)
+	}
+	_ = RunReminderSweep(d, fixedNow)
+	if got := introMessages(sink); len(got) != 0 {
+		t.Fatalf("intro went to %+v", got)
+	}
+
+	d2, st2, sink2 := newReminderDeps(t)
+	introLearner(t, st2, 4)
+	_ = RunReminderSweep(d2, fixedNow) // REPEAT_INTRO is off
+	if got := introMessages(sink2); len(got) != 0 {
+		t.Fatalf("intro sent while switched off: %+v", got)
+	}
+}
+
+// The intro goes to everyone who never used the button, which is hundreds of people: a sweep sends a
+// capped batch and the rest follow on later sweeps, so the bot stays far from Telegram's limits.
+func TestIntroGoesOutInCappedBatches(t *testing.T) {
+	old := repeatIntroPerSweep
+	repeatIntroPerSweep = 2
+	t.Cleanup(func() { repeatIntroPerSweep = old })
+
+	d, st, sink := newReminderDeps(t)
+	d.Config.RepeatIntro = true
+	for chat := int64(1); chat <= 5; chat++ {
+		introLearner(t, st, chat)
+	}
+	for sweep, want := range []int{2, 4, 5, 5} {
+		_ = RunReminderSweep(d, fixedNow.Add(time.Duration(sweep)*20*time.Minute))
+		if got := len(introMessages(sink)); got != want {
+			t.Fatalf("after sweep %d: %d intro messages, want %d", sweep+1, got, want)
+		}
+	}
+}
+
+func TestIntroHoldsBackTheComeBackMessageForADay(t *testing.T) {
+	d, st, sink := newReminderDeps(t)
+	d.Config.RepeatIntro = true
+	introLearner(t, st, 4242)
+
+	_ = RunReminderSweep(d, fixedNow)
+	_ = RunReminderSweep(d, fixedNow.Add(15*time.Hour)) // 25h since they studied: «come back» is due
+	if got := len(sink.all()); got != 1 {
+		t.Fatalf("%d messages the day of the intro, want 1: %+v", got, sink.all())
+	}
+}
+
+func TestOpeningTheScreenFromTheButtonIsCountedAsAClick(t *testing.T) {
+	d, st, _ := newReminderDeps(t)
+	uid := nudgeLearner(t, st, 4242, false)
+	token, err := st.RecordRepeatNudge(uid, 0, store.NudgeIntro, fixedNow, time.Time{})
+	if err != nil || token == "" {
+		t.Fatalf("record: %q, %v", token, err)
+	}
+	served := 0
+	next := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { served++ })
+	h := RepeatClickTracker(d, next)
+
+	for _, target := range []string{"/repeat?n=zzzz", "/profile?n=" + token, "/repeat"} {
+		h.ServeHTTP(httptest.NewRecorder(), httptest.NewRequest(http.MethodGet, target, nil))
+	}
+	stats, _ := st.RepeatNudgeStats()
+	if stats.Groups[0].Clicked != 0 {
+		t.Fatalf("a click was counted from %+v", stats.Groups)
+	}
+
+	h.ServeHTTP(httptest.NewRecorder(), httptest.NewRequest(http.MethodGet, "/repeat?n="+token, nil))
+	h.ServeHTTP(httptest.NewRecorder(), httptest.NewRequest(http.MethodGet, "/repeat?n="+token, nil))
+	stats, _ = st.RepeatNudgeStats()
+	if stats.Groups[0].Clicked != 1 {
+		t.Fatalf("clicks = %d, want 1", stats.Groups[0].Clicked)
+	}
+	if served != 5 {
+		t.Fatalf("the page was served %d times for 5 requests: the tracker must never block it", served)
 	}
 }
