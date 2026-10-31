@@ -128,3 +128,88 @@ func TestDictationAndConjugationSeenInText(t *testing.T) {
 		}
 	}
 }
+
+// russianWords returns the lower-case Cyrillic words of s with ё folded to е.
+func russianWords(s string) []string {
+	return strings.FieldsFunc(strings.ToLower(strings.ReplaceAll(s, "ё", "е")), func(r rune) bool {
+		return !unicode.Is(unicode.Cyrillic, r)
+	})
+}
+
+// russianStem is the part of a Russian word compared across inflections:
+// «аппетита» and «аппетит» share a stem, «спасибо» and «спасибки» do not.
+func russianStem(w string) string {
+	r := []rune(w)
+	if len(r) > 5 {
+		r = r[:5]
+	}
+	return string(r)
+}
+
+// TestDictationRussianAnswerSeenInText guards the Russian side of a dictation.
+// In «Не могу прослушать» mode (and in the repeat session) a `listen` exercise
+// asks "translate into Russian" and shows `ru[0]` as «Правильно: …». That
+// translation must not teach a meaning the course has not shown: «Hvala,
+// prijatno!» was answered «Спасибо, приятного аппетита» while the lesson that
+// introduces `prijatno` only said «всего доброго». Every word of the displayed
+// translation has to occur in the Russian text of an earlier step or lesson
+// (theory, reading translation, dialogue line, lesson title/subtitle). The
+// other `ru` variants are only accepted, never shown, so they are free.
+func TestDictationRussianAnswerSeenInText(t *testing.T) {
+	c, err := Load("../../../content")
+	if err != nil {
+		t.Fatal(err)
+	}
+	exempt := map[string]bool{}
+	for _, w := range strings.Fields("и а но или не ни да нет в на у к о об от до за из по с со без для при как что это то ты вы я мы он она они мой моя мое твой ваш вам вас мне тебе нас его ее их там тут здесь очень еще уже тоже вот") {
+		exempt[w] = true
+	}
+	// A Russian numeral is taught by its digits («15 petnaest»), so the word itself
+	// never has to appear in the text.
+	for _, w := range strings.Fields("ноль нуль один одна одно два две три четыре пять шесть семь восемь девять десять " +
+		"одиннадцать двенадцать тринадцать четырнадцать пятнадцать шестнадцать семнадцать восемнадцать девятнадцать " +
+		"двадцать тридцать сорок пятьдесят шестьдесят семьдесят восемьдесят девяносто сто двести триста четыреста " +
+		"пятьсот шестьсот семьсот восемьсот девятьсот тысяча тысячи тысяч") {
+		exempt[w] = true
+	}
+	seen := map[string]bool{}
+	see := func(text string) {
+		for _, w := range russianWords(text) {
+			seen[w] = true
+			seen[russianStem(w)] = true
+		}
+	}
+	known := func(w string) bool {
+		return exempt[w] || seen[w] || (len([]rune(w)) > 3 && seen[russianStem(w)])
+	}
+	for _, ph := range c.Phases {
+		for _, id := range ph.Lessons {
+			l := c.Lessons[id]
+			if l == nil || !l.Manifest {
+				continue
+			}
+			see(l.Title)
+			see(l.Subtitle)
+			for _, s := range l.Steps {
+				see(s.Markdown)
+				see(s.MarkdownRU)
+				see(s.Scene)
+				for _, e := range s.Exercises {
+					if e.Type != "listen" || len(e.RU) == 0 {
+						continue
+					}
+					for _, w := range russianWords(e.RU[0]) {
+						if !known(w) {
+							t.Errorf("lesson %s step %s ex %s: the shown Russian answer %q uses %q, "+
+								"which no earlier theory/reading/dialogue text has shown; teach that meaning "+
+								"in the lesson or put a taught translation first in `ru`", id, s.ID, e.ID, e.RU[0], w)
+						}
+					}
+				}
+				for _, turn := range s.Turns {
+					see(turn.RU)
+				}
+			}
+		}
+	}
+}

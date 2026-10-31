@@ -63,6 +63,11 @@ steps:
         prompt: "Выходишь из пекарни, тебе говорят «Prijatno!». Отвечаешь —"
         options: ["Prijatno!", "Dobro jutro!", "Dobar dan!"]
         answer: "Prijatno!"
+      - id: "02b.8.2"
+        type: choice
+        prompt: "Садишься с друзьями за стол, и они говорят «Prijatno!». Это значит —"
+        options: ["Приятного аппетита.", "Спокойной ночи.", "До свидания."]
+        answer: "Приятного аппетита."
 
   - id: "02b.9"
     kind: practice
