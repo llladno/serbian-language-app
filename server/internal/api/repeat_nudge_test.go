@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/grisha/serbian-app/server/internal/repeat"
+	"github.com/grisha/serbian-app/server/internal/srs"
 	"github.com/grisha/serbian-app/server/internal/store"
 )
 
@@ -277,5 +278,85 @@ func TestOptOutButtonFromAnUnlinkedTelegramIsRefused(t *testing.T) {
 	}
 	if a := bot.lastAnswer(); !strings.Contains(a, "привяжи Telegram") {
 		t.Errorf("notice = %q", a)
+	}
+}
+
+// A learner who got the nudge must not also get another study message inside the next 24 hours,
+// and the held message is delayed, not lost. A control-group learner is held the same way, so the
+// two halves of the experiment hear the same other messages.
+func TestNudgeHoldsBackTheComeBackMessageForADay(t *testing.T) {
+	for _, control := range []bool{false, true} {
+		d, st, sink := newReminderDeps(t)
+		uid := nudgeLearner(t, st, 4242, control)
+		studyingButNotRepeating(t, st, uid, fixedNow) // last study 10h before the sweep
+
+		_ = RunReminderSweep(d, fixedNow)
+		// 15h later their last study is 25h old: the «come back» message is due, but it is the
+		// same day as the nudge.
+		_ = RunReminderSweep(d, fixedNow.Add(15*time.Hour))
+		real := 1
+		if control {
+			real = 0
+		}
+		if got := len(sink.all()); got != real {
+			t.Fatalf("control=%v: %d messages a day after the nudge, want %d: %+v", control, got, real, sink.all())
+		}
+		_ = RunReminderSweep(d, fixedNow.Add(25*time.Hour))
+		if got := len(sink.all()); got != real+1 {
+			t.Fatalf("control=%v: %d messages once the day has passed, want %d: the held message is only delayed", control, got, real+1)
+		}
+	}
+}
+
+func TestNudgeHoldsBackTheAllDoneCongratsForADay(t *testing.T) {
+	d, st, sink := newReminderDeps(t)
+	uid := nudgeLearner(t, st, 4242, false)
+	studyingButNotRepeating(t, st, uid, fixedNow)
+
+	_ = RunReminderSweep(d, fixedNow) // the queue still has new words: only the nudge goes out
+	gradeAllGood(t, st.User(uid), fixedNow.Add(time.Hour))
+	_ = RunReminderSweep(d, fixedNow.Add(2*time.Hour)) // the queue is now empty
+	if got := sink.all(); len(got) != 1 {
+		t.Fatalf("%d messages the day of the nudge, want 1: %+v", len(got), got)
+	}
+}
+
+// Before the nudge existed the «all done» congrats and the «come back» message could both go to
+// a learner in one sweep; the one-study-message-a-day rule covers them too.
+func TestSweepSendsOneStudyMessageEvenWhenTwoAreDue(t *testing.T) {
+	d, st, sink := newReminderDeps(t)
+	uid := linkTelegram(t, st, 777, "olya")
+	t0 := time.Date(2026, 9, 1, 8, 0, 0, 0, time.UTC)
+	// Everything graded Easy: the cards come back in days, so the queue stays empty, and the last
+	// study is 25h old at the sweep below.
+	if err := st.User(uid).EnsureCards(allTestVocabCards); err != nil {
+		t.Fatal(err)
+	}
+	for _, seed := range allTestVocabCards {
+		if _, err := st.User(uid).GradeCard(seed.CardID, srs.Easy, t0); err != nil {
+			t.Fatal(err)
+		}
+	}
+	_ = RunReminderSweep(d, t0.Add(25*time.Hour))
+	if got := sink.all(); len(got) != 1 {
+		t.Fatalf("%d messages in one sweep, want 1: %+v", len(got), got)
+	}
+}
+
+func TestNudgeIsOffUntilSwitchedOnAndLeavesNoTraceWhileOff(t *testing.T) {
+	for _, control := range []bool{false, true} {
+		d, st, sink := newReminderDeps(t)
+		d.Config.RepeatNudge = false
+		uid := nudgeLearner(t, st, 4242, control)
+		studyingButNotRepeating(t, st, uid, fixedNow)
+
+		_ = RunReminderSweep(d, fixedNow)
+		if got := nudgeMessages(sink); len(got) != 0 {
+			t.Fatalf("control=%v: nudge sent while switched off: %+v", control, got)
+		}
+		// No control row either: it would start a spell that never had a message.
+		if info, _ := st.RepeatNudgeInfo(uid); !info.LastNudge.IsZero() {
+			t.Fatalf("control=%v: a nudge row was written while switched off: %+v", control, info)
+		}
 	}
 }

@@ -51,10 +51,11 @@ func TestRepeatNudgeInfoCountsRepeatsMadeBeforeTheNudgeExisted(t *testing.T) {
 
 func TestRecordedNudgesCountAndRemember(t *testing.T) {
 	s, u := newUser(t)
-	if err := s.RecordRepeatNudge(u.user, 1, NudgeSent, day0); err != nil {
+	if _, err := s.RecordRepeatNudge(u.user, 1, NudgeSent, day0, time.Time{}); err != nil {
 		t.Fatalf("RecordRepeatNudge: %v", err)
 	}
-	if err := s.RecordRepeatNudge(u.user, 2, NudgeControl, day0.Add(time.Hour)); err != nil {
+	// The learner repeated in between, so this is a new spell.
+	if _, err := s.RecordRepeatNudge(u.user, 2, NudgeControl, day0.Add(time.Hour), day0.Add(30*time.Minute)); err != nil {
 		t.Fatal(err)
 	}
 	info, _ := s.RepeatNudgeInfo(u.user)
@@ -81,7 +82,7 @@ func TestOptOutIsRemembered(t *testing.T) {
 
 func TestOpeningRepeatMarksTheLatestNudgeAsAnswered(t *testing.T) {
 	s, u := newUser(t)
-	_ = s.RecordRepeatNudge(u.user, 0, NudgeSent, day0)
+	_, _ = s.RecordRepeatNudge(u.user, 0, NudgeSent, day0, time.Time{})
 	_ = u.NoteRepeatOpened(day0.Add(3 * time.Hour))
 	// A second open must not move the answer time: the first one after the message counts.
 	_ = u.NoteRepeatOpened(day0.Add(60 * time.Hour))
@@ -101,9 +102,9 @@ func TestStatsSeparateLateOpensAndControlGroup(t *testing.T) {
 	a, _ := s.CreateUser("А")
 	b, _ := s.CreateUser("Б")
 	c, _ := s.CreateUser("В")
-	_ = s.RecordRepeatNudge(a, 1, NudgeSent, day0)
-	_ = s.RecordRepeatNudge(b, 1, NudgeSent, day0)
-	_ = s.RecordRepeatNudge(c, 0, NudgeControl, day0)
+	_, _ = s.RecordRepeatNudge(a, 1, NudgeSent, day0, time.Time{})
+	_, _ = s.RecordRepeatNudge(b, 1, NudgeSent, day0, time.Time{})
+	_, _ = s.RecordRepeatNudge(c, 0, NudgeControl, day0, time.Time{})
 	_ = s.User(a).NoteRepeatOpened(day0.Add(2 * time.Hour))  // within a day
 	_ = s.User(b).NoteRepeatOpened(day0.Add(50 * time.Hour)) // too late to be the message's doing
 	_ = s.User(c).NoteRepeatOpened(day0.Add(5 * time.Hour))  // control learner repeats on their own
@@ -129,4 +130,29 @@ func findNudgeGroup(stats RepeatNudgeStats, kind string, variant int) RepeatNudg
 		}
 	}
 	return RepeatNudgeGroup{}
+}
+
+func TestRecordRepeatNudgeWritesOnlyOnceASpellEvenWhenTwoSweepsRace(t *testing.T) {
+	s, u := newUser(t)
+	lastRepeat := day0.Add(-72 * time.Hour)
+
+	first, err := s.RecordRepeatNudge(u.user, 1, NudgeSent, day0, lastRepeat)
+	if err != nil || !first {
+		t.Fatalf("first = %v, %v; want it written", first, err)
+	}
+	// A second sweep (another container during a deploy) that read the state before the first
+	// one wrote must not add a second row.
+	second, err := s.RecordRepeatNudge(u.user, 2, NudgeSent, day0.Add(time.Minute), lastRepeat)
+	if err != nil || second {
+		t.Fatalf("second = %v, %v; want it refused", second, err)
+	}
+	if info, _ := s.RepeatNudgeInfo(u.user); info.Sent != 1 {
+		t.Fatalf("Sent = %d, want 1", info.Sent)
+	}
+
+	// After the learner repeats again a new spell begins and a new row is allowed.
+	third, err := s.RecordRepeatNudge(u.user, 2, NudgeSent, day0.Add(96*time.Hour), day0.Add(48*time.Hour))
+	if err != nil || !third {
+		t.Fatalf("third = %v, %v; want a new spell to be written", third, err)
+	}
 }

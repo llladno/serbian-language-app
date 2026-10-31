@@ -34,7 +34,7 @@ func newReminderDeps(t *testing.T) (Deps, *store.Store, *tgSink) {
 		Store:                  st,
 		Now:                    func() time.Time { return fixedNow },
 		Stale:                  func() bool { return false },
-		Config:                 config.Config{AppBaseURL: testBaseURL},
+		Config:                 config.Config{AppBaseURL: testBaseURL, RepeatNudge: true},
 		EnqueueTelegramMessage: sink.enqueue,
 	}
 	return d, st, sink

@@ -75,13 +75,23 @@ func (s *Store) RepeatNudgeInfo(userID string) (RepeatNudgeInfo, error) {
 	return info, nil
 }
 
-// RecordRepeatNudge writes one nudge row (a sent message or a control-group mark).
-func (s *Store) RecordRepeatNudge(userID string, variant int, kind string, at time.Time) error {
-	if _, err := s.db.Exec(`INSERT INTO repeat_nudges (user_id, variant, kind, created_at) VALUES (?, ?, ?, ?)`,
-		userID, variant, kind, stamp(at)); err != nil {
-		return fmt.Errorf("record repeat nudge: %w", err)
+// RecordRepeatNudge writes one nudge row (a sent message or a control-group mark) and reports
+// whether it did. It writes nothing when a row already exists since the learner's last repeat:
+// the check and the write are one statement, so two sweeps running at once (the old and the new
+// container for a minute during a deploy) cannot both pass it.
+func (s *Store) RecordRepeatNudge(userID string, variant int, kind string, at, lastRepeat time.Time) (bool, error) {
+	res, err := s.db.Exec(`INSERT INTO repeat_nudges (user_id, variant, kind, created_at)
+		SELECT ?, ?, ?, ? WHERE NOT EXISTS (
+			SELECT 1 FROM repeat_nudges WHERE user_id = ? AND created_at >= ?)`,
+		userID, variant, kind, stamp(at), userID, stamp(lastRepeat))
+	if err != nil {
+		return false, fmt.Errorf("record repeat nudge: %w", err)
 	}
-	return nil
+	n, err := res.RowsAffected()
+	if err != nil {
+		return false, fmt.Errorf("record repeat nudge: %w", err)
+	}
+	return n == 1, nil
 }
 
 // SetRepeatNudgeOff remembers that the learner pressed «Не про повторения».

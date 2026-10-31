@@ -53,14 +53,10 @@ func repeatNudgeText(variant int, name string, days int) string {
 		"Давай вернём их: пятнадцать заданий, минут пять. Polako (не спеша), мы всё подготовили."
 }
 
-// maybeNudgeRepeat writes the nudge to one learner if it is due. otherToday: another study message
-// already went out to them today. lastActivity is their latest review or attempt.
-func (h handlers) maybeNudgeRepeat(tu store.TelegramUser, now, lastActivity time.Time, otherToday bool) {
-	info, err := h.Store.RepeatNudgeInfo(tu.UserID)
-	if err != nil {
-		log.Printf("reminder sweep: repeat nudge info for %s: %v", tu.UserID, err)
-		return
-	}
+// maybeNudgeRepeat writes the nudge to one learner if it is due. info is their nudge state as the
+// sweep read it; otherToday: another study message already went out to them today; lastActivity is
+// their latest review or attempt.
+func (h handlers) maybeNudgeRepeat(tu store.TelegramUser, info store.RepeatNudgeInfo, now, lastActivity time.Time, otherToday bool) {
 	loc := h.Store.User(tu.UserID).Location()
 	if !repeat.NudgeDue(repeat.NudgeInput{
 		Now:                now.In(loc),
@@ -78,9 +74,13 @@ func (h handlers) maybeNudgeRepeat(tu store.TelegramUser, now, lastActivity time
 		kind = store.NudgeControl
 	}
 	// Recorded before it is queued: a failure here must not turn into a message sent every sweep.
-	if err := h.Store.RecordRepeatNudge(tu.UserID, variant, kind, now); err != nil {
+	written, err := h.Store.RecordRepeatNudge(tu.UserID, variant, kind, now, info.LastRepeat)
+	if err != nil {
 		log.Printf("reminder sweep: record repeat nudge for %s: %v", tu.UserID, err)
 		return
+	}
+	if !written {
+		return // another sweep got there first
 	}
 	if kind == store.NudgeControl {
 		return
