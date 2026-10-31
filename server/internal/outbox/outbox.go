@@ -59,6 +59,8 @@ func ButtonRow(b *telegram.InlineButton) store.OutboxButton {
 		ob.Type, ob.Target = "prefs", b.Prefs.Encode()
 	case b.PrefOff != "":
 		ob.Type, ob.Target = "pref_off", string(b.PrefOff)
+	case b.RepeatNudgeURL != "":
+		ob.Type, ob.Target = "repeat_nudge", b.RepeatNudgeURL
 	case b.ChannelURL != "":
 		ob.Type, ob.Target = "channel_check", b.ChannelURL
 	case b.WebAppURL != "":
@@ -80,6 +82,8 @@ func buttonFromRow(ob store.OutboxButton) *telegram.InlineButton {
 		b.WebAppURL = ob.Target
 	case "url":
 		b.URL = ob.Target
+	case "repeat_nudge":
+		b.RepeatNudgeURL = ob.Target
 	case "channel_check":
 		b.ChannelURL = ob.Target
 	case "pref_off":

@@ -138,6 +138,10 @@ func (h handlers) prefPressed(queryID, data string, tgID, chatID, messageID int6
 			log.Printf("telegram webhook: answer callback: %v", err)
 		}
 	}
+	if data == telegram.CallbackRepeatNudgeOff {
+		h.repeatNudgeOffPressed(queryID, tgID, chatID, messageID)
+		return true
+	}
 	off, isOff := telegram.ParsePrefOff(data)
 	cat, on, isToggle := telegram.ParsePref(data)
 	if !isOff && !isToggle {

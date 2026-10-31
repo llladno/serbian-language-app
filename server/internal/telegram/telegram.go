@@ -150,11 +150,21 @@ type InlineButton struct {
 	ChannelURL string
 	PrefOff    PrefCategory
 	Prefs      *PrefsState
+	// RepeatNudgeURL, with Label, is the keyboard of the «Повторить» nudge: a Mini App button
+	// with that label over a «Не про повторения» button that switches off only this nudge.
+	// A preset like the others, so the outbox keeps its (label, type, target) shape.
+	RepeatNudgeURL string
 	// CheckData, with ChannelURL, is the callback_data of the "check" button instead of
 	// CallbackCheckChannel — how a flow other than the subscription quest (the lead-magnet
 	// PDF) gets its own answer. At most 64 bytes, Telegram's limit.
 	CheckData string
 }
+
+// The «Повторить» nudge's opt-out button: its wording and the callback_data the webhook answers.
+const (
+	CallbackRepeatNudgeOff = "nudgeoff:repeat"
+	RepeatNudgeOffLabel    = "🔕 Не про повторения"
+)
 
 // The channel keyboard's wording, and the callback_data its "check" button
 // sends back to the webhook.
@@ -179,6 +189,11 @@ func SendMessageWithButton(botToken string, chatID int64, text string, button *I
 			rows = prefsRows(*button.Prefs)
 		} else if button.PrefOff != "" {
 			rows = [][]map[string]any{{{"text": button.Label, "callback_data": CallbackPrefOff + string(button.PrefOff)}}}
+		} else if button.RepeatNudgeURL != "" {
+			rows = [][]map[string]any{
+				{{"text": button.Label, "web_app": map[string]string{"url": button.RepeatNudgeURL}}},
+				{{"text": RepeatNudgeOffLabel, "callback_data": CallbackRepeatNudgeOff}},
+			}
 		} else if button.ChannelURL != "" {
 			check := CallbackCheckChannel
 			if button.CheckData != "" {

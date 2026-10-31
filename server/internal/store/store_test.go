@@ -33,7 +33,7 @@ func newStore(t *testing.T) *Store {
 	}
 	if IsPostgresDSN(dsn) {
 		truncate := func() {
-			s.db.Exec(`TRUNCATE users, identities, sessions, email_tokens, srs_cards, reviews, attempts, lesson_progress, lesson_step_progress, bot_reminders, support_messages, link_visits, bot_outbox, notifications, notification_recipients, donations, broadcasts, currency_ledger, user_daily_activity, streak_repairs, user_answer_streak, quests, quest_claims, products, promo_codes, promo_code_products, promo_redemptions, user_entitlements, bot_prefs, payments, tariff_events`)
+			s.db.Exec(`TRUNCATE users, identities, sessions, email_tokens, srs_cards, reviews, attempts, lesson_progress, lesson_step_progress, bot_reminders, support_messages, link_visits, bot_outbox, notifications, notification_recipients, donations, broadcasts, currency_ledger, user_daily_activity, streak_repairs, user_answer_streak, quests, quest_claims, products, promo_codes, promo_code_products, promo_redemptions, user_entitlements, bot_prefs, payments, tariff_events, repeat_sessions, repeat_state, repeat_nudges`)
 		}
 		truncate()
 		restoreEconomySettings(t, s)

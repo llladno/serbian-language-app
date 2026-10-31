@@ -360,6 +360,35 @@ func TestSendMessageWithChannelKeyboardHasSubscribeAndCheck(t *testing.T) {
 	}
 }
 
+func TestSendMessageWithRepeatNudgeKeyboardHasTheButtonAndItsOwnOptOut(t *testing.T) {
+	var markup string
+	withTestServer(t, func(w http.ResponseWriter, r *http.Request) {
+		r.ParseForm()
+		markup = r.Form.Get("reply_markup")
+		w.Write([]byte(`{"ok":true,"result":true}`))
+	})
+	err := SendMessageWithButton("tok", 7, "hi", &InlineButton{Label: "Повторить", RepeatNudgeURL: "https://ucimo.ru/repeat"})
+	if err != nil {
+		t.Fatalf("send: %v", err)
+	}
+	var got struct {
+		Keyboard [][]map[string]any `json:"inline_keyboard"`
+	}
+	if err := json.Unmarshal([]byte(markup), &got); err != nil {
+		t.Fatalf("reply_markup %q: %v", markup, err)
+	}
+	if len(got.Keyboard) != 2 || got.Keyboard[0][0]["text"] != "Повторить" {
+		t.Fatalf("keyboard = %v, want the repeat button over the opt-out", got.Keyboard)
+	}
+	app, _ := got.Keyboard[0][0]["web_app"].(map[string]any)
+	if app["url"] != "https://ucimo.ru/repeat" {
+		t.Errorf("first button = %v, want a Mini App button to /repeat", got.Keyboard[0][0])
+	}
+	if got.Keyboard[1][0]["callback_data"] != CallbackRepeatNudgeOff || got.Keyboard[1][0]["text"] != RepeatNudgeOffLabel {
+		t.Errorf("second button = %v, want the repeat-only opt-out", got.Keyboard[1][0])
+	}
+}
+
 func TestAnswerCallbackQuerySendsIDAndText(t *testing.T) {
 	var form url.Values
 	var path string

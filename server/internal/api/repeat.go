@@ -2,6 +2,7 @@ package api
 
 import (
 	"hash/fnv"
+	"log"
 	"net/http"
 	"time"
 
@@ -113,6 +114,11 @@ func (h handlers) getRepeat(w http.ResponseWriter, r *http.Request) {
 	audioOff := r.URL.Query().Get("audio") == "off"
 	now := h.Now()
 	day := us.Today(now)
+	// Recorded for everyone: a learner with unlimited repeats has no stored batch to show it, and
+	// the Telegram nudge must not write to someone who is using the button.
+	if err := us.NoteRepeatOpened(now); err != nil {
+		log.Printf("repeat: note open for %s: %v", ac.UserID, err)
+	}
 
 	unlimited, err := h.Store.HasUnlimitedRepeat(ac.UserID, now)
 	if err != nil {
