@@ -162,3 +162,27 @@ func TestTooShortRecognisesAPieceOfTheAnswer(t *testing.T) {
 		t.Error("a part of a word is a misspelling, not a short answer")
 	}
 }
+
+func TestCheckFormsLabelledAcceptsLabelBeforeForm(t *testing.T) {
+	accept := [][]string{{"čitam"}, {"čitaš"}, {"čita"}}
+	labels := []string{"ja", "ti", "on/ona/ono"}
+	cases := []struct {
+		name    string
+		answers []string
+		want    []bool
+	}{
+		{"bare forms", []string{"čitam", "čitaš", "čita"}, []bool{true, true, true}},
+		{"label before form", []string{"ja čitam", "ti čitaš", "ona čita"}, []bool{true, true, true}},
+		{"another label of the slash group", []string{"ja čitam", "ti čitaš", "ono čita"}, []bool{true, true, true}},
+		{"someone else's label stays wrong", []string{"ti čitam", "ja čitaš", "mi čita"}, []bool{false, false, false}},
+		{"the ending stays strict", []string{"ja čitaš", "ti čitam", "ja čitat"}, []bool{false, false, false}},
+	}
+	for _, c := range cases {
+		got := CheckFormsLabelled(c.answers, accept, labels)
+		for i, r := range got {
+			if r.OK != c.want[i] {
+				t.Errorf("%s: cell %d (%q) OK=%v, want %v", c.name, i, c.answers[i], r.OK, c.want[i])
+			}
+		}
+	}
+}

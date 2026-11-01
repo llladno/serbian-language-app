@@ -170,6 +170,13 @@ func CheckMatch(got map[string]string, pairs [][2]string) (bool, map[string]bool
 
 // CheckForms grades a conjugation exercise field-by-field.
 func CheckForms(answers []string, acceptForms [][]string) []Result {
+	return CheckFormsLabelled(answers, acceptForms, nil)
+}
+
+// CheckFormsLabelled is CheckForms where each field sits next to its pronoun label («ja», «on/ona/ono»).
+// Writing the label in front of the form («ja čitam») is a longer answer, not a mistake, so the form
+// with any one of the label's words before it is accepted too. The ending is graded as strictly as ever.
+func CheckFormsLabelled(answers []string, acceptForms [][]string, labels []string) []Result {
 	out := make([]Result, len(acceptForms))
 	for i, accept := range acceptForms {
 		ans := ""
@@ -177,6 +184,27 @@ func CheckForms(answers []string, acceptForms [][]string) []Result {
 			ans = answers[i]
 		}
 		out[i] = check(ans, accept, false)
+		if out[i].OK || i >= len(labels) {
+			continue
+		}
+		var withLabel []string
+		for _, l := range strings.Split(labels[i], "/") {
+			for _, a := range accept {
+				withLabel = append(withLabel, strings.TrimSpace(l)+" "+a)
+			}
+		}
+		if r := check(ans, withLabel, false); r.OK {
+			// Report the bare form as the correct spelling, not the form with the label.
+			if r.Typo {
+				for _, a := range accept {
+					if strings.HasSuffix(r.Expected, " "+a) {
+						r.Expected = a
+						break
+					}
+				}
+			}
+			out[i] = r
+		}
 	}
 	return out
 }

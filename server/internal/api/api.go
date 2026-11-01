@@ -657,7 +657,7 @@ func (h handlers) checkExercise(w http.ResponseWriter, r *http.Request) {
 
 	switch ex.Type {
 	case "conjugate":
-		results := checker.CheckForms(req.Answers, ex.AcceptForms)
+		results := checker.CheckFormsLabelled(req.Answers, ex.AcceptForms, ex.Forms)
 		allOK := true
 		for _, r := range results {
 			if !r.OK {
@@ -730,8 +730,8 @@ func (h handlers) checkExercise(w http.ResponseWriter, r *http.Request) {
 			res = checker.Result{OK: false, Expected: res.Expected}
 		}
 		if !res.OK && ex.Type == "fill_blank" {
-			// Typing the whole sentence into the blank is not a mistake.
-			if full := check(req.Answer, content.FillSentences(ex.Prompt, accept)); full.OK {
+			// Typing the whole sentence, or the word with some neighbouring words of the prompt, is not a mistake.
+			if full := check(req.Answer, content.FillAnswers(ex.Prompt, accept)); full.OK {
 				res = full
 			}
 		}

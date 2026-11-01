@@ -371,3 +371,110 @@ func TestRealCourseWordBankLookalikeTilesStayWrong(t *testing.T) {
 	}
 	t.Logf("%d lookalike-tile answers stayed wrong", checked)
 }
+
+// Copying the neighbouring words of a fill_blank prompt into the box («___ mama» → "moja mama") is a longer
+// answer, not a mistake: every window of the filled sentence that contains the gap must pass.
+func TestRealCourseFillBlankAcceptsNeighbourWords(t *testing.T) {
+	c, err := content.Load("../../../content")
+	if err != nil {
+		t.Skipf("real content tree not available: %v", err)
+	}
+	st, err := store.Open(":memory:")
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { st.Close() })
+	if _, err := st.EnsureUserByName("tester"); err != nil {
+		t.Fatal(err)
+	}
+	h := Handler(Deps{
+		Course: func() *content.Course { return c },
+		Store:  st,
+		Now:    func() time.Time { return fixedNow },
+		Stale:  func() bool { return false },
+		Config: config.Config{AppBaseURL: testBaseURL},
+	})
+
+	checked := 0
+	for lesson, blocks := range c.Exercises {
+		for _, b := range blocks {
+			for _, e := range b.Exercises {
+				if e.Type != "fill_blank" {
+					continue
+				}
+				for _, ans := range content.FillAnswers(e.Prompt, e.Accept) {
+					body, _ := json.Marshal(map[string]string{"answer": ans})
+					rr := do(h, "POST", "/api/lessons/"+lesson+"/exercises/"+e.ID+"/check", string(body))
+					var res struct {
+						OK bool `json:"ok"`
+					}
+					if err := json.Unmarshal(rr.Body.Bytes(), &res); err != nil {
+						t.Fatalf("%s: %v (%s)", e.ID, err, rr.Body)
+					}
+					if !res.OK {
+						t.Errorf("%s: %q (prompt %q) is marked wrong: %d %s", e.ID, ans, e.Prompt, rr.Code, rr.Body)
+					}
+					checked++
+				}
+			}
+		}
+	}
+	if checked == 0 {
+		t.Fatal("no fill_blank answers checked")
+	}
+	t.Logf("%d answers checked", checked)
+}
+
+// A conjugation cell shows its pronoun next to the box; writing it before the form («ja čitam») is a
+// longer answer, not a mistake.
+func TestRealCourseConjugateAcceptsLabelBeforeForm(t *testing.T) {
+	c, err := content.Load("../../../content")
+	if err != nil {
+		t.Skipf("real content tree not available: %v", err)
+	}
+	st, err := store.Open(":memory:")
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { st.Close() })
+	if _, err := st.EnsureUserByName("tester"); err != nil {
+		t.Fatal(err)
+	}
+	h := Handler(Deps{
+		Course: func() *content.Course { return c },
+		Store:  st,
+		Now:    func() time.Time { return fixedNow },
+		Stale:  func() bool { return false },
+		Config: config.Config{AppBaseURL: testBaseURL},
+	})
+
+	checked := 0
+	for lesson, blocks := range c.Exercises {
+		for _, b := range blocks {
+			for _, e := range b.Exercises {
+				if e.Type != "conjugate" || len(e.Forms) == 0 {
+					continue
+				}
+				ans := make([]string, len(e.Forms))
+				for i := range ans {
+					ans[i] = strings.Split(e.Forms[i], "/")[0] + " " + e.AcceptForms[i][0]
+				}
+				body, _ := json.Marshal(map[string]any{"answers": ans})
+				rr := do(h, "POST", "/api/lessons/"+lesson+"/exercises/"+e.ID+"/check", string(body))
+				var res struct {
+					OK bool `json:"ok"`
+				}
+				if err := json.Unmarshal(rr.Body.Bytes(), &res); err != nil {
+					t.Fatalf("%s: %v (%s)", e.ID, err, rr.Body)
+				}
+				if !res.OK {
+					t.Errorf("%s: %q is marked wrong: %d %s", e.ID, ans, rr.Code, rr.Body)
+				}
+				checked++
+			}
+		}
+	}
+	if checked == 0 {
+		t.Fatal("no conjugate exercises found")
+	}
+}

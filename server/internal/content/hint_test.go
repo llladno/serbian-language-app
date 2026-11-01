@@ -47,3 +47,34 @@ func TestFillSentences(t *testing.T) {
 		}
 	}
 }
+
+func TestFillAnswers(t *testing.T) {
+	cases := []struct {
+		prompt string
+		accept []string
+		want   []string
+	}{
+		// the blank word, with any run of the neighbouring prompt words
+		{"«Моя мама» → ___ mama.", []string{"moja"}, []string{"moja", "moja mama."}},
+		{"Ja sam u ___ danas.", []string{"centru"}, []string{"centru", "u centru", "centru danas.", "u centru danas.", "sam u centru", "sam u centru danas.", "Ja sam u centru", "Ja sam u centru danas."}},
+		{"Что-то без пропуска", []string{"x"}, nil},
+	}
+	for _, c := range cases {
+		got := FillAnswers(c.prompt, c.accept)
+		if c.want == nil {
+			if got != nil {
+				t.Errorf("FillAnswers(%q) = %q, want nil", c.prompt, got)
+			}
+			continue
+		}
+		set := map[string]bool{}
+		for _, g := range got {
+			set[g] = true
+		}
+		for _, w := range c.want {
+			if !set[w] {
+				t.Errorf("FillAnswers(%q) = %q, missing %q", c.prompt, got, w)
+			}
+		}
+	}
+}
