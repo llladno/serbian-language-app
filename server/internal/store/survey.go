@@ -9,8 +9,10 @@ import (
 )
 
 // SurveyMinLessons is how many finished lessons a learner needs before the
-// feedback survey is offered.
-const SurveyMinLessons = 3
+// feedback survey is offered. Lessons are short now (a topic is a chain of 3-5
+// of them), so it takes six to have seen enough to judge the practice and the
+// pace: the first topics plus the start of the third.
+const SurveyMinLessons = 6
 
 // SurveyAnswers is one filled-in survey. Every field but PainText is required.
 type SurveyAnswers struct {

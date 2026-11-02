@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-func TestSurveyOfferIsOncePerLearnerAndNeedsThreeLessons(t *testing.T) {
+func TestSurveyOfferIsOncePerLearnerAndNeedsSixLessons(t *testing.T) {
 	s, err := Open(":memory:")
 	if err != nil {
 		t.Fatal(err)
@@ -16,7 +16,7 @@ func TestSurveyOfferIsOncePerLearnerAndNeedsThreeLessons(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	for i, l := range []string{"00", "01", "02"} {
+	for i, l := range []string{"00", "01", "01b", "02", "02b", "02c"} {
 		if offer, err := s.SurveyOffer(id, now); err != nil || offer {
 			t.Fatalf("after %d lessons: offer=%v err=%v", i, offer, err)
 		}
@@ -25,7 +25,7 @@ func TestSurveyOfferIsOncePerLearnerAndNeedsThreeLessons(t *testing.T) {
 		}
 	}
 	if offer, err := s.SurveyOffer(id, now); err != nil || !offer {
-		t.Fatalf("after 3 lessons: offer=%v err=%v", offer, err)
+		t.Fatalf("after 6 lessons: offer=%v err=%v", offer, err)
 	}
 	if offer, _ := s.SurveyOffer(id, now); offer {
 		t.Fatal("offered twice")

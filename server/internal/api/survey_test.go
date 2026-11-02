@@ -8,7 +8,7 @@ import (
 
 const goodSurvey = `{"rating":4,"likes":["lessons","audio"],"pains":["hard"],"pain_text":" слишком быстро ","purpose":"move","wish":"speaking"}`
 
-func TestSurveyOfferedOnceAfterThirdLesson(t *testing.T) {
+func TestSurveyOfferedOnceAfterSixthLesson(t *testing.T) {
 	h, st, id, c := economyAPI(t)
 	type offer struct {
 		Offer  bool `json:"offer"`
@@ -21,19 +21,19 @@ func TestSurveyOfferedOnceAfterThirdLesson(t *testing.T) {
 		}
 		return decodeBody[offer](t, res)
 	}
-	for _, l := range []string{"00", "01"} {
+	for _, l := range []string{"00", "01", "01b", "02", "02b"} {
 		if err := st.User(id).SetLessonStatus(l, "done", fixedNow); err != nil {
 			t.Fatal(err)
 		}
 	}
 	if get().Offer {
-		t.Fatal("offered after only two lessons")
+		t.Fatal("offered after only five lessons")
 	}
-	if err := st.User(id).SetLessonStatus("02", "done", fixedNow); err != nil {
+	if err := st.User(id).SetLessonStatus("02c", "done", fixedNow); err != nil {
 		t.Fatal(err)
 	}
 	if o := get(); !o.Offer || o.Reward != 10 {
-		t.Fatalf("after third lesson: %+v, want offer with reward 10", o)
+		t.Fatalf("after sixth lesson: %+v, want offer with reward 10", o)
 	}
 	if get().Offer {
 		t.Fatal("offered a second time")

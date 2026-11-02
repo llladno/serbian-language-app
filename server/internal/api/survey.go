@@ -29,7 +29,7 @@ var (
 )
 
 // getSurvey handles GET /api/me/survey. It answers {offer: true, reward: N}
-// exactly once per learner — the first call after their third finished lesson —
+// exactly once per learner — the first call after their sixth finished lesson —
 // and records that the offer was made, so a closed tab never brings it back.
 func (h handlers) getSurvey(w http.ResponseWriter, r *http.Request) {
 	ac, ok := authFrom(r)
