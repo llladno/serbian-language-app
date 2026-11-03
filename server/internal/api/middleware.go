@@ -38,11 +38,13 @@ const sessionTTL = 30 * 24 * time.Hour
 // editor (element-click picker) and for Webvisor/session-replay/click-map
 // overlays, all of which embed the real page in an iframe from that origin;
 // without it every one of those just fails to load with a generic error.
+// https://s3.twcstorage.ru is the object store the story clips and frames are served from (img-src, media-src).
 const csp = "default-src 'self'; " +
 	"script-src 'self' https://telegram.org https://mc.yandex.ru https://mc.yandex.com; " +
 	"style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
 	"font-src 'self' data: https://fonts.gstatic.com; " +
-	"img-src 'self' data: https://mc.yandex.ru https://mc.yandex.com; " +
+	"img-src 'self' data: https://s3.twcstorage.ru https://mc.yandex.ru https://mc.yandex.com; " +
+	"media-src 'self' https://s3.twcstorage.ru; " +
 	"connect-src 'self' https://mc.yandex.ru https://mc.yandex.com; " +
 	"base-uri 'self'; " +
 	"form-action 'self'; " +
@@ -80,7 +82,9 @@ func SecurityHeaders(cfg config.Config, next http.Handler) http.Handler {
 // Origin/Referer header at all — CSRF is a browser-borne-credential problem
 // and doesn't apply here. Each has its own, unrelated authentication (a
 // shared secret / HMAC signature, checked in the handler itself), so being
-// unauthenticated with respect to origin checking is not a gap.
+// unauthenticated with respect to origin checking is not a gap. /api/service/
+// is exempt for the same reason: it is called by the publishing scripts with a
+// bearer token, never with a cookie.
 func checkOrigin(cfg config.Config, next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
@@ -88,7 +92,8 @@ func checkOrigin(cfg config.Config, next http.Handler) http.Handler {
 			next.ServeHTTP(w, r)
 			return
 		}
-		if r.URL.Path == "/api/telegram/webhook" || r.URL.Path == "/api/tribute/webhook" || r.URL.Path == "/api/tbank/webhook" {
+		if r.URL.Path == "/api/telegram/webhook" || r.URL.Path == "/api/tribute/webhook" || r.URL.Path == "/api/tbank/webhook" ||
+			strings.HasPrefix(r.URL.Path, "/api/service/") {
 			next.ServeHTTP(w, r)
 			return
 		}

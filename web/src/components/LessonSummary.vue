@@ -19,12 +19,21 @@ import ArcGauge from './ArcGauge.vue'
 import AnimatedNumber from './AnimatedNumber.vue'
 import SparkleBurst from './SparkleBurst.vue'
 
-const props = defineProps<{
-  title: string
-  reward: number
-  stats?: LessonStats
-  next: LessonRef | null
-}>()
+const props = withDefaults(
+  defineProps<{
+    title: string
+    reward: number
+    stats?: LessonStats
+    next: LessonRef | null
+    /** The screen is also the end of a story: it brings its own heading and the way back. */
+    heading?: string
+    backTo?: string
+    backLabel?: string
+    /** Tighter spacing, for a short screen where the whole summary has to fit without scrolling. */
+    compact?: boolean
+  }>(),
+  { heading: 'Урок пройден', backTo: '/course', backLabel: 'К курсу', compact: false },
+)
 const wallet = useWalletStore()
 
 // A lesson with nothing to answer has no percentage to draw an arc for.
@@ -84,16 +93,16 @@ if (percent.value === null) timers.push(window.setTimeout(reveal, 500))
 </script>
 
 <template>
-  <section class="summary" :class="{ revealed }" data-test="lesson-summary">
+  <section class="summary" :class="{ revealed, compact }" data-test="lesson-summary">
     <header class="head">
-      <h1 class="text-[1.375rem] font-extrabold leading-tight">Урок пройден</h1>
+      <h1 class="text-[1.375rem] font-extrabold leading-tight">{{ heading }}</h1>
       <p class="mt-1 text-sm text-[var(--muted)]">{{ title }}</p>
     </header>
 
     <!-- Room above the arc: the sparkles that float up from it need it. -->
     <ArcGauge
       v-if="percent !== null"
-      class="mt-12"
+      :class="compact ? 'mt-5' : 'mt-12'"
       :percent="percent"
       :gold="percent >= 100"
       @landed="reveal"
@@ -130,13 +139,14 @@ if (percent.value === null) timers.push(window.setTimeout(reveal, 500))
       >
         Следующий урок
       </RouterLink>
+      <slot name="extra" />
       <RouterLink
-        to="/course"
+        :to="backTo"
         class="btn w-full"
         :class="next ? 'btn-ghost' : 'btn-primary'"
         data-test="summary-course"
       >
-        К курсу
+        {{ backLabel }}
       </RouterLink>
     </div>
   </section>
@@ -237,6 +247,25 @@ if (percent.value === null) timers.push(window.setTimeout(reveal, 500))
   height: 130px;
   transform: translate(-50%, -50%);
   image-rendering: pixelated;
+}
+
+/* A short screen: the same screen, closer together. */
+.compact .cheer {
+  margin-top: 0.75rem;
+  font-size: 1rem;
+}
+.compact .stats {
+  margin-top: 0.75rem;
+  padding: 0.25rem 0;
+}
+.compact .tile {
+  padding: 0.5rem 0.5rem;
+}
+.compact .actions {
+  margin-top: 0.75rem;
+}
+.compact :deep(.gauge) {
+  zoom: 0.85;
 }
 
 @keyframes rise {

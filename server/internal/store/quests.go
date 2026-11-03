@@ -64,6 +64,12 @@ func (u *UserStore) QuestCounters(now time.Time) (economy.Counters, error) {
 		return c, fmt.Errorf("counters: reviews: %w", err)
 	}
 
+	// A finished story is the same fact the story list shows as «прослушана»: the row got its completed_at.
+	if err := u.db.QueryRow(`SELECT COUNT(*) FROM story_progress WHERE user_id = ? AND completed_at <> ''`,
+		u.user).Scan(&c.StoriesCompleted); err != nil {
+		return c, fmt.Errorf("counters: stories: %w", err)
+	}
+
 	_, best, err := u.AnswerStreak()
 	if err != nil {
 		return c, err

@@ -65,6 +65,7 @@ func TestQuestValue(t *testing.T) {
 		ReviewsDone:      320,
 		AnswerBest:       11,
 		StreakDays:       9,
+		StoriesCompleted: 3,
 		CompletedLessons: map[string]bool{"00": true, "01": true, "02": true, "16": true},
 	}
 	cases := []struct {
@@ -76,6 +77,7 @@ func TestQuestValue(t *testing.T) {
 		{"reviews_done", "", 320},
 		{"correct_in_row", "", 11},
 		{"streak_days", "", 9},
+		{"stories_completed", "", 3},
 		{"phase_completed", "1", 75}, // 3 of 4
 		{"phase_completed", "2", 50}, // 1 of 2
 		{"phase_completed", "9", 0},  // unknown phase

@@ -34,6 +34,9 @@ import type {
   Order,
   DevOrder,
   RepeatResponse,
+  Story,
+  StoryListItem,
+  StoryVerdict,
 } from './types'
 import { getStoredAttribution, getStoredReferral } from './attribution'
 
@@ -147,6 +150,28 @@ export const api = {
     request<void>('/me', { method: 'DELETE', body: JSON.stringify({ password }) }),
   sendSupportMessage: (message: string) =>
     request<{ status: string }>('/me/support', { method: 'POST', body: JSON.stringify({ message }) }),
+  stories: () => request<{ items: StoryListItem[] }>('/stories'),
+  story: (slug: string) => request<Story>(`/stories/${encodeURIComponent(slug)}`),
+  answerStory: (slug: string, kind: 'inline' | 'final', index: number, choice: string, pairs?: Record<string, string>) =>
+    request<StoryVerdict>(`/stories/${encodeURIComponent(slug)}/answer`, {
+      method: 'POST',
+      body: JSON.stringify({ kind, index, choice, pairs }),
+    }),
+  storyProgress: (slug: string, body: { pass: number; completed: boolean; score: number; total: number }) =>
+    request<{ reward: number; balance: number }>(`/stories/${encodeURIComponent(slug)}/progress`, {
+      method: 'POST',
+      body: JSON.stringify(body),
+    }),
+  storyEvent: (slug: string, kind: string, detail = '') =>
+    request<void>(`/stories/${encodeURIComponent(slug)}/events`, {
+      method: 'POST',
+      body: JSON.stringify({ kind, detail }),
+    }),
+  buyStory: (slug: string) =>
+    request<{ paid: number; balance: number }>(`/stories/${encodeURIComponent(slug)}/buy`, {
+      method: 'POST',
+      headers: { 'Idempotency-Key': `${slug}-${Date.now()}` },
+    }),
   surveyOffer: () => request<{ offer: boolean; reward: number }>('/me/survey'),
   answerSurvey: (answers: SurveyAnswers) =>
     request<{ status: string; reward: number }>('/me/survey', { method: 'POST', body: JSON.stringify(answers) }),

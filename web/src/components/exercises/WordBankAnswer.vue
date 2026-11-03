@@ -4,6 +4,7 @@ import { RefreshCw } from 'lucide-vue-next'
 import { api } from '../../api'
 import { useWrongGoesToEnd } from '../../lib/lessonRules'
 import { useScript } from '../../lib/useScript'
+import { shuffled as mix } from '../../lib/shuffle'
 import type { CheckResult, LessonAttempt } from '../../types'
 import BottomBar from '../BottomBar.vue'
 import HintButton from '../HintButton.vue'
@@ -24,9 +25,7 @@ const emit = defineEmits<{ graded: [ok: boolean]; ungraded: [] }>()
 const { show } = useScript()
 
 // chips carry a stable index so duplicates ("se", "se") stay distinct
-const chips = ref(
-  props.bank.map((text, i) => ({ id: i, text })).sort(() => Math.random() - 0.5),
-)
+const chips = ref(mix(props.bank.map((text, i) => ({ id: i, text }))))
 const picked = ref<number[]>([])
 const result = ref<CheckResult | null>(null)
 const fromPrior = ref(!!props.prior)

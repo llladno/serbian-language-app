@@ -9,6 +9,7 @@ export default defineConfig({
       '/api': 'http://localhost:8080',
       '/img': 'http://localhost:8080',
       '/audio': 'http://localhost:8080',
+      '/story-media': 'http://localhost:8080',
     },
   },
   build: { outDir: 'dist' },

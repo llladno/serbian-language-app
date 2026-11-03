@@ -1,0 +1,90 @@
+# История «Prvi dan» — исходник для скриптов историй (см. docs/STORIES_PLAN.md).
+# Конец уровня 1. Один непрерывный разговор в коридоре больницы в Белграде, без скачков времени.
+# Цепочка: знакомство → как идёт первый день → Милошу нужен английский для пациента → Майя помогает → Милош хвалит её сербский →
+# откуда она → где пациент → идут к нему. Каждая реплика отвечает на предыдущую.
+# Допущены немногие незнакомые слова (≤ 15% от слов реплик), понятные по переводу или похожие на русские.
+slug: prvi-dan
+title_sr: "Prvi dan"
+title_ru: "Первый день"
+level: "1"
+tier: medium
+is_demo: true
+# Урок, к которому ученик знает ≥ 85% слов истории (check_story.py считает): до него в списке историй предупреждение.
+recommended_lesson: "05c"
+# Сложность для фильтра и плашки: 1 лёгкая, 2 средняя, 3 сложная (все истории на словах уровня 1 лёгкие).
+difficulty: 1
+
+# Слова вне уроков уровня 1, которые автор разрешает; check_story.py держит их долю в репликах ≤ 15%.
+new_words: [maja, miloš, prvi, došla, imamo, pacijent, pacijenta, engleske, idemo, bravo]
+
+voices:
+  Maja: sr-RS-SophieNeural
+  Miloš: sr-RS-NicholasNeural
+  ru: ru-RU-SvetlanaNeural
+
+voice_offsets_db: {}
+
+# Кадры: 5 сцен в одном месте и в одно время (утро, один коридор), меняются только позы и пузыри. Стиль: docs/story-image-style.md.
+scenes:
+  - id: 1
+    prompt: "Morning in a hospital corridor in Belgrade: Miloš in a white coat greets Maja, who has just arrived with a burgundy shoulder bag, they shake hands"
+  - id: 2
+    prompt: "Same corridor: Miloš asks kindly how the first day is going, Maja with a tired but cheerful smile"
+  - id: 3
+    prompt: "Same corridor: Miloš holds a blank patient folder and looks a bit worried, Maja smiles and gives a confident thumbs up"
+  - id: 4
+    prompt: "Same corridor: Maja talks modestly with a hand on her chest, Miloš listens impressed, a thought bubble with three speech-balloon pictograms"
+  - id: 5
+    prompt: "Same corridor: Miloš points to a door ahead of them, Maja looks at it ready to go"
+
+sentences:
+  - {n: 1,  who: Miloš, scene: 1, sr: "Dobro jutro! Izvolite?",                                                      ru: "Доброе утро! Чем могу помочь?"}
+  - {n: 2,  who: Maja, scene: 1, sr: "Dobro jutro! Ja sam Maja. Radim kao lekar.",                                  ru: "Доброе утро! Я Майя. Я работаю врачом."}
+  - {n: 3,  who: Miloš, scene: 1, sr: "Aha! Dobro došla! Ja sam Miloš. Takođe lekar.",                              ru: "Ага! Добро пожаловать! Я Милош. Тоже врач."}
+  - {n: 4,  who: Maja, scene: 1, sr: "Drago mi je. Danas je prvi dan.",                                     ru: "Приятно познакомиться. Сегодня первый день."}
+  - {n: 5,  who: Miloš, scene: 2, sr: "Prvi dan! Kako ide?",                                                        ru: "Первый день! Как идёт?"}
+  - {n: 6,  who: Maja, scene: 2, sr: "Dobro. Malo sam umorna, ali ne žalim se!",                                   ru: "Хорошо. Немного устала, но не жалуюсь!"}
+  - {n: 7,  who: Miloš, scene: 3, sr: "Imamo pacijenta iz Engleske. On ne govori srpski, a ja govorim malo engleski.", ru: "У нас пациент из Англии. Он не говорит по-сербски, а я немного говорю по-английски."}
+  - {n: 8,  who: Maja, scene: 3, sr: "Nema problema. Ja govorim engleski.",                                        ru: "Без проблем. Я говорю по-английски."}
+  - {n: 9,  who: Miloš, scene: 3, sr: "Hvala! Dobro govoriš i srpski!",                                        ru: "Спасибо! И по-сербски ты хорошо говоришь!"}
+  - {n: 10, who: Maja, scene: 4, sr: "Ne znam dobro srpski.",                                                      ru: "Я плохо знаю сербский."}
+  - {n: 11, who: Miloš, scene: 4, sr: "Ali govoriš! Odakle si?",                                                    ru: "Но ты же говоришь! Откуда ты?"}
+  - {n: 12, who: Maja, scene: 4, sr: "Iz Rusije. Ali sada živim u Beogradu.",                                      ru: "Из России. Но сейчас я живу в Белграде."}
+  - {n: 13, who: Miloš, scene: 4, sr: "Ruski, engleski, srpski. Bravo!",                                            ru: "Русский, английский, сербский. Браво!"}
+  - {n: 14, who: Maja, scene: 5, sr: "Hvala! Pacijent je ovde?",                                                   ru: "Спасибо! Пациент здесь?"}
+  - {n: 15, who: Miloš, scene: 5, sr: "Ovde je. Idemo?",                                                            ru: "Здесь. Идём?"}
+  - {n: 16, who: Maja, scene: 5, sr: "Idemo!",                                                                     ru: "Идём!"}
+
+quiz_inline:
+  - {after: 3,  hint: "тоже",         options: [takođe, danas, sada],       answer: takođe}
+  - {after: 6,  hint: "не жалуюсь",   options: ["ne žalim se", "ne znam", "ne radim"], answer: "ne žalim se"}
+  - {after: 8,  hint: "говорю",       options: [govorim, radim, učim],      answer: govorim}
+  - {after: 12, hint: "живу",         options: [živim, radim, učim],       answer: živim}
+
+quiz_final:
+  - kind: plot
+    prompt: "Куда Майя и Милош идут в конце разговора?"
+    options: ["К пациенту", "На обед", "Домой"]
+    answer: "К пациенту"
+  - kind: word
+    prompt: "Ovde"
+    options: ["здесь", "там", "потом"]
+    answer: "здесь"
+  - kind: listen
+    sentence: 12
+    prompt: "Что значит эта фраза?"
+    options: ["Из России. Но сейчас я живу в Белграде.", "Из России. Но сейчас я работаю в Белграде.", "Из Сербии. Я живу в Нови-Саде."]
+    answer: "Из России. Но сейчас я живу в Белграде."
+  - kind: blank
+    sentence: 2
+    mask: "lekar"
+    options: ["lekar", "ovde", "malo"]
+  - kind: bank
+    sentence: 8
+    extra: ["radim", "sam"]
+  - kind: match
+    pairs:
+      - ["Dobro jutro", "Доброе утро"]
+      - ["Drago mi je", "Приятно познакомиться"]
+      - ["Nema problema", "Без проблем"]
+      - ["Ne žalim se", "Не жалуюсь"]

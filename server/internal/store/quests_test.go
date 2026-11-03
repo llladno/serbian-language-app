@@ -60,6 +60,33 @@ func TestQuestCountersReadRealProgress(t *testing.T) {
 	}
 }
 
+// A story is finished when its progress row has a completed_at: listened to the end and answered. A story left half-way
+// does not count, and neither does a story somebody else finished.
+func TestQuestCountersCountFinishedStories(t *testing.T) {
+	s := newStore(t)
+	a, _ := s.CreateUser("Слушатель")
+	b, _ := s.CreateUser("Другой")
+	at := time.Date(2026, 11, 2, 10, 0, 0, 0, belgrade(t))
+	for _, r := range []struct{ user, slug, done string }{
+		{a, "one", "2026-11-02T09:00:00Z"},
+		{a, "two", "2026-11-02T09:10:00Z"},
+		{a, "half", ""},
+		{b, "one", "2026-11-02T09:00:00Z"},
+	} {
+		if _, err := s.db.Exec(`INSERT INTO story_progress (user_id, slug, completed_at, updated_at) VALUES (?, ?, ?, ?)`,
+			r.user, r.slug, r.done, "2026-11-02T09:00:00Z"); err != nil {
+			t.Fatalf("seed progress: %v", err)
+		}
+	}
+	c, err := s.User(a).QuestCounters(at)
+	if err != nil {
+		t.Fatalf("counters: %v", err)
+	}
+	if c.StoriesCompleted != 2 {
+		t.Fatalf("StoriesCompleted = %d, want 2 (two finished, one half-way, one somebody else's)", c.StoriesCompleted)
+	}
+}
+
 // "Learned a word" must mean what the rest of the app already means by it.
 // CardStats — the number the learner's own dashboard shows as "знаю" — counts
 // state = 'review', so this counts the same state, narrowed to vocab. Counting

@@ -1,0 +1,91 @@
+# Демо-история «Drago mi je» — исходник для скриптов историй (см. docs/STORIES_PLAN.md).
+# Лексика только уровня 1: scripts/check_story.py сверяет каждое слово с текстом уроков уровня 1.
+slug: drago-mi-je
+title_sr: "Drago mi je"
+title_ru: "Приятно познакомиться"
+level: "1"
+tier: short
+is_demo: false
+# Время на карточке, минут: поверх оценки (три прохода, паузы, вопросы), которая для этой истории выходит 4.
+approx_minutes: 3
+# Урок, к которому ученик знает ≥ 85% слов истории (check_story.py считает): до него в списке историй предупреждение.
+recommended_lesson: "04b"
+# Сложность для фильтра и плашки: 1 лёгкая, 2 средняя, 3 сложная (все истории на словах уровня 1 лёгкие).
+difficulty: 1
+
+# Голоса edge-tts. Сербский подаётся кириллицей (sr_lat_to_cyr из scripts/tts.py).
+voices:
+  Ana: sr-RS-SophieNeural
+  Marko: sr-RS-NicholasNeural
+  ru: ru-RU-SvetlanaNeural
+
+# Громкость готовых записей: скрипт выравнивает всё до −16 LUFS, здесь поправка в дБ для героя и языка (ключ «герой_язык»).
+# Русский Марко звучал громче остальных (пики до −14 LUFS в моменте), поэтому тише на 2 дБ.
+voice_offsets_db:
+  Marko_ru: -2
+
+# Кадры: 4 сцены, предыстория «день переезда» (её рассказывают только картинки). Стиль: docs/story-image-style.md,
+# полные промты: docs/story-image-prompts-drago-mi-je.md.
+scenes:
+  - id: 1
+    prompt: "Moving day: Ana with a box and a houseplant at the entrance, Marko walks his bicycle across the courtyard and waves, morning light"
+  - id: 2
+    prompt: "Marko talks too fast with a hand on his chest, Ana raises a palm to slow him down, a bubble of squiggles, late morning"
+  - id: 3
+    prompt: "Ana and Marko on the bench sharing a pastry, Ana pinches her fingers for 'a little', a thought bubble of a snowy onion-domed cathedral, midday"
+  - id: 4
+    prompt: "Evening, the flat is unpacked: Ana in the open door with a key waves, Marko leads his bicycle away and waves back, golden light"
+
+sentences:
+  - {n: 1,  who: Marko, scene: 1, sr: "Zdravo!",                                  ru: "Привет!"}
+  - {n: 2,  who: Ana,   scene: 1, sr: "Ćao! Kako si?",                            ru: "Привет! Как дела?"}
+  - {n: 3,  who: Marko, scene: 1, sr: "Dobro, hvala. A ti?",                      ru: "Хорошо, спасибо. А ты?"}
+  - {n: 4,  who: Ana,   scene: 1, sr: "Može. Kako se zoveš?",                     ru: "Нормально. Как тебя зовут?"}
+  - {n: 5,  who: Marko, scene: 2, sr: "Zovem se Marko.",                          ru: "Меня зовут Марко."}
+  - {n: 6,  who: Ana,   scene: 2, sr: "Izvini, ne razumem. Polako, molim.",       ru: "Извини, не понимаю. Помедленнее, пожалуйста."}
+  - {n: 7,  who: Marko, scene: 2, sr: "Marko. Zovem se Marko. Drago mi je.",      ru: "Марко. Меня зовут Марко. Приятно познакомиться."}
+  - {n: 8,  who: Ana,   scene: 2, sr: "Aha! Ja sam Ana. Takođe.",                 ru: "А! Я Ана. Взаимно."}
+  - {n: 9,  who: Marko, scene: 3, sr: "Odakle si?",                               ru: "Откуда ты?"}
+  - {n: 10, who: Ana,   scene: 3, sr: "Iz Rusije. Živim u Novom Sadu.",           ru: "Из России. Живу в Нови-Саде."}
+  - {n: 11, who: Marko, scene: 3, sr: "Govoriš srpski?",                          ru: "Ты говоришь по-сербски?"}
+  - {n: 12, who: Ana,   scene: 3, sr: "Malo. Učim.",                              ru: "Немного. Учу."}
+  - {n: 13, who: Marko, scene: 4, sr: "Dobro! Vidimo se!",                        ru: "Хорошо! Увидимся!"}
+  - {n: 14, who: Ana,   scene: 4, sr: "Ćao!",                                     ru: "Пока!"}
+
+# Быстрые вопросы третьего прохода: пауза после предложения n, подсказка по-русски, варианты по-сербски.
+quiz_inline:
+  - {after: 5,  hint: "зовут",        options: [zovem, živim, radim],            answer: zovem}
+  - {after: 6,  hint: "не понимаю",   options: ["ne razumem", "ne znam", "ne govorim"], answer: "ne razumem"}
+  - {after: 10, hint: "живу",         options: [živim, radim, učim],             answer: živim}
+  - {after: 12, hint: "немного",      options: [malo, mnogo, dobro],              answer: malo}
+
+# Финал: шесть вопросов разных видов, как задания курса. plot: выбор по сюжету; word: что значит сербское слово или фраза;
+# listen: послушай фразу и выбери перевод («что значит эта фраза»); blank: слово на место пропуска; bank: собрать предложение;
+# match: соединить пары. Вопрос «кто это говорит» (who) не ставить: голоса героев разного пола, ответ слышно без знания языка.
+quiz_final:
+  - kind: plot
+    prompt: "Как зовут нового знакомого Аны?"
+    options: ["Марко", "Петар", "Милан"]
+    answer: "Марко"
+  - kind: word
+    prompt: "Odakle"
+    options: ["откуда", "куда", "где"]
+    answer: "откуда"
+  - kind: listen
+    sentence: 11
+    prompt: "Что значит эта фраза?"
+    options: ["Ты говоришь по-сербски?", "Откуда ты?", "Как тебя зовут?"]
+    answer: "Ты говоришь по-сербски?"
+  - kind: blank
+    sentence: 12
+    mask: "učim"
+    options: ["učim", "radim", "živim"]
+  - kind: bank
+    sentence: 5
+    extra: ["ja", "sam"]
+  - kind: match
+    pairs:
+      - ["Zdravo", "Привет"]
+      - ["Hvala", "Спасибо"]
+      - ["Vidimo se", "Увидимся"]
+      - ["Takođe", "Взаимно"]

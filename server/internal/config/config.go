@@ -101,6 +101,10 @@ type Config struct {
 	// and TBANK_PASSWORD.
 	TBankTerminalKey string
 	TBankPassword    string
+	// StoriesServiceToken lets the story-publishing scripts write stories
+	// (PUT /api/service/stories/{slug}, Authorization: Bearer <token>). Empty
+	// disables that endpoint. From STORIES_SERVICE_TOKEN.
+	StoriesServiceToken string
 	// TBankTaxation is the tax system printed on the receipt: osn, usn_income,
 	// usn_income_outcome, esn or patent. From TBANK_TAXATION, default usn_income.
 	TBankTaxation string
@@ -154,6 +158,7 @@ func Load() Config {
 		RepeatIntro:           parseFlag(os.Getenv("REPEAT_INTRO")),
 		TBankTerminalKey:      strings.TrimSpace(os.Getenv("TBANK_TERMINAL_KEY")),
 		TBankPassword:         strings.TrimSpace(os.Getenv("TBANK_PASSWORD")),
+		StoriesServiceToken:   strings.TrimSpace(os.Getenv("STORIES_SERVICE_TOKEN")),
 		TBankTaxation:         taxationOr(os.Getenv("TBANK_TAXATION"), "usn_income"),
 		TBankAPIBase:          strings.TrimSpace(os.Getenv("TBANK_API_BASE")),
 		PaymentsDev:           parseFlag(os.Getenv("PAYMENTS_DEV")) && !strings.HasPrefix(base, "https://"),

@@ -1,0 +1,93 @@
+# История «Na pijaci» — исходник для скриптов историй (см. docs/STORIES_PLAN.md).
+# Уровень 2 (числа и магазин). Живой разговор на рынке: продавец зазывает и даёт попробовать сыр, Майя (та же, что в «Prvi dan», в свободный день)
+# берёт 20 дека сыра по 1000/кг (200) и десяток яиц по 15 (150), итого 350, пробует заплатить картой («Ne, samo keš!»), у неё только тысяча, а у продавца нет сдачи, она роется в кошельке и находит ровно.
+# Версия 3 (2026-11-01, после отзывов ученика, носителя и «обычного чела»): «Imam samo hiljadu», без «Prijatno» (это «приятного аппетита»), без «Koliko je sve zajedno?»,
+# блок оплаты короче. Версия 2 (2026-11-01): первая была «как по учебнику» (два «Dobar dan», «Koliko dugujem?», пакет, сдача без причины); теперь есть зазывала,
+# дегустация, «Imam», «Ma ne», «Samo malo…», «Evo, tačno!» и «Bravo!».
+# Новые слова (≤ 15% слов реплик, понятны по жесту и переводу): domaći, probajte.
+slug: na-pijaci
+title_sr: "Na pijaci"
+title_ru: "На рынке"
+level: "1b"
+through_lesson: "13"
+new_words: [domaći, probajte]
+recommended_lesson: "12"
+difficulty: 1
+tier: medium
+is_demo: false
+# Цена в зёрнышках у каждой истории своя (решение 2026-11-03), ступень tier остаётся запасной ценой.
+price: 50
+
+voices:
+  Maja: sr-RS-SophieNeural
+  Prodavac: sr-RS-NicholasNeural
+  ru: ru-RU-SvetlanaNeural
+
+voice_offsets_db: {}
+
+# Кадры: 5 сцен у одного прилавка зелёного рынка в Белграде, утро, один и тот же прилавок и камера, меняются позы и предметы. Стиль: docs/story-image-style.md.
+scenes:
+  - id: 1
+    prompt: "Morning at a market stall in Belgrade: a cheerful stall owner behind a counter with wheels of white cheese and trays of eggs waves Maja over, she walks up with a canvas tote bag"
+  - id: 2
+    prompt: "Same stall: the stall owner holds out a small piece of cheese on a knife, Maja tastes it with a pleasantly surprised face"
+  - id: 3
+    prompt: "Same stall: the stall owner wraps the cheese in paper, then lifts a tray of eggs and counts ten into a paper box, Maja points at the eggs"
+  - id: 4
+    prompt: "Same stall: Maja holds up a bank card hopefully, the stall owner waves his hand and shakes his head with a laugh, pointing to a small cash box"
+  - id: 5
+    prompt: "Same stall: Maja digs in her shoulder bag and pulls out coins, holds them up triumphantly, the stall owner raises both thumbs, eggs and cheese already wrapped on the counter"
+
+sentences:
+  - {n: 1,  who: Prodavac, scene: 1, sr: "Izvolite, izvolite! Recite!",                        ru: "Прошу, прошу! Слушаю вас!"}
+  - {n: 2,  who: Maja,     scene: 1, sr: "Dobar dan! Koliko košta sir?",                       ru: "Добрый день! Сколько стоит сыр?"}
+  - {n: 3,  who: Prodavac, scene: 1, sr: "Hiljadu dinara kilo. Domaći je, svež!",              ru: "Тысяча динаров за килограмм. Домашний, свежий!"}
+  - {n: 4,  who: Prodavac, scene: 2, sr: "Evo, probajte!",                                     ru: "Вот, попробуйте!"}
+  - {n: 5,  who: Maja,     scene: 2, sr: "Dobar je, dobar!",                                   ru: "Вкусный, вкусный!"}
+  - {n: 6,  who: Maja,     scene: 2, sr: "Dajte mi dvadeset deka, molim vas.",                 ru: "Дайте мне двести граммов, пожалуйста."}
+  - {n: 7,  who: Prodavac, scene: 3, sr: "Evo. Još nešto?",                                    ru: "Вот. Ещё что-нибудь?"}
+  - {n: 8,  who: Maja,     scene: 3, sr: "Imate li jaja?",                                     ru: "Яйца есть?"}
+  - {n: 9,  who: Prodavac, scene: 3, sr: "Imam. Koliko komada?",                               ru: "Есть. Сколько штук?"}
+  - {n: 10, who: Maja,     scene: 3, sr: "Deset. To je sve.",                                  ru: "Десять. Это всё."}
+  - {n: 11, who: Prodavac, scene: 4, sr: "Evo. Trista pedeset dinara.",                        ru: "Вот. Триста пятьдесят динаров."}
+  - {n: 12, who: Maja,     scene: 4, sr: "Može karticom?",                                     ru: "Можно картой?"}
+  - {n: 13, who: Prodavac, scene: 4, sr: "Ne, samo keš!",                                      ru: "Нет, только наличные."}
+  - {n: 14, who: Maja,     scene: 5, sr: "Imam samo hiljadu.",                                 ru: "У меня только тысяча."}
+  - {n: 15, who: Prodavac, scene: 5, sr: "Hiljadu? Imate li sitno?",                           ru: "Тысяча? А помельче нет?"}
+  - {n: 16, who: Maja,     scene: 5, sr: "Samo malo… Imam! Evo, tačno!",                       ru: "Секунду… Есть! Вот, ровно!"}
+  - {n: 17, who: Prodavac, scene: 5, sr: "Tačno, hvala! Doviđenja!",                           ru: "Ровно, спасибо! До свидания!"}
+  - {n: 18, who: Maja,     scene: 5, sr: "Doviđenja!",                                         ru: "До свидания!"}
+
+quiz_inline:
+  - {after: 3,  hint: "свежий",      options: [svež, sitno, kesa],                           answer: svež}
+  - {after: 8,  hint: "у вас есть",  options: ["imate li", "dajte mi", "treba mi"],          answer: "imate li"}
+  - {after: 10, hint: "это всё",     options: ["to je sve", "još nešto", "samo keš"],        answer: "to je sve"}
+  - {after: 16, hint: "ровно",       options: [tačno, malo, samo],                           answer: tačno}
+
+quiz_final:
+  - kind: plot
+    prompt: "Почему Майя не заплатила картой?"
+    options: ["Здесь принимают только наличные", "Карта не работает", "Карты нет с собой"]
+    answer: "Здесь принимают только наличные"
+  - kind: word
+    prompt: "Probajte"
+    options: ["попробуйте", "подождите", "возьмите"]
+    answer: "попробуйте"
+  - kind: listen
+    sentence: 11
+    prompt: "Что значит эта фраза?"
+    options: ["Вот. Триста пятьдесят динаров.", "Вот. Триста пятнадцать динаров.", "Вот. Двести пятьдесят динаров."]
+    answer: "Вот. Триста пятьдесят динаров."
+  - kind: blank
+    sentence: 13
+    mask: "keš"
+    options: ["keš", "račun", "kusur"]
+  - kind: bank
+    sentence: 6
+    extra: ["treba", "jedan"]
+  - kind: match
+    pairs:
+      - ["Koliko košta", "Сколько стоит"]
+      - ["Samo keš", "Только наличные"]
+      - ["Imate li sitno", "Есть помельче"]
+      - ["Evo, tačno", "Вот, ровно"]

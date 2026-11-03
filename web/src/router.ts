@@ -10,6 +10,9 @@ declare module 'vue-router' {
     // lesson player) that draw their own header/back-navigation and want
     // the extra vertical room.
     hideTabBar?: boolean
+    // Also hides AppNav's top bar and the page's own padding: the view has the whole screen (a story), with its own
+    // back and close buttons. The modals and toasts that live in AppNav stay.
+    fullscreen?: boolean
   }
 }
 import LoginView from './views/LoginView.vue'
@@ -23,6 +26,8 @@ import LessonView from './views/LessonView.vue'
 import ReviewView from './views/ReviewView.vue'
 import VocabView from './views/VocabView.vue'
 import RatingView from './views/RatingView.vue'
+import StoriesView from './views/StoriesView.vue'
+import StoryView from './views/StoryView.vue'
 import RepeatView from './views/RepeatView.vue'
 import QuestsView from './views/QuestsView.vue'
 import TariffsView from './views/TariffsView.vue'
@@ -119,6 +124,8 @@ const router = createRouter({
     { path: '/vocab', name: 'vocab', component: VocabView },
     { path: '/false-friends', redirect: { path: '/vocab', query: { tab: 'traps' } } },
     { path: '/rating', name: 'rating', component: RatingView },
+    { path: '/stories', name: 'stories', component: StoriesView },
+    { path: '/stories/:slug', name: 'story', component: StoryView, meta: { hideTabBar: true, fullscreen: true } },
     { path: '/quests', name: 'quests', component: QuestsView },
     { path: '/tariffs', name: 'tariffs', component: TariffsView },
     // The stand-in cash desk of PAYMENTS_DEV (local development); the server answers 404 where it is off.

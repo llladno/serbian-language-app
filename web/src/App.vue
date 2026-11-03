@@ -21,14 +21,20 @@ onMounted(() => {
   -->
   <div v-if="session.loading" class="min-h-screen"></div>
   <template v-else-if="session.user">
-    <AppNav :name="session.user.name" :hide-tab-bar="!!route.meta?.hideTabBar" />
+    <AppNav :name="session.user.name" :hide-tab-bar="!!route.meta?.hideTabBar" :hide-header="!!route.meta?.fullscreen" />
     <main
-      class="mx-auto px-4 pt-5 transition-[max-width]"
+      class="mx-auto px-4 transition-[max-width]"
       :class="[
         route.meta?.wide ? 'max-w-5xl' : 'max-w-3xl',
-        route.meta?.hideTabBar
-          ? 'pb-[calc(6rem+env(safe-area-inset-bottom))]'
-          : 'pb-[calc(5rem+env(safe-area-inset-bottom))] sm:pb-16',
+        // A fullscreen view has no top bar: it keeps only the room the phone's own notch and home bar ask for.
+        route.meta?.fullscreen
+          ? 'pt-[calc(0.75rem+env(safe-area-inset-top))] pb-[env(safe-area-inset-bottom)]'
+          : [
+              'pt-5',
+              route.meta?.hideTabBar
+                ? 'pb-[calc(6rem+env(safe-area-inset-bottom))]'
+                : 'pb-[calc(5rem+env(safe-area-inset-bottom))] sm:pb-16',
+            ],
       ]"
     >
       <RouterView v-slot="{ Component, route }">

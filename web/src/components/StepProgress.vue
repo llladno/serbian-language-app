@@ -9,9 +9,8 @@
 // browsers, so that used to snap instead of smoothly filling. The segment's
 // own backing tint (solid color, future → reached) is safe to transition
 // directly since it's a plain color, not a gradient.
-import type { Step } from '../types'
-
-const props = defineProps<{ steps: Step[]; current: number; currentFraction?: number }>()
+// Anything with an id is a step: a lesson's steps, or the passes of a story.
+const props = defineProps<{ steps: { id: string }[]; current: number; currentFraction?: number }>()
 
 function fillPct(i: number) {
   if (i < props.current) {

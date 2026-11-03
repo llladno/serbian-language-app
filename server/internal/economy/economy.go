@@ -94,6 +94,7 @@ const (
 	QuestTelegramSubscribed = "telegram_subscribed"
 	QuestLessonCompleted    = "lesson_completed"
 	QuestFriendsInvited     = "friends_invited"
+	QuestStoriesCompleted   = "stories_completed"
 )
 
 // Quest is one row of the quests table.
@@ -124,6 +125,8 @@ type Counters struct {
 	// FriendsInvited is how many verified accounts joined through the learner's
 	// invite link.
 	FriendsInvited int
+	// StoriesCompleted is how many stories the learner has listened to the end and answered (story_progress.completed_at).
+	StoriesCompleted int
 }
 
 // QuestValue is the user's current value for q. For phase_completed the value
@@ -162,6 +165,8 @@ func QuestValue(q Quest, c Counters, phaseLessons map[string][]string) int {
 		return 0
 	case QuestFriendsInvited:
 		return c.FriendsInvited
+	case QuestStoriesCompleted:
+		return c.StoriesCompleted
 	case QuestLessonCompleted:
 		if c.CompletedLessons[q.Param] {
 			return 1
@@ -188,6 +193,8 @@ const (
 	ProductPhaseUnlock = "phase_unlock"
 	ProductConsumable  = "consumable"
 	ProductCosmetic    = "cosmetic"
+	// ProductStoryUnlock opens one paid story (ref = story slug).
+	ProductStoryUnlock = "story_unlock"
 )
 
 // Product is one row of the products table. Ref identifies what is being sold
@@ -210,7 +217,7 @@ type Product struct {
 // Permanent reports whether owning this product is a one-off right rather than
 // a stock of uses.
 func (p Product) Permanent() bool {
-	return p.Kind == ProductPhaseUnlock || p.Kind == ProductCosmetic
+	return p.Kind == ProductPhaseUnlock || p.Kind == ProductCosmetic || p.Kind == ProductStoryUnlock
 }
 
 // SalePercent is the product's discount if now falls inside its window, else

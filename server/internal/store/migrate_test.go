@@ -596,6 +596,64 @@ func TestMigration021RenamesOnlyTheOldDefault(t *testing.T) {
 	}
 }
 
+// Migration 037 adds the three «Пройти N историй» quests to a database that has already been seeded (a fresh one gets
+// them from the seed), only the rungs that are missing, and writes nothing where the seed has not run yet.
+func TestMigration037StoryQuests(t *testing.T) {
+	rungs := func(t *testing.T, s *Store) map[int]int {
+		t.Helper()
+		rows, err := s.db.Query(`SELECT target, reward FROM quests WHERE kind = 'stories_completed'`)
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer rows.Close()
+		out := map[int]int{}
+		for rows.Next() {
+			var target, reward int
+			if err := rows.Scan(&target, &reward); err != nil {
+				t.Fatal(err)
+			}
+			out[target] = reward
+		}
+		return out
+	}
+
+	t.Run("seeded database gets the three rungs", func(t *testing.T) {
+		s := openStoreAtVersion(t, 36)
+		mustExec(t, s, `INSERT INTO economy_settings (key, value, updated_at) VALUES ('economy_seeded', '1', 'x')`)
+		if err := s.runMigrations(); err != nil {
+			t.Fatalf("run migrations: %v", err)
+		}
+		got := rungs(t, s)
+		if len(got) != 3 || got[1] != 5 || got[4] != 10 || got[10] != 20 {
+			t.Fatalf("story quests = %v, want 1:5 4:10 10:20", got)
+		}
+	})
+
+	t.Run("unseeded database is left to the seed", func(t *testing.T) {
+		s := openStoreAtVersion(t, 36)
+		if err := s.runMigrations(); err != nil {
+			t.Fatalf("run migrations: %v", err)
+		}
+		if got := rungs(t, s); len(got) != 0 {
+			t.Fatalf("story quests = %v, want none before the seed", got)
+		}
+	})
+
+	t.Run("a rung the admin already has is kept as it is", func(t *testing.T) {
+		s := openStoreAtVersion(t, 36)
+		mustExec(t, s, `INSERT INTO economy_settings (key, value, updated_at) VALUES ('economy_seeded', '1', 'x')`)
+		mustExec(t, s, `INSERT INTO quests (kind, target, param, title, reward, created_at, updated_at)
+			VALUES ('stories_completed', 4, '', 'Пройти 4 истории', 99, 'x', 'x')`)
+		if err := s.runMigrations(); err != nil {
+			t.Fatalf("run migrations: %v", err)
+		}
+		got := rungs(t, s)
+		if len(got) != 3 || got[4] != 99 {
+			t.Fatalf("story quests = %v, want three rungs with the admin's 4:99 kept", got)
+		}
+	})
+}
+
 // Migration 022 adds the invite-a-friend quest to a database that has already
 // been seeded (a fresh one gets it from the seed), exactly once, and writes
 // nothing where the seed has not run yet.
@@ -711,7 +769,7 @@ func TestUpgradeFromProductionAtMigration012(t *testing.T) {
 	if got, want := count(`SELECT COUNT(*) FROM schema_migrations`), count(`SELECT COUNT(DISTINCT version) FROM schema_migrations`); got != want {
 		t.Errorf("schema_migrations has repeated versions: %d rows, %d distinct", got, want)
 	}
-	if got := count(`SELECT MAX(version) FROM schema_migrations`); got != 38 { // 35, 36: repeat_nudge, 38: tariff event detail (34 is stories and 37 story quests, still on their own branch)
+	if got := count(`SELECT MAX(version) FROM schema_migrations`); got != 38 { // 35, 36: repeat_nudge, 37: story quests, 38: tariff event detail (34 is stories, still on its own branch)
 		t.Errorf("latest version = %d, want 38", got)
 	}
 	// every account that existed before the script setting reads in Latin, as before

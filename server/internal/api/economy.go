@@ -447,6 +447,9 @@ func (h handlers) getShop(w http.ResponseWriter, r *http.Request) {
 		Items []shopItemDTO `json:"items"`
 	}{Items: []shopItemDTO{}}
 	for _, p := range products {
+		if p.Kind == economy.ProductStoryUnlock {
+			continue // sold on the stories tab, not in the shop
+		}
 		sale := p.SalePercent(now)
 		effective, _ := economy.EffectivePrice(p.Price, sale, 0)
 		out.Items = append(out.Items, shopItemDTO{

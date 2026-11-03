@@ -51,8 +51,8 @@ func TestSeededEconomyMatchesTheDesign(t *testing.T) {
 	for _, q := range quests {
 		pool += q.Reward
 	}
-	if pool != 925 {
-		t.Fatalf("quest pool = %d, want 925 (see the design doc's economy table)", pool)
+	if pool != 960 { // 925 of the design doc's economy table + 35 of the three story quests (5 + 10 + 20)
+		t.Fatalf("quest pool = %d, want 960 (see the design doc's economy table)", pool)
 	}
 
 	products, err := s.ListProducts(true)

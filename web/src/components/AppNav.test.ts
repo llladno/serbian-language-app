@@ -117,4 +117,14 @@ describe('AppNav', () => {
     expect(w.find('[data-test="reward-quest"]').text()).toBe('Пройти 5 уроков')
     expect(w.find('[data-test="reward-amount"]').text()).toBe('+15 зёрнышек')
   })
+
+  it('drops the top bar on a fullscreen page but keeps its modals and toasts mounted', async () => {
+    const w = mount(AppNav, { props: { name: 'Гриша', hideTabBar: true, hideHeader: true }, global: { stubs: { Teleport: true } } })
+    await flushPromises()
+    expect(w.find('header').exists()).toBe(false)
+    expect(w.findComponent({ name: 'ToastStack' }).exists()).toBe(true)
+    const withBar = mount(AppNav, { props: { name: 'Гриша' }, global: { stubs: { Teleport: true } } })
+    await flushPromises()
+    expect(withBar.find('header').exists()).toBe(true)
+  })
 })

@@ -4,6 +4,7 @@ import { RefreshCw } from 'lucide-vue-next'
 import { api } from '../../api'
 import { useWrongGoesToEnd } from '../../lib/lessonRules'
 import { useScript } from '../../lib/useScript'
+import { shuffled as mix } from '../../lib/shuffle'
 import { speakClip } from '../../lib/sound'
 import type { CheckResult, LessonAttempt } from '../../types'
 import HintButton from '../HintButton.vue'
@@ -34,7 +35,7 @@ const emit = defineEmits<{
 // Display only: what is sent to the server and compared stays the Latin original.
 const { show } = useScript()
 
-const shuffled = ref([...props.options].sort(() => Math.random() - 0.5))
+const shuffled = ref(mix(props.options))
 const picked = ref<string | null>(props.prior?.answer ?? null)
 const result = ref<CheckResult | null>(null)
 const fromPrior = ref(!!props.prior)

@@ -21,6 +21,12 @@ const ladder = (kind: string, targets: number[], claimedUpTo = 0, value = 0) =>
   )
 
 describe('groupQuests', () => {
+  it('the story quests are one ladder too: 1, 4, 10 stories show one rung', () => {
+    const g = groupQuests(ladder('stories_completed', [1, 4, 10], 1, 2))
+    expect(g.active.map((q) => q.target)).toEqual([4])
+    expect(g.ready).toHaveLength(0)
+  })
+
   it('shows one rung of a ladder at a time', () => {
     const g = groupQuests(ladder('lessons_completed', [5, 10, 20, 30], 5, 6))
 

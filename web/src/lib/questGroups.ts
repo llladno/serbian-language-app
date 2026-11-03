@@ -9,6 +9,7 @@ import type { Quest } from '../types'
 // telegram_subscribed stays out — it has a single row anyway.
 const LADDER_KINDS = new Set([
   'lessons_completed',
+  'stories_completed',
   'vocab_learned',
   'reviews_done',
   'streak_days',

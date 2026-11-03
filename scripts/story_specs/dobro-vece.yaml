@@ -1,0 +1,72 @@
+# История «Dobro veče» — исходник для скриптов историй (см. docs/STORIES_PLAN.md).
+# Самая ранняя: только слова уроков до 02e включительно (приветствия, «Kako ste?», «Može», «Ne žalim se», прощания).
+# Короткий диалог: вечером во дворе Ана и Марко вежливо (на «вы») спрашивают, как дела, и договариваются увидеться и созвониться.
+# Имён в репликах нет (имена не в уроках до 02e). Герои и двор те же, что в «Drago mi je» (вечерний фон уже есть).
+slug: dobro-vece
+title_sr: "Dobro veče"
+title_ru: "Добрый вечер"
+level: "1"
+through_lesson: "02e"
+# Урок, к которому ученик знает ≥ 85% слов истории (check_story.py считает): до него в списке историй предупреждение.
+recommended_lesson: "02d"
+# Сложность для фильтра и плашки: 1 лёгкая, 2 средняя, 3 сложная (все истории на словах уровня 1 лёгкие).
+difficulty: 1
+tier: short
+is_demo: true # бесплатная вместе с «Prvi dan» (решение 2026-11-03)
+
+voices:
+  Ana: sr-RS-SophieNeural
+  Marko: sr-RS-NicholasNeural
+  ru: ru-RU-SvetlanaNeural
+
+voice_offsets_db: {}
+
+# Кадры: 4 сцены, тот же двор и тот же вечер (плейт «вечер» из docs/story-image-prompts-drago-mi-je.md), меняются позы.
+# Стиль: docs/story-image-style.md. Ана в кремовом пальто и бирюзовом шарфе, Марко в рыжей толстовке, велосипед у стены.
+scenes:
+  - id: 1
+    prompt: "Evening in the courtyard: Marko, walking his bicycle, raises a hand and greets Ana, who has just come out of the entrance, she smiles"
+  - id: 2
+    prompt: "Same courtyard, same evening: they stand facing each other, Marko answers with an open friendly smile, Ana shrugs calmly with a small smile"
+  - id: 3
+    prompt: "Same courtyard: Marko asks hopefully with a raised hand, Ana agrees with a bright smile and holds a hand to her ear like a phone"
+  - id: 4
+    prompt: "Same courtyard: both wave goodbye, Ana turns toward the entrance, Marko walks the bicycle away"
+
+sentences:
+  - {n: 1, who: Marko, scene: 1, sr: "Dobro veče!",               ru: "Добрый вечер!"}
+  - {n: 2, who: Ana,   scene: 1, sr: "Dobro veče! Kako ste?",     ru: "Добрый вечер! Как вы?"}
+  - {n: 3, who: Marko, scene: 2, sr: "Dobro, hvala. A vi?",       ru: "Хорошо, спасибо. А вы?"}
+  - {n: 4, who: Ana,   scene: 2, sr: "Može. Ne žalim se.",        ru: "Нормально. Не жалуюсь."}
+  - {n: 5, who: Marko, scene: 3, sr: "Vidimo se?",                ru: "Увидимся?"}
+  - {n: 6, who: Ana,   scene: 3, sr: "Može! Čujemo se?",          ru: "Можно! Созвонимся?"}
+  - {n: 7, who: Marko, scene: 4, sr: "Dobro! Laku noć!",          ru: "Хорошо! Спокойной ночи!"}
+  - {n: 8, who: Ana,   scene: 4, sr: "Laku noć! Doviđenja!",      ru: "Спокойной ночи! До свидания!"}
+
+quiz_inline:
+  - {after: 1, hint: "вечер",          options: [veče, jutro, dan],                         answer: veče}
+  - {after: 4, hint: "не жалуюсь",     options: ["ne žalim se", "kako ste", "vidimo se"],    answer: "ne žalim se"}
+  - {after: 6, hint: "созвонимся",     options: ["čujemo se", "vidimo se", "hvala"],         answer: "čujemo se"}
+
+quiz_final:
+  - kind: plot
+    prompt: "О чём они договариваются в конце?"
+    options: ["Увидеться и созвониться", "Пойти в магазин", "Вместе поужинать"]
+    answer: "Увидеться и созвониться"
+  - kind: word
+    prompt: "Hvala"
+    options: ["спасибо", "пожалуйста", "до свидания"]
+    answer: "спасибо"
+  - kind: blank
+    sentence: 3
+    mask: "hvala"
+    options: ["hvala", "jutro", "noć"]
+  - kind: bank
+    sentence: 2
+    extra: ["dan", "si"]
+  - kind: match
+    pairs:
+      - ["Dobro veče", "Добрый вечер"]
+      - ["Laku noć", "Спокойной ночи"]
+      - ["Vidimo se", "Увидимся"]
+      - ["Doviđenja", "До свидания"]

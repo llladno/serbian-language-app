@@ -171,6 +171,11 @@ var defaultQuests = []defaultQuest{
 	{"lessons_completed", 10, "", "Пройти 10 уроков", "", 10, 21},
 	{"lessons_completed", 20, "", "Пройти 20 уроков", "", 20, 22},
 	{"lessons_completed", 30, "", "Пройти 30 уроков", "", 30, 23},
+	// Stories pay nothing by themselves (docs/STORIES_PLAN.md); a rung pays once, and far less than the paid stories it takes
+	// to reach it, so finishing stories is never a way to earn seeds.
+	{"stories_completed", 1, "", "Пройти 1 историю", "", 5, 24},
+	{"stories_completed", 4, "", "Пройти 4 истории", "", 10, 25},
+	{"stories_completed", 10, "", "Пройти 10 историй", "", 20, 26},
 	{"vocab_learned", 30, "", "Выучить 30 слов", "", 10, 30},
 	{"vocab_learned", 100, "", "Выучить 100 слов", "", 25, 31},
 	{"vocab_learned", 300, "", "Выучить 300 слов", "", 50, 32},

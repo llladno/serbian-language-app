@@ -33,6 +33,7 @@ func main() {
 
 	addr := flag.String("addr", ":8080", "listen address")
 	contentDir := flag.String("content", "./content", "content directory")
+	storyMediaDir := flag.String("story-media", "./data/story-media", "directory with the story clips and frames served at /story-media/ (a stand-in for the object store)")
 	dbPath := flag.String("db", "./data/app.db", "SQLite path (used when DATABASE_URL is unset)")
 	dsnFlag := flag.String("dsn", "", "database DSN; a postgres:// URL selects Postgres (overrides -db; env DATABASE_URL wins if set)")
 	importSQLite := flag.String("import-sqlite", "", "one-time: copy rows from this SQLite file into the target DB if it has no accounts, then continue")
@@ -260,6 +261,7 @@ func main() {
 	mux.Handle("/img/", cacheControl(http.StripPrefix("/img/", http.FileServer(http.Dir(imgDir)))))
 	audioDir := filepath.Join(*contentDir, "audio")
 	mux.Handle("/audio/", cacheControl(http.StripPrefix("/audio/", http.FileServer(http.Dir(audioDir)))))
+	mux.Handle("/story-media/", cacheControl(http.StripPrefix("/story-media/", http.FileServer(http.Dir(*storyMediaDir)))))
 	// No StripPrefix: landing.FS() is rooted at dist/, which already
 	// contains _nuxt/... at that same relative path.
 	mux.Handle("/_nuxt/", cacheControl(http.FileServer(http.FS(landing.FS()))))

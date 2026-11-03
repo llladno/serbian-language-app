@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { RouterLink, useRoute } from 'vue-router'
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
-import { GraduationCap, Headphones, Languages, Repeat, Trophy, User } from 'lucide-vue-next'
+import { BookHeadphones, GraduationCap, Headphones, Languages, Repeat, User } from 'lucide-vue-next'
 import { useSupportModal } from '../lib/supportModal'
 import { useWalletStore } from '../stores/wallet'
 import SupportModal from './SupportModal.vue'
@@ -18,7 +18,7 @@ import ClaimableStar from './ClaimableStar.vue'
 const { openModal } = useSupportModal()
 const wallet = useWalletStore()
 
-defineProps<{ name: string; hideTabBar?: boolean }>()
+defineProps<{ name: string; hideTabBar?: boolean; hideHeader?: boolean }>()
 
 const route = useRoute()
 
@@ -52,7 +52,7 @@ const links = [
   { to: '/course', label: 'Курс', icon: GraduationCap },
   { to: '/review', label: 'Слова', icon: Repeat },
   { to: '/vocab', label: 'Словарь', icon: Languages },
-  { to: '/rating', label: 'Рейтинг', icon: Trophy },
+  { to: '/stories', label: 'Истории', icon: BookHeadphones },
 ]
 
 const active = computed(() => route.path)
@@ -75,7 +75,7 @@ watch(() => route.path, refreshWallet)
 </script>
 
 <template>
-  <header class="sticky top-0 z-20 bg-[var(--bg)]" style="padding-top: env(safe-area-inset-top)">
+  <header v-if="!hideHeader" class="sticky top-0 z-20 bg-[var(--bg)]" style="padding-top: env(safe-area-inset-top)">
     <div class="mx-auto flex max-w-3xl items-center gap-1 px-3 py-2">
       <nav class="hidden gap-1 sm:flex">
         <RouterLink

@@ -1,0 +1,89 @@
+# История «SIM kartica» — исходник для скриптов историй (см. docs/STORIES_PLAN.md).
+# Уровень 2. Ситуация, которая была почти у каждого релоканта в первые дни: купить сербскую SIM-карту. Алекс (из России) в салоне связи:
+# нужен паспорт, оплата картой, номер телефона на слух: продавщица диктует быстро, он просит помедленнее («Polako, molim vas»), она повторяет медленно,
+# «Aha, sad razumem». В конце она узнаёт по паспорту, что он из России, и говорит «Dobro došli u Srbiju!». (Версия 3, 2026-11-01, после отзывов ученика, носителя и «обычного чела»: «Iz Rusije ste?» сразу после паспорта, паспорт возвращают, номер сначала быстро без пауз, потом медленно, нет повторов «Aha». Версия 2: убраны "Tačno!" после повтора номера, никто так не отвечает.)
+# Новые слова (≤ 15% слов реплик, понятны по переводу и похожи на русские): SIM, pasoš, internet, došli, srbiju (форма known Srbija).
+slug: sim-kartica
+title_sr: "SIM kartica"
+title_ru: "Сим-карта"
+level: "1b"
+through_lesson: "13"
+new_words: [sim, pasoš, internet, došli, srbiju]
+recommended_lesson: "12b"
+difficulty: 1
+tier: medium
+is_demo: false
+# Цена в зёрнышках у каждой истории своя (решение 2026-11-03), ступень tier остаётся запасной ценой.
+price: 30
+
+voices:
+  Prodavačica: sr-RS-SophieNeural
+  Aleks: sr-RS-NicholasNeural
+  ru: ru-RU-SvetlanaNeural
+
+voice_offsets_db: {}
+
+# Кадры: 5 сцен в одном небольшом салоне связи в Белграде, один прилавок и камера, меняются позы и предметы. Стиль: docs/story-image-style.md.
+scenes:
+  - id: 1
+    prompt: "A small mobile phone shop in Belgrade: a friendly saleswoman behind a counter with phones and SIM card packs greets Aleks, a young man with a backpack who has just walked in"
+  - id: 2
+    prompt: "Same shop: Aleks hands a red passport across the counter, the saleswoman opens it, glances at the cover with a surprised smile and starts chatting while typing on a computer"
+  - id: 3
+    prompt: "Same shop: Aleks pays with a bank card on a small terminal, the saleswoman holds a SIM card in her other hand"
+  - id: 4
+    prompt: "Same shop: the saleswoman holds a slip of paper and reads a phone number quickly, Aleks looks a little lost and raises a palm asking her to slow down"
+  - id: 5
+    prompt: "Same shop: the saleswoman hands back the red passport with a welcoming smile, Aleks holds the slip of paper and SIM card, happy"
+
+sentences:
+  - {n: 1,  who: Prodavačica, scene: 1, sr: "Dobar dan! Izvolite?",                                      ru: "Добрый день! Чем могу помочь?"}
+  - {n: 2,  who: Aleks,       scene: 1, sr: "Dobar dan! Treba mi SIM kartica.",                          ru: "Добрый день! Мне нужна сим-карта."}
+  - {n: 3,  who: Prodavačica, scene: 2, sr: "Treba mi pasoš, molim vas.",                                ru: "Мне нужен ваш паспорт, пожалуйста."}
+  - {n: 4,  who: Aleks,       scene: 2, sr: "Evo, izvolite.",                                            ru: "Вот, пожалуйста."}
+  - {n: 5,  who: Prodavačica, scene: 2, sr: "Iz Rusije ste?",                                            ru: "Вы из России?"}
+  - {n: 6,  who: Aleks,       scene: 2, sr: "Da, ali sada živim ovde.",                                  ru: "Да, но теперь я живу здесь."}
+  - {n: 7,  who: Prodavačica, scene: 2, sr: "Dobro. SIM i internet, da?",                                ru: "Хорошо. Сим-карту и интернет, да?"}
+  - {n: 8,  who: Aleks,       scene: 2, sr: "Da, da. Koliko košta?",                                     ru: "Да, да. Сколько стоит?"}
+  - {n: 9,  who: Prodavačica, scene: 3, sr: "Trista dinara. Kešom ili karticom?",                        ru: "Триста динаров. Наличными или картой?"}
+  - {n: 10, who: Aleks,       scene: 3, sr: "Karticom.",                                                 ru: "Картой."}
+  - {n: 11, who: Prodavačica, scene: 4, sr: "Samo malo… Evo! Ovo je broj: nula šest četiri sedam osam pet devet jedan tri.", ru: "Секунду… Вот! Это номер: ноль шесть четыре семь восемь пять девять один три."}
+  - {n: 12, who: Aleks,       scene: 4, sr: "Izvinite, ne razumem. Polako, molim vas.",                  ru: "Извините, не понимаю. Помедленнее, пожалуйста."}
+  - {n: 13, who: Prodavačica, scene: 4, sr: "Nula šest četiri… sedam osam pet… devet jedan tri.",       ru: "Ноль шесть четыре… семь восемь пять… девять один три."}
+  - {n: 14, who: Aleks,       scene: 4, sr: "Sad razumem. Hvala!",                                       ru: "Теперь понимаю. Спасибо!"}
+  - {n: 15, who: Prodavačica, scene: 5, sr: "Izvolite pasoš. Dobro došli u Srbiju!",                     ru: "Вот ваш паспорт. Добро пожаловать в Сербию!"}
+  - {n: 16, who: Aleks,       scene: 5, sr: "Hvala! Doviđenja!",                                         ru: "Спасибо! До свидания!"}
+
+quiz_inline:
+  - {after: 2,  hint: "мне нужна",   options: ["treba mi", "imam", "izvolite"],              answer: "treba mi"}
+  - {after: 3,  hint: "паспорт",     options: [pasoš, račun, kartica],                       answer: pasoš}
+  - {after: 10, hint: "картой",      options: [karticom, kešom, pasoš],                      answer: karticom}
+  - {after: 12, hint: "не понимаю",  options: ["ne razumem", "ne znam", "ne treba"],         answer: "ne razumem"}
+
+quiz_final:
+  - kind: plot
+    prompt: "Чем Алекс платит?"
+    options: ["Картой", "Наличными", "Телефоном"]
+    answer: "Картой"
+  - kind: word
+    prompt: "Polako"
+    options: ["не спеша", "быстро", "потом"]
+    answer: "не спеша"
+  - kind: listen
+    sentence: 13
+    prompt: "Что значит эта фраза?"
+    options: ["Ноль шесть четыре… семь восемь пять… девять один три.", "Ноль шесть четыре… семь пять восемь… девять один три.", "Ноль шесть четыре… семь восемь пять… девять три один."]
+    answer: "Ноль шесть четыре… семь восемь пять… девять один три."
+  - kind: blank
+    sentence: 12
+    mask: "polako"
+    options: ["polako", "evo", "hvala"]
+  - kind: bank
+    sentence: 2
+    extra: ["imam", "dajte"]
+  - kind: match
+    pairs:
+      - ["Treba mi", "Мне нужно"]
+      - ["Ne razumem", "Не понимаю"]
+      - ["Polako, molim vas", "Помедленнее, пожалуйста"]
+      - ["Dobro došli", "Добро пожаловать"]

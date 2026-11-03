@@ -519,3 +519,113 @@ export interface SurveyAnswers {
   purpose: string
   wish: string
 }
+
+// ---- Stories (docs/STORIES_PLAN.md) ----
+
+export interface StoryWord {
+  w: string
+  start_ms: number
+  end_ms: number
+}
+
+export interface StorySentence {
+  n: number
+  who: string
+  scene: number
+  sr: string
+  ru: string
+  sr_audio: string
+  sr_ms: number
+  sr_words: StoryWord[]
+  ru_audio: string
+  ru_ms: number
+  ru_words: StoryWord[]
+}
+
+export interface StoryScene {
+  id: number
+  image: string
+}
+
+export interface StoryChapter {
+  title?: string
+  scenes: StoryScene[]
+  sentences: StorySentence[]
+}
+
+// A quick question of the third pass: the audio pauses after sentence `after`.
+export interface StoryInlineQuiz {
+  after: number
+  hint: string
+  options: string[]
+  // The part of the sentence hidden in the subtitle while the question is open.
+  mask: string
+}
+
+export type StoryFinalKind = 'plot' | 'word' | 'listen' | 'who' | 'blank' | 'bank' | 'match'
+
+// A question after the three passes. Which fields come depends on the kind: choices bring options (listen and who
+// also the clip to play), a bank its tiles, a match its two columns.
+export interface StoryFinalQuiz {
+  kind: StoryFinalKind
+  prompt: string
+  options?: string[]
+  audio?: string
+  // The clip said after the answer, and how long it is (ms).
+  say?: string
+  say_ms?: number
+  bank?: string[]
+  left?: string[]
+  right?: string[]
+}
+
+// What the server says about an answer: whether it was right, and what the right one is.
+export interface StoryVerdict {
+  correct: boolean
+  answer: string
+  // A match: the right pairs, [Serbian, Russian].
+  pairs?: [string, string][]
+}
+
+export interface StoryContent {
+  fast_rate: number
+  // The first pass is played at this rate (below 1 = slower); missing or 0 = normal speed.
+  slow_rate?: number
+  chapters: StoryChapter[]
+  quiz_inline: StoryInlineQuiz[]
+  quiz_final: StoryFinalQuiz[]
+}
+
+export interface Story {
+  slug: string
+  title_sr: string
+  title_ru: string
+  tier: 'short' | 'medium' | 'long'
+  is_demo: boolean
+  duration_ms: number
+  reward: number
+  content: StoryContent
+}
+
+export interface StoryListItem {
+  slug: string
+  title_sr: string
+  title_ru: string
+  tier: 'short' | 'medium' | 'long'
+  is_demo: boolean
+  cover: string
+  duration_ms: number
+  /** Number of sentences, for «16 фраз» on the card. */
+  phrases: number
+  /** The lesson to have finished before the story; empty = no advice. */
+  recommended_lesson: string
+  /** The group of the list: 1 easy, 2 medium, 3 harder (0 = not set). */
+  difficulty: number
+  owned: boolean
+  price: number
+  reward: number
+  pass_reached: number
+  completed: boolean
+  quiz_score: number
+  quiz_total: number
+}

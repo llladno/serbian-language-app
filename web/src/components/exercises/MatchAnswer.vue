@@ -6,6 +6,7 @@ import { RefreshCw } from 'lucide-vue-next'
 import { api } from '../../api'
 import { useWrongGoesToEnd } from '../../lib/lessonRules'
 import { useScript } from '../../lib/useScript'
+import { shuffled as mix } from '../../lib/shuffle'
 import type { CheckResult, LessonAttempt } from '../../types'
 import BottomBar from '../BottomBar.vue'
 import HintButton from '../HintButton.vue'
@@ -26,7 +27,7 @@ const emit = defineEmits<{ graded: [ok: boolean]; ungraded: [] }>()
 // Display only: the pairs sent to the server are keyed by the Latin originals.
 const { show } = useScript()
 
-const choices = ref([...props.right].sort(() => Math.random() - 0.5))
+const choices = ref(mix(props.right))
 // sparse: only left words that are currently paired have an entry
 const picks = reactive<Record<string, string>>({})
 const selectedLeft = ref<string | null>(null)
