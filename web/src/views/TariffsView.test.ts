@@ -393,6 +393,30 @@ describe('TariffsView: paying without an account email', () => {
     expect(create).not.toHaveBeenCalled()
   })
 
+  // The admin's «Воронка тарифов» needs to see where buyers stop between the screen and the bank.
+  it('reports the steps of paying: screen opened, button pressed, window shown, contact sent', async () => {
+    const track = vi.spyOn(api, 'trackTariffEvent').mockResolvedValue(undefined)
+    vi.spyOn(api, 'createOrder').mockResolvedValue({
+      id: 15, tariff: 'year', status: 'pending', confirmation_url: 'https://pay.test/tb/15',
+    })
+    const w = await mountView({}, course(), '', tgOnly)
+    const steps = () => track.mock.calls.filter((c) => c[1] === 'checkout').map((c) => [c[0], c[2]])
+    expect(steps()).toEqual([['open', 'from:direct']])
+    await press(w, 'buy-year')
+    expect(steps()).toEqual([['open', 'from:direct'], ['press', 'year'], ['receipt_view', 'year']])
+    await type('buyer@example.com')
+    await click('[data-test="receipt-contact-submit"]')
+    expect(steps().at(-1)).toEqual(['receipt_send', 'year'])
+  })
+
+  it('reports a window that was closed without an answer', async () => {
+    const track = vi.spyOn(api, 'trackTariffEvent').mockResolvedValue(undefined)
+    const w = await mountView({}, course(), '', tgOnly)
+    await press(w, 'buy-level')
+    await click('[data-test="receipt-contact-close"]')
+    expect(track).toHaveBeenLastCalledWith('receipt_cancel', 'checkout', 'level')
+  })
+
   it('in a dev build the window opens for an account that has an email too, and sends no contact', async () => {
     vi.stubEnv('DEV', true)
     const create = vi.spyOn(api, 'createOrder').mockResolvedValue({

@@ -47,10 +47,23 @@ const offer = computed(() =>
 // The admin's «Воронка тарифов» counts a showing when the payment is on offer (not when the window only opens,
 // and not when the level can be bought with зёрнышки or a paid level just waits to be chosen): each time it appears.
 const sellsNow = computed(() => !!phaseId.value && !!phase.value && !canAfford.value && offer.value?.kind === 'level')
-watch(sellsNow, (selling) => selling && trackTariff('view', 'unlock_modal'), { immediate: true })
+// Each event names the level the window was opened for, so the admin can tell which door people stop at.
+const about = computed(() => (phaseId.value ? `phase:${phaseId.value}` : ''))
+watch(sellsNow, (selling) => selling && trackTariff('view', 'unlock_modal', about.value), { immediate: true })
 
 function payClicked() {
-  trackTariff('click', 'unlock_modal')
+  trackTariff('click', 'unlock_modal', about.value)
+  closeModal()
+}
+
+// Closing without going on (the cross, the backdrop, «Позже»), and the free way out, are the other two things a
+// learner does here: the admin compares them with the press on the gold button. Only while a payment is on offer.
+function dismiss() {
+  if (sellsNow.value) trackTariff('dismiss', 'unlock_modal', about.value)
+  closeModal()
+}
+function earnClicked() {
+  if (sellsNow.value) trackTariff('earn', 'unlock_modal', about.value)
   closeModal()
 }
 
@@ -101,8 +114,8 @@ async function buy() {
 </script>
 
 <template>
-  <ModalShell :open="phaseId !== null && phase !== null" size="sm" panel-class="overflow-hidden text-center" @close="closeModal">
-    <button class="icon-btn close absolute right-3 top-3 z-10" title="Закрыть" aria-label="Закрыть" @click="closeModal">
+  <ModalShell :open="phaseId !== null && phase !== null" size="sm" panel-class="overflow-hidden text-center" @close="dismiss">
+    <button class="icon-btn close absolute right-3 top-3 z-10" title="Закрыть" aria-label="Закрыть" @click="dismiss">
       <X :size="19" :stroke-width="2.25" />
     </button>
 
@@ -162,17 +175,17 @@ async function buy() {
               Навсегда, без подписки. Hvala lepo <img :src="heart" alt="" aria-hidden="true" class="heart" />
             </p>
           </template>
-          <RouterLink to="/quests" class="quiet-link" data-test="unlock-quests" @click="closeModal">
+          <RouterLink to="/quests" class="quiet-link" data-test="unlock-quests" @click="earnClicked">
             Заработать зёрнышки
           </RouterLink>
         </template>
 
         <!-- No payment on offer (tariffs closed for this account): earning is the way. -->
         <div v-else class="flex flex-col gap-2 sm:flex-row">
-          <RouterLink to="/quests" class="btn btn-primary flex-1" data-test="unlock-quests" @click="closeModal">
+          <RouterLink to="/quests" class="btn btn-primary flex-1" data-test="unlock-quests" @click="earnClicked">
             Заработать зёрнышки
           </RouterLink>
-          <button class="btn btn-ghost flex-1" @click="closeModal">Позже</button>
+          <button class="btn btn-ghost flex-1" @click="dismiss">Позже</button>
         </div>
       </template>
     </div>

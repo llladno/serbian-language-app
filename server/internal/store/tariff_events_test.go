@@ -25,6 +25,7 @@ func TestATariffEventIsRecordedWithItsKindSourceAndTime(t *testing.T) {
 		{TariffEventClick, TariffSourceProfileBanner},
 		{TariffEventView, TariffSourceRepeatLimit},
 		{TariffEventView, TariffSourceUnlockModal},
+		{TariffEventClick, TariffSourceStoryModal},
 		{TariffEventDismiss, TariffSourceProfileBanner},
 	} {
 		recorded, err := s.RecordTariffEvent(uid, c.kind, c.source, day0)
@@ -101,5 +102,60 @@ func TestAnUnknownKindOrSourceIsRefusedAndWritesNothing(t *testing.T) {
 	}
 	if got := eventCount(t, s, "1 = 1"); got != "0" {
 		t.Errorf("rows = %s after refused events, want 0", got)
+	}
+}
+
+// A detail rides along ("phase:2"), is cleaned, and tells two events apart for the dedupe.
+func TestAnEventKeepsACleanedDetailAndDetailsAreDedupedApart(t *testing.T) {
+	s := newStore(t)
+	uid, _ := s.CreateUser("Гриша")
+	if ok, err := s.RecordTariffEventDetail(uid, TariffEventView, TariffSourceUnlockModal, "phase:2", day0); err != nil || !ok {
+		t.Fatalf("phase:2 = (%v, %v), want recorded", ok, err)
+	}
+	// the same event about another level within seconds is a different event
+	if ok, _ := s.RecordTariffEventDetail(uid, TariffEventView, TariffSourceUnlockModal, "phase:3", day0.Add(5*time.Second)); !ok {
+		t.Error("an event about another level was taken for the first")
+	}
+	if ok, _ := s.RecordTariffEventDetail(uid, TariffEventView, TariffSourceUnlockModal, "phase:3", day0.Add(8*time.Second)); ok {
+		t.Error("the same event about the same level twice in seconds was written twice")
+	}
+	if ok, _ := s.RecordTariffEventDetail(uid, TariffEventPress, TariffSourceCheckout, "<b>year</b> \"; DROP", day0); !ok {
+		t.Fatal("a messy detail should be cleaned, not refused")
+	}
+	got, _ := s.DebugQuery("SELECT detail FROM tariff_events WHERE kind = 'press'")
+	if len(got) != 1 || got[0] != "byearbDROP" {
+		t.Errorf("cleaned detail = %v, want byearbDROP (letters and digits only survive)", got)
+	}
+	long := ""
+	for i := 0; i < 100; i++ {
+		long += "a"
+	}
+	s.RecordTariffEventDetail(uid, TariffEventOpen, TariffSourceCheckout, long, day0)
+	if got, _ := s.DebugQuery("SELECT LENGTH(detail) FROM tariff_events WHERE kind = 'open'"); got[0] != "64" {
+		t.Errorf("long detail kept %s characters, want 64", got[0])
+	}
+}
+
+// The checkout takes the steps of paying, the places that sell take view/click/dismiss/earn, and not the other's.
+func TestKindsBelongToTheirSources(t *testing.T) {
+	for _, c := range []struct {
+		kind, source string
+		want         bool
+	}{
+		{TariffEventEarn, TariffSourceUnlockModal, true},
+		{TariffEventDismiss, TariffSourceUnlockModal, true},
+		{TariffEventOpen, TariffSourceCheckout, true},
+		{TariffEventPress, TariffSourceCheckout, true},
+		{TariffEventReceiptView, TariffSourceCheckout, true},
+		{TariffEventReceiptSend, TariffSourceCheckout, true},
+		{TariffEventReceiptCancel, TariffSourceCheckout, true},
+		{TariffEventError, TariffSourceCheckout, true},
+		{TariffEventView, TariffSourceCheckout, false},
+		{TariffEventPress, TariffSourceProfileBanner, false},
+		{TariffEventError, TariffSourceUnlockModal, false},
+	} {
+		if got := ValidTariffEvent(c.kind, c.source); got != c.want {
+			t.Errorf("ValidTariffEvent(%q, %q) = %v, want %v", c.kind, c.source, got, c.want)
+		}
 	}
 }

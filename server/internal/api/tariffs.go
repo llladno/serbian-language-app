@@ -348,6 +348,17 @@ func (h handlers) orderDTO(p store.Payment) orderDTO {
 	return out
 }
 
+// orderRefused answers a refused order and writes down which refusal it was, so the admin's «Воронка тарифов»
+// can say how many buyers were turned away at the pay button and why (an order that was never made leaves no
+// payment row). Best-effort, like the other events.
+func (h handlers) orderRefused(w http.ResponseWriter, userID, tariff string, status int, code string) {
+	detail := strings.ReplaceAll(code, " ", "_") + ":" + tariff
+	if _, err := h.Store.RecordTariffEventDetail(userID, store.TariffEventError, store.TariffSourceCheckout, detail, h.Now()); err != nil {
+		log.Printf("tariff events: %v", err)
+	}
+	fail(w, status, code)
+}
+
 // createOrder starts a payment: it records it, asks the account's payment
 // service for a payment the buyer completes on the service's own page, and
 // returns that page's address. Nothing is granted here; that happens in
@@ -370,12 +381,12 @@ func (h handlers) createOrder(w http.ResponseWriter, r *http.Request) {
 	}
 	prov := h.providerFor(ac.Summary.Email)
 	if prov == nil || !prov.Configured() {
-		fail(w, http.StatusServiceUnavailable, "payments_unavailable")
+		h.orderRefused(w, ac.UserID, req.Tariff, http.StatusServiceUnavailable, "payments_unavailable")
 		return
 	}
 	tariff, err := h.Store.Tariff(req.Tariff)
 	if err != nil || !tariff.Active {
-		fail(w, http.StatusNotFound, "unknown tariff")
+		h.orderRefused(w, ac.UserID, req.Tariff, http.StatusNotFound, "unknown tariff")
 		return
 	}
 
@@ -387,39 +398,39 @@ func (h handlers) createOrder(w http.ResponseWriter, r *http.Request) {
 		choices, err := h.levelChoices(us)
 		if err != nil {
 			log.Printf("orders: level choices: %v", err)
-			fail(w, http.StatusInternalServerError, "internal error")
+			h.orderRefused(w, ac.UserID, req.Tariff, http.StatusInternalServerError, "internal error")
 			return
 		}
 		if len(choices) == 0 {
 			// Every level on sale is open already: charging for one would be
 			// taking money for nothing.
-			fail(w, http.StatusConflict, "nothing_to_buy")
+			h.orderRefused(w, ac.UserID, req.Tariff, http.StatusConflict, "nothing_to_buy")
 			return
 		}
 		// A level that was paid for and not chosen yet comes first: two credits at
 		// once would only be a puzzle for the learner.
 		if credits, err := h.Store.UnclaimedLevelPayments(ac.UserID); err != nil {
 			log.Printf("orders: level credits: %v", err)
-			fail(w, http.StatusInternalServerError, "internal error")
+			h.orderRefused(w, ac.UserID, req.Tariff, http.StatusInternalServerError, "internal error")
 			return
 		} else if len(credits) > 0 {
-			fail(w, http.StatusConflict, "level_pending_choice")
+			h.orderRefused(w, ac.UserID, req.Tariff, http.StatusConflict, "level_pending_choice")
 			return
 		}
 		// One level a month: a level paid for recently holds the next one back.
 		// The year is never held back, and neither are levels bought for зёрнышки.
 		if _, held, err := h.levelCooldownEnd(ac.UserID); err != nil {
 			log.Printf("orders: level cooldown: %v", err)
-			fail(w, http.StatusInternalServerError, "internal error")
+			h.orderRefused(w, ac.UserID, req.Tariff, http.StatusInternalServerError, "internal error")
 			return
 		} else if held {
-			fail(w, http.StatusConflict, "level_cooldown")
+			h.orderRefused(w, ac.UserID, req.Tariff, http.StatusConflict, "level_cooldown")
 			return
 		}
 		hasPaid, err := h.Store.HasPaidLevel(ac.UserID)
 		if err != nil {
 			log.Printf("orders: paid level: %v", err)
-			fail(w, http.StatusInternalServerError, "internal error")
+			h.orderRefused(w, ac.UserID, req.Tariff, http.StatusInternalServerError, "internal error")
 			return
 		}
 		// No level is named: the learner chooses after paying (chooseLevel).
@@ -427,7 +438,7 @@ func (h handlers) createOrder(w http.ResponseWriter, r *http.Request) {
 	case store.TariffYear:
 		amount, description = tariff.PriceKopecks, tariff.Title
 	default:
-		fail(w, http.StatusNotFound, "unknown tariff")
+		h.orderRefused(w, ac.UserID, req.Tariff, http.StatusNotFound, "unknown tariff")
 		return
 	}
 
@@ -435,7 +446,7 @@ func (h handlers) createOrder(w http.ResponseWriter, r *http.Request) {
 	// phone a Telegram-only buyer typed in.
 	receiptMail, receiptPhone, ok := receiptContact(ac.Summary, req.Contact)
 	if !ok {
-		fail(w, http.StatusBadRequest, "receipt_contact_invalid")
+		h.orderRefused(w, ac.UserID, req.Tariff, http.StatusBadRequest, "receipt_contact_invalid")
 		return
 	}
 	receipt := receiptMail
@@ -448,7 +459,7 @@ func (h handlers) createOrder(w http.ResponseWriter, r *http.Request) {
 	}, h.Now())
 	if err != nil {
 		log.Printf("orders: create: %v", err)
-		fail(w, http.StatusInternalServerError, "internal error")
+		h.orderRefused(w, ac.UserID, req.Tariff, http.StatusInternalServerError, "internal error")
 		return
 	}
 	created, err := prov.Create(r.Context(), payCreate{
@@ -464,12 +475,12 @@ func (h handlers) createOrder(w http.ResponseWriter, r *http.Request) {
 	if err != nil || created.PayURL == "" {
 		log.Printf("orders: %s create (order %d): %v", prov.Name(), pid, err)
 		_ = h.Store.CancelPayment(pid)
-		fail(w, http.StatusBadGateway, "payment_failed")
+		h.orderRefused(w, ac.UserID, req.Tariff, http.StatusBadGateway, "payment_failed")
 		return
 	}
 	if err := h.Store.SetPaymentProviderID(pid, created.ProviderPaymentID, created.Test); err != nil {
 		log.Printf("orders: link provider id (order %d): %v", pid, err)
-		fail(w, http.StatusInternalServerError, "internal error")
+		h.orderRefused(w, ac.UserID, req.Tariff, http.StatusInternalServerError, "internal error")
 		return
 	}
 	writeJSON(w, http.StatusOK, orderDTO{ID: pid, Tariff: tariff.Code, Status: store.PaymentPending, ConfirmationURL: created.PayURL})
@@ -678,7 +689,7 @@ func (h handlers) tbankWebhook(w http.ResponseWriter, r *http.Request) {
 	ok()
 }
 
-// trackTariffEvent handles POST /api/me/tariff-events {kind, source}: the places that sell the tariffs report each
+// trackTariffEvent handles POST /api/me/tariff-events {kind, source, detail}: the places that sell the tariffs report each
 // showing and each press on the way to them, and the admin's «Воронка тарифов» counts the rows. Best-effort
 // analytics: a failure to write is logged and still answered 204, never shown to the learner. Only an unknown
 // kind, source or body is refused (400). Closed, like the rest of the tariffs, to accounts that do not see them.
@@ -691,12 +702,14 @@ func (h handlers) trackTariffEvent(w http.ResponseWriter, r *http.Request) {
 	var req struct {
 		Kind   string `json:"kind"`
 		Source string `json:"source"`
+		// Detail is a few words on what it was about ("phase:2", "year"); cleaned before it is stored.
+		Detail string `json:"detail"`
 	}
 	if err := decode(r, &req); err != nil || !store.ValidTariffEvent(req.Kind, req.Source) {
 		fail(w, http.StatusBadRequest, "bad request body")
 		return
 	}
-	if _, err := h.Store.RecordTariffEvent(ac.UserID, req.Kind, req.Source, h.Now()); err != nil {
+	if _, err := h.Store.RecordTariffEventDetail(ac.UserID, req.Kind, req.Source, req.Detail, h.Now()); err != nil {
 		log.Printf("tariff events: %v", err)
 	}
 	w.WriteHeader(http.StatusNoContent)

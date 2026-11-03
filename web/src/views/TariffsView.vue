@@ -23,6 +23,7 @@ import { useToasts } from '../lib/toasts'
 import { useLevelChoiceModal } from '../lib/levelChoiceModal'
 import { daysLeft, grouped, longDate, perMonth, rub, shortDate } from '../lib/tariffs'
 import { pluralRu } from '../lib/plural'
+import { trackCheckout } from '../lib/tariffEvents'
 import BotPrefsSection from '../components/BotPrefsSection.vue'
 import LevelCreditNotice from '../components/LevelCreditNotice.vue'
 import PaymentThanksModal from '../components/PaymentThanksModal.vue'
@@ -75,20 +76,28 @@ const askingFor = ref<TariffCode | null>(null)
 const askAnyway = import.meta.env.DEV && new URL(window.location.href).searchParams.get('receipt') !== '0'
 
 async function pay(tariff: TariffCode) {
+  trackCheckout('press', tariff)
   if (!tariffs.paymentsReady) {
     toasts.push({ title: 'Оплата ещё не подключена', text: 'Пока уровни можно открыть за зёрнышки.' })
     return
   }
   if (tariffs.needsReceiptContact || askAnyway) {
     askingFor.value = tariff
+    trackCheckout('receipt_view', tariff)
     return
   }
   await startPayment(tariff)
 }
 
+function closeReceipt() {
+  if (askingFor.value) trackCheckout('receipt_cancel', askingFor.value)
+  askingFor.value = null
+}
+
 async function contactGiven(contact: string) {
   const tariff = askingFor.value
   askingFor.value = null
+  if (tariff) trackCheckout('receipt_send', tariff)
   if (tariffs.needsReceiptContact) tariffs.setReceiptContact(contact)
   if (tariff) await startPayment(tariff)
 }
@@ -146,6 +155,9 @@ onMounted(async () => {
   wallet.refresh() // the currency's name for the bonus, and the balance it adds to
   const url = new URL(window.location.href)
   const orderId = Number(url.searchParams.get('order'))
+  // Where the learner came from: the page before this one in the app's own history ("from:profile"), or the bank.
+  const back = String((window.history.state as { back?: string } | null)?.back ?? '').split('/')[1] ?? ''
+  trackCheckout('open', orderId > 0 ? 'from:bank' : back ? `from:${back}` : 'from:direct')
   if (orderId > 0) {
     // Drop the parameter so a reload does not announce the payment again.
     window.history.replaceState(null, '', url.pathname)
@@ -368,7 +380,7 @@ onMounted(async () => {
     <ReceiptContactModal
       :open="askingFor !== null"
       :initial="tariffs.receiptContact"
-      @close="askingFor = null"
+      @close="closeReceipt"
       @submit="contactGiven"
     />
   </div>

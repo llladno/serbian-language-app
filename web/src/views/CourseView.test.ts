@@ -235,7 +235,27 @@ describe('CourseView: levels for sale', () => {
     await flushPromises()
     expect(spy.mock.calls.filter((c) => c[1] === 'unlock_modal' && c[0] === 'view')).toHaveLength(1)
     await w.find('[data-test="unlock-pay"]').trigger('click')
-    expect(spy).toHaveBeenLastCalledWith('click', 'unlock_modal')
+    expect(spy).toHaveBeenLastCalledWith('click', 'unlock_modal', 'phase:2')
+  })
+
+  it('names the level in the showing, and reports closing and the free way out as their own events', async () => {
+    const spy = vi.spyOn(api, 'trackTariffEvent').mockResolvedValue(undefined)
+    vi.spyOn(api, 'tariffs').mockResolvedValue(tariffsInfo())
+    const w = mountView()
+    enableTariffs()
+    await flushPromises()
+    await w.find('[data-test="locked-16"]').trigger('click')
+    await flushPromises()
+    expect(spy).toHaveBeenCalledWith('view', 'unlock_modal', 'phase:2')
+
+    await w.find('.close').trigger('click')
+    await flushPromises()
+    expect(spy).toHaveBeenLastCalledWith('dismiss', 'unlock_modal', 'phase:2')
+
+    await w.find('[data-test="locked-16"]').trigger('click')
+    await flushPromises()
+    await w.find('[data-test="unlock-quests"]').trigger('click')
+    expect(spy).toHaveBeenLastCalledWith('earn', 'unlock_modal', 'phase:2')
   })
 
   it('reports no showing when the learner can afford the level, or when a paid level only waits to be chosen', async () => {

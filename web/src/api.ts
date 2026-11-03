@@ -165,8 +165,8 @@ export const api = {
   devPay: (id: number, outcome: 'paid' | 'failed') =>
     request<Order>(`/dev/pay/${id}`, { method: 'POST', body: JSON.stringify({ outcome }) }),
   // Where the tariffs were shown and pressed (the log behind the admin's «Воронка тарифов»).
-  trackTariffEvent: (kind: 'view' | 'click' | 'dismiss', source: string) =>
-    request<void>('/me/tariff-events', { method: 'POST', body: JSON.stringify({ kind, source }) }),
+  trackTariffEvent: (kind: string, source: string, detail = '') =>
+    request<void>('/me/tariff-events', { method: 'POST', body: JSON.stringify({ kind, source, detail }) }),
   botPrefs: () => request<BotPrefs>('/me/bot-prefs'),
   setBotPrefs: (patch: Partial<BotPrefs>) =>
     request<BotPrefs>('/me/bot-prefs', { method: 'PUT', body: JSON.stringify(patch) }),
