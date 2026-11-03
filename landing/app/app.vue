@@ -35,6 +35,10 @@ useHead({
       key: 'metrika-goals',
       src: '/metrika-goals.js',
     },
+    {
+      key: 'attribution',
+      src: '/attribution.js',
+    },
   ],
 })
 </script>
