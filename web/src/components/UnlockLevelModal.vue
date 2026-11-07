@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import { X } from 'lucide-vue-next'
 import ModalShell from './ModalShell.vue'
 import SeedIcon from './SeedIcon.vue'
@@ -7,15 +7,18 @@ import { ApiError } from '../api'
 import { useWalletStore } from '../stores/wallet'
 import { useCourseStore } from '../stores/course'
 import { useTariffsStore } from '../stores/tariffs'
-import { grouped, offerForPhase, rub, shortDate } from '../lib/tariffs'
+import { grouped, offerForPhase, shortDate } from '../lib/tariffs'
 import { useToasts } from '../lib/toasts'
 import { useUnlockModal } from '../lib/unlockModal'
 import { useLevelChoiceModal } from '../lib/levelChoiceModal'
 import heart from '../assets/donate/heart.png'
 import { trackTariff } from '../lib/tariffEvents'
+import { claimVariantFor } from '../lib/claimVariant'
+import { useSessionStore } from '../stores/session'
 import scene from '../assets/tariffs-promo-scene.webp'
 
 const wallet = useWalletStore()
+const session = useSessionStore()
 const courseStore = useCourseStore()
 const tariffs = useTariffsStore()
 const { phaseId, closeModal } = useUnlockModal()
@@ -54,6 +57,99 @@ watch(sellsNow, (selling) => selling && trackTariff('view', 'unlock_modal', abou
 function payClicked() {
   trackTariff('click', 'unlock_modal', about.value)
   closeModal()
+}
+
+// Зёрнышки earned and never taken: quests finished and still waiting for «Забрать». Short of зёрнышки, the learner is
+// told so here, in one of two wordings (lib/claimVariant.ts: a button, or a line in place of «Заработать зёрнышки»);
+// taking them can be all it needs to open the level.
+const waiting = computed(() => wallet.quests.filter((q) => q.done && !q.claimed))
+const waitingSeeds = computed(() => waiting.value.reduce((sum, q) => sum + q.reward, 0))
+const claimVariant = computed(() => claimVariantFor(session.user?.id ?? ''))
+const claimOffered = computed(() => sellsNow.value && waitingSeeds.value > 0)
+// It comes a second after the window opens (the owner's wish): the first second is for the level and the gold button.
+// «Заработать зёрнышки» does not show meanwhile either, since there are зёрнышки to take and nothing to earn.
+const CLAIM_APPEARS_AFTER_MS = 1000
+const claimReady = ref(false)
+let claimTimer: ReturnType<typeof setTimeout> | undefined
+watch(
+  phaseId,
+  (id) => {
+    clearTimeout(claimTimer)
+    claimReady.value = false
+    if (id) claimTimer = setTimeout(() => (claimReady.value = true), CLAIM_APPEARS_AFTER_MS)
+  },
+  { immediate: true },
+)
+onBeforeUnmount(() => clearTimeout(claimTimer))
+const claimShown = computed(() => claimOffered.value && claimReady.value)
+const claimDetail = (n: number) => `v=${claimVariant.value},n=${n}`
+// Counted when the learner can see it, not when the window opens.
+watch(claimShown, (shown) => shown && trackTariff('claim_view', 'unlock_modal', claimDetail(waitingSeeds.value)), {
+  immediate: true,
+})
+
+// The quests are usually loaded by now (the header's dot needs them); if not, they are fetched when a level is tapped.
+watch(
+  phaseId,
+  async (id) => {
+    if (!id || wallet.questsLoaded) return
+    try {
+      await wallet.loadQuests(true)
+    } catch {
+      // offline or signed out: the window just has nothing waiting to offer
+    }
+  },
+  { immediate: true },
+)
+
+// The offer unfolds into the window: it grows from nothing to its height and rises a little (quick, then settling), while
+// it fades in more slowly and evenly, so the fade is seen and not over before the card has grown. No animation where the
+// browser has none (tests) or the learner asked for none.
+function unfold(el: Element, done: () => void) {
+  const node = el as HTMLElement
+  const calm = typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  if (typeof node.animate !== 'function' || calm) return done()
+  const height = node.offsetHeight
+  node.style.overflow = 'hidden'
+  let running = 2
+  const end = () => {
+    if (--running > 0) return
+    node.style.overflow = ''
+    done()
+  }
+  const grow = node.animate(
+    [
+      { height: '0px', transform: 'translateY(8px)' },
+      { height: `${height}px`, transform: 'translateY(0)' },
+    ],
+    { duration: 450, easing: 'cubic-bezier(0.22, 1, 0.36, 1)' },
+  )
+  const fade = node.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 700, easing: 'ease-in-out' })
+  for (const motion of [grow, fade]) {
+    motion.onfinish = end
+    motion.oncancel = end
+  }
+}
+
+const claiming = ref(false)
+// Takes every finished quest, a few at a time: there can be dozens of small ones, and one after another would take a
+// while. The balance and the list are read again at the end, so the window shows what is true: «Не хватает» may be gone.
+async function claimWaiting() {
+  if (claiming.value || !waiting.value.length) return
+  claiming.value = true
+  trackTariff('claim', 'unlock_modal', claimDetail(waitingSeeds.value))
+  const due = waiting.value.slice()
+  let paid = 0
+  try {
+    for (let i = 0; i < due.length; i += 6) {
+      const results = await Promise.allSettled(due.slice(i, i + 6).map((q) => wallet.claim(q.id)))
+      for (const r of results) if (r.status === 'fulfilled') paid += r.value
+    }
+  } finally {
+    await Promise.allSettled([wallet.refresh(), wallet.loadQuests(true)])
+    claiming.value = false
+  }
+  if (paid > 0) useToasts().push({ title: 'Зёрнышки получены', text: 'Они ждали в заданиях', reward: paid })
 }
 
 // Closing without going on (the cross, the backdrop, «Позже»), and the free way out, are the other two things a
@@ -164,20 +260,62 @@ async function buy() {
             <p v-else-if="tariffs.levelBonus" class="font-semibold" data-test="unlock-bonus">
               Откройте сразу — и {{ seeds(tariffs.levelBonus) }} в подарок
             </p>
-            <button v-if="offer.from" class="btn btn-seed w-full" disabled data-test="unlock-pay">
-              Хочу уровень — {{ rub(offer.price) }}
-            </button>
+            <!-- No price in this window, neither on the button nor under it (the owner, 2026-11-07): the button is about
+                 what the learner gets, and the price is on the tariffs screen it leads to. -->
+            <button v-if="offer.from" class="btn btn-seed w-full" disabled data-test="unlock-pay">Открыть уровень</button>
             <RouterLink v-else to="/tariffs" class="btn btn-seed w-full" data-test="unlock-pay" @click="payClicked">
-              Хочу уровень — {{ rub(offer.price) }}
-              <s v-if="tariffs.levelDiscount" class="was" data-test="unlock-was">{{ rub(tariffs.levelRegular) }}</s>
+              Открыть уровень
             </RouterLink>
             <p v-if="!offer.from" class="text-xs text-[var(--muted)]" data-test="unlock-thanks">
               Навсегда, без подписки. Hvala lepo <img :src="heart" alt="" aria-hidden="true" class="heart" />
             </p>
           </template>
-          <RouterLink to="/quests" class="quiet-link" data-test="unlock-quests" @click="earnClicked">
-            Заработать зёрнышки
-          </RouterLink>
+          <!-- Зёрнышки waiting in the quests, in one of two wordings (lib/claimVariant.ts). While there are any, earning
+               more is not on offer (the owner: nothing to earn when earned ones lie untaken); «Заработать зёрнышки»
+               is back once nothing is left to take. The offer comes a second after the window opens, unfolding. -->
+          <div class="claim-zone">
+            <Transition :css="false" @enter="unfold">
+              <div v-if="(claimShown || claiming) && claimVariant === 'button'" class="claim-item">
+                <button
+                  type="button"
+                  class="btn btn-ghost w-full"
+                  :disabled="claiming"
+                  data-test="unlock-claim-button"
+                  @click="claimWaiting"
+                >
+                  {{ claiming ? 'Забираем…' : 'Забрать' }}
+                  <template v-if="!claiming">
+                    {{ waitingSeeds }} <SeedIcon :size="18" /><span class="sr-only">{{ wallet.currencyWord(waitingSeeds) }}</span>
+                  </template>
+                </button>
+              </div>
+            </Transition>
+            <Transition :css="false" @enter="unfold">
+              <div v-if="(claimShown || claiming) && claimVariant === 'link'" class="claim-item">
+                <button
+                  type="button"
+                  class="quiet-link"
+                  :disabled="claiming"
+                  data-test="unlock-claim-link"
+                  @click="claimWaiting"
+                >
+                  <template v-if="claiming">Забираем…</template>
+                  <template v-else>
+                    Вас ждут {{ waitingSeeds }} <SeedIcon :size="15" class="seed-in-text" /><span class="sr-only">{{ wallet.currencyWord(waitingSeeds) }}</span> — забрать
+                  </template>
+                </button>
+              </div>
+            </Transition>
+            <RouterLink
+              v-if="!claimOffered && !claiming"
+              to="/quests"
+              class="quiet-link"
+              data-test="unlock-quests"
+              @click="earnClicked"
+            >
+              Заработать зёрнышки
+            </RouterLink>
+          </div>
         </template>
 
         <!-- No payment on offer (tariffs closed for this account): earning is the way. -->
@@ -224,12 +362,27 @@ async function buy() {
 .quiet-link:hover {
   color: var(--fg);
 }
-/* The regular price, struck through inside the button, next to the first-purchase price. */
-.was {
-  margin-left: 0.4rem;
-  font-size: 0.8em;
-  font-weight: 600;
-  opacity: 0.65;
+/* One place under the gold button for whichever of the three is shown, so the gap above it is the same either way. */
+.claim-zone {
+  display: block;
+}
+.claim-item {
+  display: block;
+}
+/* As a button the quiet link is the same line: no box, centred, one seed in the text. */
+button.quiet-link {
+  margin: 0 auto;
+  background: none;
+  cursor: pointer;
+}
+button.quiet-link:disabled {
+  opacity: 0.7;
+  cursor: wait;
+}
+.seed-in-text {
+  display: inline-block;
+  vertical-align: -0.2em;
+  margin-right: 0.3em;
 }
 /* The pixel heart sits on the text line like a letter would. */
 .heart {

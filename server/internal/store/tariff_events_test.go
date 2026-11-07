@@ -144,6 +144,10 @@ func TestKindsBelongToTheirSources(t *testing.T) {
 	}{
 		{TariffEventEarn, TariffSourceUnlockModal, true},
 		{TariffEventDismiss, TariffSourceUnlockModal, true},
+		{TariffEventClaimView, TariffSourceUnlockModal, true},
+		{TariffEventClaim, TariffSourceUnlockModal, true},
+		{TariffEventClaim, TariffSourceStoryModal, false},
+		{TariffEventClaimView, TariffSourceCheckout, false},
 		{TariffEventOpen, TariffSourceCheckout, true},
 		{TariffEventPress, TariffSourceCheckout, true},
 		{TariffEventReceiptView, TariffSourceCheckout, true},

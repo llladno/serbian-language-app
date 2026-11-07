@@ -8,7 +8,7 @@ import { useLevelChoiceModal } from '../lib/levelChoiceModal'
 import { useSessionStore } from '../stores/session'
 import { enableTariffs, sessionUser, tariffsInfo } from '../test/tariffsFixture'
 import { useCourseStore } from '../stores/course'
-import type { Course, LessonStatus } from '../types'
+import type { Course, LessonStatus, Quest } from '../types'
 
 vi.mock('vue-router', () => ({
   RouterLink: { props: ['to'], template: '<a :href="to"><slot /></a>' },
@@ -86,8 +86,8 @@ describe('CourseView: levels for sale', () => {
     await w.find('[data-test="locked-16"]').trigger('click')
     await flushPromises()
     const pay = w.find('[data-test="unlock-pay"]')
-    expect(pay.text()).toContain('Хочу уровень')
-    expect(pay.text()).toContain('249')
+    expect(pay.text()).toBe('Открыть уровень')
+    expect(pay.text()).not.toMatch(/₽|\d/) // no price on the button
     expect(pay.attributes('href')).toBe('/tariffs')
     expect(w.find('[data-test="unlock-order"]').exists()).toBe(false)
     // earning is still on offer, next to paying
@@ -104,18 +104,19 @@ describe('CourseView: levels for sale', () => {
     expect(w.find('[data-test="unlock-bonus"]').text().replace(/\s+/g, ' ')).toContain('1 000')
   })
 
-  it('names the discount where the first purchase is offered', async () => {
+  // The owner took the price out of this window (2026-11-07): the button is about what the learner gets.
+  it('names no price anywhere in the window, only what comes with paying', async () => {
     vi.spyOn(api, 'tariffs').mockResolvedValue(tariffsInfo())
     const w = mountView()
     enableTariffs()
     await flushPromises()
     await w.find('[data-test="locked-16"]').trigger('click')
     await flushPromises()
-    // the regular price struck through inside the button, no line of its own
-    const was = w.find('[data-test="unlock-was"]')
-    expect(was.element.tagName).toBe('S')
-    expect(was.text().replace(/\s+/g, ' ')).toContain('299')
-    expect(w.find('[data-test="unlock-pay"]').text()).toContain('249')
+    const said = w.find('[data-test="unlock-modal"]').text().replace(/\s+/g, ' ')
+    expect(said).not.toMatch(/₽|руб/)
+    expect(w.find('[data-test="unlock-was"]').exists()).toBe(false)
+    expect(w.find('[data-test="unlock-pay"]').text()).toBe('Открыть уровень')
+    expect(w.find('[data-test="unlock-thanks"]').text().replace(/\s+/g, ' ')).toContain('Навсегда, без подписки')
   })
 
   // The words of this window are those of the banner and the channel: «вы», warm, a little adventure.
@@ -181,7 +182,7 @@ describe('CourseView: levels for sale', () => {
     // the gold button is the level, not payable before its date
     const pay = w.find('[data-test="unlock-pay"]')
     expect(pay.classes()).toContain('btn-seed')
-    expect(pay.text()).toContain('299')
+    expect(pay.text()).toBe('Открыть уровень')
     expect(pay.attributes('disabled')).toBeDefined()
     expect(w.find('[data-test="unlock-order"]').exists()).toBe(false)
   })
@@ -321,7 +322,7 @@ describe('CourseView: levels for sale', () => {
     await flushPromises()
     await w.find('[data-test="locked-30"]').trigger('click')
     await flushPromises()
-    expect(w.find('[data-test="unlock-pay"]').text()).toContain('Хочу уровень')
+    expect(w.find('[data-test="unlock-pay"]').text()).toBe('Открыть уровень')
     expect(w.find('[data-test="unlock-pay"]').text()).not.toContain('Хочу все уровни')
     expect(w.find('[data-test="unlock-order"]').exists()).toBe(false)
     expect(w.find('[data-test="unlock-bonus"]').exists()).toBe(true)
@@ -633,5 +634,146 @@ describe('CourseView scrolls to where the learner left off', () => {
     await flushPromises()
     await new Promise((r) => setTimeout(r, 70))
     expect(scrolled).toEqual(['11'])
+  })
+})
+
+// Зёрнышки earned and never taken, offered in the window of a paid level in one of two wordings (lib/claimVariant.ts).
+// They come a second after the window opens, so these tests keep the clock of setTimeout in their own hands.
+describe('CourseView: the window of a paid level with зёрнышки waiting in the quests', () => {
+  const waitingQuest = (id: number, reward: number, over: Partial<Quest> = {}): Quest => ({
+    id,
+    kind: 'lessons_completed',
+    title: `Задание ${id}`,
+    description: '',
+    target: 1,
+    value: 1,
+    reward,
+    done: true,
+    claimed: false,
+    ...over,
+  })
+  // 40 + 36 waiting, one already taken, one not finished: 76 can be taken.
+  const quests = (): Quest[] => [
+    waitingQuest(1, 40),
+    waitingQuest(2, 36),
+    waitingQuest(3, 20, { claimed: true }),
+    waitingQuest(4, 99, { done: false, value: 0 }),
+  ]
+
+  // Opens the window and lets `afterMs` of its life pass (a second by default: the offer is there by then).
+  async function openWindow(variant: 'button' | 'link', list: Quest[] = quests(), afterMs = 1000) {
+    localStorage.setItem('srpski.claimVariant', variant)
+    vi.spyOn(api, 'quests').mockResolvedValue({ quests: list })
+    vi.spyOn(api, 'tariffs').mockResolvedValue(tariffsInfo())
+    const spy = vi.spyOn(api, 'trackTariffEvent').mockResolvedValue(undefined)
+    const w = mountView()
+    enableTariffs()
+    await flushPromises()
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] })
+    try {
+      await w.find('[data-test="locked-16"]').trigger('click')
+      await vi.advanceTimersByTimeAsync(afterMs)
+    } finally {
+      vi.useRealTimers()
+    }
+    await flushPromises()
+    return { w, spy }
+  }
+
+  it('offers nothing when everything earned has been taken', async () => {
+    const { w, spy } = await openWindow('button', [waitingQuest(3, 20, { claimed: true })])
+    expect(w.find('[data-test="unlock-claim-button"]').exists()).toBe(false)
+    expect(w.find('[data-test="unlock-claim-link"]').exists()).toBe(false)
+    expect(w.find('[data-test="unlock-quests"]').exists()).toBe(true)
+    expect(spy.mock.calls.filter((c) => c[0] === 'claim_view')).toHaveLength(0)
+  })
+
+  for (const variant of ['button', 'link'] as const) {
+    it(`wording ${variant}: not there as the window opens, there a second later`, async () => {
+      const early = await openWindow(variant, quests(), 900)
+      expect(early.w.find(`[data-test="unlock-claim-${variant}"]`).exists()).toBe(false)
+      // nothing to earn while some lie untaken, so the place is empty for that second
+      expect(early.w.find('[data-test="unlock-quests"]').exists()).toBe(false)
+      // the showing is counted when it can be seen
+      expect(early.spy.mock.calls.filter((c) => c[0] === 'claim_view')).toHaveLength(0)
+      early.w.unmount()
+      useUnlockModal().closeModal()
+
+      const late = await openWindow(variant, quests(), 1000)
+      expect(late.w.find(`[data-test="unlock-claim-${variant}"]`).exists()).toBe(true)
+      expect(late.spy).toHaveBeenCalledWith('claim_view', 'unlock_modal', `v=${variant},n=76`)
+    })
+  }
+
+  it('wording one: a button «Забрать N» under the gold one, and nothing to earn while some lie untaken', async () => {
+    const { w } = await openWindow('button')
+    const button = w.get('[data-test="unlock-claim-button"]')
+    expect(button.text().replace(/\s+/g, ' ')).toContain('Забрать 76')
+    expect(button.find('svg, img').exists()).toBe(true) // the seed
+    expect(button.classes()).not.toContain('btn-seed') // the gold one is the payment
+    expect(w.find('[data-test="unlock-claim-link"]').exists()).toBe(false)
+    expect(w.find('[data-test="unlock-quests"]').exists()).toBe(false)
+  })
+
+  it('wording two: a line in place of «Заработать зёрнышки»', async () => {
+    const { w } = await openWindow('link')
+    const line = w.get('[data-test="unlock-claim-link"]')
+    expect(line.classes()).toContain('quiet-link')
+    expect(line.text().replace(/\s+/g, ' ')).toMatch(/Вас ждут 76.*забрать/)
+    expect(w.find('[data-test="unlock-claim-button"]').exists()).toBe(false)
+    expect(w.find('[data-test="unlock-quests"]').exists()).toBe(false)
+  })
+
+  it('does not change what the window reports about the tariff itself', async () => {
+    const { w, spy } = await openWindow('button')
+    expect(spy.mock.calls.filter((c) => c[0] === 'view' && c[1] === 'unlock_modal')).toHaveLength(1)
+    expect(spy).toHaveBeenCalledWith('view', 'unlock_modal', 'phase:2')
+    expect(w.find('[data-test="unlock-pay"]').exists()).toBe(true)
+  })
+
+  for (const variant of ['button', 'link'] as const) {
+    it(`taking them (${variant}) at once claims every finished quest and the missing зёрнышки are gone`, async () => {
+      const { w, spy } = await openWindow(variant)
+      const claim = vi.spyOn(api, 'claimQuest').mockImplementation(async (id: number) => ({
+        reward: id === 1 ? 40 : 36,
+        balance: 100 + (id === 1 ? 40 : 36),
+      }))
+      // after the claims the server says: 230 зёрнышек, nothing waiting any more
+      vi.spyOn(api, 'wallet').mockResolvedValue(wallet(230))
+      vi.spyOn(api, 'quests').mockResolvedValue({ quests: quests().map((q) => (q.done ? { ...q, claimed: true } : q)) })
+      await w.get(`[data-test="unlock-claim-${variant}"]`).trigger('click')
+      await flushPromises()
+      expect(claim.mock.calls.map((c) => c[0]).sort()).toEqual([1, 2])
+      expect(spy).toHaveBeenCalledWith('claim', 'unlock_modal', `v=${variant},n=76`)
+      // 230 is the price of the level: it can be opened now
+      expect(w.find('[data-test="unlock-buy"]').exists()).toBe(true)
+      expect(w.find('[data-test="unlock-missing"]').exists()).toBe(false)
+    })
+  }
+
+  it('brings «Заработать зёрнышки» back once everything has been taken and the level is still out of reach', async () => {
+    const { w } = await openWindow('link')
+    vi.spyOn(api, 'claimQuest').mockImplementation(async (id: number) => ({
+      reward: id === 1 ? 40 : 36,
+      balance: 40,
+    }))
+    vi.spyOn(api, 'wallet').mockResolvedValue(wallet(76))
+    vi.spyOn(api, 'quests').mockResolvedValue({ quests: quests().map((q) => (q.done ? { ...q, claimed: true } : q)) })
+    await w.get('[data-test="unlock-claim-link"]').trigger('click')
+    await flushPromises()
+    expect(w.find('[data-test="unlock-claim-link"]').exists()).toBe(false)
+    expect(w.find('[data-test="unlock-missing"]').text()).toContain('154')
+    expect(w.find('[data-test="unlock-quests"]').exists()).toBe(true)
+  })
+
+  it('is not offered where no payment is on offer to the learner', async () => {
+    localStorage.setItem('srpski.claimVariant', 'button')
+    vi.spyOn(api, 'quests').mockResolvedValue({ quests: quests() })
+    useSessionStore().user = sessionUser(false)
+    const w = mountView()
+    await flushPromises()
+    await w.find('[data-test="locked-16"]').trigger('click')
+    await flushPromises()
+    expect(w.find('[data-test="unlock-claim-button"]').exists()).toBe(false)
   })
 })

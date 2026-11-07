@@ -14,7 +14,13 @@ import { useTariffsStore } from '../stores/tariffs'
 export type TariffSource = 'profile_banner' | 'repeat_limit' | 'unlock_modal' | 'story_modal'
 export type CheckoutKind = 'open' | 'press' | 'receipt_view' | 'receipt_send' | 'receipt_cancel'
 
-export function trackTariff(kind: 'view' | 'click' | 'dismiss' | 'earn', source: TariffSource, detail = ''): void {
+// 'claim_view' and 'claim' are the window of a paid level offering зёрнышки already earned, and the learner taking them
+// (see lib/claimVariant.ts); the admin's counts leave them out.
+export function trackTariff(
+  kind: 'view' | 'click' | 'dismiss' | 'earn' | 'claim_view' | 'claim',
+  source: TariffSource,
+  detail = '',
+): void {
   if (!useTariffsStore().enabled) return
   void (detail ? api.trackTariffEvent(kind, source, detail) : api.trackTariffEvent(kind, source)).catch(() => {})
 }

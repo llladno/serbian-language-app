@@ -15,6 +15,12 @@ const (
 	TariffEventDismiss = "dismiss"
 	// TariffEventEarn is a learner taking the free way out of the window of a paid level or story: «Заработать зёрнышки».
 	TariffEventEarn = "earn"
+	// TariffEventClaimView and TariffEventClaim belong to the window of a paid level only: зёрнышки already earned and
+	// not yet taken were offered to the learner (claim_view), and the learner took them there (claim). The detail says
+	// which wording the learner got ("v=button" or "v=link") and how many were waiting ("n=76"). They are their own kinds,
+	// not a detail of view/click, so the admin's counts of showings and presses of the tariff stay what they were.
+	TariffEventClaimView = "claim_view"
+	TariffEventClaim     = "claim"
 
 	// The steps of paying, reported under TariffSourceCheckout: the tariffs screen opened, a pay button pressed,
 	// the window that asks where the receipt goes shown / answered / closed, and an order that was refused.
@@ -52,6 +58,8 @@ func ValidTariffEvent(kind, source string) bool {
 		switch kind {
 		case TariffEventView, TariffEventClick, TariffEventDismiss, TariffEventEarn:
 			return true
+		case TariffEventClaimView, TariffEventClaim:
+			return source == TariffSourceUnlockModal
 		}
 	case TariffSourceCheckout:
 		switch kind {
