@@ -95,6 +95,7 @@ const (
 	QuestLessonCompleted    = "lesson_completed"
 	QuestFriendsInvited     = "friends_invited"
 	QuestStoriesCompleted   = "stories_completed"
+	QuestOnboardingDone     = "onboarding_done"
 )
 
 // Quest is one row of the quests table.
@@ -127,6 +128,8 @@ type Counters struct {
 	FriendsInvited int
 	// StoriesCompleted is how many stories the learner has listened to the end and answered (story_progress.completed_at).
 	StoriesCompleted int
+	// OnboardingDone is whether the learner has seen the swallow's tour to the end (onboarding.status = 'done').
+	OnboardingDone bool
 }
 
 // QuestValue is the user's current value for q. For phase_completed the value
@@ -167,6 +170,11 @@ func QuestValue(q Quest, c Counters, phaseLessons map[string][]string) int {
 		return c.FriendsInvited
 	case QuestStoriesCompleted:
 		return c.StoriesCompleted
+	case QuestOnboardingDone:
+		if c.OnboardingDone {
+			return 1
+		}
+		return 0
 	case QuestLessonCompleted:
 		if c.CompletedLessons[q.Param] {
 			return 1

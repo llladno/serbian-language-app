@@ -221,11 +221,12 @@ async function buy() {
     </p>
 
     <ul v-else class="grid gap-4 sm:grid-cols-2" data-test="stories-list">
-      <li v-for="s in visible" :key="s.slug">
+      <li v-for="(s, i) in visible" :key="s.slug">
         <button
           type="button"
           class="card poster relative block w-full overflow-hidden bg-[var(--bg-soft)] text-left transition hover:-translate-y-0.5"
           data-test="story-card"
+          :data-tour="i === 0 ? 'story' : undefined"
           @click="open(s)"
         >
           <img v-if="s.cover" :src="s.cover" alt="" class="absolute inset-0 h-full w-full object-cover" style="image-rendering: pixelated" />

@@ -39,15 +39,16 @@ const dueTotal = computed(() => props.progress.srs.due_today + props.progress.sr
 </script>
 
 <template>
-  <div class="space-y-4">
-    <div class="grid grid-cols-1 gap-4 xl:grid-cols-2">
+  <!-- On a phone the grids dissolve (`contents`) and the cards are ordered by hand: sentences to repeat first, then the
+       words, then the rest. From `xl` up the two grids and the wide card keep their own places. -->
+  <div class="flex flex-col gap-4" data-tour="progress">
+    <div class="grid grid-cols-1 gap-4 max-xl:contents xl:grid-cols-2">
       <RouterLink
         to="/review"
-        class="card group block overflow-hidden p-5 transition hover:-translate-y-0.5"
-        style="
-          background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 10%, var(--card)), var(--card) 65%);
-        "
+        class="card group block overflow-hidden p-5 transition hover:-translate-y-0.5 max-xl:order-2"
+        data-test="words-card"
       >
+        <p class="mb-3 text-xs font-bold uppercase tracking-wide text-[var(--muted)]">Слова</p>
         <div class="flex items-center gap-4">
           <div class="relative shrink-0">
             <ProgressRing :value="todayCount" :max="progress.daily_goal" :size="80" :stroke="8" />
@@ -72,7 +73,7 @@ const dueTotal = computed(() => props.progress.srs.due_today + props.progress.sr
         </div>
       </RouterLink>
 
-      <div class="card p-5">
+      <div class="card p-5 max-xl:order-3">
         <div class="mb-3 flex items-baseline justify-between">
           <p class="font-bold">
             <span class="text-xl">{{ progress.streak_days }}</span>
@@ -85,17 +86,17 @@ const dueTotal = computed(() => props.progress.srs.due_today + props.progress.sr
       </div>
     </div>
 
-    <div class="grid grid-cols-1 gap-4 xl:grid-cols-2">
+    <div class="grid grid-cols-1 gap-4 max-xl:contents xl:grid-cols-2">
       <RouterLink
         v-if="continueLesson"
         :to="`/lesson/${continueLesson.id}`"
-        class="card block p-4 transition hover:-translate-y-0.5"
+        class="card block p-4 transition hover:-translate-y-0.5 max-xl:order-4"
       >
         <p class="text-xs uppercase tracking-wide text-[var(--muted)]">{{ continueLesson.label }}</p>
         <p class="text-lg font-bold">{{ continueLesson.id }}. {{ show(continueLesson.title) }}</p>
       </RouterLink>
 
-      <div v-if="wotd" class="card flex gap-4 p-4">
+      <div v-if="wotd" class="card flex gap-4 p-4 max-xl:order-5">
         <WordMedia :image="wotd.image" :emoji="wotd.emoji" :alt="wotd.ru" :size="72" class="shrink-0" />
         <div class="min-w-0">
           <p class="mb-1 text-xs uppercase tracking-wide text-[var(--muted)]">Слово дня</p>
@@ -110,10 +111,11 @@ const dueTotal = computed(() => props.progress.srs.due_today + props.progress.sr
          «Повторить слова» above is the SRS review of words, a different thing. -->
     <RouterLink
       to="/repeat"
-      class="card group block overflow-hidden p-5 transition hover:-translate-y-0.5"
+      class="card group block overflow-hidden p-5 transition hover:-translate-y-0.5 max-xl:order-1"
       data-test="repeat-card"
       style="background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 10%, var(--card)), var(--card) 65%)"
     >
+      <p class="mb-3 text-xs font-bold uppercase tracking-wide text-[var(--muted)]">Предложения</p>
       <div class="flex items-center gap-4">
         <span class="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-[var(--accent-soft)] text-[var(--accent)]">
           <RotateCcw :size="26" :stroke-width="2.25" />
@@ -128,7 +130,7 @@ const dueTotal = computed(() => props.progress.srs.due_today + props.progress.sr
 
     <div
       v-if="totalDone === 0 && progress.srs.reviewed_today === 0"
-      class="card p-6 text-center text-[var(--muted)]"
+      class="card p-6 text-center text-[var(--muted)] max-xl:order-6"
     >
       Начни с <RouterLink to="/lesson/01" class="font-semibold text-[var(--accent)]">урока 01</RouterLink>.
     </div>

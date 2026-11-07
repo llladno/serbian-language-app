@@ -10,6 +10,7 @@ import UnlockLevelModal from '../components/UnlockLevelModal.vue'
 import { useWalletStore } from '../stores/wallet'
 import { useUnlockModal } from '../lib/unlockModal'
 import { useScript } from '../lib/useScript'
+import { useOnboarding } from '../lib/onboarding'
 import { lastStudiedLesson } from '../lib/lastStudied'
 import { levelPassed, levelProgress, readCollapsed, writeCollapsed } from '../lib/courseCollapse'
 import type { LessonRef, Phase } from '../types'
@@ -21,6 +22,7 @@ const { course, loading, error } = storeToRefs(store)
 
 const wallet = useWalletStore()
 const unlock = useUnlockModal()
+const onboarding = useOnboarding()
 
 // The balance and the shop are what the unlock modal needs; the course itself
 // does not wait for them.
@@ -31,6 +33,8 @@ onMounted(async () => {
   // since is not in it), and where to scroll depends on the statuses, so read it again.
   await (course.value ? store.refresh() : store.load())
   void scrollToLastStudied()
+  // After the first finished lesson the swallow offers a tour of the app (the server says whether it is due).
+  void onboarding.checkDue()
 })
 
 // Scrolls the course to the lesson the learner was last at (see lastStudiedLesson),
@@ -55,6 +59,18 @@ async function scrollToLastStudied() {
     await new Promise((r) => setTimeout(r, 50))
   }
 }
+
+// The lesson the swallow points at on the course map: the first one still to do in a level that is open.
+const nextLessonId = computed(() => {
+  for (const phase of course.value?.phases ?? []) {
+    if (phase.locked) continue
+    for (const lid of phase.lessons) {
+      const l = byId.value.get(lid)
+      if (l && !l.planned && l.status !== 'done') return lid
+    }
+  }
+  return ''
+})
 
 const byId = computed(() => {
   const m = new Map<string, LessonRef>()
@@ -206,6 +222,7 @@ function badgeClass(lesson?: LessonRef) {
             :key="lid"
             v-bind="cardAttrs(phase, lid)"
             :data-lesson="lid"
+            :data-tour="lid === nextLessonId ? 'lesson' : undefined"
             class="card flex items-center gap-3.5 p-4 transition"
             :class="comingSoon(phase) ? '' : 'cursor-pointer active:scale-[0.99] hover:-translate-y-0.5'"
             @click="forSale(phase) && unlock.openFor(phase.id)"

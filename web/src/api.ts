@@ -176,6 +176,10 @@ export const api = {
   answerSurvey: (answers: SurveyAnswers) =>
     request<{ status: string; reward: number }>('/me/survey', { method: 'POST', body: JSON.stringify(answers) }),
   dismissSurvey: () => request<{ status: string }>('/me/survey/dismiss', { method: 'POST' }),
+  // The swallow's tour: `due` says whether it should start by itself, `reward` what finishing it pays right now.
+  onboarding: () => request<{ due: boolean; reward: number }>('/me/onboarding'),
+  answerOnboarding: (action: 'postpone' | 'done') =>
+    request<{ reward: number; balance?: number }>('/me/onboarding', { method: 'POST', body: JSON.stringify({ action }) }),
   wallet: () => request<Wallet>('/me/wallet'),
   tariffs: () => request<TariffsInfo>('/me/tariffs'),
   // contact: the email or phone the receipt goes to, only for an account that has no email of its own.

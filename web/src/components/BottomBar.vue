@@ -13,7 +13,7 @@
 </script>
 
 <template>
-  <div class="fixed inset-x-0 bottom-0 z-20 bg-[var(--bg)]">
+  <div class="bottom-bar fixed inset-x-0 bottom-0 z-20 bg-[var(--bg)]">
     <div
       class="mx-auto max-w-3xl px-4 py-3 sm:px-6"
       style="padding-bottom: calc(0.75rem + env(safe-area-inset-bottom))"

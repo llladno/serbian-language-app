@@ -177,7 +177,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKey))
     <p v-else-if="error" key="error" class="card p-4 text-[var(--bad)]">{{ error }}</p>
 
     <!-- session summary -->
-    <div v-else-if="done" key="done" class="card p-8 text-center">
+    <div v-else-if="done" key="done" class="card p-8 text-center" data-tour="words-card">
       <p class="text-4xl">🎉</p>
       <p class="mt-2 text-lg font-bold">Сессия закончена</p>
       <p class="mt-1 text-[var(--muted)]">{{ sessionCount }} карточек</p>
@@ -194,7 +194,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKey))
     </div>
 
     <!-- empty -->
-    <div v-else-if="!current" key="empty" class="card p-8 text-center">
+    <div v-else-if="!current" key="empty" class="card p-8 text-center" data-tour="words-card">
       <p class="text-3xl">✨</p>
       <p class="mt-2 text-lg font-bold">На сегодня всё</p>
       <p class="mt-1 text-[var(--muted)]">Новые карточки и повторения появятся завтра.</p>
@@ -202,7 +202,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKey))
     </div>
 
     <!-- card -->
-    <div v-else key="card" class="space-y-5">
+    <div v-else key="card" class="space-y-5" data-tour="words-card">
       <div class="h-1.5 overflow-hidden rounded-full bg-[var(--ring-track)]">
         <div class="h-full rounded-full bg-[var(--accent)] transition-all duration-300" :style="{ width: progressPct + '%' }" />
       </div>

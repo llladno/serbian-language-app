@@ -479,3 +479,9 @@ body {
 .md td:first-child { font-weight: 600; }
 .md hr { border: none; border-top: 1px solid var(--border); margin: 1.5em 0; }
 .md a { color: var(--accent); text-underline-offset: 2px; }
+
+/* While the swallow's tour is open (OnboardingTour sets body[data-tour]), a page's pinned action bar would sit on top of
+   the tab bar she lights up, so it steps aside. */
+body[data-tour='open'] .bottom-bar {
+  visibility: hidden;
+}

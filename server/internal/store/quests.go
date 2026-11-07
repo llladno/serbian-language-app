@@ -70,6 +70,13 @@ func (u *UserStore) QuestCounters(now time.Time) (economy.Counters, error) {
 		return c, fmt.Errorf("counters: stories: %w", err)
 	}
 
+	var toured int
+	if err := u.db.QueryRow(`SELECT COUNT(*) FROM onboarding WHERE user_id = ? AND status = 'done'`,
+		u.user).Scan(&toured); err != nil {
+		return c, fmt.Errorf("counters: onboarding: %w", err)
+	}
+	c.OnboardingDone = toured > 0
+
 	_, best, err := u.AnswerStreak()
 	if err != nil {
 		return c, err

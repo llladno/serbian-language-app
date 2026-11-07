@@ -6,6 +6,7 @@ import { api, ApiError } from '../api'
 import { useRewardModal } from '../lib/rewardModal'
 import { useToasts } from '../lib/toasts'
 import { useInviteModal } from '../lib/inviteModal'
+import { useOnboarding } from '../lib/onboarding'
 import type { Quest } from '../types'
 
 vi.mock('vue-router', () => ({
@@ -381,6 +382,37 @@ describe('QuestsView', () => {
       expect(document.body.querySelector('[data-test="invite-error"]')).not.toBeNull()
       expect(document.body.querySelector('[data-test="invite-link"]')).toBeNull()
       w.unmount()
+    })
+  })
+
+  describe('the swallow’s tour', () => {
+    const tour = (over: Partial<Quest> = {}) =>
+      quest({ id: 9, kind: 'onboarding_done', title: 'Знакомство с приложением', description: 'Ласточка покажет, где что', target: 1, value: 0, reward: 5, done: false, ...over })
+
+    afterEach(() => useOnboarding().close())
+
+    it('offers the tour from the card while it has not been taken, and starts it without the opening offer', async () => {
+      vi.spyOn(api, 'quests').mockResolvedValue({ quests: [tour()] })
+      const w = mount(QuestsView)
+      await flushPromises()
+      await w.find('[data-test="quest-tour"]').trigger('click')
+      await flushPromises()
+      const t = useOnboarding()
+      expect(t.open.value).toBe(true)
+      expect(t.isOffer.value).toBe(false)
+      expect(t.steps.value[0].id).toBe('course')
+      expect(t.steps.value.at(-1)?.text).toContain('Держи свои 5')
+    })
+
+    it('lets a learner who has taken the seeds go through it again, for nothing', async () => {
+      vi.spyOn(api, 'quests').mockResolvedValue({ quests: [tour({ done: true, claimed: true, value: 1 })] })
+      const w = mount(QuestsView)
+      await flushPromises()
+      expect(w.find('[data-test="quest-tour"]').exists()).toBe(false)
+      await w.find('[data-test="quest-tour-again"]').trigger('click')
+      await flushPromises()
+      expect(useOnboarding().open.value).toBe(true)
+      expect(useOnboarding().steps.value.at(-1)?.text).not.toContain('Держи')
     })
   })
 })

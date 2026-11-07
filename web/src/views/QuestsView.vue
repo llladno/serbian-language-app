@@ -19,6 +19,7 @@ import { openTelegramLink } from '../telegram'
 import { useTelegramStart } from '../lib/telegramStart'
 import { useToasts } from '../lib/toasts'
 import { useInviteModal } from '../lib/inviteModal'
+import { useOnboarding } from '../lib/onboarding'
 import { groupQuests } from '../lib/questGroups'
 import SeedIcon from '../components/SeedIcon.vue'
 import SegmentBar from '../components/SegmentBar.vue'
@@ -30,6 +31,7 @@ import type { Quest } from '../types'
 const wallet = useWalletStore()
 const { celebrate } = useRewardModal()
 const invite = useInviteModal()
+const onboarding = useOnboarding()
 
 // The invite quest pays the same for everyone; the modal quotes the number from
 // the quest itself, so changing the reward in the admin panel needs no deploy.
@@ -142,7 +144,7 @@ async function claim(q: Quest) {
 
 <template>
   <div class="space-y-6">
-    <section class="card p-5">
+    <section class="card p-5" data-tour="wallet">
       <div class="flex items-center gap-4">
         <img :src="pile" alt="" aria-hidden="true" class="pile" />
         <div class="min-w-0">
@@ -287,6 +289,16 @@ async function claim(q: Quest) {
                 </button>
               </template>
             </div>
+            <div v-else-if="q.kind === 'onboarding_done'" class="w-full shrink-0 sm:w-auto">
+              <button
+                type="button"
+                class="btn btn-primary btn-side w-full sm:w-auto"
+                data-test="quest-tour"
+                @click="onboarding.startFromQuest(q.reward)"
+              >
+                Пройти
+              </button>
+            </div>
             <div v-else-if="q.kind === 'friends_invited'" class="w-full shrink-0 sm:w-auto">
               <button
                 type="button"
@@ -303,7 +315,7 @@ async function claim(q: Quest) {
 
       <section v-if="claimed.length" class="space-y-3">
         <h2 class="px-1 font-bold">Получено</h2>
-        <div class="flex flex-wrap gap-2">
+        <div class="flex flex-wrap items-center gap-2">
           <span
             v-for="q in claimed"
             :key="q.id"
@@ -314,6 +326,17 @@ async function claim(q: Quest) {
               {{ q.reward }}<SeedIcon :size="12" />
             </span>
           </span>
+          <!-- The tour can be taken again, for nothing: the swallow is happy to repeat herself. -->
+          <button
+            v-for="q in claimed.filter((c) => c.kind === 'onboarding_done')"
+            :key="'tour' + q.id"
+            type="button"
+            class="rounded-full px-3 py-1.5 text-sm font-semibold text-[var(--accent)] underline-offset-2 hover:underline"
+            data-test="quest-tour-again"
+            @click="onboarding.startFromQuest(0)"
+          >
+            Пройти знакомство ещё раз
+          </button>
         </div>
       </section>
 

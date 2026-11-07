@@ -3,6 +3,7 @@ import { onMounted } from 'vue'
 import { RouterView, useRoute } from 'vue-router'
 import { useSessionStore } from './stores/session'
 import AppNav from './components/AppNav.vue'
+import OnboardingTour from './components/OnboardingTour.vue'
 
 const session = useSessionStore()
 const route = useRoute()
@@ -46,6 +47,7 @@ onMounted(() => {
         </div>
       </RouterView>
     </main>
+    <OnboardingTour />
   </template>
   <template v-else>
     <RouterView />

@@ -165,6 +165,7 @@ type defaultQuest struct {
 // screen yet, and a cosmetic nobody can see is a row that will drift out of
 // date before it is ever used.
 var defaultQuests = []defaultQuest{
+	{"onboarding_done", 1, "", "Знакомство с приложением", "Ласточка покажет, где что", 5, 5},
 	{"telegram_subscribed", 1, "", "Подписаться на канал", "Подпишись на наш Telegram-канал", 20, 10},
 	{"friends_invited", 1, "", "Пригласить друга", "Друг пришёл по твоей ссылке", 30, 12},
 	{"lessons_completed", 5, "", "Пройти 5 уроков", "", 5, 20},

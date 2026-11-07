@@ -48,11 +48,11 @@ onBeforeUnmount(() => {
 })
 
 const links = [
-  { to: '/profile', label: 'Профиль', icon: User },
-  { to: '/course', label: 'Курс', icon: GraduationCap },
-  { to: '/review', label: 'Слова', icon: Repeat },
-  { to: '/vocab', label: 'Словарь', icon: Languages },
-  { to: '/stories', label: 'Истории', icon: BookHeadphones },
+  { to: '/profile', label: 'Профиль', icon: User, tour: 'profile' },
+  { to: '/course', label: 'Курс', icon: GraduationCap, tour: 'course' },
+  { to: '/review', label: 'Слова', icon: Repeat, tour: 'review' },
+  { to: '/vocab', label: 'Словарь', icon: Languages, tour: 'vocab' },
+  { to: '/stories', label: 'Истории', icon: BookHeadphones, tour: 'stories' },
 ]
 
 const active = computed(() => route.path)
@@ -82,6 +82,7 @@ watch(() => route.path, refreshWallet)
           v-for="l in links"
           :key="l.to"
           :to="l.to"
+          :data-tour="l.tour"
           class="flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-semibold transition"
           :class="
             isActive(l.to)
@@ -100,6 +101,7 @@ watch(() => route.path, refreshWallet)
         class="relative ml-auto flex h-9 shrink-0 items-center gap-1.5 rounded-full bg-[var(--bg-soft)] px-2.5 text-sm font-bold transition hover:bg-[var(--accent-soft)]"
         :title="wallet.claimable > 0 ? 'Есть выполненные задания' : 'Задания и зёрнышки'"
         data-test="wallet-chip"
+        data-tour="quests"
       >
         <SeedIcon :size="15" />
         <AnimatedNumber :value="wallet.balance" />
@@ -138,6 +140,7 @@ watch(() => route.path, refreshWallet)
       v-for="l in links"
       :key="l.to"
       :to="l.to"
+      :data-tour="l.tour"
       class="flex flex-1 flex-col items-center gap-0.5 rounded-3xl py-2 text-[10px] font-medium transition"
       :class="isActive(l.to) ? 'bg-[var(--accent)] text-white' : 'text-[var(--muted)]'"
     >
