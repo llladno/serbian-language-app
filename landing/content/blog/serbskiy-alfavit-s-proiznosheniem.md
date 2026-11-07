@@ -113,4 +113,4 @@ faq:
 
 ---
 
-Алфавит — это первый шаг. Следующий — слова и фразы: [«Полезные слова и фразы на сербском для начинающих»](/blog/slova-i-frazy-na-serbskom-dlya-nachinayushchih) и [«Приветствия и прощания на сербском»](/blog/privetstviya-i-proshchaniya-na-serbskom). Хотите учить по плану, а не вразнобой? Откройте [пошаговый план изучения сербского с нуля](/blog/kak-vyuchit-serbskiy-yazyk-samostoyatelno-s-nulya) или начните бесплатно в приложении [ucimo](https://ucimo.ru/register): три уровня без рекламы и подписки.
+Алфавит — это первый шаг. Следующий — слова и фразы: [«Полезные слова и фразы на сербском для начинающих»](/blog/slova-i-frazy-na-serbskom-dlya-nachinayushchih) и [«Приветствия и прощания на сербском»](/blog/privetstviya-i-proshchaniya-na-serbskom). Хотите учить по плану, а не вразнобой? Откройте [пошаговый план изучения сербского с нуля](/blog/kak-vyuchit-serbskiy-yazyk-samostoyatelno-s-nulya) или начните бесплатно в приложении [ucimo](https://ucimo.ru/register): первый уровень без рекламы и подписки.

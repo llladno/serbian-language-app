@@ -127,4 +127,4 @@ faq:
 
 ---
 
-Если вы встречаетесь с сербом или сербкой и хотите говорить на его языке, начните с основ: [алфавит и чтение](/blog/serbskiy-alfavit-s-proiznosheniem), [приветствия и знакомство](/blog/privetstviya-i-proshchaniya-na-serbskom) и [готовый план обучения с нуля](/blog/kak-vyuchit-serbskiy-yazyk-samostoyatelno-s-nulya). Начать можно бесплатно в приложении [ucimo](https://ucimo.ru/register): три уровня без рекламы и подписки.
+Если вы встречаетесь с сербом или сербкой и хотите говорить на его языке, начните с основ: [алфавит и чтение](/blog/serbskiy-alfavit-s-proiznosheniem), [приветствия и знакомство](/blog/privetstviya-i-proshchaniya-na-serbskom) и [готовый план обучения с нуля](/blog/kak-vyuchit-serbskiy-yazyk-samostoyatelno-s-nulya). Начать можно бесплатно в приложении [ucimo](https://ucimo.ru/register): первый уровень без рекламы и подписки.

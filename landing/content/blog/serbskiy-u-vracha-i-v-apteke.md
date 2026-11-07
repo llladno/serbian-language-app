@@ -148,4 +148,4 @@ faq:
 
 ---
 
-Чтобы увереннее чувствовать себя в Сербии, добавьте к этим фразам [приветствия](/blog/privetstviya-i-proshchaniya-na-serbskom), [слова для кафе и магазина](/blog/frazy-v-kafe-restorane-i-magazine-na-serbskom) и [бытовой словарь переезда](/blog/serbskiy-yazyk-dlya-pereezda-v-serbiyu). Всё это можно учить бесплатно: три уровня курса [ucimo](https://ucimo.ru/register) без рекламы и подписки.
+Чтобы увереннее чувствовать себя в Сербии, добавьте к этим фразам [приветствия](/blog/privetstviya-i-proshchaniya-na-serbskom), [слова для кафе и магазина](/blog/frazy-v-kafe-restorane-i-magazine-na-serbskom) и [бытовой словарь переезда](/blog/serbskiy-yazyk-dlya-pereezda-v-serbiyu). Начать можно бесплатно: первый уровень курса [ucimo](https://ucimo.ru/register) без рекламы и подписки.
