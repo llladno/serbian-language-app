@@ -72,6 +72,8 @@ type Deps struct {
 	// row; tests capture the call. A nil value is replaced by a no-op in
 	// Handler.
 	EnqueueTelegramMessage func(chatID int64, text string, button *telegram.InlineButton, priority int)
+	// EnqueueTelegramPhoto queues a photo (photo is the address Telegram downloads it from) with caption as its text, the same way.
+	EnqueueTelegramPhoto func(chatID int64, photo, caption string, button *telegram.InlineButton, priority int)
 }
 
 type handlers struct{ Deps }
@@ -122,6 +124,9 @@ func Handler(deps Deps) http.Handler {
 	}
 	if deps.EnqueueTelegramMessage == nil {
 		deps.EnqueueTelegramMessage = func(chatID int64, text string, button *telegram.InlineButton, priority int) {}
+	}
+	if deps.EnqueueTelegramPhoto == nil {
+		deps.EnqueueTelegramPhoto = func(chatID int64, photo, caption string, button *telegram.InlineButton, priority int) {}
 	}
 	h := handlers{deps}
 
@@ -205,6 +210,10 @@ func Handler(deps Deps) http.Handler {
 	root.HandleFunc("POST /api/stories/{slug}/events", h.requireSession(h.storyEvent))
 	root.HandleFunc("POST /api/stories/{slug}/buy", h.requireSession(h.buyStory))
 	root.HandleFunc("PUT /api/service/stories/{slug}", h.putStoryService)
+	root.HandleFunc("POST /api/service/campaigns/return/wave", h.postCampaignWave)
+	root.HandleFunc("GET /api/service/campaigns/return/results", h.getCampaignResults)
+	root.HandleFunc("GET /api/unsubscribe", h.unsubscribePage)
+	root.HandleFunc("POST /api/unsubscribe", h.unsubscribe)
 	root.HandleFunc("GET /api/me/survey", h.requireSession(h.getSurvey))
 	root.HandleFunc("POST /api/me/survey", h.requireSession(h.answerSurvey))
 	root.HandleFunc("POST /api/me/survey/dismiss", h.requireSession(h.dismissSurvey))

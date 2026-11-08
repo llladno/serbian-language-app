@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -232,5 +233,128 @@ func TestProcessNextSendsTheStopButton(t *testing.T) {
 	}
 	if !strings.Contains(markup, `"callback_data":"prefoff:learning"`) {
 		t.Errorf("reply_markup = %s, want a prefoff:learning callback", markup)
+	}
+}
+
+// A queued photo goes out by its address the first time and by the file_id Telegram returned every time after.
+func TestProcessNextSendsPhotoByAddressThenByFileID(t *testing.T) {
+	type call struct{ method, photo, caption, markup string }
+	var calls []call
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		r.ParseForm()
+		calls = append(calls, call{r.URL.Path[strings.LastIndex(r.URL.Path, "/")+1:], r.Form.Get("photo"), r.Form.Get("caption"), r.Form.Get("reply_markup")})
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte(`{"ok":true,"result":{"photo":[{"file_id":"small"},{"file_id":"FILE-ID-1"}]}}`))
+	}))
+	defer srv.Close()
+	defer telegram.SetAPIBase(srv.URL)()
+
+	st := newTestStore(t)
+	button := store.OutboxButton{Label: "Загляну на минутку", Type: "campaign", Target: "https://ucimo.ru/lesson/00?c=abc"}
+	for i := 0; i < 2; i++ {
+		if err := st.EnqueueBotPhoto(555, "https://img.test/a.png", "Подпись", button, store.PriorityNormal, time.Now()); err != nil {
+			t.Fatal(err)
+		}
+	}
+	for i := 0; i < 2; i++ {
+		if ok, _, err := ProcessNext(st, "tok", time.Now()); err != nil || !ok {
+			t.Fatalf("ProcessNext %d = %v, %v", i, ok, err)
+		}
+	}
+	if len(calls) != 2 || calls[0].method != "sendPhoto" || calls[1].method != "sendPhoto" {
+		t.Fatalf("calls = %+v, want two sendPhoto", calls)
+	}
+	if calls[0].photo != "https://img.test/a.png" {
+		t.Errorf("first send photo = %q, want the address", calls[0].photo)
+	}
+	if calls[1].photo != "FILE-ID-1" {
+		t.Errorf("second send photo = %q, want the cached file_id", calls[1].photo)
+	}
+	if calls[0].caption != "Подпись" {
+		t.Errorf("caption = %q", calls[0].caption)
+	}
+	// The keyboard is the Mini App button over the switch-off button.
+	if !strings.Contains(calls[0].markup, `"web_app":{"url":"https://ucimo.ru/lesson/00?c=abc"}`) || !strings.Contains(calls[0].markup, `"callback_data":"prefoff:learning"`) {
+		t.Errorf("reply_markup = %s", calls[0].markup)
+	}
+	if st2, _, _ := st.NextPendingOutboxMessage(); st2.ID != 0 {
+		t.Errorf("a message is still pending: %+v", st2)
+	}
+}
+
+func TestCampaignButtonSurvivesTheOutbox(t *testing.T) {
+	b := &telegram.InlineButton{Label: "Послушаю č и ć", CampaignURL: "https://ucimo.ru/lesson/01?c=abc"}
+	got := buttonFromRow(ButtonRow(b))
+	if got == nil || got.Label != b.Label || got.CampaignURL != b.CampaignURL {
+		t.Errorf("round trip = %+v, want %+v", got, b)
+	}
+}
+
+// Two workers can read the same pending row (the old and the new container during a deploy): only one may send it.
+func TestProcessNextSendsAMessageOnlyOnceWhenWorkersRace(t *testing.T) {
+	var mu sync.Mutex
+	calls := 0
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		mu.Lock()
+		calls++
+		mu.Unlock()
+		time.Sleep(20 * time.Millisecond) // a slow send, so the others have time to read the same row
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte(`{"ok":true,"result":true}`))
+	}))
+	defer srv.Close()
+	defer telegram.SetAPIBase(srv.URL)()
+
+	st := newTestStore(t)
+	if err := st.EnqueueBotMessage(555, "hi", store.OutboxButton{}, store.PriorityNormal, time.Now()); err != nil {
+		t.Fatal(err)
+	}
+	var wg sync.WaitGroup
+	for i := 0; i < 8; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			if _, _, err := ProcessNext(st, "tok", time.Now()); err != nil {
+				t.Error(err)
+			}
+		}()
+	}
+	wg.Wait()
+	if calls != 1 {
+		t.Errorf("Telegram was called %d times for one message, want 1", calls)
+	}
+}
+
+// A send Telegram asks to retry later (429) is released back to the queue, not lost and not repeated while it waits.
+func TestProcessNextReleasesAMessageOnRateLimit(t *testing.T) {
+	hits := 0
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		hits++
+		w.Header().Set("Content-Type", "application/json")
+		if hits == 1 {
+			w.WriteHeader(429)
+			w.Write([]byte(`{"ok":false,"error_code":429,"description":"Too Many Requests: retry after 1","parameters":{"retry_after":1}}`))
+			return
+		}
+		w.Write([]byte(`{"ok":true,"result":true}`))
+	}))
+	defer srv.Close()
+	defer telegram.SetAPIBase(srv.URL)()
+
+	st := newTestStore(t)
+	if err := st.EnqueueBotMessage(555, "hi", store.OutboxButton{}, store.PriorityNormal, time.Now()); err != nil {
+		t.Fatal(err)
+	}
+	if _, wait, err := ProcessNext(st, "tok", time.Now()); err != nil || wait == 0 {
+		t.Fatalf("first send: wait %v err %v, want a rate-limit wait", wait, err)
+	}
+	if ok, _, err := ProcessNext(st, "tok", time.Now()); err != nil || !ok {
+		t.Fatalf("retry: %v %v", ok, err)
+	}
+	if hits != 2 {
+		t.Errorf("Telegram was called %d times, want 2 (the limited one and the retry)", hits)
+	}
+	if _, found, _ := st.NextPendingOutboxMessage(); found {
+		t.Error("the message is still pending after it was sent")
 	}
 }

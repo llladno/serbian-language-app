@@ -172,10 +172,35 @@ type htmlMsg struct {
 	BtnColor  string
 	Box       string // optional note box content (HTML), "" to skip
 	Small     string // small print under the card (HTML)
+	// FullImage puts the picture across the whole card under the wordmark (a scene) instead of a small swallow in the mint band.
+	FullImage bool
+	// NoImage leaves the picture out of a FullImage card (the wordmark band stays), for a message sent before its picture exists.
+	NoImage bool
+	// LeadStyle replaces the lead's inline style, for a longer text that should read left-aligned; "" keeps the short centred lead.
+	LeadStyle string
 }
 
 func (m htmlMsg) src() string {
 	const f = "font-family:" + fontSans + ";"
+	hero := `<tr><td align="center" style="background:` + brandHero + `;padding:28px 24px;">
+<div style="font-family:` + fontSerif + `;font-size:20px;font-weight:600;color:` + brandAccent + `;letter-spacing:0.04em;padding-bottom:20px;">ucimo</div>
+<img src="{{.Image}}" width="130" alt="" style="display:block;width:130px;max-width:130px;height:auto;margin:0 auto;padding:6px;">
+</td></tr>
+`
+	if m.FullImage {
+		hero = `<tr><td align="center" style="background:` + brandHero + `;padding:18px 24px 14px;">
+<div style="font-family:` + fontSerif + `;font-size:20px;font-weight:600;color:` + brandAccent + `;letter-spacing:0.04em;">ucimo</div>
+</td></tr>
+`
+		if !m.NoImage {
+			hero += `<tr><td style="padding:0;line-height:0;font-size:0;"><img src="{{.Image}}" width="480" alt="" style="display:block;width:100%;max-width:480px;height:auto;border:0;"></td></tr>
+`
+		}
+	}
+	leadStyle := "margin:0;" + f + "font-size:15px;line-height:1.55;color:" + brandMuted + ";text-align:center;"
+	if m.LeadStyle != "" {
+		leadStyle = m.LeadStyle
+	}
 	box := ""
 	if m.Box != "" {
 		box = `<tr><td style="padding:24px 32px 0;">
@@ -195,13 +220,9 @@ func (m htmlMsg) src() string {
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:` + brandPage + `;">
 <tr><td align="center" style="padding:36px 16px;">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:480px;width:100%;background:` + brandCard + `;border-radius:24px;overflow:hidden;">
-<tr><td align="center" style="background:` + brandHero + `;padding:28px 24px;">
-<div style="font-family:` + fontSerif + `;font-size:20px;font-weight:600;color:` + brandAccent + `;letter-spacing:0.04em;padding-bottom:20px;">ucimo</div>
-<img src="{{.Image}}" width="130" alt="" style="display:block;width:130px;max-width:130px;height:auto;margin:0 auto;padding:6px;">
-</td></tr>
-<tr><td style="padding:32px 32px 0;">
+` + hero + `<tr><td style="padding:32px 32px 0;">
 <h1 style="margin:0 0 10px;` + f + `font-size:24px;line-height:1.25;font-weight:800;color:` + brandFG + `;text-align:center;">` + m.Heading + `</h1>
-<p style="margin:0;` + f + `font-size:15px;line-height:1.55;color:` + brandMuted + `;text-align:center;">` + m.Lead + `</p>
+<div style="` + leadStyle + `">` + m.Lead + `</div>
 </td></tr>
 <tr><td align="center" style="padding:24px 32px 0;">
 <table role="presentation" cellpadding="0" cellspacing="0"><tr><td style="border-radius:14px;background:` + m.BtnColor + `;">

@@ -163,6 +163,13 @@ func main() {
 		}
 	}
 
+	enqueueTelegramPhoto := func(chatID int64, photo, caption string, button *telegram.InlineButton, priority int) {
+		ob := outbox.ButtonRow(button)
+		if err := st.EnqueueBotPhoto(chatID, photo, caption, ob, priority, time.Now()); err != nil {
+			log.Printf("telegram: enqueue photo: %v", err)
+		}
+	}
+
 	var mailer mail.Mailer
 	if cfg.SMTPEnabled() {
 		mailer = mail.NewSMTPMailer(cfg.SMTP)
@@ -217,6 +224,7 @@ func main() {
 		TelegramBotUsername:    telegramBotUsername,
 		TelegramWebhookSecret:  telegramWebhookSecret,
 		EnqueueTelegramMessage: enqueueTelegramMessage,
+		EnqueueTelegramPhoto:   enqueueTelegramPhoto,
 	}
 
 	// Bot reminders: nudge Telegram-linked accounts that just cleared
@@ -229,6 +237,9 @@ func main() {
 			for range t.C {
 				if err := api.RunReminderSweep(apiDeps, time.Now()); err != nil {
 					log.Printf("reminder sweep: %v", err)
+				}
+				if err := api.RunCampaignSweep(apiDeps, time.Now()); err != nil {
+					log.Printf("campaign sweep: %v", err)
 				}
 			}
 		}()

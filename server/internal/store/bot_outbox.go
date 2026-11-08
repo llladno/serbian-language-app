@@ -17,7 +17,7 @@ const (
 )
 
 // OutboxButton is the inline button (if any) attached to a queued message.
-// Type is "web_app", "url", "channel_check", "pref_off", "prefs", or "" for no button.
+// Type is "web_app", "url", "channel_check", "pref_off", "prefs", "repeat_nudge", "campaign", or "" for no button.
 type OutboxButton struct {
 	Label  string
 	Type   string
@@ -30,6 +30,7 @@ type OutboxMessage struct {
 	ChatID int64
 	Text   string
 	Button OutboxButton
+	Photo  string // image address when the message is a photo with Text as its caption, else empty
 }
 
 // EnqueueBotMessage queues text for chatID at priority (PriorityHigh or
@@ -47,14 +48,27 @@ func (s *Store) EnqueueBotMessage(chatID int64, text string, button OutboxButton
 	return nil
 }
 
+// EnqueueBotPhoto queues a photo for chatID with caption as its text. photo is the image address Telegram downloads from.
+func (s *Store) EnqueueBotPhoto(chatID int64, photo, caption string, button OutboxButton, priority int, at time.Time) error {
+	_, err := s.db.Exec(`INSERT INTO bot_outbox
+		(chat_id, text, button_label, button_type, button_target, priority, status, created_at, photo)
+		VALUES (?, ?, ?, ?, ?, ?, 'pending', ?, ?)`,
+		strconv.FormatInt(chatID, 10), caption, button.Label, button.Type, button.Target, priority,
+		at.UTC().Format(time.RFC3339), photo)
+	if err != nil {
+		return fmt.Errorf("enqueue bot photo: %w", err)
+	}
+	return nil
+}
+
 // NextPendingOutboxMessage returns the oldest highest-priority pending
 // message, ok=false if the queue is empty.
 func (s *Store) NextPendingOutboxMessage() (OutboxMessage, bool, error) {
-	row := s.db.QueryRow(`SELECT id, chat_id, text, button_label, button_type, button_target
+	row := s.db.QueryRow(`SELECT id, chat_id, text, button_label, button_type, button_target, photo
 		FROM bot_outbox WHERE status = 'pending' ORDER BY priority ASC, created_at ASC LIMIT 1`)
 	var m OutboxMessage
 	var chatID string
-	if err := row.Scan(&m.ID, &chatID, &m.Text, &m.Button.Label, &m.Button.Type, &m.Button.Target); err != nil {
+	if err := row.Scan(&m.ID, &chatID, &m.Text, &m.Button.Label, &m.Button.Type, &m.Button.Target, &m.Photo); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return OutboxMessage{}, false, nil
 		}
@@ -66,6 +80,30 @@ func (s *Store) NextPendingOutboxMessage() (OutboxMessage, bool, error) {
 	}
 	m.ChatID = parsed
 	return m, true, nil
+}
+
+// ClaimOutboxMessage takes a pending message for sending: it turns it into «sending» in one statement and reports whether this
+// caller got it. Two workers (the old and the new container for a minute during a deploy) can read the same pending row, but only
+// one of them wins the claim, so a message is never sent twice. A worker that dies after claiming leaves the message «sending» for good:
+// it is lost, not repeated.
+func (s *Store) ClaimOutboxMessage(id int64) (bool, error) {
+	res, err := s.db.Exec(`UPDATE bot_outbox SET status = 'sending' WHERE id = ? AND status = 'pending'`, id)
+	if err != nil {
+		return false, fmt.Errorf("claim outbox message: %w", err)
+	}
+	n, err := res.RowsAffected()
+	if err != nil {
+		return false, fmt.Errorf("claim outbox message: %w", err)
+	}
+	return n == 1, nil
+}
+
+// ReleaseOutboxMessage puts a claimed message back to pending, for a send Telegram asked to retry later (a 429): nothing was sent.
+func (s *Store) ReleaseOutboxMessage(id int64) error {
+	if _, err := s.db.Exec(`UPDATE bot_outbox SET status = 'pending' WHERE id = ? AND status = 'sending'`, id); err != nil {
+		return fmt.Errorf("release outbox message: %w", err)
+	}
+	return nil
 }
 
 // MarkOutboxSent records a successful send.

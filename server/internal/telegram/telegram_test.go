@@ -404,3 +404,16 @@ func TestAnswerCallbackQuerySendsIDAndText(t *testing.T) {
 		t.Errorf("path=%q form=%v", path, form)
 	}
 }
+
+func TestInlineRowsCampaignKeyboard(t *testing.T) {
+	rows := inlineRows(&InlineButton{Label: "К особым звукам", CampaignURL: "https://ucimo.ru/lesson/01?c=abc"})
+	if len(rows) != 2 || len(rows[0]) != 1 || len(rows[1]) != 1 {
+		t.Fatalf("rows = %+v, want two rows of one button", rows)
+	}
+	if rows[0][0]["text"] != "К особым звукам" {
+		t.Errorf("first button = %+v", rows[0][0])
+	}
+	if rows[1][0]["text"] != PrefOffLabel || rows[1][0]["callback_data"] != CallbackPrefOff+string(PrefLearning) {
+		t.Errorf("second button = %+v, want the study-reminders switch-off", rows[1][0])
+	}
+}

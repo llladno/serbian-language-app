@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"regexp"
+	"strings"
 	"time"
 
 	"github.com/grisha/serbian-app/server/internal/repeat"
@@ -172,13 +173,24 @@ var clickToken = regexp.MustCompile(`^[0-9a-f]{16}$`)
 
 // RepeatClickTracker counts a press on the button under a «Повторить» message. The button opens
 // /repeat?n=<token>; this wrapper notes the token when the page is requested and then serves the
-// page whatever happens: counting must never get in the way of opening the screen.
+// page whatever happens: counting must never get in the way of opening the screen. It counts the
+// «return» campaign's buttons the same way (/lesson/<id>?c=<token>).
 func RepeatClickTracker(deps Deps, next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == http.MethodGet && r.URL.Path == "/repeat" {
-			if n := r.URL.Query().Get("n"); clickToken.MatchString(n) {
-				if _, err := deps.Store.NoteRepeatClick(n, deps.Now()); err != nil {
-					log.Printf("repeat click: %v", err)
+		if r.Method == http.MethodGet {
+			switch {
+			case r.URL.Path == "/repeat":
+				if n := r.URL.Query().Get("n"); clickToken.MatchString(n) {
+					if _, err := deps.Store.NoteRepeatClick(n, deps.Now()); err != nil {
+						log.Printf("repeat click: %v", err)
+					}
+				}
+			case strings.HasPrefix(r.URL.Path, "/lesson/"):
+				// The button of a campaign message opens a lesson with the message's token in ?c=.
+				if c := r.URL.Query().Get("c"); clickToken.MatchString(c) {
+					if _, err := deps.Store.NoteCampaignClick(c, deps.Now()); err != nil {
+						log.Printf("campaign click: %v", err)
+					}
 				}
 			}
 		}

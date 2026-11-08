@@ -95,6 +95,15 @@ type Config struct {
 	// studied but never opened it: a capped batch per reminder sweep until all have had it. Off
 	// unless set. From REPEAT_INTRO (1, true or yes).
 	RepeatIntro bool
+	// Campaign switches on the sending of the «return» campaign's messages. Opening a wave is a separate, deliberate call
+	// (CampaignServiceToken); this only lets the messages of an opened wave go out. Off unless set. From CAMPAIGN_RETURN.
+	Campaign bool
+	// CampaignServiceToken guards the calls that open a campaign wave and read its results
+	// (/api/service/campaigns/return/..., Authorization: Bearer <token>). Empty disables them. From CAMPAIGN_SERVICE_TOKEN.
+	CampaignServiceToken string
+	// CampaignPhotoBase is the folder the campaign's Telegram pictures are published in, as Telegram fetches them (it cannot reach
+	// the site itself, see internal/leadmagnet). From CAMPAIGN_PHOTO_BASE; the default is the public repository's raw folder.
+	CampaignPhotoBase string
 	// TBankTerminalKey and TBankPassword are the Т-Касса terminal's credentials:
 	// the test terminal's (its key ends in DEMO) while testing, the real one's at
 	// launch. Both empty means Т-Касса is not connected. From TBANK_TERMINAL_KEY
@@ -156,6 +165,9 @@ func Load() Config {
 		TariffsForAll:         parseFlag(os.Getenv("TARIFFS_FOR_ALL")),
 		RepeatNudge:           parseFlag(os.Getenv("REPEAT_NUDGE")),
 		RepeatIntro:           parseFlag(os.Getenv("REPEAT_INTRO")),
+		Campaign:              parseFlag(os.Getenv("CAMPAIGN_RETURN")),
+		CampaignServiceToken:  strings.TrimSpace(os.Getenv("CAMPAIGN_SERVICE_TOKEN")),
+		CampaignPhotoBase:     photoBaseOr(os.Getenv("CAMPAIGN_PHOTO_BASE")),
 		TBankTerminalKey:      strings.TrimSpace(os.Getenv("TBANK_TERMINAL_KEY")),
 		TBankPassword:         strings.TrimSpace(os.Getenv("TBANK_PASSWORD")),
 		StoriesServiceToken:   strings.TrimSpace(os.Getenv("STORIES_SERVICE_TOKEN")),
@@ -327,4 +339,14 @@ func (c Config) TelegramBotID() string {
 // SMTPEnabled reports whether outbound SMTP mail is configured.
 func (c Config) SMTPEnabled() bool {
 	return c.SMTP.Host != ""
+}
+
+// defaultCampaignPhotoBase is where the campaign pictures live in the public repository.
+const defaultCampaignPhotoBase = "https://raw.githubusercontent.com/llladno/serbian-language-app/main/landing/public/campaign"
+
+func photoBaseOr(v string) string {
+	if v = strings.TrimSpace(v); v != "" {
+		return v
+	}
+	return defaultCampaignPhotoBase
 }

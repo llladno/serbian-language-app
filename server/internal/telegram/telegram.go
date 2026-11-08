@@ -154,6 +154,9 @@ type InlineButton struct {
 	// with that label over a «Не про повторения» button that switches off only this nudge.
 	// A preset like the others, so the outbox keeps its (label, type, target) shape.
 	RepeatNudgeURL string
+	// CampaignURL, with Label, is the keyboard of a campaign message: a Mini App button with that label over the usual
+	// «Не напоминать» button that switches the study reminders off.
+	CampaignURL string
 	// CheckData, with ChannelURL, is the callback_data of the "check" button instead of
 	// CallbackCheckChannel — how a flow other than the subscription quest (the lead-magnet
 	// PDF) gets its own answer. At most 64 bytes, Telegram's limit.
@@ -184,41 +187,49 @@ func SendMessageWithButton(botToken string, chatID int64, text string, button *I
 		"text":    {text},
 	}
 	if button != nil {
-		var rows [][]map[string]any
-		if button.Prefs != nil {
-			rows = prefsRows(*button.Prefs)
-		} else if button.PrefOff != "" {
-			rows = [][]map[string]any{{{"text": button.Label, "callback_data": CallbackPrefOff + string(button.PrefOff)}}}
-		} else if button.RepeatNudgeURL != "" {
-			rows = [][]map[string]any{
-				{{"text": button.Label, "web_app": map[string]string{"url": button.RepeatNudgeURL}}},
-				{{"text": RepeatNudgeOffLabel, "callback_data": CallbackRepeatNudgeOff}},
-			}
-		} else if button.ChannelURL != "" {
-			check := CallbackCheckChannel
-			if button.CheckData != "" {
-				check = button.CheckData
-			}
-			rows = [][]map[string]any{
-				{{"text": SubscribeLabel, "url": button.ChannelURL}},
-				{{"text": CheckLabel, "callback_data": check}},
-			}
-		} else {
-			btn := map[string]any{"text": button.Label}
-			if button.WebAppURL != "" {
-				btn["web_app"] = map[string]string{"url": button.WebAppURL}
-			} else {
-				btn["url"] = button.URL
-			}
-			rows = [][]map[string]any{{btn}}
-		}
-		markup, err := json.Marshal(map[string]any{"inline_keyboard": rows})
+		markup, err := json.Marshal(map[string]any{"inline_keyboard": inlineRows(button)})
 		if err != nil {
 			return fmt.Errorf("telegram sendMessage: marshal reply_markup: %w", err)
 		}
 		params.Set("reply_markup", string(markup))
 	}
 	return call(botToken, "sendMessage", params, nil)
+}
+
+// inlineRows is the keyboard under a message for one InlineButton: the preset it stands for, or a single button.
+func inlineRows(button *InlineButton) [][]map[string]any {
+	switch {
+	case button.Prefs != nil:
+		return prefsRows(*button.Prefs)
+	case button.PrefOff != "":
+		return [][]map[string]any{{{"text": button.Label, "callback_data": CallbackPrefOff + string(button.PrefOff)}}}
+	case button.RepeatNudgeURL != "":
+		return [][]map[string]any{
+			{{"text": button.Label, "web_app": map[string]string{"url": button.RepeatNudgeURL}}},
+			{{"text": RepeatNudgeOffLabel, "callback_data": CallbackRepeatNudgeOff}},
+		}
+	case button.CampaignURL != "":
+		return [][]map[string]any{
+			{{"text": button.Label, "web_app": map[string]string{"url": button.CampaignURL}}},
+			{{"text": PrefOffLabel, "callback_data": CallbackPrefOff + string(PrefLearning)}},
+		}
+	case button.ChannelURL != "":
+		check := CallbackCheckChannel
+		if button.CheckData != "" {
+			check = button.CheckData
+		}
+		return [][]map[string]any{
+			{{"text": SubscribeLabel, "url": button.ChannelURL}},
+			{{"text": CheckLabel, "callback_data": check}},
+		}
+	}
+	btn := map[string]any{"text": button.Label}
+	if button.WebAppURL != "" {
+		btn["web_app"] = map[string]string{"url": button.WebAppURL}
+	} else {
+		btn["url"] = button.URL
+	}
+	return [][]map[string]any{{btn}}
 }
 
 // AnswerCallbackQuery acknowledges a button press: it stops the spinner on the
