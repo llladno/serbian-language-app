@@ -1096,6 +1096,15 @@ func (h handlers) dueQueueRows(us *store.UserStore, now time.Time) ([]store.Card
 		}
 	}
 
+	// A grammar point is a rule the course teaches in one lesson ("moj / tvoj"
+	// in lesson 07), so its card waits until the learner has opened that lesson;
+	// otherwise the review screen asks for a form nobody has explained yet.
+	statuses, err := us.LessonStatuses()
+	if err != nil {
+		return nil, err
+	}
+	grammarPool = startedGrammar(grammarPool, statuses)
+
 	passedVocab, err := us.PassedCardIDs("vocab:")
 	if err != nil {
 		return nil, err
@@ -1129,6 +1138,18 @@ func (h handlers) dueQueueRows(us *store.UserStore, now time.Time) ([]store.Card
 	// grammar's lesson-gated batch rides along with vocab's instead of
 	// needing its own query.
 	return us.DueQueue(now, append(allowedNewVocab, allowedNewGrammar...), ffNewLimit)
+}
+
+// startedGrammar keeps the grammar cards whose lesson the learner has opened
+// (any lesson_progress row, so a lesson in progress counts).
+func startedGrammar(cards []content.GrammarCard, statuses map[string]string) []content.GrammarCard {
+	out := make([]content.GrammarCard, 0, len(cards))
+	for _, g := range cards {
+		if _, ok := statuses[g.Lesson]; ok {
+			out = append(out, g)
+		}
+	}
+	return out
 }
 
 func (h handlers) reviewQueue(w http.ResponseWriter, r *http.Request) {

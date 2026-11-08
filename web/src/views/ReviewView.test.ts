@@ -169,3 +169,21 @@ describe('ReviewView never shows a line twice', () => {
     })
   }
 })
+
+describe('ReviewView first encounter', () => {
+  beforeEach(() => readIn('latin'))
+
+  // A word can reach the quiz before the course has used it (a false friend like
+  // "odmah"), so the card has to say plainly that the word is new and that a
+  // guess is fine, not leave the learner to think they missed a lesson.
+  it('says a first-encounter word is new, and that guessing is fine', async () => {
+    const w = await open({ ...quiz, kind: 'ff', front: 'odmah', back: 'сразу', options: ['сразу', 'потом', 'вчера'] })
+    expect(w.find('[data-test="new-word-badge"]').text()).toContain('Новое слово')
+    expect(w.find('[data-test="new-word-hint"]').text()).toContain('Не знаешь это слово?')
+  })
+
+  it('shows no new-word badge on a card that is only being reviewed', async () => {
+    const w = await open(known)
+    expect(w.find('[data-test="new-word-badge"]').exists()).toBe(false)
+  })
+})

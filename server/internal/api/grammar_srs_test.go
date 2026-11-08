@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/grisha/serbian-app/server/internal/content"
+	"github.com/grisha/serbian-app/server/internal/store"
 )
 
 func TestNextNewGrammarCardIDs(t *testing.T) {
@@ -32,6 +33,38 @@ func TestNextNewGrammarCardIDs(t *testing.T) {
 	}
 }
 
+// openFixtureGrammarLesson starts lesson 01, the lesson the fixture's grammar
+// point belongs to. A grammar card waits for its lesson (see startedGrammar), so
+// tests that need the card in the queue have to open the lesson first.
+func openFixtureGrammarLesson(t *testing.T, st *store.Store) {
+	t.Helper()
+	if err := st.User(testUserID(t, st)).SetLessonStatus("01", "in_progress", fixedNow); err != nil {
+		t.Fatalf("open lesson 01: %v", err)
+	}
+}
+
+// A grammar card is taught by one lesson, so it must not reach the review
+// screen before the learner has opened that lesson ("moj / tvoj" arrived at
+// lesson 06c, a lesson before the one that explains it).
+func TestGrammarCardWaitsForItsLesson(t *testing.T) {
+	h, st := newTestAPI(t)
+	hasGram := func() bool {
+		for _, c := range decodeBody[[]reviewCardDTO](t, do(h, "GET", "/api/review/queue", "")) {
+			if c.Kind == "gram" {
+				return true
+			}
+		}
+		return false
+	}
+	if hasGram() {
+		t.Fatal("grammar card offered before its lesson was opened")
+	}
+	openFixtureGrammarLesson(t, st)
+	if !hasGram() {
+		t.Fatal("grammar card still missing after its lesson was opened")
+	}
+}
+
 // fixtureGramItemAnswer maps the two testdata/content/grammar.yaml items (by
 // their prompt) to their accepted answer, so tests can answer whichever one
 // reviewQueue happens to have picked without hard-coding the random index.
@@ -47,7 +80,8 @@ var fixtureGramItemAnswer = map[string]string{
 // quiz (there's no fair way to build wrong-answer options for a single
 // conjugated form either).
 func TestReviewQueueIncludesGrammarCard(t *testing.T) {
-	h, _ := newTestAPI(t)
+	h, st := newTestAPI(t)
+	openFixtureGrammarLesson(t, st)
 	rr := do(h, "GET", "/api/review/queue", "")
 	if rr.Code != 200 {
 		t.Fatalf("%d %s", rr.Code, rr.Body)
@@ -88,7 +122,8 @@ func TestReviewQueueIncludesGrammarCard(t *testing.T) {
 // the card's, "ti" has its own. A card that showed "Radim ceo dan." under the
 // answer "radiš" was read by a learner as the translation of that answer.
 func TestReviewQueueGivesTheAskedItemsExample(t *testing.T) {
-	h, _ := newTestAPI(t)
+	h, st := newTestAPI(t)
+	openFixtureGrammarLesson(t, st)
 	want := map[string][2]string{
 		"ja (я)":  {"Radim ceo dan.", "Я работаю весь день."},
 		"ti (ты)": {"Radiš ceo dan.", "Ты работаешь весь день."},
@@ -136,7 +171,8 @@ func TestReviewGradeRejectsGramCard(t *testing.T) {
 // correctly and checks it grades Good (state -> review, 1-day interval —
 // same as a self-reported Good would).
 func TestReviewGradeGramCorrect(t *testing.T) {
-	h, _ := newTestAPI(t)
+	h, st := newTestAPI(t)
+	openFixtureGrammarLesson(t, st)
 	q := decodeBody[[]reviewCardDTO](t, do(h, "GET", "/api/review/queue", ""))
 	var gram reviewCardDTO
 	for _, c := range q {
@@ -165,7 +201,8 @@ func TestReviewGradeGramCorrect(t *testing.T) {
 // TestReviewGradeGramWrong answers wrong and checks it grades Again (stays
 // in learning) and reveals the expected form.
 func TestReviewGradeGramWrong(t *testing.T) {
-	h, _ := newTestAPI(t)
+	h, st := newTestAPI(t)
+	openFixtureGrammarLesson(t, st)
 	q := decodeBody[[]reviewCardDTO](t, do(h, "GET", "/api/review/queue", ""))
 	var gram reviewCardDTO
 	for _, c := range q {
@@ -227,7 +264,8 @@ func TestReviewGradeGramUnheldCardIs404(t *testing.T) {
 // TestReviewGradeGramTakesTheFormInAPhrase: "впиши форму" answered with the pronoun and
 // the form ("ja radim") is right, not "✗ Не то" (a real support message, 2026-10-27).
 func TestReviewGradeGramTakesTheFormInAPhrase(t *testing.T) {
-	h, _ := newTestAPI(t)
+	h, st := newTestAPI(t)
+	openFixtureGrammarLesson(t, st)
 	q := decodeBody[[]reviewCardDTO](t, do(h, "GET", "/api/review/queue", ""))
 	var gram reviewCardDTO
 	for _, c := range q {

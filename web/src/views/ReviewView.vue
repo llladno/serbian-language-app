@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { storeToRefs } from 'pinia'
-import { CircleQuestionMark } from 'lucide-vue-next'
+import { CircleQuestionMark, Sparkles } from 'lucide-vue-next'
 import { useReviewStore } from '../stores/review'
 import { useWalletStore } from '../stores/wallet'
 import WordMedia from '../components/WordMedia.vue'
@@ -274,7 +274,13 @@ onUnmounted(() => window.removeEventListener('keydown', onKey))
 
       <!-- first encounter: pick 1 of 4 translations to learn the word -->
       <div v-else-if="isQuiz" class="card flex min-h-[13rem] flex-col items-center p-8 text-center" :key="current.card_id">
-        <p class="mb-2 text-[10px] uppercase tracking-widest text-[var(--accent)]">новое слово</p>
+        <span
+          class="mb-3 inline-flex items-center gap-1.5 rounded-full bg-[var(--accent-soft)] px-3 py-1 text-xs font-bold text-[var(--accent)]"
+          data-test="new-word-badge"
+        >
+          <Sparkles :size="14" :stroke-width="2.5" />
+          Новое слово
+        </span>
         <div class="flex items-center gap-2">
           <p class="serbian text-4xl font-semibold">{{ headword(current) }}</p>
           <SpeakButton :src="current.audio" :size="36" />
@@ -308,7 +314,9 @@ onUnmounted(() => window.removeEventListener('keydown', onKey))
             <p v-if="current.example_ru" class="text-sm text-[var(--muted)]">{{ current.example_ru }}</p>
           </div>
         </Transition>
-        <p v-if="!quizPicked" class="mt-5 text-xs text-[var(--muted)]">выбери перевод</p>
+        <p v-if="!quizPicked" class="mt-5 max-w-xs text-sm text-[var(--muted)]" data-test="new-word-hint">
+          Не знаешь это слово? Выбери то, что кажется верным, — ответ покажем.
+        </p>
         <button v-else class="btn btn-primary mt-4 w-full max-w-sm" @click="confirmQuiz">Дальше</button>
       </div>
 
