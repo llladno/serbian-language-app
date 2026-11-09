@@ -313,3 +313,89 @@ func TestCheckAnswerThatIsOnlyAPieceAsksForTheRestAndRecordsNothing(t *testing.T
 		t.Errorf("the wrong answer must be recorded: %+v", cands)
 	}
 }
+
+// A question about a reading text means nothing without the text: «Повторить» takes the exercise out
+// of its lesson, so the text travels with it. Exercises of other steps carry no context.
+func TestRepeatServesTheReadingTextWithItsQuestion(t *testing.T) {
+	h, _, _ := movableAPI(t)
+	do(h, "POST", "/api/lessons/90/exercises/90.3.1/check", `{"answer":"Marko"}`)
+	do(h, "POST", "/api/lessons/90/exercises/90.2.1/check", `{"answer":"Ne"}`)
+
+	rr := do(h, "GET", "/api/repeat", "")
+	if rr.Code != 200 {
+		t.Fatalf("GET /api/repeat = %d %s", rr.Code, rr.Body)
+	}
+	type body struct {
+		Items []struct {
+			Exercise struct {
+				ID string `json:"id"`
+			} `json:"exercise"`
+			Context *struct {
+				Serbian string `json:"serbian"`
+				Russian string `json:"russian"`
+			} `json:"context"`
+		} `json:"items"`
+	}
+	got := decodeBody[body](t, rr)
+	seen := 0
+	for _, it := range got.Items {
+		switch it.Exercise.ID {
+		case "90.3.1":
+			seen++
+			if it.Context == nil || it.Context.Serbian != "Zdravo. Kako si?" || it.Context.Russian != "Привет. Как дела?" {
+				t.Errorf("reading question context = %+v, want the reading text and its translation", it.Context)
+			}
+		case "90.2.1":
+			seen++
+			if it.Context != nil {
+				t.Errorf("a practice exercise must carry no context, got %+v", it.Context)
+			}
+		}
+	}
+	if seen != 2 {
+		t.Fatalf("expected both exercises in the batch, got %+v", got.Items)
+	}
+}
+
+// A dialogue exercise is an answer in a conversation: out of its chat it has no line to answer, so
+// «Повторить» leaves it out, here and in the profile's list of weak exercises.
+func TestRepeatLeavesDialogueExercisesOut(t *testing.T) {
+	h, _, _ := movableAPI(t)
+	do(h, "POST", "/api/lessons/91/exercises/91.1.1/check", `{"answer":"Jedan hleb, hvala."}`) // dialogue, wrong
+	do(h, "POST", "/api/lessons/90/exercises/90.2.1/check", `{"answer":"Ne"}`)                 // practice, wrong
+
+	got := decodeBody[repeatBody](t, do(h, "GET", "/api/repeat", ""))
+	if ids := repeatIDs(got); len(ids) != 1 || ids[0] != "90.2.1" {
+		t.Errorf("repeat batch = %v, want only the practice exercise 90.2.1", ids)
+	}
+
+	prof := do(h, "GET", "/api/progress", "")
+	if strings.Contains(prof.Body.String(), "91.1.1") {
+		t.Errorf("profile weak list names a dialogue exercise: %s", prof.Body)
+	}
+}
+
+// A lesson about the letters shows in Latin whatever script the learner reads in, so its exercises
+// carry that with them into «Повторить».
+func TestRepeatTellsWhichLessonsStayLatin(t *testing.T) {
+	h, _, _ := movableAPI(t)
+	do(h, "POST", "/api/lessons/91/exercises/91.2.1/check", `{"answer":"дж"}`)
+	do(h, "POST", "/api/lessons/90/exercises/90.2.1/check", `{"answer":"Ne"}`)
+
+	type body struct {
+		Items []struct {
+			Exercise struct {
+				ID string `json:"id"`
+			} `json:"exercise"`
+			KeepLatin bool `json:"keep_latin"`
+		} `json:"items"`
+	}
+	got := decodeBody[body](t, do(h, "GET", "/api/repeat", ""))
+	seen := map[string]bool{}
+	for _, it := range got.Items {
+		seen[it.Exercise.ID] = it.KeepLatin
+	}
+	if len(seen) != 2 || !seen["91.2.1"] || seen["90.2.1"] {
+		t.Errorf("keep_latin by exercise = %v, want true for 91.2.1 only", seen)
+	}
+}

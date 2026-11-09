@@ -3,7 +3,8 @@ import { mount, flushPromises } from '@vue/test-utils'
 import { setActivePinia, createPinia } from 'pinia'
 import RepeatView from './RepeatView.vue'
 import { api, ApiError } from '../api'
-import type { MistakeItem, RepeatResponse } from '../types'
+import { useSessionStore } from '../stores/session'
+import type { MistakeItem, RepeatResponse, SessionUser } from '../types'
 
 const push = vi.fn()
 vi.mock('vue-router', () => ({
@@ -54,6 +55,44 @@ describe('RepeatView', () => {
     expect(w.text()).toContain('Первое')
     expect(w.text()).not.toContain('Второе')
     expect(w.text()).toContain('0 из 2')
+  })
+
+  it('shows the reading text above a question about it, and nothing for other questions', async () => {
+    const asked: MistakeItem = {
+      ...choice('a', 'Когда Марко учит сербский?', '10d'),
+      context: { serbian: 'Popodne, u pet, učim srpski.', russian: 'После обеда, в пять, учу сербский.' },
+    }
+    vi.spyOn(api, 'repeat').mockResolvedValue(batch(asked, choice('b', 'Второе')))
+    mockCheck()
+    const w = mount(RepeatView)
+    await flushPromises()
+    expect(w.find('[data-test="repeat-context"]').text()).toContain('Popodne, u pet')
+    expect(w.find('[data-test="repeat-context"]').text()).toContain('После обеда, в пять')
+    await pick(w, 'Da')
+    await bar(w)!.trigger('click')
+    await flushPromises()
+    expect(w.text()).toContain('Второе')
+    expect(w.find('[data-test="repeat-context"]').exists()).toBe(false)
+  })
+
+  it('keeps an exercise of a letters lesson in Latin for a Cyrillic reader, and converts the rest', async () => {
+    useSessionStore().user = { id: 'u', name: 'G', email: '', email_verified: true, script: 'cyrillic' } as SessionUser
+    const letters: MistakeItem = {
+      lesson: '01',
+      keep_latin: true,
+      exercise: { id: 'a', type: 'choice', prompt: 'Слово для «шляпы»', options: ['šešir', 'žaba'] },
+    }
+    const other = choice('b', 'Второе')
+    other.exercise.options = ['šešir', 'žaba']
+    vi.spyOn(api, 'repeat').mockResolvedValue(batch(letters, other))
+    mockCheck()
+    const w = mount(RepeatView)
+    await flushPromises()
+    expect(w.text()).toContain('šešir')
+    await pick(w, 'šešir')
+    await bar(w)!.trigger('click')
+    await flushPromises()
+    expect(w.text()).toContain('шешир')
   })
 
   it('checks an answer against the lesson the exercise came from', async () => {

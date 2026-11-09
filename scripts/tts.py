@@ -327,6 +327,31 @@ def speech_text(entry: dict) -> str:
 
 SYNTH_ATTEMPTS = 4
 
+# edge-tts answers with 24 kHz mono MP3 at a constant 48 kbps: 6000 bytes of audio per second.
+BYTES_PER_SECOND = 6000
+TAIL_SLACK = 0.25  # seconds the audio may fall short of the end of the last sentence
+
+
+def is_cut_short(audio_bytes: int, spoken_end: float) -> bool:
+    """The service now and then ends the audio early (a clip that stops mid-phrase, «Koji je tvoj broj
+    telefona?» without «telefona») yet still reports the sentence boundaries of the whole text. So a clip
+    shorter than the end of its last sentence is cut short: it must not be kept."""
+    return audio_bytes / BYTES_PER_SECOND < spoken_end - TAIL_SLACK
+
+
+async def save_whole(text: str, voice: str, dest: str) -> None:
+    """Synthesize into dest, failing (so the caller retries) when the audio is cut short."""
+    audio, spoken_end = bytearray(), 0.0
+    async for chunk in edge_tts.Communicate(text, voice).stream():
+        if chunk["type"] == "audio":
+            audio += chunk["data"]
+        elif chunk["type"] == "SentenceBoundary":
+            spoken_end = max(spoken_end, (chunk["offset"] + chunk["duration"]) / 1e7)
+    if is_cut_short(len(audio), spoken_end):
+        raise RuntimeError(f"audio cut short: {len(audio) / BYTES_PER_SECOND:.2f}s of {spoken_end:.2f}s")
+    with open(dest, "wb") as f:
+        f.write(audio)
+
 
 def have_clip(path: str) -> bool:
     """A clip counts as present only when it has content: a failed request must
@@ -342,7 +367,7 @@ async def synth(sem, voice, text, dest):
         err = None
         for attempt in range(SYNTH_ATTEMPTS):
             try:
-                await edge_tts.Communicate(text, voice).save(part)
+                await save_whole(text, voice, part)
                 if os.path.getsize(part) == 0:
                     raise RuntimeError("service returned empty audio")
                 os.replace(part, dest)

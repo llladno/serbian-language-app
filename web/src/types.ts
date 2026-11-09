@@ -114,6 +114,10 @@ export interface ExerciseBlock {
 export interface MistakeItem {
   lesson: string
   exercise: Exercise
+  // The reading text a question is about; absent for exercises that stand on their own.
+  context?: { serbian: string; russian?: string }
+  // The lesson teaches the letters: the exercise stays in Latin whatever script the learner reads in.
+  keep_latin?: boolean
 }
 
 export interface RepeatResponse {

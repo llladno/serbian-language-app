@@ -47,11 +47,11 @@ func TestManifestExercisesCollected(t *testing.T) {
 		t.Fatal(err)
 	}
 	blocks := c.Exercises["90"]
-	if len(blocks) != 2 { // practice 90.2 + checkpoint 90.4
-		t.Fatalf("lesson 90: %d exercise blocks, want 2", len(blocks))
+	if len(blocks) != 3 { // practice 90.2 + reading 90.3 + checkpoint 90.4
+		t.Fatalf("lesson 90: %d exercise blocks, want 3", len(blocks))
 	}
-	if blocks[0].ID != "90.2" || blocks[1].ID != "90.4" {
-		t.Errorf("block ids = %q, %q; want 90.2, 90.4", blocks[0].ID, blocks[1].ID)
+	if blocks[0].ID != "90.2" || blocks[1].ID != "90.3" || blocks[2].ID != "90.4" {
+		t.Errorf("block ids = %q, %q, %q; want 90.2, 90.3, 90.4", blocks[0].ID, blocks[1].ID, blocks[2].ID)
 	}
 	if _, _, ok := findExerciseIn(c, "90", "90.2.1"); !ok {
 		t.Error("findExerciseIn cannot locate manifest exercise 90.2.1")

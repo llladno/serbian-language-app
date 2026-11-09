@@ -69,7 +69,7 @@ func (h handlers) repeatPool(us *store.UserStore, now time.Time) (repeatPool, er
 
 	pool := repeatPool{byKey: map[string]repeatItem{}}
 	for _, r := range rows {
-		if locked[r.Lesson] {
+		if locked[r.Lesson] || h.inDialogue(r.Lesson, r.ExerciseID) {
 			continue
 		}
 		ex, _, found := h.findExercise(r.Lesson, r.ExerciseID)
@@ -171,7 +171,11 @@ func (h handlers) getRepeat(w http.ResponseWriter, r *http.Request) {
 	out := repeatDTO{Items: []mistakeDTO{}, Unlimited: unlimited}
 	for _, k := range keys {
 		if it, ok := pool.byKey[k]; ok {
-			out.Items = append(out.Items, mistakeDTO{Lesson: it.Lesson, Exercise: toExerciseDTO(it.Exercise, audioOff)})
+			out.Items = append(out.Items, mistakeDTO{
+				Lesson: it.Lesson, Exercise: toExerciseDTO(it.Exercise, audioOff),
+				Context:   h.readingContext(it.Lesson, it.Exercise.ID),
+				KeepLatin: h.keepsLatin(it.Lesson),
+			})
 		}
 	}
 	out.Total = len(out.Items)

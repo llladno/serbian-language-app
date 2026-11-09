@@ -25,3 +25,12 @@ steps:
       - who: npc
         sr: "Hvala."
         ru: "Спасибо."
+  - id: "91.2"
+    kind: practice
+    title: "Letters"
+    exercises:
+      - id: "91.2.1"
+        type: choice
+        prompt: "Латинская «j» читается как —"
+        options: ["й", "дж"]
+        answer: "й"

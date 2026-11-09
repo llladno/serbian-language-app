@@ -9,6 +9,7 @@ import { useRouter } from 'vue-router'
 import { ArrowRight, CircleCheckBig, RotateCcw, X } from 'lucide-vue-next'
 import { api, ApiError } from '../api'
 import { provideWrongGoesToEnd } from '../lib/lessonRules'
+import { provideKeepLatin } from '../lib/useScript'
 import {
   createMistakesState,
   current,
@@ -19,6 +20,7 @@ import {
   type MistakesState,
 } from '../lib/mistakesQueue'
 import ExerciseItem from '../components/exercises/ExerciseItem.vue'
+import ReadingText from '../components/ReadingText.vue'
 import BottomBar from '../components/BottomBar.vue'
 import ScriptToggle from '../components/ScriptToggle.vue'
 import RepeatLimitModal from '../components/RepeatLimitModal.vue'
@@ -74,6 +76,8 @@ async function load() {
 onMounted(load)
 
 const cur = computed(() => (state.value ? current(state.value) : undefined))
+// An exercise of a lesson about the letters stays in Latin, as it does inside that lesson.
+provideKeepLatin(computed(() => !!cur.value?.keep_latin))
 const round = computed(() => (cur.value && state.value ? (state.value.rounds[keyOf(cur.value)] ?? 0) : 0))
 const finished = computed(() => !!state.value && state.value.total > 0 && isDone(state.value))
 const empty = computed(() => !!state.value && state.value.total === 0)
@@ -182,6 +186,10 @@ const toCourse = () => router.push('/course')
       </div>
 
       <div v-else-if="cur" :key="keyOf(cur) + ':' + round">
+        <!-- A question about a reading text: the text comes along, as in the lesson. -->
+        <section v-if="cur.context" class="card mb-6 p-5" data-test="repeat-context">
+          <ReadingText :serbian="cur.context.serbian" :translation="cur.context.russian" />
+        </section>
         <ExerciseItem
           :lesson="cur.lesson"
           :exercise="cur.exercise"

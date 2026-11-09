@@ -620,6 +620,26 @@ func (h handlers) findExercise(lesson, exID string) (content.Exercise, string, b
 	return content.Exercise{}, "", false
 }
 
+// readingContext returns the text of the reading step an exercise belongs to: a question about a
+// text cannot be answered once it is taken out of its lesson. Nil for exercises of any other step.
+func (h handlers) readingContext(lesson, exID string) *contextDTO {
+	l := h.Course().Lessons[lesson]
+	if l == nil {
+		return nil
+	}
+	for _, s := range l.Steps {
+		if s.Kind != "reading" || s.Markdown == "" {
+			continue
+		}
+		for _, e := range s.Exercises {
+			if e.ID == exID {
+				return &contextDTO{Serbian: s.Markdown, Russian: s.MarkdownRU}
+			}
+		}
+	}
+	return nil
+}
+
 // findTurn locates the dialogue turn an exercise belongs to, if any.
 func (h handlers) findTurn(lesson, exID string) (content.Turn, bool) {
 	l := h.Course().Lessons[lesson]

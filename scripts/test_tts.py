@@ -2,7 +2,7 @@
 """Plain-assert tests for tts.py helpers (no pytest). Run: python3 scripts/test_tts.py"""
 import sys
 
-from tts import sr_lat_to_cyr, phrase_key, phrase_speech, md_phrases, prompt_phrases, fill_sentence, exercise_phrases
+from tts import is_cut_short, sr_lat_to_cyr, phrase_key, phrase_speech, md_phrases, prompt_phrases, fill_sentence, exercise_phrases
 
 CASES = {
     "Zašto ne radiš danas?": "Зашто не радиш данас?",
@@ -62,8 +62,17 @@ FILL_CASES = [
 ]
 
 
+def cut_short_tests() -> int:
+    # «Koji je tvoj broj telefona?»: the sentence ends at 2.625 s; the old clip held 1.968 s, the whole one 2.64 s
+    f = check("cut clip", is_cut_short(11808, 2.625), True)
+    f += check("whole clip", is_cut_short(15840, 2.625), False)
+    f += check("clip a hair short is fine", is_cut_short(15840 - 600, 2.625), False)
+    f += check("no boundary reported", is_cut_short(15840, 0.0), False)
+    return f
+
+
 def main() -> int:
-    fails = phrase_tests()
+    fails = phrase_tests() + cut_short_tests()
     for latin, want in CASES.items():
         got = sr_lat_to_cyr(latin)
         if got != want:

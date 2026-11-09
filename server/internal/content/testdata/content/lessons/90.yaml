@@ -25,6 +25,12 @@ steps:
     kind: reading
     title: "Reading"
     md: "90/3-citanje.md"
+    exercises:
+      - id: "90.3.1"
+        type: choice
+        prompt: "Кто здесь живёт?"
+        options: ["Ana", "Marko"]
+        answer: "Ana"
   - id: "90.4"
     kind: checkpoint
     title: "Checkpoint"

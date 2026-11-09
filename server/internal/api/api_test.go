@@ -749,8 +749,8 @@ func TestDialogueHidesUnansweredLines(t *testing.T) {
 	h, _ := newTestAPI(t)
 
 	before := decodeBody[lessonDTO](t, do(h, "GET", "/api/lessons/91", ""))
-	if len(before.Steps) != 1 || before.Steps[0].Kind != "dialogue" {
-		t.Fatalf("fixture lesson 91 should hold one dialogue step, got %+v", before.Steps)
+	if len(before.Steps) != 2 || before.Steps[0].Kind != "dialogue" {
+		t.Fatalf("fixture lesson 91 should hold a dialogue step and a practice step, got %+v", before.Steps)
 	}
 	s := before.Steps[0]
 	if s.Scene == "" || s.Voice != "f" {
