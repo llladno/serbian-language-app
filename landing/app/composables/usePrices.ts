@@ -1,7 +1,8 @@
 // The prices of the paid tariffs, for the landing and the pages that quote them.
 //
-// The page is static, so what it says at first is what was true when it was built (BUILT: the prices of that day), and
-// in the browser it asks the app for the live ones (GET /api/prices) and takes those. The app changes its prices on its
+// The page is static, so what it says at first is what was true when it was built (BUILT: the prices of that day). The production
+// build ships no framework script (`noScripts`), so the live prices reach the cards through public/prices.js (GET /api/prices); the
+// request below runs only where the framework does run (the local dev server). The app changes its prices on its
 // own at the moment of an announced change (migration 041 in the app), so the landing follows without a rebuild: a
 // visitor after the change sees the new prices a moment after the page opens. When the app cannot be asked (the local
 // dev server of the landing, a network error) the built prices stay.

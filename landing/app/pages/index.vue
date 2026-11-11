@@ -327,8 +327,9 @@
         <div class="mini-card reveal">
           <h3>Уровень</h3>
           <p class="price">
-            {{ rub(prices.levelRegular) }}
-            <span v-if="prices.levelFirst < prices.levelRegular">{{ rub(prices.levelFirst) }} за первый</span>
+            <strong data-price="levelRegular">{{ rub(prices.levelRegular) }}</strong>
+            <span v-if="prices.levelFirst < prices.levelRegular" data-price-first>{{ rub(prices.levelFirst) }} за первый</span>
+            <span v-else data-price-first hidden></span>
           </p>
           <p>
             Один уровень на ваш выбор — навсегда, плюс 1 000 зёрнышек в подарок
@@ -337,7 +338,7 @@
         </div>
         <div class="mini-card reveal">
           <h3>Год</h3>
-          <p class="price">{{ rub(prices.year) }} <span>на 365 дней</span></p>
+          <p class="price"><strong data-price="year">{{ rub(prices.year) }}</strong> <span>на 365 дней</span></p>
           <p>
             Все уровни сразу, повторения без ограничений и подарок зёрнышками.
             Платёж разовый, продлевать не нужно.
@@ -654,6 +655,11 @@ useHead(() => ({
       defer: true,
     },
     {
+      key: 'prices',
+      src: '/prices.js',
+      defer: true,
+    },
+    {
       key: 'reviews-slider',
       src: '/reviews-slider.js',
       defer: true,
@@ -945,6 +951,13 @@ useHead(() => ({
   color: var(--color-text);
 }
 
+.mini-card .price strong {
+  font: inherit;
+  color: inherit;
+}
+.mini-card .price span[hidden] {
+  display: none;
+}
 .mini-card .price span {
   display: block;
   font-size: 14px;
