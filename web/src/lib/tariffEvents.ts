@@ -11,7 +11,7 @@
 import { api } from '../api'
 import { useTariffsStore } from '../stores/tariffs'
 
-export type TariffSource = 'profile_banner' | 'repeat_limit' | 'unlock_modal' | 'story_modal'
+export type TariffSource = 'profile_banner' | 'price_banner' | 'price_page' | 'price_modal' | 'repeat_limit' | 'unlock_modal' | 'story_modal'
 export type CheckoutKind = 'open' | 'press' | 'receipt_view' | 'receipt_send' | 'receipt_cancel'
 
 // 'claim_view' and 'claim' are the window of a paid level offering зёрнышки already earned, and the learner taking them

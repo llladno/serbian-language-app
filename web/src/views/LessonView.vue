@@ -6,6 +6,7 @@ import { useCourseStore } from '../stores/course'
 import { useWalletStore } from '../stores/wallet'
 import { useRewardModal } from '../lib/rewardModal'
 import { useSurveyModal } from '../lib/surveyModal'
+import { usePriceModal } from '../lib/priceModal'
 import { provideWrongGoesToEnd } from '../lib/lessonRules'
 import { nextLesson } from '../lib/nextLesson'
 import { flipText } from '../lib/flipText'
@@ -432,6 +433,10 @@ async function finish() {
   // The one-time feedback survey waits for a quiet moment: not on top of a
   // reward the learner is just being told about (the next lesson offers it).
   if (!useRewardModal().open.value) useSurveyModal().offerAfterLesson()
+
+  // The poster of an announced price change comes a few seconds after the summary, if nothing else is open then
+  // (lib/priceModal.ts decides who sees it).
+  void usePriceModal().offerAfterLesson()
 }
 
 // Progress is already saved step by step as the learner goes (each answered

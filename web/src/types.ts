@@ -478,6 +478,19 @@ export interface TariffsInfo {
     credits?: number[]
   }
   year: { price: number; old_price: number; bonus?: number; until?: string }
+  // Set from the announcement until the announced price change is made (the server switches the prices itself).
+  price_change?: PriceChange
+}
+
+// An announced price change that has not happened yet. `at` is when it happens and `now` the server's clock when the
+// quote was made (the countdown runs on the server's time, not the phone's). The prices are the learner's own, in rubles.
+export interface PriceChange {
+  at: string
+  now: string
+  level_price: number
+  year_price: number
+  // The owner's own account: it is shown the announcement before its date, and whatever else is true of it.
+  preview?: boolean
 }
 
 // A level a paid level can open. `after` names the level before it in the course when that

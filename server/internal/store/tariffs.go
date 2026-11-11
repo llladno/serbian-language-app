@@ -20,6 +20,15 @@ type Tariff struct {
 	// paid for. 0: no bonus.
 	BonusCurrency int64
 	Active        bool
+
+	// A price change announced ahead of time (migration 041): the prices that take over at ChangeAt, and the
+	// moment AnnounceAt from which the app shows the countdown. NextPriceKopecks = 0: nothing is scheduled.
+	// ApplyDuePriceChanges makes the switch and empties these.
+	NextPriceKopecks      int64
+	NextFirstPriceKopecks int64
+	NextOldPriceKopecks   int64
+	AnnounceAt            time.Time
+	ChangeAt              time.Time
 }
 
 const (
@@ -53,10 +62,13 @@ var (
 func (s *Store) Tariff(code string) (Tariff, error) {
 	var t Tariff
 	var active int
+	var announce, change string
 	err := s.db.QueryRow(`SELECT code, title, price_kopecks, first_price_kopecks, old_price_kopecks,
-		period_days, bonus_currency, active FROM tariffs WHERE code = ?`, code).
+		period_days, bonus_currency, active, next_price_kopecks, next_first_price_kopecks, next_old_price_kopecks,
+		announce_at, change_at FROM tariffs WHERE code = ?`, code).
 		Scan(&t.Code, &t.Title, &t.PriceKopecks, &t.FirstPriceKopecks, &t.OldPriceKopecks, &t.PeriodDays,
-			&t.BonusCurrency, &active)
+			&t.BonusCurrency, &active, &t.NextPriceKopecks, &t.NextFirstPriceKopecks, &t.NextOldPriceKopecks,
+			&announce, &change)
 	if errors.Is(err, sql.ErrNoRows) {
 		return Tariff{}, ErrTariffUnavailable
 	}
@@ -64,7 +76,26 @@ func (s *Store) Tariff(code string) (Tariff, error) {
 		return Tariff{}, fmt.Errorf("tariff %s: %w", code, err)
 	}
 	t.Active = active == 1
+	t.AnnounceAt, _ = time.Parse(time.RFC3339, announce)
+	t.ChangeAt, _ = time.Parse(time.RFC3339, change)
 	return t, nil
+}
+
+// ApplyDuePriceChanges makes the scheduled price changes whose moment has come: the next prices become the live ones
+// and the schedule is emptied. It is the only place that switches prices, so the countdown on the screen and the
+// price that is charged change at the same instant, with no deploy in between. Moments are stored as UTC RFC 3339
+// text, which sorts like time, so the comparison is a plain string one. Running it twice, or from two requests at
+// once, is harmless: the second finds nothing due.
+func (s *Store) ApplyDuePriceChanges(now time.Time) error {
+	if _, err := s.db.Exec(`UPDATE tariffs SET price_kopecks = next_price_kopecks,
+		first_price_kopecks = next_first_price_kopecks, old_price_kopecks = next_old_price_kopecks,
+		next_price_kopecks = 0, next_first_price_kopecks = 0, next_old_price_kopecks = 0,
+		announce_at = '', change_at = '', updated_at = ?
+		WHERE next_price_kopecks > 0 AND change_at <> '' AND change_at <= ?`,
+		now.UTC().Format(time.RFC3339), now.UTC().Format(time.RFC3339)); err != nil {
+		return fmt.Errorf("apply price changes: %w", err)
+	}
+	return nil
 }
 
 // Payment is one attempt to pay for a tariff.

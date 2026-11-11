@@ -758,3 +758,48 @@ describe('TariffsView: a paid level is spent on a level of the learner\'s choice
     expect(useToasts().items.value[0].text).toContain('выберите уровень')
   })
 })
+
+describe('TariffsView while a price change is announced', () => {
+  const at = Date.parse('2026-11-27T23:00:00Z')
+  const announced: Partial<TariffsInfo> = {
+    price_change: {
+      at: new Date(at).toISOString(),
+      now: new Date(at - 10 * 86_400_000).toISOString(),
+      level_price: 399,
+      year_price: 2000,
+    },
+  }
+
+  it('puts the small banner where the hello was, and strikes through the price that follows, so the discount is plain', async () => {
+    const w = await mountView({ ...announced, level: { ...tariffsInfo().level, price: 199 } })
+    expect(w.find('[data-test="price-banner"]').exists()).toBe(true)
+    expect(w.find('[data-test="price-poster"]').exists()).toBe(false) // the big poster is for the window after a lesson
+    expect(w.find('[data-test="tariffs-hero"]').exists()).toBe(false)
+    // struck through are the prices that really follow the discount, and each card says how much off, until when
+    expect(norm(w.get('[data-test="level-price"] .was').text())).toBe('399 ₽')
+    expect(w.get('[data-test="level-discount"]').text()).toBe('−50%')
+    expect(norm(w.get('[data-test="level-discount-note"]').text())).toBe('Скидка 50% до 27 ноября')
+    expect(norm(w.get('[data-test="year-price"] .was').text())).toBe('2 000 ₽')
+    expect(w.get('[data-test="year-discount"]').text()).toBe('−50%')
+    expect(norm(w.get('[data-test="year-discount-note"]').text())).toBe('Скидка 50% до 27 ноября')
+    expect(w.find('[data-test="level-next-price"]').exists()).toBe(false)
+  })
+
+  it('keeps the old page, with no banner and no notes, for a learner who has paid for a level', async () => {
+    const w = await mountView({ ...announced, has_paid_level: true })
+    expect(w.find('[data-test="price-banner"]').exists()).toBe(false)
+    expect(w.find('[data-test="tariffs-hero"]').exists()).toBe(true)
+    expect(w.find('[data-test="year-discount"]').exists()).toBe(false)
+    expect(w.find('[data-test="level-discount-note"]').text()).toContain('на первую покупку') // the ordinary page, as before
+  })
+
+  it('is the old page again once the change is made, with no struck price when there is none', async () => {
+    const w = await mountView({ year: { price: 2000, old_price: 0, bonus: 15000 } })
+    expect(w.find('[data-test="price-banner"]').exists()).toBe(false)
+    expect(w.find('[data-test="tariffs-hero"]').exists()).toBe(true)
+    expect(w.find('[data-test="year-discount"]').exists()).toBe(false)
+    expect(w.get('[data-test="year-price"]').find('.was').exists()).toBe(false)
+    expect(w.get('[data-test="tariff-year"]').text()).not.toContain('ранняя цена')
+    expect(w.get('[data-test="tariff-year"]').text()).not.toContain('0 ₽')
+  })
+})

@@ -62,8 +62,10 @@ function dismiss() {
   }
   trackTariff('dismiss', 'profile_banner')
 }
+// While a price change is announced the strip with the countdown (PriceChangeStrip) takes this place.
 const show = computed(
-  () => !dismissed.value && tariffs.ready && !tariffs.hasTariff && !!nextLevel.value && !tariffs.levelFrom,
+  () =>
+    !dismissed.value && tariffs.ready && !tariffs.hasTariff && !!nextLevel.value && !tariffs.levelFrom && !tariffs.campaign,
 )
 
 // The admin's «Воронка тарифов» counts the showings: once each time the banner appears, not on every re-render.

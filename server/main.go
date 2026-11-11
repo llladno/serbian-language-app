@@ -227,6 +227,18 @@ func main() {
 		EnqueueTelegramPhoto:   enqueueTelegramPhoto,
 	}
 
+	// An announced price change (migration 041) is made by whoever reads a price first after its moment, and here too, so the
+	// table itself is right even when nobody opens the app (the admin and plain SQL read it directly).
+	go func() {
+		t := time.NewTicker(30 * time.Second)
+		defer t.Stop()
+		for range t.C {
+			if err := apiDeps.Store.ApplyDuePriceChanges(time.Now()); err != nil {
+				log.Printf("price change: %v", err)
+			}
+		}
+	}()
+
 	// Bot reminders: nudge Telegram-linked accounts that just cleared
 	// today's review queue, or that have gone quiet for 24h+. No-op without
 	// a bot to send through.

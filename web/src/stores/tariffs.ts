@@ -5,7 +5,7 @@
 // Closed to most accounts: `enabled` follows the server's features flag, and
 // until it is on nothing here talks to the server or shows anything.
 import { defineStore } from 'pinia'
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { api, ApiError } from '../api'
 import { initData, isTelegram, openExternalLink } from '../telegram'
 import { useSessionStore } from './session'
@@ -15,6 +15,8 @@ import type { LevelChoice, Order, TariffCode, TariffsInfo } from '../types'
 export const useTariffsStore = defineStore('tariffs', () => {
   const session = useSessionStore()
   const info = ref<TariffsInfo | null>(null)
+  // The learner's own clock when the quote arrived: set against the server's `now` it tells how far off the two are.
+  const quotedAt = ref(Date.now())
   const loading = ref(false)
   const paying = ref<TariffCode | null>(null)
 
@@ -59,6 +61,26 @@ export const useTariffsStore = defineStore('tariffs', () => {
   // Has a tariff: a running year, or a level paid for in rubles. A level bought
   // with зёрнышки is not one, and nor is a year that has run out.
   const hasTariff = computed(() => yearActive.value || hasPaidLevel.value)
+  // An announced price change, or null: when it happens (a moment on this device's clock, corrected by the server's),
+  // and the prices that follow it. Gone from the quote once the server has made the change; the screens that count
+  // down read the quote again at zero.
+  const priceChange = computed(() => {
+    const pc = info.value?.price_change
+    if (!pc) return null
+    const at = Date.parse(pc.at)
+    const serverNow = Date.parse(pc.now)
+    if (Number.isNaN(at) || Number.isNaN(serverNow)) return null
+    const offset = serverNow - quotedAt.value
+    return { at, until: at - offset, levelPrice: pc.level_price, yearPrice: pc.year_price, preview: pc.preview === true }
+  })
+  // The change as the banners are allowed to show it: not to a learner who already has a tariff (a running year or a level paid for in
+  // rubles): they have bought what is on offer, so they see no banner of the campaign at all, whatever screen they are on. The owner's own
+  // account (`preview`) sees it whatever else is true. Every banner and every note of the campaign reads this, not `priceChange`.
+  const campaign = computed(() => {
+    const c = priceChange.value
+    if (!c) return null
+    return c.preview || !hasTariff.value ? c : null
+  })
   const paymentsReady = computed(() => info.value?.payments_ready ?? false)
   // A paid level is a credit: the learner chooses the level after paying. These are the levels
   // they can still choose and the paid orders waiting to be spent.
@@ -69,12 +91,33 @@ export const useTariffsStore = defineStore('tariffs', () => {
   const monthlyCost = computed(() => monthlyYearCost(levelNow.value, levelRegular.value))
   const yearSaves = computed(() => yearSaving(yearPrice.value, monthlyCost.value))
 
+  // The server changes its prices on its own at the moment of an announced change, so the quote read before it is wrong
+  // after it. Whatever screen is open, the quote is read again just after that moment, a few times if the server's clock is
+  // a little behind, until the announcement is gone from it (the screens that count down then change back by themselves).
+  let settleTimer: ReturnType<typeof setTimeout> | undefined
+  async function settleAfterChange(attempt: number) {
+    await load(true)
+    if (priceChange.value && attempt < 8) settleTimer = setTimeout(() => void settleAfterChange(attempt + 1), 1500)
+  }
+  watch(
+    () => priceChange.value?.until,
+    (until) => {
+      clearTimeout(settleTimer)
+      if (until === undefined) return
+      // setTimeout takes at most about 24 days; a longer wait is re-armed when the quote is read again
+      const wait = Math.min(Math.max(0, until - Date.now()) + 400, 2_000_000_000)
+      settleTimer = setTimeout(() => void settleAfterChange(0), wait)
+    },
+    { immediate: true },
+  )
+
   async function load(force = false) {
     if (!enabled.value || loading.value) return
     if (info.value && !force) return
     loading.value = true
     try {
       info.value = await api.tariffs()
+      quotedAt.value = Date.now()
     } catch {
       // The screens that depend on this simply stay hidden: a failed price
       // lookup must not break the quests or the course.
@@ -123,7 +166,7 @@ export const useTariffsStore = defineStore('tariffs', () => {
 
   return {
     info, loading, paying, enabled, ready, needsReceiptContact, receiptContact, setReceiptContact, levelNow, levelRegular, yearPrice, yearOld,
-    levelDiscount, levelFrom, monthlyCost, yearSaves, levelBonus, yearBonus, hasPaidLevel, hasTariff, yearUntil, yearActive, paymentsReady, choices, credits, hasCredit, load, pay, checkOrder, chooseLevel,
+    levelDiscount, levelFrom, priceChange, campaign, monthlyCost, yearSaves, levelBonus, yearBonus, hasPaidLevel, hasTariff, yearUntil, yearActive, paymentsReady, choices, credits, hasCredit, load, pay, checkOrder, chooseLevel,
   }
 })
 

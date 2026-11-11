@@ -33,6 +33,13 @@ const (
 
 	// TariffSourceProfileBanner is the banner at the top of the profile.
 	TariffSourceProfileBanner = "profile_banner"
+	// TariffSourcePriceBanner is the strip at the top of the profile that counts down to a price change (it takes the
+	// place of the profile banner while it runs). The admin's «Воронка тарифов» does not count it yet: the rows pile up.
+	TariffSourcePriceBanner = "price_banner"
+	// TariffSourcePricePage is the small banner at the top of the tariffs screen while a price change is announced.
+	TariffSourcePricePage = "price_page"
+	// TariffSourcePriceModal is the poster that opens at the end of a lesson while a price change is announced.
+	TariffSourcePriceModal = "price_modal"
 	// TariffSourceRepeatLimit is the window that says today's «Повторить» is used up.
 	TariffSourceRepeatLimit = "repeat_limit"
 	// TariffSourceUnlockModal is the window of a paid level, when зёрнышек are short and a payment is offered.
@@ -54,7 +61,7 @@ const tariffEventDedupe = 30 * time.Second
 // click, dismiss and earn; the checkout takes the steps of paying.
 func ValidTariffEvent(kind, source string) bool {
 	switch source {
-	case TariffSourceProfileBanner, TariffSourceRepeatLimit, TariffSourceUnlockModal, TariffSourceStoryModal:
+	case TariffSourceProfileBanner, TariffSourcePriceBanner, TariffSourcePricePage, TariffSourcePriceModal, TariffSourceRepeatLimit, TariffSourceUnlockModal, TariffSourceStoryModal:
 		switch kind {
 		case TariffEventView, TariffEventClick, TariffEventDismiss, TariffEventEarn:
 			return true

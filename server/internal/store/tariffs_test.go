@@ -312,3 +312,43 @@ func TestATariffWithoutABonusCreditsNothing(t *testing.T) {
 		t.Fatal("the level was not granted either")
 	}
 }
+
+func TestSeededPriceChangeWaitsForItsMomentAndIsMadeOnce(t *testing.T) {
+	s := newStore(t)
+	level, _ := s.Tariff(TariffLevel)
+	year, _ := s.Tariff(TariffYear)
+	// migration 041 schedules «Уровень» 399 for everybody and «Год» 1 999, nothing struck through, from 10 November,
+	// at the end of Sunday 15 November in Belgrade
+	if level.NextPriceKopecks != 39900 || level.NextFirstPriceKopecks != 0 || year.NextPriceKopecks != 199900 ||
+		year.NextOldPriceKopecks != 0 {
+		t.Fatalf("scheduled = %+v / %+v", level, year)
+	}
+	change := time.Date(2026, 11, 15, 23, 0, 0, 0, time.UTC)
+	if !level.ChangeAt.Equal(change) || !level.AnnounceAt.Equal(time.Date(2026, 11, 9, 23, 0, 0, 0, time.UTC)) {
+		t.Fatalf("moments = %v, %v", level.AnnounceAt, level.ChangeAt)
+	}
+
+	// a second before the moment nothing moves
+	if err := s.ApplyDuePriceChanges(change.Add(-time.Second)); err != nil {
+		t.Fatal(err)
+	}
+	if got, _ := s.Tariff(TariffLevel); got.PriceKopecks != 29900 || got.FirstPriceKopecks != 19900 {
+		t.Fatalf("early: %+v", got)
+	}
+
+	// at the moment the next prices are the live ones and the schedule is empty, and a second run changes nothing
+	for i := 0; i < 2; i++ {
+		if err := s.ApplyDuePriceChanges(change); err != nil {
+			t.Fatal(err)
+		}
+		level, _ = s.Tariff(TariffLevel)
+		year, _ = s.Tariff(TariffYear)
+		if level.PriceKopecks != 39900 || level.FirstPriceKopecks != 0 || level.NextPriceKopecks != 0 ||
+			!level.ChangeAt.IsZero() || !level.AnnounceAt.IsZero() {
+			t.Fatalf("level after run %d = %+v", i+1, level)
+		}
+		if year.PriceKopecks != 199900 || year.OldPriceKopecks != 0 || year.NextPriceKopecks != 0 {
+			t.Fatalf("year after run %d = %+v", i+1, year)
+		}
+	}
+}

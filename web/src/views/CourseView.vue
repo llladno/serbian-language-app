@@ -6,7 +6,9 @@ import { Check, ChevronDown } from 'lucide-vue-next'
 import { useCourseStore } from '../stores/course'
 import StatusBadge from '../components/StatusBadge.vue'
 import SeedIcon from '../components/SeedIcon.vue'
+import PriceChangeStrip from '../components/PriceChangeStrip.vue'
 import UnlockLevelModal from '../components/UnlockLevelModal.vue'
+import { useTariffsStore } from '../stores/tariffs'
 import { useWalletStore } from '../stores/wallet'
 import { useUnlockModal } from '../lib/unlockModal'
 import { useScript } from '../lib/useScript'
@@ -28,6 +30,8 @@ const onboarding = useOnboarding()
 // does not wait for them.
 onMounted(async () => {
   wallet.refresh()
+  // The strip with the countdown to a price change (while one is announced) needs the quote.
+  void useTariffsStore().load()
   wallet.loadShop().catch(() => {})
   // A course remembered from an earlier visit can be out of date (a lesson started
   // since is not in it), and where to scroll depends on the statuses, so read it again.
@@ -134,6 +138,7 @@ function badgeClass(lesson?: LessonRef) {
 </script>
 
 <template>
+  <PriceChangeStrip spaced place="course" />
   <div class="mb-4 flex items-center justify-between gap-3">
     <h1 class="text-2xl font-extrabold">Курс</h1>
     <button

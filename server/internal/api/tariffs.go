@@ -183,6 +183,60 @@ func levelPriceKopecks(t store.Tariff, hasPaid bool) int64 {
 	return t.PriceKopecks
 }
 
+// tariff reads a tariff after making any announced price change whose moment has come, so every price the API quotes
+// or charges is the live one at this instant (migration 041).
+func (h handlers) tariff(code string) (store.Tariff, error) {
+	if err := h.Store.ApplyDuePriceChanges(h.Now()); err != nil {
+		log.Printf("tariffs: %v", err)
+	}
+	return h.Store.Tariff(code)
+}
+
+// nextLevelPriceKopecks is what the next level will cost this learner once the announced change is made: the first
+// purchase price once, the regular price after, both taken from the scheduled prices.
+func nextLevelPriceKopecks(t store.Tariff, hasPaid bool) int64 {
+	if !hasPaid && t.NextFirstPriceKopecks > 0 {
+		return t.NextFirstPriceKopecks
+	}
+	return t.NextPriceKopecks
+}
+
+// priceChangeDTO is a price change that has been announced and has not happened yet. Now is the server's clock, so
+// the countdown does not depend on the learner's own (a phone a few minutes off would end the timer early). The prices
+// are in rubles and are this learner's: LevelPrice follows the same first-purchase rule as the live one.
+type priceChangeDTO struct {
+	At         string `json:"at"`
+	Now        string `json:"now"`
+	LevelPrice int64  `json:"level_price"`
+	YearPrice  int64  `json:"year_price"`
+	// Preview marks the owner's own account (Config.SeesPriceChangeEarly): it is shown the announcement before its
+	// date, and the screens show it whatever else is true of the account (a tariff, a closed cross, today's limit).
+	Preview bool `json:"preview,omitempty"`
+}
+
+// priceChange is the announced change of the two tariffs, or nil when none is on: nothing scheduled, not announced
+// yet, or already made. It follows the level tariff's moments; the year is changed together with it. early is the
+// owner's own account: it gets the announcement as soon as the change is scheduled, whatever the announcement date.
+func priceChange(level, year store.Tariff, hasPaid bool, now time.Time, early bool) *priceChangeDTO {
+	if level.NextPriceKopecks <= 0 || level.ChangeAt.IsZero() || !now.Before(level.ChangeAt) {
+		return nil
+	}
+	if !early && (level.AnnounceAt.IsZero() || now.Before(level.AnnounceAt)) {
+		return nil
+	}
+	yearNext := year.NextPriceKopecks
+	if yearNext <= 0 {
+		yearNext = year.PriceKopecks
+	}
+	return &priceChangeDTO{
+		At:         level.ChangeAt.UTC().Format(time.RFC3339),
+		Now:        now.UTC().Format(time.RFC3339),
+		LevelPrice: rubles(nextLevelPriceKopecks(level, hasPaid)),
+		YearPrice:  rubles(yearNext),
+		Preview:    early,
+	}
+}
+
 // rubles turns kopecks into the whole rubles the screens show. Prices are set in
 // whole rubles; a stray kopeck is dropped from the display, never from the charge.
 func rubles(kopecks int64) int64 { return kopecks / 100 }
@@ -216,6 +270,8 @@ type tariffsDTO struct {
 		Bonus int64  `json:"bonus"`
 		Until string `json:"until,omitempty"`
 	} `json:"year"`
+	// PriceChange is set from the announcement until the change is made (see priceChange).
+	PriceChange *priceChangeDTO `json:"price_change,omitempty"`
 }
 
 func (h handlers) getTariffs(w http.ResponseWriter, r *http.Request) {
@@ -228,13 +284,13 @@ func (h handlers) getTariffs(w http.ResponseWriter, r *http.Request) {
 	// see their level open, so ask the payment service about anything still waiting.
 	h.settlePending(r.Context(), ac.UserID)
 
-	level, err := h.Store.Tariff(store.TariffLevel)
+	level, err := h.tariff(store.TariffLevel)
 	if err != nil {
 		log.Printf("tariffs: level: %v", err)
 		fail(w, http.StatusInternalServerError, "internal error")
 		return
 	}
-	year, err := h.Store.Tariff(store.TariffYear)
+	year, err := h.tariff(store.TariffYear)
 	if err != nil {
 		log.Printf("tariffs: year: %v", err)
 		fail(w, http.StatusInternalServerError, "internal error")
@@ -303,6 +359,7 @@ func (h handlers) getTariffs(w http.ResponseWriter, r *http.Request) {
 	if running {
 		out.Year.Until = until.UTC().Format(time.RFC3339)
 	}
+	out.PriceChange = priceChange(level, year, hasPaid, h.Now(), h.Config.SeesPriceChangeEarly(ac.Summary.Email))
 	writeJSON(w, http.StatusOK, out)
 }
 
@@ -384,7 +441,7 @@ func (h handlers) createOrder(w http.ResponseWriter, r *http.Request) {
 		h.orderRefused(w, ac.UserID, req.Tariff, http.StatusServiceUnavailable, "payments_unavailable")
 		return
 	}
-	tariff, err := h.Store.Tariff(req.Tariff)
+	tariff, err := h.tariff(req.Tariff)
 	if err != nil || !tariff.Active {
 		h.orderRefused(w, ac.UserID, req.Tariff, http.StatusNotFound, "unknown tariff")
 		return
@@ -713,4 +770,63 @@ func (h handlers) trackTariffEvent(w http.ResponseWriter, r *http.Request) {
 		log.Printf("tariff events: %v", err)
 	}
 	w.WriteHeader(http.StatusNoContent)
+}
+
+// publicPricesDTO is what the logged-out landing needs to quote: the live prices in rubles, and the announced change
+// while there is one. The landing is a static page, so it asks for them instead of having them typed in, and its prices
+// change by themselves at the moment of the change (migration 041).
+type publicPricesDTO struct {
+	Level struct {
+		// First is the price of a first purchase, Regular of every later one.
+		First   int64 `json:"first"`
+		Regular int64 `json:"regular"`
+	} `json:"level"`
+	Year   int64 `json:"year"`
+	Change *struct {
+		At           string `json:"at"`
+		LevelFirst   int64  `json:"level_first"`
+		LevelRegular int64  `json:"level_regular"`
+		Year         int64  `json:"year"`
+	} `json:"change,omitempty"`
+}
+
+// getPublicPrices handles GET /api/prices: no session, no account, nothing personal. It is cached for half a minute at
+// most, so the quote cannot outlive the change by more than that.
+func (h handlers) getPublicPrices(w http.ResponseWriter, r *http.Request) {
+	level, err := h.tariff(store.TariffLevel)
+	if err != nil {
+		log.Printf("prices: level: %v", err)
+		fail(w, http.StatusInternalServerError, "internal error")
+		return
+	}
+	year, err := h.tariff(store.TariffYear)
+	if err != nil {
+		log.Printf("prices: year: %v", err)
+		fail(w, http.StatusInternalServerError, "internal error")
+		return
+	}
+	var out publicPricesDTO
+	out.Level.First = rubles(levelPriceKopecks(level, false))
+	out.Level.Regular = rubles(level.PriceKopecks)
+	out.Year = rubles(year.PriceKopecks)
+	now := h.Now()
+	if level.NextPriceKopecks > 0 && !level.AnnounceAt.IsZero() && !now.Before(level.AnnounceAt) && now.Before(level.ChangeAt) {
+		yearNext := year.NextPriceKopecks
+		if yearNext <= 0 {
+			yearNext = year.PriceKopecks
+		}
+		out.Change = &struct {
+			At           string `json:"at"`
+			LevelFirst   int64  `json:"level_first"`
+			LevelRegular int64  `json:"level_regular"`
+			Year         int64  `json:"year"`
+		}{
+			At:           level.ChangeAt.UTC().Format(time.RFC3339),
+			LevelFirst:   rubles(nextLevelPriceKopecks(level, false)),
+			LevelRegular: rubles(level.NextPriceKopecks),
+			Year:         rubles(yearNext),
+		}
+	}
+	w.Header().Set("Cache-Control", "public, max-age=30")
+	writeJSON(w, http.StatusOK, out)
 }

@@ -212,6 +212,7 @@ func Handler(deps Deps) http.Handler {
 	root.HandleFunc("PUT /api/service/stories/{slug}", h.putStoryService)
 	root.HandleFunc("POST /api/service/campaigns/return/wave", h.postCampaignWave)
 	root.HandleFunc("GET /api/service/campaigns/return/results", h.getCampaignResults)
+	root.HandleFunc("GET /api/prices", h.getPublicPrices)
 	root.HandleFunc("GET /api/unsubscribe", h.unsubscribePage)
 	root.HandleFunc("POST /api/unsubscribe", h.unsubscribe)
 	root.HandleFunc("GET /api/me/survey", h.requireSession(h.getSurvey))

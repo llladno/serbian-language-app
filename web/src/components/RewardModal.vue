@@ -20,7 +20,7 @@ const pile = computed(() => pileFor(wallet.balance))
 
 <template>
   <ModalShell :open="open" size="sm" panel-class="p-5 text-center" @close="closeModal">
-    <button class="icon-btn absolute right-3 top-3" title="Закрыть" aria-label="Закрыть" @click="closeModal">
+    <button class="icon-btn absolute right-3 top-3 z-10" title="Закрыть" aria-label="Закрыть" @click="closeModal">
       <X :size="19" :stroke-width="2.25" />
     </button>
 

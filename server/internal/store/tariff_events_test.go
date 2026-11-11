@@ -163,3 +163,16 @@ func TestKindsBelongToTheirSources(t *testing.T) {
 		}
 	}
 }
+
+func TestThePriceChangeCampaignSourcesTakeViewClickAndDismiss(t *testing.T) {
+	for _, source := range []string{TariffSourcePriceBanner, TariffSourcePricePage, TariffSourcePriceModal} {
+		for _, kind := range []string{TariffEventView, TariffEventClick, TariffEventDismiss} {
+			if !ValidTariffEvent(kind, source) {
+				t.Errorf("ValidTariffEvent(%q, %q) = false, want true", kind, source)
+			}
+		}
+		if ValidTariffEvent(TariffEventOpen, source) {
+			t.Errorf("%q takes a checkout step", source)
+		}
+	}
+}

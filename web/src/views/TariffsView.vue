@@ -21,11 +21,13 @@ import { useTariffsStore, payErrorMessage } from '../stores/tariffs'
 import { useWalletStore } from '../stores/wallet'
 import { useToasts } from '../lib/toasts'
 import { useLevelChoiceModal } from '../lib/levelChoiceModal'
-import { daysLeft, grouped, longDate, perMonth, rub, shortDate } from '../lib/tariffs'
+import { lastDay } from '../lib/priceChange'
+import { daysLeft, discountPercent, grouped, longDate, perMonth, rub, shortDate } from '../lib/tariffs'
 import { pluralRu } from '../lib/plural'
 import { trackCheckout } from '../lib/tariffEvents'
 import BotPrefsSection from '../components/BotPrefsSection.vue'
 import LevelCreditNotice from '../components/LevelCreditNotice.vue'
+import PriceChangeBanner from '../components/PriceChangeBanner.vue'
 import PaymentThanksModal from '../components/PaymentThanksModal.vue'
 import ReceiptContactModal from '../components/ReceiptContactModal.vue'
 import SeedIcon from '../components/SeedIcon.vue'
@@ -41,7 +43,27 @@ const wallet = useWalletStore()
 const toasts = useToasts()
 const { openFor: openChoice } = useLevelChoiceModal()
 
-const levelStruck = computed(() => (tariffs.levelNow < tariffs.levelRegular ? tariffs.levelRegular : 0))
+// The struck-through price. During the announced discount it is the price that really follows it (399 and 1 999), so the
+// discount is plain to see; otherwise the regular price of a level, and the old price of the year when there is one.
+const levelStruck = computed(() => {
+  const c = tariffs.campaign
+  if (c && c.levelPrice > tariffs.levelNow) return c.levelPrice
+  return tariffs.levelNow < tariffs.levelRegular ? tariffs.levelRegular : 0
+})
+const levelOff = computed(() => (levelStruck.value ? discountPercent(tariffs.levelNow, levelStruck.value) : 0))
+const yearStruck = computed(() => {
+  const c = tariffs.campaign
+  if (c && c.yearPrice > tariffs.yearPrice) return c.yearPrice
+  return tariffs.campaign ? 0 : tariffs.yearOld
+})
+const yearOff = computed(() => (tariffs.campaign && yearStruck.value ? discountPercent(tariffs.yearPrice, yearStruck.value) : 0))
+// "до 15 ноября": the last day of the discount, as the learner reads it.
+const saleUntil = computed(() => {
+  const c = tariffs.campaign
+  if (!c) return ''
+  const d = lastDay(c.at)
+  return `${d.day} ${d.month}`
+})
 
 // A paid level opens a level of the learner's own choice, so the card does not name one: it lists what
 // there is to choose from ("«Связная речь», «Падежи в жизни» и ещё 2"), by name without the number.
@@ -173,7 +195,8 @@ onMounted(async () => {
 <template>
   <div class="space-y-6">
     <!-- The top of the page: the swallow of the banner in the profile, and a hello. -->
-    <header class="hero card" data-test="tariffs-hero">
+    <PriceChangeBanner />
+    <header v-if="!tariffs.campaign" class="hero card" data-test="tariffs-hero">
       <div class="hero-art" aria-hidden="true"><img :src="scene" alt="" /></div>
       <div class="hero-body">
         <p class="hello" data-test="tariffs-hello">Ćao! 👋 Рады, что вы учите сербский с нами</p>
@@ -225,7 +248,7 @@ onMounted(async () => {
 
     <!-- The year is the taller card on purpose: it carries the saving. The level card
          stays as short as its content instead of stretching to match it. -->
-    <div v-else class="grid gap-4 sm:grid-cols-2 sm:items-start">
+    <div v-else id="tariff-cards" class="grid scroll-mt-20 gap-4 sm:grid-cols-2 sm:items-start">
       <!-- Уровень -->
       <section class="card flex flex-col p-5" data-test="tariff-level">
         <p class="plan">Уровень</p>
@@ -237,10 +260,11 @@ onMounted(async () => {
         <p class="price-row" data-test="level-price">
           <span class="price">{{ rub(tariffs.levelNow) }}</span>
           <span v-if="levelStruck" class="was">{{ rub(levelStruck) }}</span>
-          <span v-if="tariffs.levelDiscount" class="badge" data-test="level-discount">−{{ tariffs.levelDiscount }}%</span>
+          <span v-if="levelOff" class="badge" data-test="level-discount">−{{ levelOff }}%</span>
         </p>
-        <p v-if="tariffs.levelDiscount" class="mt-1 text-sm font-semibold text-[var(--accent)]" data-test="level-discount-note">
-          Скидка {{ tariffs.levelDiscount }}% на первую покупку
+        <p v-if="levelOff" class="mt-1 text-sm font-semibold text-[var(--accent)]" data-test="level-discount-note">
+          <template v-if="tariffs.campaign">Скидка {{ levelOff }}% до {{ saleUntil }}</template>
+          <template v-else>Скидка {{ levelOff }}% на первую покупку</template>
         </p>
 
         <ul class="perks">
@@ -314,9 +338,15 @@ onMounted(async () => {
 
         <p class="price-row" data-test="year-price">
           <span class="price">{{ rub(tariffs.yearPrice) }}</span>
-          <span class="was">{{ rub(tariffs.yearOld) }}</span>
+          <span v-if="yearStruck > 0" class="was">{{ rub(yearStruck) }}</span>
+          <span v-if="yearOff" class="badge" data-test="year-discount">−{{ yearOff }}%</span>
         </p>
-        <p class="mt-1 text-sm text-[var(--muted)]">≈ {{ rub(perMonth(tariffs.yearPrice)) }} в месяц · ранняя цена</p>
+        <p v-if="yearOff" class="mt-1 text-sm font-semibold text-[var(--accent)]" data-test="year-discount-note">
+          Скидка {{ yearOff }}% до {{ saleUntil }}
+        </p>
+        <p class="mt-1 text-sm text-[var(--muted)]">
+          ≈ {{ rub(perMonth(tariffs.yearPrice)) }} в месяц<template v-if="!tariffs.campaign && tariffs.yearOld > 0"> · ранняя цена</template>
+        </p>
 
         <!-- The argument for the year, as one picture: a thin bar under the price, the year's share of what a level
              every month for twelve months would cost (the fastest pace the tariff allows); under it the year's

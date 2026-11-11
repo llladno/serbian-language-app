@@ -134,3 +134,56 @@ describe('payErrorMessage', () => {
     expect(payErrorMessage(new Error('boom'))).toContain('Попробуйте ещё раз')
   })
 })
+
+describe('useTariffsStore: an announced price change', () => {
+  // The quote says the change is in ten seconds on the server's clock; the phone's clock is the server's here.
+  function quoteWithChange(inMs: number) {
+    const now = Date.now()
+    return tariffsInfo({
+      price_change: {
+        at: new Date(now + inMs).toISOString(),
+        now: new Date(now).toISOString(),
+        level_price: 399,
+        year_price: 1999,
+      },
+    })
+  }
+
+  beforeEach(() => vi.useFakeTimers())
+  afterEach(() => vi.useRealTimers())
+
+  it('reads the quote again just after the moment, on any screen, and ends up with the new prices and no announcement', async () => {
+    const after = tariffsInfo({ level: { ...tariffsInfo().level, price: 399, regular_price: 399 }, year: { price: 1999, old_price: 0 } })
+    const spy = vi.spyOn(api, 'tariffs').mockResolvedValueOnce(quoteWithChange(10_000)).mockResolvedValue(after)
+    useSessionStore().user = sessionUser(true)
+    const store = useTariffsStore()
+    await store.load()
+    expect(store.priceChange).not.toBeNull()
+    expect(store.levelNow).toBe(249)
+
+    await vi.advanceTimersByTimeAsync(9_000)
+    expect(spy).toHaveBeenCalledTimes(1) // not before
+    await vi.advanceTimersByTimeAsync(1_500)
+    expect(spy).toHaveBeenCalledTimes(2)
+    expect(store.priceChange).toBeNull()
+    expect(store.levelNow).toBe(399)
+    expect(store.yearPrice).toBe(1999)
+  })
+
+  it('asks again while the server has not made the change yet (its clock a little behind)', async () => {
+    const after = tariffsInfo({ year: { price: 1999, old_price: 0 } })
+    const spy = vi
+      .spyOn(api, 'tariffs')
+      .mockResolvedValueOnce(quoteWithChange(1_000))
+      .mockResolvedValueOnce(quoteWithChange(500)) // still announced
+      .mockResolvedValue(after)
+    useSessionStore().user = sessionUser(true)
+    const store = useTariffsStore()
+    await store.load()
+    await vi.advanceTimersByTimeAsync(1_500) // the first read after the moment: still announced
+    expect(store.priceChange).not.toBeNull()
+    await vi.advanceTimersByTimeAsync(1_600) // the second one
+    expect(spy.mock.calls.length).toBeGreaterThanOrEqual(3)
+    expect(store.priceChange).toBeNull()
+  })
+})

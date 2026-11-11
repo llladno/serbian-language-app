@@ -1,0 +1,79 @@
+/* The look the price-change strip (PriceChangeStrip) and poster (PriceChangePoster) share: a white sticker with the
+   campaign's name, and the one gold button, shining. Black here is the same in both themes on purpose, like a
+   poster; Oswald (index.html) is the lettering of the stickers and the button. */
+.pc-sticker {
+  display: inline-block;
+  padding: 5px 9px 6px;
+  font-family: Oswald, 'Manrope', sans-serif;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: #0b1211;
+  background: #fff;
+  border-radius: 8px;
+  transform: rotate(-4deg);
+  box-shadow: 0 3px 0 rgb(255 255 255 / 0.25);
+}
+
+/* The button: gold with a glint passing over it and a soft pulse around it, every 2.8 s. */
+.pc-btn {
+  position: relative;
+  display: inline-block;
+  overflow: hidden;
+  padding: 0.65rem 1rem;
+  font-family: Oswald, 'Manrope', sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+  text-align: center;
+  text-decoration: none;
+  text-transform: uppercase;
+  color: #2b2007;
+  background: color-mix(in srgb, var(--gold) 92%, #fff);
+  border-radius: 10px;
+  animation: pc-pulse 2.8s ease-out infinite;
+}
+.pc-btn:hover {
+  background: var(--gold);
+}
+.pc-btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg, transparent 38%, rgb(255 255 255 / 0.8) 50%, transparent 62%);
+  transform: translateX(-130%);
+  animation: pc-shine 2.8s ease-in-out infinite;
+}
+@keyframes pc-shine {
+  0%,
+  50% {
+    transform: translateX(-130%);
+  }
+  100% {
+    transform: translateX(130%);
+  }
+}
+@keyframes pc-pulse {
+  0%,
+  50% {
+    box-shadow: 0 0 0 0 rgb(227 176 75 / 0.55);
+  }
+  100% {
+    box-shadow: 0 0 0 12px rgb(227 176 75 / 0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pc-btn,
+  .pc-btn::after {
+    animation: none;
+  }
+}
+
+/* The window that holds the poster (PriceChangeModal): the poster is its own card, so the frame is not drawn. */
+.card.pc-modal-panel {
+  background: transparent;
+  box-shadow: none;
+  overflow: visible;
+}

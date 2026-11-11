@@ -286,6 +286,27 @@ func (c Config) TariffsAllowed(email string) bool {
 	return c.PaymentProviderFor(email) != ""
 }
 
+// SeesPriceChangeEarly reports whether the account with this email is one of the owner's own (TARIFFS_EMAILS or
+// TBANK_EMAILS, the lists the tariffs were first opened to): such an account is shown an announced price change as soon
+// as it is scheduled, before its announcement date, to look at it. An account with no email never is.
+func (c Config) SeesPriceChangeEarly(email string) bool {
+	email = strings.ToLower(strings.TrimSpace(email))
+	if email == "" {
+		return false
+	}
+	for _, e := range c.TBankEmails {
+		if e == email {
+			return true
+		}
+	}
+	for _, e := range c.TariffsEmails {
+		if e == email {
+			return true
+		}
+	}
+	return false
+}
+
 // TBankConfigured reports whether Т-Касса payments are connected.
 func (c Config) TBankConfigured() bool {
 	return c.TBankTerminalKey != "" && c.TBankPassword != ""
