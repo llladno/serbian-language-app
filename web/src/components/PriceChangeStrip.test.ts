@@ -178,7 +178,7 @@ describe('nothing for a learner who has a tariff', () => {
 })
 
 describe('PriceChangeBanner', () => {
-  it('is the small one: the discount and the countdown with seconds, one short line, the prices and one button down to the cards', () => {
+  it('is the small one: the discount and the countdown with seconds, one short line and the prices, with no button', () => {
     enableTariffs({ ...announced(), level: { ...tariffsInfo().level, price: 199 } })
     const w = mount(PriceChangeBanner)
     expect(flat(w.get('[data-test="price-banner-sticker"]').text())).toBe('Скидка 50%')
@@ -188,9 +188,9 @@ describe('PriceChangeBanner', () => {
     expect(flat(w.get('[data-test="price-banner-level"]').text())).toContain('199 ₽')
     expect(flat(w.get('[data-test="price-banner-level"]').text())).toContain('399 ₽')
     expect(flat(w.get('[data-test="price-banner-year"]').text())).toContain('2 000 ₽')
-    const go = w.get('[data-test="price-banner-go"]')
-    expect(go.text()).toBe('Забрать')
-    expect(go.attributes('href')).toBe('#tariff-cards')
+    // no button: the cards are right below the banner
+    expect(w.find('[data-test="price-banner-go"]').exists()).toBe(false)
+    expect(w.find('a, button').exists()).toBe(false)
   })
 
   it('lets stickers and the two current prices rise behind it', () => {

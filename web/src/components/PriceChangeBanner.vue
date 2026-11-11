@@ -24,7 +24,7 @@ const { change, remaining, copy } = usePriceChange()
 const show = computed(() => tariffs.ready && !!change.value)
 const showLevel = computed(() => tariffs.choices.length > 0 || tariffs.hasCredit)
 
-// The funnel (source `price_page`): a showing each time the banner appears, and a press on the button.
+// The funnel (source `price_page`): a showing each time the banner appears. The banner has no button: the cards are right below it.
 watch(show, (shown) => shown && trackTariff('view', 'price_page'), { immediate: true })
 </script>
 
@@ -50,9 +50,6 @@ watch(show, (shown) => shown && trackTariff('view', 'price_page'), { immediate: 
           ><span class="b">{{ rub(change.yearPrice) }}</span>
         </p>
       </div>
-      <div class="go">
-        <a href="#tariff-cards" class="pc-btn" data-test="price-banner-go" @click="trackTariff('click', 'price_page')">{{ copy.posterButton }}</a>
-      </div>
       <img :src="bird" alt="" aria-hidden="true" class="bird" />
     </header>
   </div>
@@ -66,7 +63,7 @@ watch(show, (shown) => shown && trackTariff('view', 'price_page'), { immediate: 
   position: relative;
   display: grid;
   gap: 0.5rem;
-  padding: 1rem 1.1rem 1.1rem;
+  padding: 1rem 1.1rem 3.4rem;
   overflow: hidden;
   color: #fff;
   background: #0b1211;
@@ -77,8 +74,7 @@ watch(show, (shown) => shown && trackTariff('view', 'price_page'), { immediate: 
     'row'
     'title'
     'sub'
-    'prices'
-    'go';
+    'prices';
 }
 .banner > :not(.floaters):not(.bird) {
   position: relative;
@@ -164,18 +160,11 @@ watch(show, (shown) => shown && trackTariff('view', 'price_page'), { immediate: 
 .st-year {
   transform: rotate(1.5deg);
 }
-.go {
-  grid-area: go;
-  margin-top: 0.15rem;
-}
-.go .pc-btn {
-  padding: 0.6rem 1.1rem;
-}
 .bird {
   position: absolute;
-  right: 0.7rem;
-  bottom: 0.6rem;
-  width: 4.1rem;
+  right: 1rem;
+  bottom: 0.5rem;
+  width: 3.5rem;
   transform: rotate(6deg);
   image-rendering: pixelated;
   filter: drop-shadow(1.5px 0 0 #fff) drop-shadow(-1.5px 0 0 #fff) drop-shadow(0 1.5px 0 #fff) drop-shadow(0 -1.5px 0 #fff)
@@ -189,8 +178,7 @@ watch(show, (shown) => shown && trackTariff('view', 'price_page'), { immediate: 
     grid-template-areas:
       'row prices'
       'title prices'
-      'sub prices'
-      'go prices';
+      'sub prices';
     column-gap: 2rem;
     padding: 1.25rem 7rem 1.25rem 1.5rem;
   }
