@@ -65,6 +65,11 @@ type Config struct {
 	// (the lead-magnet funnel). Anyone can run /id to learn theirs. From
 	// TELEGRAM_ADMIN_IDS, a comma-separated list; empty disables /stats.
 	TelegramAdminIDs []int64
+	// AdminNotifyBotToken and AdminNotifyChatID send the operator a Telegram message for each successful payment and
+	// each support message from the profile page. A separate bot from TelegramBotToken: this one only talks to the
+	// operator. Both must be set, otherwise nothing is sent. From ADMIN_NOTIFY_BOT_TOKEN and ADMIN_NOTIFY_CHAT_ID.
+	AdminNotifyBotToken string
+	AdminNotifyChatID   int64
 	// TributeAPIKey authenticates the Tribute donation webhook
 	// (POST /api/tribute/webhook): Tribute signs every request with
 	// HMAC-SHA256(key=TributeAPIKey, msg=body) in the "trbt-signature"
@@ -159,6 +164,8 @@ func Load() Config {
 		TelegramAPIBase:       os.Getenv("TELEGRAM_API_BASE"),
 		TelegramWebhookURL:    os.Getenv("TELEGRAM_WEBHOOK_URL"),
 		TelegramAdminIDs:      parseIDList(os.Getenv("TELEGRAM_ADMIN_IDS")),
+		AdminNotifyBotToken:   strings.TrimSpace(os.Getenv("ADMIN_NOTIFY_BOT_TOKEN")),
+		AdminNotifyChatID:     firstID(parseIDList(os.Getenv("ADMIN_NOTIFY_CHAT_ID"))),
 		TributeAPIKey:         os.Getenv("TRIBUTE_API_KEY"),
 		TariffsEmails:         parseEmailList(os.Getenv("TARIFFS_EMAILS")),
 		TBankEmails:           parseEmailList(os.Getenv("TBANK_EMAILS")),
@@ -370,4 +377,17 @@ func photoBaseOr(v string) string {
 		return v
 	}
 	return defaultCampaignPhotoBase
+}
+
+// firstID is the first of ids, 0 when there are none.
+func firstID(ids []int64) int64 {
+	if len(ids) == 0 {
+		return 0
+	}
+	return ids[0]
+}
+
+// AdminNotifyEnabled reports whether the operator's notifications have both a bot and a chat to go to.
+func (c Config) AdminNotifyEnabled() bool {
+	return c.AdminNotifyBotToken != "" && c.AdminNotifyChatID != 0
 }

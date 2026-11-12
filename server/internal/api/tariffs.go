@@ -688,8 +688,14 @@ func (h handlers) settlePayment(ctx context.Context, p store.Payment) (store.Pay
 	}
 	switch {
 	case st.Paid:
-		if _, err := h.Store.CompletePayment(p.ID, h.Now()); err != nil {
+		granted, err := h.Store.CompletePayment(p.ID, h.Now())
+		if err != nil {
 			return p, err
+		}
+		if granted {
+			// Only the call that did the granting tells the operator; the notification and the return page
+			// arriving together would otherwise send it twice.
+			h.notifyPayment(p)
 		}
 	case st.Failed:
 		if err := h.Store.CancelPayment(p.ID); err != nil {

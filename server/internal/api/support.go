@@ -24,5 +24,6 @@ func (h handlers) createSupportMessage(w http.ResponseWriter, r *http.Request) {
 		fail(w, http.StatusBadRequest, "message must not be empty")
 		return
 	}
+	h.notifySupport(ac.UserID, req.Message)
 	writeJSON(w, http.StatusOK, map[string]string{"status": "ok"})
 }

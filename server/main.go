@@ -208,6 +208,22 @@ func main() {
 		}
 	}()
 
+	// The operator's own notifications (payments, support messages) go out on a separate bot, straight to the Bot API
+	// (through TelegramAPIBase when the host cannot reach it). One retry covers a blip; the notice is not worth more.
+	var notifyAdmin func(string)
+	if cfg.AdminNotifyEnabled() {
+		notifyAdmin = func(text string) {
+			err := telegram.SendHTML(cfg.AdminNotifyBotToken, cfg.AdminNotifyChatID, text)
+			if err != nil {
+				time.Sleep(3 * time.Second)
+				err = telegram.SendHTML(cfg.AdminNotifyBotToken, cfg.AdminNotifyChatID, text)
+			}
+			if err != nil {
+				log.Printf("admin notify: %v", err)
+			}
+		}
+	}
+
 	apiDeps := api.Deps{
 		Course:                 getCourse,
 		Store:                  st,
@@ -225,6 +241,7 @@ func main() {
 		TelegramWebhookSecret:  telegramWebhookSecret,
 		EnqueueTelegramMessage: enqueueTelegramMessage,
 		EnqueueTelegramPhoto:   enqueueTelegramPhoto,
+		NotifyAdmin:            notifyAdmin,
 	}
 
 	// An announced price change (migration 041) is made by whoever reads a price first after its moment, and here too, so the

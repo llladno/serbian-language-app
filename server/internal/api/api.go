@@ -74,6 +74,10 @@ type Deps struct {
 	EnqueueTelegramMessage func(chatID int64, text string, button *telegram.InlineButton, priority int)
 	// EnqueueTelegramPhoto queues a photo (photo is the address Telegram downloads it from) with caption as its text, the same way.
 	EnqueueTelegramPhoto func(chatID int64, photo, caption string, button *telegram.InlineButton, priority int)
+	// NotifyAdmin sends the operator one message in Telegram's HTML subset (a payment came in, a support message was
+	// written). Production sends it through the operator's own bot; nil sends nothing. It is called off the request's
+	// path (through Async) and must not be relied on to arrive.
+	NotifyAdmin func(html string)
 }
 
 type handlers struct{ Deps }

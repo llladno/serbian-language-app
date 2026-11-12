@@ -196,6 +196,19 @@ func SendMessageWithButton(botToken string, chatID int64, text string, button *I
 	return call(botToken, "sendMessage", params, nil)
 }
 
+// SendHTML sends text, written in Telegram's HTML subset (<b>, <i>, <code>, <blockquote>, <a>), to chatID with
+// link previews off. It is for the operator's own notifications (internal/api/notify.go), which go straight out
+// on a separate bot instead of through the outbox: the outbox is the learners' rate-limited queue.
+func SendHTML(botToken string, chatID int64, text string) error {
+	params := url.Values{
+		"chat_id":              {fmt.Sprintf("%d", chatID)},
+		"text":                 {text},
+		"parse_mode":           {"HTML"},
+		"link_preview_options": {`{"is_disabled":true}`},
+	}
+	return call(botToken, "sendMessage", params, nil)
+}
+
 // inlineRows is the keyboard under a message for one InlineButton: the preset it stands for, or a single button.
 func inlineRows(button *InlineButton) [][]map[string]any {
 	switch {
