@@ -656,6 +656,14 @@ func verifyTelegramPayload(body []byte, botToken string, now time.Time) (auth.Te
 	return auth.VerifyInitData(envelope.InitData, botToken, now, telegramMaxAge)
 }
 
+// noteTelegramName keeps the first name Telegram shows for tg id, for messages that greet by name. A failure is only
+// logged: a missing name makes a message plainer, it must never break a login or the bot.
+func (h handlers) noteTelegramName(tgID, firstName string) {
+	if err := h.Store.NoteTelegramFirstName(tgID, firstName); err != nil {
+		log.Printf("telegram: remember first name: %v", err)
+	}
+}
+
 // resolveTelegramLogin finds or creates the account a verified Telegram
 // identity belongs to, in order: an existing telegram identity for this tg id
 // logs straight in; a "pending:<username>" row seeded by a migration is
@@ -671,6 +679,7 @@ func (h handlers) resolveTelegramLogin(u auth.TelegramUser) (userID string, crea
 	id, err := h.Store.IdentityByProviderUID("telegram", tgID)
 	switch {
 	case err == nil:
+		h.noteTelegramName(tgID, u.FirstName)
 		return id.UserID, false, nil
 	case !errors.Is(err, sql.ErrNoRows):
 		return "", false, fmt.Errorf("lookup identity: %w", err)
@@ -695,6 +704,7 @@ func (h handlers) resolveTelegramLogin(u auth.TelegramUser) (userID string, crea
 		if err != nil {
 			return "", false, fmt.Errorf("identity after claim: %w", err)
 		}
+		h.noteTelegramName(tgID, u.FirstName)
 		return id.UserID, false, nil
 	}
 
@@ -724,6 +734,7 @@ func (h handlers) resolveTelegramLogin(u auth.TelegramUser) (userID string, crea
 		Provider:    "telegram",
 		ProviderUID: tgID,
 		TgUsername:  u.Username,
+		TgFirstName: store.NormalizeName(u.FirstName),
 	}); err != nil {
 		return "", false, fmt.Errorf("create identity: %w", err)
 	}
@@ -744,6 +755,7 @@ func (h handlers) resolveTelegramLink(callerUserID string, u auth.TelegramUser) 
 	existing, err := h.Store.IdentityByProviderUID("telegram", tgID)
 	switch {
 	case err == nil && existing.UserID == callerUserID:
+		h.noteTelegramName(tgID, u.FirstName)
 		return nil
 	case err == nil:
 		return errTelegramTaken
@@ -754,6 +766,7 @@ func (h handlers) resolveTelegramLink(callerUserID string, u auth.TelegramUser) 
 			Provider:    "telegram",
 			ProviderUID: tgID,
 			TgUsername:  u.Username,
+			TgFirstName: store.NormalizeName(u.FirstName),
 		})
 	default:
 		return fmt.Errorf("lookup identity: %w", err)
@@ -952,6 +965,11 @@ func (h handlers) telegramWebhook(w http.ResponseWriter, r *http.Request) {
 	}
 	if err := json.NewDecoder(r.Body).Decode(&update); err != nil {
 		return
+	}
+	if cq := update.CallbackQuery; cq != nil {
+		h.noteTelegramName(strconv.FormatInt(cq.From.ID, 10), cq.From.FirstName)
+	} else if update.Message != nil {
+		h.noteTelegramName(strconv.FormatInt(update.Message.From.ID, 10), update.Message.From.FirstName)
 	}
 	if cq := update.CallbackQuery; cq != nil {
 		var chatID, messageID int64

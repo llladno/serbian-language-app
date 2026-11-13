@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"math/rand"
+	"strings"
 	"time"
 
 	"github.com/grisha/serbian-app/server/internal/store"
@@ -33,6 +34,47 @@ var inactivityMessages = []string{
 	"Слова заждались — вернитесь, когда будет пара свободных минут. 📚",
 	"День без практики — не беда, но лучше вернуться сегодня. 👋",
 	"Напоминаем про сербский — откройте приложение и повторите немного. 💭",
+}
+
+// namedInactivityMessages are the same nudge for a learner whose name we trust (see greetingName): «{name}» is replaced
+// by it and the message opens with it. They keep the voice of inactivityMessages (вы, one emoji, a light touch).
+var namedInactivityMessages = []string{
+	"{name}, вы давно не заглядывали — самое время повторить пару слов. ⏰",
+	"{name}, сербский не выучится сам :) Загляните на пару минут. 🇷🇸",
+	"Ćao, {name}! Слова заждались — вернитесь, когда будет пара свободных минут. 📚",
+	"{name}, день без практики — не беда, но лучше вернуться сегодня. 👋",
+	"{name}, напоминаем про сербский — откройте приложение и повторите немного. 💭",
+}
+
+// greetingName is what a message to this Telegram user opens with: their name, else their @nick, else "" (a plain text).
+// The first name Telegram showed us comes first. The account name comes next, but only when it is not the @handle: a
+// Telegram signup is created under its username, so for most of them users.name is `gri_92` and would not read as a
+// name. When no name is left the @nick is used as it is («@gri_92, ...»), the call the owner made over a plain text.
+func greetingName(tu store.TelegramUser) string {
+	if n := telegram.GreetingName(tu.FirstName); n != "" {
+		return n
+	}
+	handle := strings.TrimSpace(tu.Username)
+	if !strings.EqualFold(strings.TrimSpace(tu.AccountName), handle) {
+		if n := telegram.GreetingName(tu.AccountName); n != "" {
+			return n
+		}
+	}
+	if handle != "" {
+		return "@" + handle
+	}
+	return ""
+}
+
+// pickInactivity chooses the «come back» text, with the learner's name when there is one. The second result names the
+// text for reminder_sends: 'n1'..'n5' with a name, 'p1'..'p5' without.
+func pickInactivity(name string) (text, variant string) {
+	if name == "" {
+		i := rand.Intn(len(inactivityMessages))
+		return inactivityMessages[i], fmt.Sprintf("p%d", i+1)
+	}
+	i := rand.Intn(len(namedInactivityMessages))
+	return telegram.Substitute(namedInactivityMessages[i], name), fmt.Sprintf("n%d", i+1)
 }
 
 // studyMessageGap is the quiet that follows any study message: the «all done» congrats, the «come
@@ -137,8 +179,12 @@ func RunReminderSweep(deps Deps, now time.Time) error {
 			continue
 		}
 		if !studyMessageToday && now.Sub(last) >= reminderInactivityAfter && state.InactiveSentAt.Before(last) {
-			deps.EnqueueTelegramMessage(tu.ChatID, pickMessage(inactivityMessages), stopButton(), telegram.PriorityNormal)
+			text, variant := pickInactivity(greetingName(tu))
+			deps.EnqueueTelegramMessage(tu.ChatID, text, stopButton(), telegram.PriorityNormal)
 			studyMessageToday = true
+			if err := deps.Store.RecordReminderSend(tu.UserID, "inactive", variant, now); err != nil {
+				log.Printf("reminder sweep: record send for %s: %v", tu.UserID, err)
+			}
 			if err := deps.Store.SetBotReminderInactiveSentAt(tu.UserID, now); err != nil {
 				log.Printf("reminder sweep: save inactivity state for %s: %v", tu.UserID, err)
 			}

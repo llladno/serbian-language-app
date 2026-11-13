@@ -14,6 +14,7 @@ type Identity struct {
 	Email, PasswordHash               string // password provider
 	EmailVerifiedAt                   string // RFC3339 or ""
 	TgUsername                        string // telegram provider
+	TgFirstName                       string // telegram provider: first name as Telegram last showed it, "" until seen
 	CreatedAt                         string
 }
 
@@ -21,12 +22,12 @@ type Identity struct {
 // coalesced so every field scans into a plain string.
 const identityCols = `id, user_id, provider, provider_uid,
 	COALESCE(email,''), COALESCE(password_hash,''), COALESCE(email_verified_at,''),
-	COALESCE(tg_username,''), created_at`
+	COALESCE(tg_username,''), COALESCE(tg_first_name,''), created_at`
 
 func scanIdentity(row interface{ Scan(...any) error }) (Identity, error) {
 	var it Identity
 	err := row.Scan(&it.ID, &it.UserID, &it.Provider, &it.ProviderUID,
-		&it.Email, &it.PasswordHash, &it.EmailVerifiedAt, &it.TgUsername, &it.CreatedAt)
+		&it.Email, &it.PasswordHash, &it.EmailVerifiedAt, &it.TgUsername, &it.TgFirstName, &it.CreatedAt)
 	return it, err
 }
 
@@ -37,12 +38,28 @@ func (s *Store) CreateIdentity(in Identity) error {
 		in.CreatedAt = time.Now().UTC().Format(time.RFC3339)
 	}
 	if _, err := s.db.Exec(`INSERT INTO identities
-		(id, user_id, provider, provider_uid, email, password_hash, email_verified_at, tg_username, created_at)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+		(id, user_id, provider, provider_uid, email, password_hash, email_verified_at, tg_username, tg_first_name, created_at)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 		in.ID, in.UserID, in.Provider, in.ProviderUID,
-		nullIf(in.Email), nullIf(in.PasswordHash), nullIf(in.EmailVerifiedAt), nullIf(in.TgUsername),
+		nullIf(in.Email), nullIf(in.PasswordHash), nullIf(in.EmailVerifiedAt), nullIf(in.TgUsername), nullIf(in.TgFirstName),
 		in.CreatedAt); err != nil {
 		return fmt.Errorf("create identity: %w", err)
+	}
+	return nil
+}
+
+// NoteTelegramFirstName remembers the first name Telegram just showed us for a tg id. A blank name is ignored (Telegram
+// never sends none for a real person, but a message without one must not erase what we have), and a row that already
+// holds the same name is left untouched, so calling it on every Mini App open and bot message costs no write.
+func (s *Store) NoteTelegramFirstName(tgID, firstName string) error {
+	firstName = NormalizeName(firstName)
+	if firstName == "" {
+		return nil
+	}
+	if _, err := s.db.Exec(`UPDATE identities SET tg_first_name = ?
+		WHERE provider = 'telegram' AND provider_uid = ? AND COALESCE(tg_first_name,'') <> ?`,
+		firstName, tgID, firstName); err != nil {
+		return fmt.Errorf("note telegram first name: %w", err)
 	}
 	return nil
 }

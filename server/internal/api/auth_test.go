@@ -1183,3 +1183,40 @@ func TestTelegramClaimsPendingCaseInsensitive(t *testing.T) {
 		t.Errorf("user count = %d, want 2 (claim must not create a new user)", len(users))
 	}
 }
+
+// TestTelegramLoginKeepsFirstName pins that the name Telegram shows is stored on a new account and refreshed on later
+// logins: the account itself is created under the @username, which is no name to greet someone by.
+func TestTelegramLoginKeepsFirstName(t *testing.T) {
+	h, st := newTelegramAPI(t)
+
+	rr := anon(h, "POST", "/api/auth/telegram", tgBody(tgInitData(777, "neo_77")))
+	if rr.Code != http.StatusOK {
+		t.Fatalf("telegram login = %d %s, want 200", rr.Code, rr.Body)
+	}
+	id, err := st.IdentityByProviderUID("telegram", "777")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if id.TgFirstName != "Neo" {
+		t.Fatalf("first name after signup = %q, want Neo", id.TgFirstName)
+	}
+
+	// An account that existed before the name was kept learns it on its next login.
+	uid, err := st.CreateUser("old_neo")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := st.CreateIdentity(store.Identity{ID: "idn_old_neo", UserID: uid, Provider: "telegram", ProviderUID: "778", TgUsername: "old_neo"}); err != nil {
+		t.Fatal(err)
+	}
+	if rr := anon(h, "POST", "/api/auth/telegram", tgBody(tgInitData(778, "old_neo"))); rr.Code != http.StatusOK {
+		t.Fatalf("login of an existing account = %d %s, want 200", rr.Code, rr.Body)
+	}
+	id, err = st.IdentityByProviderUID("telegram", "778")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if id.TgFirstName != "Neo" {
+		t.Fatalf("first name after a later login = %q, want Neo", id.TgFirstName)
+	}
+}

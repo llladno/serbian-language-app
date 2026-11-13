@@ -16,28 +16,33 @@ import (
 type TelegramUser struct {
 	UserID string
 	ChatID int64
+	// FirstName is the first name Telegram last showed us ("" until then), Username the @handle without the @, and
+	// AccountName users.name: for a Telegram signup that is usually the handle, so callers picking a name to greet by
+	// must not trust it blindly (see api greetingName).
+	FirstName, Username, AccountName string
 }
 
 // TelegramLinkedUsers returns every account with a usable Telegram chat,
 // for the reminder sweep (internal/api RunReminderSweep) to iterate.
 func (s *Store) TelegramLinkedUsers() ([]TelegramUser, error) {
-	rows, err := s.db.Query(`SELECT user_id, provider_uid FROM identities
-		WHERE provider = 'telegram' AND provider_uid NOT LIKE 'pending:%'`)
+	rows, err := s.db.Query(`SELECT i.user_id, i.provider_uid, COALESCE(i.tg_first_name,''), COALESCE(i.tg_username,''), u.name
+		FROM identities i JOIN users u ON u.id = i.user_id
+		WHERE i.provider = 'telegram' AND i.provider_uid NOT LIKE 'pending:%'`)
 	if err != nil {
 		return nil, fmt.Errorf("telegram linked users: %w", err)
 	}
 	defer rows.Close()
 	var out []TelegramUser
 	for rows.Next() {
-		var userID, uid string
-		if err := rows.Scan(&userID, &uid); err != nil {
+		var userID, uid, first, username, accountName string
+		if err := rows.Scan(&userID, &uid, &first, &username, &accountName); err != nil {
 			return nil, fmt.Errorf("telegram linked users: %w", err)
 		}
 		chatID, err := strconv.ParseInt(uid, 10, 64)
 		if err != nil {
 			continue // shouldn't happen outside "pending:...", but never crash the sweep over one bad row
 		}
-		out = append(out, TelegramUser{UserID: userID, ChatID: chatID})
+		out = append(out, TelegramUser{UserID: userID, ChatID: chatID, FirstName: first, Username: username, AccountName: accountName})
 	}
 	return out, rows.Err()
 }
@@ -122,6 +127,34 @@ func (s *Store) SetBotReminderInactiveSentAt(userID string, at time.Time) error 
 		return fmt.Errorf("set bot reminder inactive-sent-at: %w", err)
 	}
 	return nil
+}
+
+// RecordReminderSend notes that a study reminder of this kind went out to userID, and which of its texts it was.
+func (s *Store) RecordReminderSend(userID, kind, variant string, at time.Time) error {
+	if _, err := s.db.Exec(`INSERT INTO reminder_sends (user_id, kind, variant, sent_at) VALUES (?, ?, ?, ?)`,
+		userID, kind, variant, at.UTC().Format(time.RFC3339)); err != nil {
+		return fmt.Errorf("record reminder send: %w", err)
+	}
+	return nil
+}
+
+// ReminderSendCounts returns how many reminders of this kind went out per variant.
+func (s *Store) ReminderSendCounts(kind string) (map[string]int, error) {
+	rows, err := s.db.Query(`SELECT variant, COUNT(*) FROM reminder_sends WHERE kind = ? GROUP BY variant`, kind)
+	if err != nil {
+		return nil, fmt.Errorf("reminder send counts: %w", err)
+	}
+	defer rows.Close()
+	out := map[string]int{}
+	for rows.Next() {
+		var v string
+		var n int
+		if err := rows.Scan(&v, &n); err != nil {
+			return nil, fmt.Errorf("reminder send counts: %w", err)
+		}
+		out[v] = n
+	}
+	return out, rows.Err()
 }
 
 // TelegramChatID resolves one account's Telegram chat id, for the

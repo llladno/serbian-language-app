@@ -44,3 +44,31 @@ func TestDefaultMessagesHaveEveryKey(t *testing.T) {
 		}
 	}
 }
+
+func TestGreetingName(t *testing.T) {
+	cases := []struct{ in, want string }{
+		{"Гриша", "Гриша"},
+		{"гриша", "Гриша"},
+		{"ГРИША", "Гриша"},
+		{"  Анна  Петрова ", "Анна"},
+		{"Анна-Мария", "Анна-Мария"},
+		{"McDonald", "McDonald"},
+		{"Ivan | дизайн", "Ivan"},
+		{"gri_92", ""},
+		{"gri92", ""},
+		{"@gri", ""},
+		{"tg123456", ""},
+		{"Гриша 🔥", "Гриша"},
+		{"🔥Гриша", ""},
+		{"Г", ""},
+		{"", ""},
+		{"   ", ""},
+		{"Александрооооооооооооовна", ""},
+		{"-Гриша", ""},
+	}
+	for _, c := range cases {
+		if got := GreetingName(c.in); got != c.want {
+			t.Errorf("GreetingName(%q) = %q, want %q", c.in, got, c.want)
+		}
+	}
+}

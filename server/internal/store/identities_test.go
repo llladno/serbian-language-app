@@ -270,3 +270,54 @@ func TestAttachPendingTelegram(t *testing.T) {
 		t.Error("second AttachPendingTelegram = true, want false (nothing pending)")
 	}
 }
+
+func TestNoteTelegramFirstName(t *testing.T) {
+	s := newStore(t)
+	uid, err := s.CreateUser("gri_92")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := s.CreateIdentity(Identity{ID: auth.NewIdentityID(), UserID: uid, Provider: "telegram", ProviderUID: "555", TgUsername: "gri_92"}); err != nil {
+		t.Fatal(err)
+	}
+	first := func() string {
+		id, err := s.IdentityByProviderUID("telegram", "555")
+		if err != nil {
+			t.Fatal(err)
+		}
+		return id.TgFirstName
+	}
+	if got := first(); got != "" {
+		t.Fatalf("first name before any contact = %q, want empty", got)
+	}
+	if err := s.NoteTelegramFirstName("555", "  Гриша "); err != nil {
+		t.Fatal(err)
+	}
+	if got := first(); got != "Гриша" {
+		t.Fatalf("first name = %q, want Гриша (trimmed)", got)
+	}
+	// A blank name never erases what we have; an unknown tg id is a quiet no-op.
+	if err := s.NoteTelegramFirstName("555", "  "); err != nil {
+		t.Fatal(err)
+	}
+	if err := s.NoteTelegramFirstName("999", "Кто-то"); err != nil {
+		t.Fatal(err)
+	}
+	if got := first(); got != "Гриша" {
+		t.Fatalf("first name after blank update = %q, want it kept", got)
+	}
+	// A changed name wins.
+	if err := s.NoteTelegramFirstName("555", "Григорий"); err != nil {
+		t.Fatal(err)
+	}
+	if got := first(); got != "Григорий" {
+		t.Fatalf("first name after change = %q, want Григорий", got)
+	}
+	users, err := s.TelegramLinkedUsers()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(users) != 1 || users[0].FirstName != "Григорий" || users[0].Username != "gri_92" || users[0].AccountName != "gri_92" {
+		t.Fatalf("TelegramLinkedUsers = %+v, want first name, username and account name filled", users)
+	}
+}

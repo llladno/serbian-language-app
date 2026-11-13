@@ -2,6 +2,7 @@ package api
 
 import (
 	"strconv"
+	"strings"
 	"testing"
 	"time"
 
@@ -190,5 +191,112 @@ func TestRunReminderSweepSkipsNeverActiveAccount(t *testing.T) {
 	}
 	if got := sink.all(); len(got) != 0 {
 		t.Fatalf("sent %+v for an account with no activity ever, want none", got)
+	}
+}
+
+func TestGreetingName(t *testing.T) {
+	cases := []struct {
+		name string
+		tu   store.TelegramUser
+		want string
+	}{
+		{"first name wins", store.TelegramUser{FirstName: "Гриша", Username: "gri_92", AccountName: "gri_92"}, "Гриша"},
+		{"no name left: the @nick", store.TelegramUser{Username: "gri_92", AccountName: "gri_92"}, "@gri_92"},
+		{"handle differing in case is still the handle", store.TelegramUser{Username: "Gri", AccountName: "gri"}, "@Gri"},
+		{"account name that is not the handle is a fallback", store.TelegramUser{Username: "gri_92", AccountName: "Оля"}, "Оля"},
+		{"signup without a username keeps its first name", store.TelegramUser{AccountName: "Оля"}, "Оля"},
+		{"generated tg name is no name", store.TelegramUser{AccountName: "tg123456"}, ""},
+		{"a junk first name falls to the @nick", store.TelegramUser{FirstName: "🚀🚀", Username: "ivan", AccountName: "ivan"}, "@ivan"},
+		{"nothing at all", store.TelegramUser{}, ""},
+	}
+	for _, c := range cases {
+		if got := greetingName(c.tu); got != c.want {
+			t.Errorf("%s: greetingName = %q, want %q", c.name, got, c.want)
+		}
+	}
+}
+
+func TestRunReminderSweepInactivityNudgeGreetsByFirstName(t *testing.T) {
+	d, st, sink := newReminderDeps(t)
+	uid := linkTelegram(t, st, 321, "gri_92")
+	if err := st.NoteTelegramFirstName("321", "Гриша"); err != nil {
+		t.Fatal(err)
+	}
+	t0 := time.Date(2026, 9, 1, 8, 0, 0, 0, time.UTC)
+	if err := st.User(uid).AddAttempt(store.Attempt{ExerciseID: "e1", Lesson: "01", Block: "practice", Answer: "x", Correct: true}, t0); err != nil {
+		t.Fatal(err)
+	}
+	if err := RunReminderSweep(d, t0.Add(25*time.Hour)); err != nil {
+		t.Fatal(err)
+	}
+	got := sink.all()
+	if len(got) != 1 {
+		t.Fatalf("sent %+v, want one nudge", got)
+	}
+	if !strings.Contains(got[0].Text, "Гриша") || strings.Contains(got[0].Text, "{name}") || strings.Contains(got[0].Text, "gri_92") {
+		t.Fatalf("nudge text = %q, want the first name and no placeholder or handle", got[0].Text)
+	}
+}
+
+func TestRunReminderSweepInactivityNudgeFallsBackToTheNick(t *testing.T) {
+	d, st, sink := newReminderDeps(t)
+	uid := linkTelegram(t, st, 322, "gri_92") // account name == handle, Telegram never told us a first name: the @nick is all we have
+	t0 := time.Date(2026, 9, 1, 8, 0, 0, 0, time.UTC)
+	if err := st.User(uid).AddAttempt(store.Attempt{ExerciseID: "e1", Lesson: "01", Block: "practice", Answer: "x", Correct: true}, t0); err != nil {
+		t.Fatal(err)
+	}
+	if err := RunReminderSweep(d, t0.Add(25*time.Hour)); err != nil {
+		t.Fatal(err)
+	}
+	got := sink.all()
+	if len(got) != 1 {
+		t.Fatalf("sent %+v, want one nudge", got)
+	}
+	if !strings.Contains(got[0].Text, "@gri_92") || strings.Contains(got[0].Text, "{name}") {
+		t.Fatalf("nudge text = %q, want the @nick and no placeholder", got[0].Text)
+	}
+}
+
+func TestPickInactivityNamesTheVariant(t *testing.T) {
+	for i := 0; i < 50; i++ {
+		text, v := pickInactivity("@gri_92")
+		if !strings.HasPrefix(v, "n") || !strings.Contains(text, "@gri_92") {
+			t.Fatalf("named pick = %q (%s), want an n-variant carrying the name", text, v)
+		}
+		text, v = pickInactivity("")
+		if !strings.HasPrefix(v, "p") || strings.Contains(text, "{name}") {
+			t.Fatalf("plain pick = %q (%s), want a p-variant", text, v)
+		}
+	}
+}
+
+func TestRunReminderSweepRecordsWhichTextWentOut(t *testing.T) {
+	d, st, sink := newReminderDeps(t)
+	uid := linkTelegram(t, st, 323, "gri_92")
+	t0 := time.Date(2026, 9, 1, 8, 0, 0, 0, time.UTC)
+	if err := st.User(uid).AddAttempt(store.Attempt{ExerciseID: "e1", Lesson: "01", Block: "practice", Answer: "x", Correct: true}, t0); err != nil {
+		t.Fatal(err)
+	}
+	for _, at := range []time.Duration{25 * time.Hour, 26 * time.Hour} { // the second sweep must not send or record again
+		if err := RunReminderSweep(d, t0.Add(at)); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if len(sink.all()) != 1 {
+		t.Fatalf("sent %+v, want one nudge", sink.all())
+	}
+	counts, err := st.ReminderSendCounts("inactive")
+	if err != nil {
+		t.Fatal(err)
+	}
+	total := 0
+	for v, n := range counts {
+		if !strings.HasPrefix(v, "n") { // account name == handle, so the @nick is the name
+			t.Errorf("variant %q recorded, want an n-variant", v)
+		}
+		total += n
+	}
+	if total != 1 {
+		t.Fatalf("recorded %v, want exactly one send", counts)
 	}
 }

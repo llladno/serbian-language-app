@@ -1,6 +1,9 @@
 package telegram
 
-import "strings"
+import (
+	"strings"
+	"unicode"
+)
 
 // MessageKey identifies one editable bot reply template, stored in
 // serbian-app's bot_messages table and edited from ucimo-content-admin's
@@ -84,6 +87,49 @@ var DefaultMessages = map[MessageKey]string{
 // Substitute replaces every "{name}" placeholder in text with name.
 func Substitute(text, name string) string {
 	return strings.ReplaceAll(text, "{name}", name)
+}
+
+// GreetingName turns a first name as people type it (Telegram profile, registration form) into one a message can
+// open with («Гриша, ...»), or "" when it can't be trusted to read like a name. Only the first word counts, it must be
+// 2 to 20 letters (a hyphen or apostrophe between letters is fine), so handles (`gri_92`), emoji, digits and
+// «Иван | дизайн» come out empty, and the caller drops the name instead of printing junk. A name typed all lower case
+// or all upper case gets a capital first letter; mixed case (McDonald) is left alone.
+func GreetingName(raw string) string {
+	words := strings.Fields(raw)
+	if len(words) == 0 {
+		return ""
+	}
+	runes := []rune(words[0])
+	if len(runes) < 2 || len(runes) > 20 {
+		return ""
+	}
+	lower, upper := 0, 0
+	for i, r := range runes {
+		switch {
+		case unicode.IsLetter(r):
+			if unicode.IsLower(r) {
+				lower++
+			} else if unicode.IsUpper(r) {
+				upper++
+			}
+		case (r == '-' || r == '\'' || r == '’') && i > 0 && i < len(runes)-1:
+		default:
+			return ""
+		}
+	}
+	if lower == 0 || upper == 0 || (upper == 1 && unicode.IsUpper(runes[0])) {
+		// all lower, all upper, or a plain «Иван»: normalise to a capital and lower case.
+		for i, r := range runes {
+			if i == 0 {
+				runes[i] = unicode.ToUpper(r)
+			} else {
+				runes[i] = unicode.ToLower(r)
+			}
+		}
+		return string(runes)
+	}
+	runes[0] = unicode.ToUpper(runes[0])
+	return string(runes)
 }
 
 // DisplayName picks what to greet a Telegram user by: their first name,
