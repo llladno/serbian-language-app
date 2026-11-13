@@ -21,6 +21,7 @@ import BotPrefsSection from '../components/BotPrefsSection.vue'
 import ScriptToggle from '../components/ScriptToggle.vue'
 import SoundSettings from '../components/SoundSettings.vue'
 import TariffsCard from '../components/TariffsCard.vue'
+import PersonalDiscountBanner from '../components/PersonalDiscountBanner.vue'
 import PriceChangeStrip from '../components/PriceChangeStrip.vue'
 import TariffsPromo from '../components/TariffsPromo.vue'
 import LevelCreditNotice from '../components/LevelCreditNotice.vue'
@@ -213,6 +214,7 @@ async function logout() {
 
       <div v-else key="loaded" class="space-y-4">
       <LevelCreditNotice />
+      <PersonalDiscountBanner />
       <PriceChangeStrip place="profile" />
       <TariffsPromo />
       <div class="grid grid-cols-1 items-start gap-4 lg:grid-cols-3">

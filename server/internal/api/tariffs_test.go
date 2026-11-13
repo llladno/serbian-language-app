@@ -404,3 +404,95 @@ func TestAYearOpensEveryLevelUntilItEndsAndLevelsAreNotSoldDuringIt(t *testing.T
 		t.Errorf("after extending, until = %v, want %v", until, want)
 	}
 }
+
+// ---- personal discount ----
+
+func giveDiscount(t *testing.T, st *store.Store, uid string, percent int, hours int) {
+	t.Helper()
+	if err := st.CreateDiscount(store.PersonalDiscount{
+		ID: fmt.Sprintf("disc-%s-%d", uid, percent), UserID: uid, Percent: percent,
+		CreatedAt: fixedNow, ExpiresAt: fixedNow.Add(time.Duration(hours) * time.Hour),
+	}); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestAPersonalDiscountIsShownAndChargedAndOnlyForThatLearner(t *testing.T) {
+	tb := newFakeTBank(t)
+	h, st := tariffsAPI(t, tb)
+	uid, c := listedUser(t, h, st)
+	if got := decodeBody[struct {
+		Discount *discountDTO `json:"discount"`
+	}](t, doCookie(h, c, "GET", "/api/me/tariffs", "")); got.Discount != nil {
+		t.Fatalf("discount before one was given = %+v", got.Discount)
+	}
+
+	giveDiscount(t, st, uid, 20, 72)
+	rr := doCookie(h, c, "GET", "/api/me/tariffs", "")
+	got := decodeBody[struct {
+		Level struct {
+			Price int64 `json:"price"`
+		} `json:"level"`
+		Year struct {
+			Price int64 `json:"price"`
+		} `json:"year"`
+		Discount *discountDTO `json:"discount"`
+	}](t, rr)
+	d := got.Discount
+	if d == nil || d.Percent != 20 || d.LevelPrice != 159 || d.YearPrice != 800 {
+		t.Fatalf("discount = %+v, want 20%% with 159 (of the first price 199) and 800", d)
+	}
+	if d.Until != fixedNow.Add(72*time.Hour).UTC().Format(time.RFC3339) || d.Now != fixedNow.UTC().Format(time.RFC3339) {
+		t.Errorf("until/now = %s/%s", d.Until, d.Now)
+	}
+	if got.Level.Price != 199 || got.Year.Price != 1000 {
+		t.Errorf("list prices changed to %d/%d: they stay what everybody sees", got.Level.Price, got.Year.Price)
+	}
+
+	order(t, h, c, "level")
+	if amount := tb.get("9001").Amount; amount != 15900 {
+		t.Errorf("level order = %d kopecks, want 15900", amount)
+	}
+	if p, _ := st.PaymentByID(1); p.DiscountID == "" || p.AmountKopecks != 15900 {
+		t.Errorf("payment = %+v, want the discount recorded", p)
+	}
+
+	// somebody else is charged the list price
+	otherID := registerAndVerify(t, h, st, tbankEmail, "secret1234", "Other")
+	order(t, h, authed(t, st, otherID), "level")
+	if amount := tb.get("9002").Amount; amount != 19900 {
+		t.Errorf("another learner's order = %d kopecks, want 19900", amount)
+	}
+}
+
+func TestAPersonalDiscountIsGoneOncePaidWithAndWhenItExpires(t *testing.T) {
+	tb := newFakeTBank(t)
+	h, st := tariffsAPI(t, tb)
+	uid, c := listedUser(t, h, st)
+	giveDiscount(t, st, uid, 25, 48)
+
+	o := order(t, h, c, "year")
+	if amount := tb.get("9001").Amount; amount != 75000 {
+		t.Errorf("year order = %d kopecks, want 75000 (1 000 ₽ less 25%%)", amount)
+	}
+	tb.set("9001", "CONFIRMED")
+	if rr := doCookie(h, c, "GET", fmt.Sprintf("/api/me/orders/%d", o.ID), ""); decodeBody[orderDTO](t, rr).Status != "succeeded" {
+		t.Fatalf("order not settled: %s", rr.Body)
+	}
+	rr := doCookie(h, c, "GET", "/api/me/tariffs", "")
+	if strings.Contains(rr.Body.String(), `"discount"`) {
+		t.Errorf("discount still quoted after it was used: %s", rr.Body)
+	}
+
+	// an expired one is never quoted
+	uid2 := registerAndVerify(t, h, st, tbankEmail, "secret1234", "Other")
+	if err := st.CreateDiscount(store.PersonalDiscount{
+		ID: "old", UserID: uid2, Percent: 40, CreatedAt: fixedNow.Add(-72 * time.Hour), ExpiresAt: fixedNow.Add(-time.Hour),
+	}); err != nil {
+		t.Fatal(err)
+	}
+	rr = doCookie(h, authed(t, st, uid2), "GET", "/api/me/tariffs", "")
+	if strings.Contains(rr.Body.String(), `"discount"`) {
+		t.Errorf("expired discount quoted: %s", rr.Body)
+	}
+}

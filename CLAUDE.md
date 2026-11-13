@@ -894,6 +894,16 @@ localStorage). `GET .../exercises?audio=off` отдаёт `say` как `text`
 не начисляют ничего. Возврат оплаты бонус не забирает (пока вручную `admin_adjustment`).
 Экран показывает `level.bonus` / `year.bonus` из `GET /api/me/tariffs`.
 
+### Личная скидка
+
+Владелец даёт скидку конкретному ученику в админке («Экономика → Личные скидки»): процент 1–90 на срок до 60 дней, на оба тарифа
+(2026-11-13, не задеплоено; подробности и GRANT — `docs/PERSONAL_DISCOUNT.md`). Таблица `personal_discounts` (миграция 043), её
+пишет админка, приложение только читает (`Store.ActiveDiscount`: не отменена, не истекла, нет оплаченного заказа с её `discount_id`).
+`GET /api/me/tariffs` отдаёт `discount` рядом со списочными ценами, `createOrder` оценивает заказ той же `store.DiscountedKopecks`
+(округление до рубля), в платеже сохраняется `payments.discount_id`. Фронт: `tariffs.discount`, `levelShown`/`yearShown`,
+`PersonalDiscountBanner` (профиль и тарифы). Любой новый экран, который показывает цену на кнопке оплаты, берёт `levelShown`/`yearShown`,
+а не `levelNow`/`yearPrice`.
+
 ### Объявленное повышение цен (скидка 50% до 15 ноября 2026)
 
 Цены можно запланировать заранее: колонки `next_*_kopecks`, `announce_at`, `change_at` в `tariffs` (миграция 041, спека и чек-лист на день смены —

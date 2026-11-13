@@ -769,8 +769,8 @@ func TestUpgradeFromProductionAtMigration012(t *testing.T) {
 	if got, want := count(`SELECT COUNT(*) FROM schema_migrations`), count(`SELECT COUNT(DISTINCT version) FROM schema_migrations`); got != want {
 		t.Errorf("schema_migrations has repeated versions: %d rows, %d distinct", got, want)
 	}
-	if got := count(`SELECT MAX(version) FROM schema_migrations`); got != 41 { // 35, 36: repeat_nudge, 37: story quests, 38: tariff event detail, 39: onboarding, 40: return campaign, 41: price change (34 is stories, still on its own branch)
-		t.Errorf("latest version = %d, want 41", got)
+	if got := count(`SELECT MAX(version) FROM schema_migrations`); got != 43 { // 35, 36: repeat_nudge, 37: story quests, 38: tariff event detail, 39: onboarding, 40: return campaign, 41: price change, 42: telegram first name, 43: personal discounts (34 is stories, still on its own branch)
+		t.Errorf("latest version = %d, want 43", got)
 	}
 	// every account that existed before the tour has put it off, so it never starts by itself for them
 	if got, want := count(`SELECT COUNT(*) FROM onboarding WHERE status = 'postponed'`), count(`SELECT COUNT(*) FROM users`); got != want || want == 0 {

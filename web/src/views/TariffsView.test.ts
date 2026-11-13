@@ -803,3 +803,48 @@ describe('TariffsView while a price change is announced', () => {
     expect(w.get('[data-test="tariff-year"]').text()).not.toContain('0 ₽')
   })
 })
+
+describe('TariffsView: the learner\'s own discount', () => {
+  const day = 86_400_000
+  // 20% off: 249 -> 199 for the level, 1 000 -> 800 for the year. The server's clock is the phone's here.
+  function mine(percent = 20, ms = 2 * day): Partial<TariffsInfo> {
+    const now = Date.now()
+    return { discount: { percent, until: new Date(now + ms).toISOString(), now: new Date(now).toISOString(), level_price: 199, year_price: 800 } }
+  }
+
+  it('puts the discounted prices on the cards and the buttons, with the list price struck through', async () => {
+    const w = await mountView(mine())
+    expect(w.get('[data-test="personal-discount"]').text()).toContain('−20%')
+    expect(w.get('[data-test="level-price"] .price').text()).toContain('199')
+    expect(w.get('[data-test="level-price"] .was').text()).toContain('249')
+    expect(w.get('[data-test="level-discount"]').text()).toBe('−20%')
+    expect(w.get('[data-test="level-discount-note"]').text()).toMatch(/^Ваша скидка 20% до /)
+    expect(w.get('[data-test="buy-level"]').text()).toBe('Хочу уровень — 199\u00a0₽')
+    expect(w.get('[data-test="year-price"] .price').text()).toContain('800')
+    expect(w.get('[data-test="year-price"] .was').text()).toContain('1\u00a0000')
+    expect(w.get('[data-test="year-discount"]').text()).toBe('−20%')
+    expect(w.get('[data-test="buy-year"]').text()).toBe('Хочу всё на год — 800\u00a0₽')
+  })
+
+  it('counts the time left on the banner, on the server\'s clock', async () => {
+    const w = await mountView(mine(20, 2 * day + 3 * 3_600_000))
+    expect(w.get('[data-test="personal-discount-left"]').text()).toMatch(/^2 дн 0[23]:\d\d:\d\d$/)
+  })
+
+  it('shows nothing of it without a discount, and the usual prices', async () => {
+    const w = await mountView()
+    expect(w.find('[data-test="personal-discount"]').exists()).toBe(false)
+    expect(w.get('[data-test="buy-level"]').text()).toBe('Хочу уровень — 249\u00a0₽')
+  })
+
+  it('reads the quote again when the discount ends, and the list prices come back', async () => {
+    vi.useFakeTimers()
+    const w = await mountView(mine(20, 5_000))
+    expect(w.find('[data-test="personal-discount"]').exists()).toBe(true)
+    vi.mocked(api.tariffs).mockResolvedValue(tariffsInfo())
+    await vi.advanceTimersByTimeAsync(6_000)
+    await flushPromises()
+    expect(w.find('[data-test="personal-discount"]').exists()).toBe(false)
+    expect(w.get('[data-test="buy-level"]').text()).toBe('Хочу уровень — 249\u00a0₽')
+  })
+})

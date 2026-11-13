@@ -109,20 +109,22 @@ type Payment struct {
 	ProviderPaymentID string
 	Status            string
 	ReceiptContact    string
-	Test              bool
-	CreatedAt         time.Time
-	PaidAt            time.Time
+	// DiscountID names the personal discount the order was priced with (store/discounts.go), or is empty.
+	DiscountID string
+	Test       bool
+	CreatedAt  time.Time
+	PaidAt     time.Time
 }
 
 const paymentCols = `id, user_id, tariff_code, granted_phase, amount_kopecks, provider,
-	provider_payment_id, status, receipt_contact, test, created_at, paid_at`
+	provider_payment_id, status, receipt_contact, discount_id, test, created_at, paid_at`
 
 func scanPayment(sc interface{ Scan(...any) error }) (Payment, error) {
 	var p Payment
 	var test int
 	var created, paid string
 	if err := sc.Scan(&p.ID, &p.UserID, &p.TariffCode, &p.GrantedPhase, &p.AmountKopecks, &p.Provider,
-		&p.ProviderPaymentID, &p.Status, &p.ReceiptContact, &test, &created, &paid); err != nil {
+		&p.ProviderPaymentID, &p.Status, &p.ReceiptContact, &p.DiscountID, &test, &created, &paid); err != nil {
 		return Payment{}, err
 	}
 	p.Test = test == 1
@@ -135,11 +137,11 @@ func scanPayment(sc interface{ Scan(...any) error }) (Payment, error) {
 func (s *Store) CreatePayment(p Payment, now time.Time) (int64, error) {
 	var id int64
 	err := s.db.QueryRow(`INSERT INTO payments (user_id, tariff_code, granted_phase, amount_kopecks,
-		provider, provider_payment_id, status, receipt_contact, test, created_at)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+		provider, provider_payment_id, status, receipt_contact, discount_id, test, created_at)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 		RETURNING id`,
 		p.UserID, p.TariffCode, p.GrantedPhase, p.AmountKopecks, p.Provider, p.ProviderPaymentID,
-		PaymentPending, p.ReceiptContact, boolInt(p.Test), now.UTC().Format(time.RFC3339)).Scan(&id)
+		PaymentPending, p.ReceiptContact, p.DiscountID, boolInt(p.Test), now.UTC().Format(time.RFC3339)).Scan(&id)
 	if err != nil {
 		return 0, fmt.Errorf("create payment: %w", err)
 	}

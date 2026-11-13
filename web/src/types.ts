@@ -480,6 +480,18 @@ export interface TariffsInfo {
   year: { price: number; old_price: number; bonus?: number; until?: string }
   // Set from the announcement until the announced price change is made (the server switches the prices itself).
   price_change?: PriceChange
+  // This learner's own discount, while they have one (the owner gives it in the admin panel).
+  discount?: PersonalDiscountQuote
+}
+
+// A personal discount as the tariffs screen shows it: the percent, when it ends (`until`, on the server's clock `now`) and
+// what an order made now would cost, in rubles. The list prices in the rest of the quote are the ones everybody sees.
+export interface PersonalDiscountQuote {
+  percent: number
+  until: string
+  now: string
+  level_price: number
+  year_price: number
 }
 
 // An announced price change that has not happened yet. `at` is when it happens and `now` the server's clock when the

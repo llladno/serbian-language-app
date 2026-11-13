@@ -272,6 +272,33 @@ type tariffsDTO struct {
 	} `json:"year"`
 	// PriceChange is set from the announcement until the change is made (see priceChange).
 	PriceChange *priceChangeDTO `json:"price_change,omitempty"`
+	// Discount is this learner's own discount, while they have one (see personalDiscount).
+	Discount *discountDTO `json:"discount,omitempty"`
+}
+
+// discountDTO is a personal discount as the tariffs screen shows it. The prices are in rubles and are what an order
+// made now would be charged; the list prices in the quote stay what everybody sees. Now is the server's clock, as in
+// priceChangeDTO, so the countdown does not lean on the learner's own.
+type discountDTO struct {
+	Percent    int    `json:"percent"`
+	Until      string `json:"until"`
+	Now        string `json:"now"`
+	LevelPrice int64  `json:"level_price"`
+	YearPrice  int64  `json:"year_price"`
+}
+
+// personalDiscount is the discount this learner can use now, or nil. A failure to read it is logged and treated as no
+// discount: the learner is then charged the list price they see, never a price they were not shown.
+func (h handlers) personalDiscount(userID string) *store.PersonalDiscount {
+	d, ok, err := h.Store.ActiveDiscount(userID, h.Now())
+	if err != nil {
+		log.Printf("tariffs: personal discount: %v", err)
+		return nil
+	}
+	if !ok {
+		return nil
+	}
+	return &d
 }
 
 func (h handlers) getTariffs(w http.ResponseWriter, r *http.Request) {
@@ -360,6 +387,15 @@ func (h handlers) getTariffs(w http.ResponseWriter, r *http.Request) {
 		out.Year.Until = until.UTC().Format(time.RFC3339)
 	}
 	out.PriceChange = priceChange(level, year, hasPaid, h.Now(), h.Config.SeesPriceChangeEarly(ac.Summary.Email))
+	if d := h.personalDiscount(ac.UserID); d != nil {
+		out.Discount = &discountDTO{
+			Percent:    d.Percent,
+			Until:      d.ExpiresAt.UTC().Format(time.RFC3339),
+			Now:        h.Now().UTC().Format(time.RFC3339),
+			LevelPrice: rubles(store.DiscountedKopecks(levelPriceKopecks(level, hasPaid), d.Percent)),
+			YearPrice:  rubles(store.DiscountedKopecks(year.PriceKopecks, d.Percent)),
+		}
+	}
 	writeJSON(w, http.StatusOK, out)
 }
 
@@ -510,9 +546,16 @@ func (h handlers) createOrder(w http.ResponseWriter, r *http.Request) {
 	if receipt == "" {
 		receipt = receiptPhone
 	}
+	// A personal discount the learner can use is taken off whatever the order costs; the same function prices the
+	// number the tariffs screen showed, so the button, the order and the bank agree.
+	var discountID string
+	if d := h.personalDiscount(ac.UserID); d != nil {
+		amount = store.DiscountedKopecks(amount, d.Percent)
+		discountID = d.ID
+	}
 	pid, err := h.Store.CreatePayment(store.Payment{
 		UserID: ac.UserID, TariffCode: tariff.Code, AmountKopecks: amount,
-		Provider: prov.Name(), ReceiptContact: receipt,
+		Provider: prov.Name(), ReceiptContact: receipt, DiscountID: discountID,
 	}, h.Now())
 	if err != nil {
 		log.Printf("orders: create: %v", err)

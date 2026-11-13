@@ -27,6 +27,7 @@ import { pluralRu } from '../lib/plural'
 import { trackCheckout } from '../lib/tariffEvents'
 import BotPrefsSection from '../components/BotPrefsSection.vue'
 import LevelCreditNotice from '../components/LevelCreditNotice.vue'
+import PersonalDiscountBanner from '../components/PersonalDiscountBanner.vue'
 import PriceChangeBanner from '../components/PriceChangeBanner.vue'
 import PaymentThanksModal from '../components/PaymentThanksModal.vue'
 import ReceiptContactModal from '../components/ReceiptContactModal.vue'
@@ -45,24 +46,45 @@ const { openFor: openChoice } = useLevelChoiceModal()
 
 // The struck-through price. During the announced discount it is the price that really follows it (399 and 1 999), so the
 // discount is plain to see; otherwise the regular price of a level, and the old price of the year when there is one.
+// The learner's own discount comes first: the list price is struck through, and the percent is the one the owner gave
+// (the prices are rounded to whole rubles, so a percent worked out from them could read 21 for a 20% discount).
+const personal = computed(() => tariffs.discount)
 const levelStruck = computed(() => {
+  const p = personal.value
+  if (p) return p.levelPrice < tariffs.levelNow ? tariffs.levelNow : 0
   const c = tariffs.campaign
   if (c && c.levelPrice > tariffs.levelNow) return c.levelPrice
   return tariffs.levelNow < tariffs.levelRegular ? tariffs.levelRegular : 0
 })
-const levelOff = computed(() => (levelStruck.value ? discountPercent(tariffs.levelNow, levelStruck.value) : 0))
+const levelOff = computed(() => {
+  if (!levelStruck.value) return 0
+  return personal.value ? personal.value.percent : discountPercent(tariffs.levelNow, levelStruck.value)
+})
 const yearStruck = computed(() => {
+  const p = personal.value
+  if (p) return p.yearPrice < tariffs.yearPrice ? tariffs.yearPrice : 0
   const c = tariffs.campaign
   if (c && c.yearPrice > tariffs.yearPrice) return c.yearPrice
   return tariffs.campaign ? 0 : tariffs.yearOld
 })
-const yearOff = computed(() => (tariffs.campaign && yearStruck.value ? discountPercent(tariffs.yearPrice, yearStruck.value) : 0))
+const yearOff = computed(() => {
+  if (personal.value) return yearStruck.value ? personal.value.percent : 0
+  return tariffs.campaign && yearStruck.value ? discountPercent(tariffs.yearPrice, yearStruck.value) : 0
+})
 // "до 15 ноября": the last day of the discount, as the learner reads it.
 const saleUntil = computed(() => {
   const c = tariffs.campaign
   if (!c) return ''
   const d = lastDay(c.at)
   return `${d.day} ${d.month}`
+})
+// When the learner's own discount ends, "до 16 ноября, 23:00", in the time of the place the learners live in.
+const personalUntil = computed(() => {
+  const p = personal.value
+  if (!p) return ''
+  return new Date(p.until).toLocaleString('ru-RU', {
+    day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Belgrade',
+  })
 })
 
 // A paid level opens a level of the learner's own choice, so the card does not name one: it lists what
@@ -79,7 +101,7 @@ const inside = computed(() => {
 
 // The year against twelve months of levels, one a month: that sum is the full width of the bar, the year is
 // its share of it (never so thin that it vanishes).
-const yearBar = computed(() => Math.max(6, Math.round((tariffs.yearPrice / (tariffs.monthlyCost || 1)) * 100)))
+const yearBar = computed(() => Math.max(6, Math.round((tariffs.yearShown / (tariffs.monthlyCost || 1)) * 100)))
 const levelWaitDays = computed(() => (tariffs.levelFrom ? daysLeft(tariffs.levelFrom) : 0))
 
 // How long a running year has left, for the "my tariff" card.
@@ -195,6 +217,7 @@ onMounted(async () => {
 <template>
   <div class="space-y-6">
     <!-- The top of the page: the swallow of the banner in the profile, and a hello. -->
+    <PersonalDiscountBanner on-tariffs />
     <PriceChangeBanner />
     <header v-if="!tariffs.campaign" class="hero card" data-test="tariffs-hero">
       <div class="hero-art" aria-hidden="true"><img :src="scene" alt="" /></div>
@@ -233,7 +256,7 @@ onMounted(async () => {
       <p class="thanks mt-2" data-test="my-tariff-thanks">Hvala lepo <img :src="heart" alt="" aria-hidden="true" class="heart" /></p>
       <div class="mt-4"><BotPrefsSection :only="['billing']" /></div>
       <button class="btn btn-ghost mt-4 w-full" :disabled="!canPay" data-test="extend-year" @click="pay('year')">
-        Продлить на год — {{ rub(tariffs.yearPrice) }}
+        Продлить на год — {{ rub(tariffs.yearShown) }}
       </button>
     </section>
 
@@ -258,12 +281,13 @@ onMounted(async () => {
         </p>
 
         <p class="price-row" data-test="level-price">
-          <span class="price">{{ rub(tariffs.levelNow) }}</span>
+          <span class="price">{{ rub(tariffs.levelShown) }}</span>
           <span v-if="levelStruck" class="was">{{ rub(levelStruck) }}</span>
           <span v-if="levelOff" class="badge" data-test="level-discount">−{{ levelOff }}%</span>
         </p>
         <p v-if="levelOff" class="mt-1 text-sm font-semibold text-[var(--accent)]" data-test="level-discount-note">
-          <template v-if="tariffs.campaign">Скидка {{ levelOff }}% до {{ saleUntil }}</template>
+          <template v-if="personal">Ваша скидка {{ levelOff }}% до {{ personalUntil }}</template>
+          <template v-else-if="tariffs.campaign">Скидка {{ levelOff }}% до {{ saleUntil }}</template>
           <template v-else>Скидка {{ levelOff }}% на первую покупку</template>
         </p>
 
@@ -316,7 +340,7 @@ onMounted(async () => {
           @click="pay('level')"
         >
           <template v-if="tariffs.paying === 'level'">Переходим к оплате…</template>
-          <template v-else>Хочу уровень — {{ rub(tariffs.levelNow) }}</template>
+          <template v-else>Хочу уровень — {{ rub(tariffs.levelShown) }}</template>
         </button>
         <button v-else-if="tariffs.choices.length && tariffs.levelFrom" class="btn btn-ghost mt-auto w-full" disabled data-test="level-wait">
           Следующий уровень — с {{ shortDate(tariffs.levelFrom) }}
@@ -337,15 +361,16 @@ onMounted(async () => {
         <p class="mt-0.5 text-lg font-extrabold leading-snug">Все уровни и всё новое</p>
 
         <p class="price-row" data-test="year-price">
-          <span class="price">{{ rub(tariffs.yearPrice) }}</span>
+          <span class="price">{{ rub(tariffs.yearShown) }}</span>
           <span v-if="yearStruck > 0" class="was">{{ rub(yearStruck) }}</span>
           <span v-if="yearOff" class="badge" data-test="year-discount">−{{ yearOff }}%</span>
         </p>
         <p v-if="yearOff" class="mt-1 text-sm font-semibold text-[var(--accent)]" data-test="year-discount-note">
-          Скидка {{ yearOff }}% до {{ saleUntil }}
+          <template v-if="personal">Ваша скидка {{ yearOff }}% до {{ personalUntil }}</template>
+          <template v-else>Скидка {{ yearOff }}% до {{ saleUntil }}</template>
         </p>
         <p class="mt-1 text-sm text-[var(--muted)]">
-          ≈ {{ rub(perMonth(tariffs.yearPrice)) }} в месяц<template v-if="!tariffs.campaign && tariffs.yearOld > 0"> · ранняя цена</template>
+          ≈ {{ rub(perMonth(tariffs.yearShown)) }} в месяц<template v-if="!tariffs.campaign && !personal && tariffs.yearOld > 0"> · ранняя цена</template>
         </p>
 
         <!-- The argument for the year, as one picture: a thin bar under the price, the year's share of what a level
@@ -354,7 +379,7 @@ onMounted(async () => {
         <div v-if="tariffs.yearSaves" class="thin" data-test="year-saving">
           <span class="bar" aria-hidden="true"><i class="bar-fill" :style="{ width: yearBar + '%' }"></i></span>
           <p class="thin-row">
-            <b data-test="saving-year">{{ rub(tariffs.yearPrice) }}</b>
+            <b data-test="saving-year">{{ rub(tariffs.yearShown) }}</b>
             <span data-test="saving-monthly">вместо {{ rub(tariffs.monthlyCost) }}</span>
           </p>
         </div>
@@ -385,7 +410,7 @@ onMounted(async () => {
         </ul>
         <button class="btn btn-primary mt-auto w-full" :disabled="!canPay" data-test="buy-year" @click="pay('year')">
           <template v-if="tariffs.paying === 'year'">Переходим к оплате…</template>
-          <template v-else>Хочу всё на год — {{ rub(tariffs.yearPrice) }}</template>
+          <template v-else>Хочу всё на год — {{ rub(tariffs.yearShown) }}</template>
         </button>
       </section>
     </div>

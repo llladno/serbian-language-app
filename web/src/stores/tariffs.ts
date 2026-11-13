@@ -81,6 +81,19 @@ export const useTariffsStore = defineStore('tariffs', () => {
     if (!c) return null
     return c.preview || !hasTariff.value ? c : null
   })
+  // The learner's own discount, or null: the percent, when it ends (a moment on this device's clock, corrected by the
+  // server's like the price change) and what an order made now costs. `levelShown` and `yearShown` are the prices to put on
+  // the buttons: the discounted ones while the discount holds, the list ones otherwise.
+  const discount = computed(() => {
+    const d = info.value?.discount
+    if (!d) return null
+    const until = Date.parse(d.until)
+    const serverNow = Date.parse(d.now)
+    if (Number.isNaN(until) || Number.isNaN(serverNow)) return null
+    return { percent: d.percent, until: until - (serverNow - quotedAt.value), levelPrice: d.level_price, yearPrice: d.year_price }
+  })
+  const levelShown = computed(() => discount.value?.levelPrice ?? levelNow.value)
+  const yearShown = computed(() => discount.value?.yearPrice ?? yearPrice.value)
   const paymentsReady = computed(() => info.value?.payments_ready ?? false)
   // A paid level is a credit: the learner chooses the level after paying. These are the levels
   // they can still choose and the paid orders waiting to be spent.
@@ -107,6 +120,20 @@ export const useTariffsStore = defineStore('tariffs', () => {
       // setTimeout takes at most about 24 days; a longer wait is re-armed when the quote is read again
       const wait = Math.min(Math.max(0, until - Date.now()) + 400, 2_000_000_000)
       settleTimer = setTimeout(() => void settleAfterChange(0), wait)
+    },
+    { immediate: true },
+  )
+
+  // When the discount runs out the quote is read again, so the prices on the buttons go back to the list ones (the server
+  // stops charging the discounted price at the same moment).
+  let discountTimer: ReturnType<typeof setTimeout> | undefined
+  watch(
+    () => discount.value?.until,
+    (until) => {
+      clearTimeout(discountTimer)
+      if (until === undefined) return
+      const wait = Math.min(Math.max(0, until - Date.now()) + 400, 2_000_000_000)
+      discountTimer = setTimeout(() => void load(true), wait)
     },
     { immediate: true },
   )
@@ -166,7 +193,7 @@ export const useTariffsStore = defineStore('tariffs', () => {
 
   return {
     info, loading, paying, enabled, ready, needsReceiptContact, receiptContact, setReceiptContact, levelNow, levelRegular, yearPrice, yearOld,
-    levelDiscount, levelFrom, priceChange, campaign, monthlyCost, yearSaves, levelBonus, yearBonus, hasPaidLevel, hasTariff, yearUntil, yearActive, paymentsReady, choices, credits, hasCredit, load, pay, checkOrder, chooseLevel,
+    levelDiscount, levelFrom, priceChange, campaign, discount, levelShown, yearShown, monthlyCost, yearSaves, levelBonus, yearBonus, hasPaidLevel, hasTariff, yearUntil, yearActive, paymentsReady, choices, credits, hasCredit, load, pay, checkOrder, chooseLevel,
   }
 })
 
