@@ -15,6 +15,8 @@ interface TgWebApp {
   openTelegramLink?: (url: string) => void
   openLink?: (url: string, options?: { try_instant_view?: boolean }) => void
   isVersionAtLeast?: (version: string) => boolean
+  version?: string
+  platform?: string
   HapticFeedback?: { notificationOccurred: (type: 'error' | 'success' | 'warning') => void }
 }
 
@@ -76,6 +78,15 @@ export function hapticSuccess() {
   } catch {
     /* a client that cannot buzz just stays still */
   }
+}
+
+// Which Telegram app this Mini App runs in: the Bot API level it understands (Telegram.WebApp.version, e.g. "10.1") and
+// its platform ("ios", "android", "tdesktop"...). Only inside a real Mini App session; null in a browser or when the
+// client reports no version. The server keeps it so the admin can see who can open newer kinds of message.
+export function clientInfo(): { version: string; platform: string } | null {
+  const wa = tg()
+  if (!wa || !initData() || !wa.version) return null
+  return { version: String(wa.version), platform: String(wa.platform ?? '') }
 }
 
 // The raw, HMAC-signed query string the backend's VerifyInitData checks.

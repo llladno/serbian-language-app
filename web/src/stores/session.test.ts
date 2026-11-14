@@ -3,9 +3,9 @@ import { setActivePinia, createPinia } from 'pinia'
 import { useSessionStore } from './session'
 import { api, ApiError } from '../api'
 import type { SessionUser } from '../types'
-import { isTelegram, initData } from '../telegram'
+import { isTelegram, initData, clientInfo } from '../telegram'
 
-vi.mock('../telegram', () => ({ isTelegram: vi.fn(), initData: vi.fn() }))
+vi.mock('../telegram', () => ({ isTelegram: vi.fn(), initData: vi.fn(), clientInfo: vi.fn() }))
 
 function user(overrides: Partial<SessionUser> = {}): SessionUser {
   return {
@@ -116,6 +116,34 @@ describe('useSessionStore', () => {
     await s.fetchSession()
     expect(spy).not.toHaveBeenCalled()
     expect(s.user).toBeNull()
+  })
+
+  describe('Telegram app version', () => {
+    it('is reported once after the session loads inside the Mini App', async () => {
+      vi.mocked(clientInfo).mockReturnValue({ version: '10.1', platform: 'ios' })
+      vi.spyOn(api, 'session').mockResolvedValue(user())
+      const report = vi.spyOn(api, 'reportClient').mockResolvedValue(undefined)
+      const s = useSessionStore()
+      await s.fetchSession()
+      await s.fetchSession()
+      expect(report).toHaveBeenCalledTimes(1)
+      expect(report).toHaveBeenCalledWith('10.1', 'ios')
+    })
+
+    it('is not reported outside the Mini App, and a failed report never breaks sign-in', async () => {
+      vi.mocked(clientInfo).mockReturnValue(null)
+      vi.spyOn(api, 'session').mockResolvedValue(user())
+      const report = vi.spyOn(api, 'reportClient').mockResolvedValue(undefined)
+      const s = useSessionStore()
+      await s.fetchSession()
+      expect(report).not.toHaveBeenCalled()
+
+      vi.mocked(clientInfo).mockReturnValue({ version: '10.1', platform: 'ios' })
+      report.mockRejectedValue(new ApiError(500, 'boom'))
+      const s2 = useSessionStore()
+      await s2.fetchSession()
+      expect(s2.user?.name).toBeTruthy()
+    })
   })
 
   describe('invite link code', () => {

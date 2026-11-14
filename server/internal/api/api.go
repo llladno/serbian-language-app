@@ -178,6 +178,7 @@ func Handler(deps Deps) http.Handler {
 	root.HandleFunc("GET /api/me/wallet", h.requireSession(h.getWallet))
 	root.HandleFunc("GET /api/me/bot-prefs", h.requireSession(h.getBotPrefs))
 	root.HandleFunc("PUT /api/me/bot-prefs", h.requireSession(h.putBotPrefs))
+	root.HandleFunc("POST /api/me/client", h.requireSession(h.postClientInfo))
 
 	// Paid tariffs. Closed to everyone but the accounts in TARIFFS_EMAILS: the
 	// endpoints answer 404 to anyone else, as if they did not exist.

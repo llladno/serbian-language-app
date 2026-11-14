@@ -196,6 +196,9 @@ export const api = {
   // Where the tariffs were shown and pressed (the log behind the admin's «Воронка тарифов»).
   trackTariffEvent: (kind: string, source: string, detail = '') =>
     request<void>('/me/tariff-events', { method: 'POST', body: JSON.stringify({ kind, source, detail }) }),
+  // Which Telegram app the Mini App runs in (version and platform), kept per person for the admin.
+  reportClient: (version: string, platform: string) =>
+    request<void>('/me/client', { method: 'POST', body: JSON.stringify({ version, platform }) }),
   botPrefs: () => request<BotPrefs>('/me/bot-prefs'),
   setBotPrefs: (patch: Partial<BotPrefs>) =>
     request<BotPrefs>('/me/bot-prefs', { method: 'PUT', body: JSON.stringify(patch) }),

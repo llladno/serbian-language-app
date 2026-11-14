@@ -2,7 +2,7 @@ import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { api } from '../api'
 import type { SessionUser } from '../types'
-import { isTelegram, initData } from '../telegram'
+import { isTelegram, initData, clientInfo } from '../telegram'
 import { clearStoredReferral, getStoredReferral } from '../attribution'
 
 // A guess for the very first paint of a reload: who was logged in last time,
@@ -57,12 +57,26 @@ export const useSessionStore = defineStore('session', () => {
   // see a screen that is closed to most people.
   const refreshed = ref(false)
 
+  // Tells the server which Telegram app this Mini App runs in. A courtesy call: no result is awaited and a failure
+  // (offline, signed out) is dropped, since nothing on screen depends on it. Once per page load.
+  let clientReported = false
+  function reportClient() {
+    if (clientReported) return
+    const info = clientInfo()
+    if (!info) return
+    clientReported = true
+    api.reportClient(info.version, info.platform).catch(() => {
+      clientReported = false // try again on the next session fetch
+    })
+  }
+
   async function fetchSession() {
     const hadGuess = !!user.value
     try {
       user.value = await api.session()
       writeCachedUser(user.value)
       void settleReferral()
+      reportClient()
     } catch {
       user.value = null
       writeCachedUser(null)
@@ -71,6 +85,7 @@ export const useSessionStore = defineStore('session', () => {
           user.value = await api.telegramLogin({ init_data: initData() })
           writeCachedUser(user.value)
           void settleReferral()
+          reportClient()
         } catch {
           user.value = null
         }
